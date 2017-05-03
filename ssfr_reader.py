@@ -94,7 +94,7 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
 
     # read data record
     for i in range(iterN):
-        dataRec = f.read(dataLen)
+        dataRec  = f.read(dataLen)
         data     = struct.unpack(binFmt, dataRec)
 
         dataHead = data[:30]
@@ -106,13 +106,19 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
         eos_logic     = any(dataSpec[2, :] != 1)
         null_logic    = any(dataSpec[3, :] != 257)
         order_logic   = not np.array_equal(dataSpec[4, :], np.array([0, 2, 1, 3]))
-        if any([shutter_logic, eos_logic, null_logic, order_logic]):
-            qual_flag[i] = 0
 
-        spectra[i, :, :]  = dataSpec[5:, :]
-        shutter[i]        = dataSpec[1, 0]
-        int_time[i, :]    = dataSpec[0, :]
-        temp[i, :]        = dataHead[21:]
+        logic         = any([shutter_logic, eos_logic, null_logic, order_logic])
+        if logic:
+            qual_flag[i] = 0
+            spectra[i, :, :]  = -99999
+            shutter[i]        = -99999
+            int_time[i, :]    = -99999
+            temp[i, :]        = -99999
+        else:
+            spectra[i, :, :]  = dataSpec[5:, :]
+            shutter[i]        = dataSpec[1, 0]
+            int_time[i, :]    = dataSpec[0, :]
+            temp[i, :]        = dataHead[21:]
 
         dtime          = datetime.datetime(dataHead[6] , dataHead[5] , dataHead[4] , dataHead[3] , dataHead[2] , dataHead[1] , int(round(dataHead[0]*1000000.0)))
         dtime0         = datetime.datetime(dataHead[16], dataHead[15], dataHead[14], dataHead[13], dataHead[12], dataHead[11], int(round(dataHead[10]*1000000.0)))
