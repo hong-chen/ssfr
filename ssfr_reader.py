@@ -25,17 +25,52 @@ def READ_SSFR(fname, filetype='sks1', verbose=False):
         jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
         return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
 
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # python         :          IDL
+    #   l            :    long or lonarr
+    #   B            :    byte or bytarr
+    #   L            :    ulong
+    #   h            :    intarr
+    # ---------------------------------------------------------------------------------------------------------------
     filetype = filetype.lower()
     if filetype == 'sks1':
         headLen = 148
         dataLen = 2260
+        # ---------------------------------------------------------------------------------------------------------------
+        # d9l: frac_second[d] , second[l] , minute[l] , hour[l] , day[l] , month[l] , year[l] , dow[l] , doy[l] , DST[l]
+        # d9l: frac_second0[d], second0[l], minute0[l], hour0[l], day0[l], month0[l], year0[l], dow0[l], doy0[l], DST0[l]
+        # l9d: null[l], temp(9)[9d]
+        # --------------------------          below repeat for sz, sn, iz, in          ----------------------------------
+        # l2Bl: int_time[l], shutter[B], EOS[B], null[l]
+        # 257h: spectra(257)
+        # ---------------------------------------------------------------------------------------------------------------
         binFmt  = '<d9ld9ll9dl2Bl257hl2Bl257hl2Bl257hlBBl257h'
     elif filetype == 'sks2':
         headLen = 148
         dataLen = 2276
+        # ---------------------------------------------------------------------------------------------------------------
+        # d9l: frac_second[d] , second[l] , minute[l] , hour[l] , day[l] , month[l] , year[l] , dow[l] , doy[l] , DST[l]
+        # d9l: frac_second0[d], second0[l], minute0[l], hour0[l], day0[l], month0[l], year0[l], dow0[l], doy0[l], DST0[l]
+        # l11d: null[l], temp(11)[11d]
+        # --------------------------          below repeat for sz, sn, iz, in          ----------------------------------
+        # l2Bl: int_time[l], shutter[B], EOS[B], null[l]
+        # 257h: spectra(257)
+        # ---------------------------------------------------------------------------------------------------------------
         binFmt  = '<d9ld9ll11dl2Bl257hl2Bl257hl2Bl257hlBBl257h'
     elif filetype == 'osa2':
         headLen = 0
+        #    #spec  = {btime:lonarr(2)   , bcdtimstp:bytarr(12),$     2l12B
+        #             #intime1:long(0)   , intime2:long(0)     ,$     6l
+        #             #intime3:long(0)   , intime4:long(0)     ,$
+        #             #accum:long(0)     , shsw:long(0)        ,$
+        #             #zsit:ulong(0)     , nsit:ulong(0)       ,$     8L
+        #             #zirt:ulong(0)     , nirt:ulong(0)       ,$
+        #             #zirx:ulong(0)     , nirx:ulong(0)       ,$
+        #             #xt:ulong(0)       , it:ulong(0)         ,$
+        #             #zspecsi:intarr(np), zspecir:intarr(np)  ,$     1024h
+        #             #nspecsi:intarr(np), nspecir:intarr(np)}
+        #
+        #  '<2l12B6l8L1024h'
         dataLen = 2124
         binFmt  = '<2l12B6l8L1024h'
     else:
@@ -50,32 +85,21 @@ def READ_SSFR(fname, filetype='sks1', verbose=False):
     jday_NSF   = np.zeros(iterN          , dtype=np.float64)
     jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
 
-    f           = open(fname, 'rb')
-    # read head
-    headRec   = f.read(headLen)
-    head      = struct.unpack('<B144s3B', headRec)
+    if verbose:
+        print('+' % fname)
+        print('Message [READ_SSFR]: Reading %s...' % fname)
+
+    f       = open(fname, 'rb')
+    headRec = f.read(headLen)
+    head    = struct.unpack('<B144s3B', headRec)
     if head[0] != 144:
         f.seek(0)
     else:
         comment = head[1]
 
-    if verbose:
-        print('++++++++++++++++++++++++++++++++++++++++++++++++++')
-        print('Comments in %s...' % fname.split('/')[-1])
-        print(comment)
-        print('--------------------------------------------------')
-
     # read data record
     for i in range(iterN):
         dataRec = f.read(dataLen)
-        # ---------------------------------------------------------------------------------------------------------------
-        # d9l: frac_second[d] , second[l] , minute[l] , hour[l] , day[l] , month[l] , year[l] , dow[l] , doy[l] , DST[l]
-        # d9l: frac_second0[d], second0[l], minute0[l], hour0[l], day0[l], month0[l], year0[l], dow0[l], doy0[l], DST0[l]
-        # l9d: null[l], temp(9)[9d]
-        # --------------------------          below repeat for sz, sn, iz, in          ----------------------------------
-        # l2Bl: int_time[l], shutter[B], EOS[B], null[l]
-        # 257h: spectra(257)
-        # ---------------------------------------------------------------------------------------------------------------
         data     = struct.unpack('<d9ld9ll9dl2Bl257hl2Bl257hl2Bl257hlBBl257h', dataRec)
 
         dataHead = data[:30]
