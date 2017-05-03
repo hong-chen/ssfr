@@ -31,12 +31,26 @@ def READ_SSFR(fname, filetype='sks1', verbose=False):
     #   B            :    byte or bytarr
     #   L            :    ulong
     #   h            :    intarr
+    # E.g., in IDL:
+    #   spec  = {btime:lonarr(2)   , bcdtimstp:bytarr(12),$     2l12B
+    #            intime1:long(0)   , intime2:long(0)     ,$     6l
+    #            intime3:long(0)   , intime4:long(0)     ,$
+    #            accum:long(0)     , shsw:long(0)        ,$
+    #            zsit:ulong(0)     , nsit:ulong(0)       ,$     8L
+    #            zirt:ulong(0)     , nirt:ulong(0)       ,$
+    #            zirx:ulong(0)     , nirx:ulong(0)       ,$
+    #            xt:ulong(0)       , it:ulong(0)         ,$
+    #            zspecsi:intarr(np), zspecir:intarr(np)  ,$     1024h
+    #            nspecsi:intarr(np), nspecir:intarr(np)}
+    # in Python:
+    # '<2l12B6l8L1024h'
     # ---------------------------------------------------------------------------------------------------------------
+
     filetype = filetype.lower()
     if filetype == 'sks1':
         headLen = 148
         dataLen = 2260
-        # ---------------------------------------------------------------------------------------------------------------
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         # d9l: frac_second[d] , second[l] , minute[l] , hour[l] , day[l] , month[l] , year[l] , dow[l] , doy[l] , DST[l]
         # d9l: frac_second0[d], second0[l], minute0[l], hour0[l], day0[l], month0[l], year0[l], dow0[l], doy0[l], DST0[l]
         # l9d: null[l], temp(9)[9d]
@@ -48,7 +62,7 @@ def READ_SSFR(fname, filetype='sks1', verbose=False):
     elif filetype == 'sks2':
         headLen = 148
         dataLen = 2276
-        # ---------------------------------------------------------------------------------------------------------------
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         # d9l: frac_second[d] , second[l] , minute[l] , hour[l] , day[l] , month[l] , year[l] , dow[l] , doy[l] , DST[l]
         # d9l: frac_second0[d], second0[l], minute0[l], hour0[l], day0[l], month0[l], year0[l], dow0[l], doy0[l], DST0[l]
         # l11d: null[l], temp(11)[11d]
@@ -59,19 +73,14 @@ def READ_SSFR(fname, filetype='sks1', verbose=False):
         binFmt  = '<d9ld9ll11dl2Bl257hl2Bl257hl2Bl257hlBBl257h'
     elif filetype == 'osa2':
         headLen = 0
-        #    #spec  = {btime:lonarr(2)   , bcdtimstp:bytarr(12),$     2l12B
-        #             #intime1:long(0)   , intime2:long(0)     ,$     6l
-        #             #intime3:long(0)   , intime4:long(0)     ,$
-        #             #accum:long(0)     , shsw:long(0)        ,$
-        #             #zsit:ulong(0)     , nsit:ulong(0)       ,$     8L
-        #             #zirt:ulong(0)     , nirt:ulong(0)       ,$
-        #             #zirx:ulong(0)     , nirx:ulong(0)       ,$
-        #             #xt:ulong(0)       , it:ulong(0)         ,$
-        #             #zspecsi:intarr(np), zspecir:intarr(np)  ,$     1024h
-        #             #nspecsi:intarr(np), nspecir:intarr(np)}
-        #
-        #  '<2l12B6l8L1024h'
         dataLen = 2124
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # 2l1   : btime
+        # 12B   : bcdtimstp(12)
+        # 6l    : intime1, intime2, intime3, intime4, accum, shsw
+        # 8L    : zsit, nsit, zirt, nirt, zirx, nirx, xt, it
+        # 1024h : zspecsi(256), zspecir(256), nspecsi(256), nspecir(256)
+        # ---------------------------------------------------------------------------------------------------------------
         binFmt  = '<2l12B6l8L1024h'
     else:
         exit('Error [READ_SSFR]: do not support file type "%s".' % filetype)
