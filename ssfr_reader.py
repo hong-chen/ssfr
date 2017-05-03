@@ -7,41 +7,13 @@ import datetime
 from scipy.io import readsav
 from scipy import stats
 
-def READ_SKS_ONE_V1(fname, filetype='sks', verbose=False):
-
-    filetype = filetype.lower()
-
-    if filetype == 'sks':
-        headLen = 148
-        dataLen = 2260
-        binFmt  = '<d9ld9ll9dl2Bl257hl2Bl257hl2Bl257hlBBl257h'
-    elif filetype == 'sks2':
-        headLen = 0
-        dataLen = 2124
-        binFmt  = '<d9ld9ll11dl2Bl257hl2Bl257hl2Bl257hlBBl257h'
-    elif filetype == 'osa2':
-        headLen = 0
-        dataLen = 2124
-        binFmt  = '<2l12B6l8L1024h'
+def READ_SSFR(fname, filetype='sks1', verbose=False):
 
     fileSize = os.path.getsize(fname)
-    if fileSize > headLen:
-        iterN   = (fileSize-headLen) // dataLen
-        residual = (fileSize-headLen) %  dataLen
-        if residual != 0:
-            print('Warning [READ_SKS_ONE_V1]: %s has invalid data size, return empty arrays.' % fname)
-            iterN = 0
-            comment    = []
-            spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
-            shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
-            int_time   = np.zeros((iterN, 4)     , dtype=np.float64) # integration time [ms]
-            temp       = np.zeros((iterN, 9)     , dtype=np.float64) # temperature
-            qual_flag  = np.ones(iterN           , dtype=np.int32)   # quality flag (1:good, 0:bad)
-            jday_NSF   = np.zeros(iterN          , dtype=np.float64)
-            jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
-            return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
-    else:
-        print('Warning [READ_SKS_ONE_V1]: %s has file size smaller than header, return empty arrays.' % fname)
+    iterN    = (fileSize-headLen) // dataLen
+    residual = (fileSize-headLen) %  dataLen
+    if not (fileSize>headLen and residual==0 and iterN>0):
+        print('Warning [READ_SSFR]: %s has invalid data size, return empty arrays.' % fname)
         iterN = 0
         comment    = []
         spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
@@ -52,6 +24,23 @@ def READ_SKS_ONE_V1(fname, filetype='sks', verbose=False):
         jday_NSF   = np.zeros(iterN          , dtype=np.float64)
         jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
         return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
+
+    filetype = filetype.lower()
+    if filetype == 'sks1':
+        headLen = 148
+        dataLen = 2260
+        binFmt  = '<d9ld9ll9dl2Bl257hl2Bl257hl2Bl257hlBBl257h'
+    elif filetype == 'sks2':
+        headLen = 148
+        dataLen = 2276
+        binFmt  = '<d9ld9ll11dl2Bl257hl2Bl257hl2Bl257hlBBl257h'
+    elif filetype == 'osa2':
+        headLen = 0
+        dataLen = 2124
+        binFmt  = '<2l12B6l8L1024h'
+    else:
+        exit('Error [READ_SSFR]: do not support file type "%s".' % filetype)
+
 
     spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
     shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
