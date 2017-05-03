@@ -18,15 +18,15 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
     fname = '/some/path/2015022000001.SKS'
     comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN = READ_CU_SSFR(fname, filetype='sks1', verbose=False)
 
-    comment  (str)        : comment in header
-    spectra  (numpy array): counts of Silicon and InGaAs for both zenith and nadir
-    shutter  (numpy array): shutter status
-    int_time (numpy array): integration time of Silicon and InGaAs for both zenith and nadir
-    temp (numpy array)    : temperature variables
-    jday_NSF (numpy array): julian days (w.r.t 0001-01-01) of aircraft nagivation system
-    jday_cRIO(numpy array): julian days (w.r.t 0001-01-01) of SSFR Inertial Navigation System (INS)
-    qual_flag(numpy array): quality flag
-    iterN                 : number of data record
+    comment  (str)        [N/A]    : comment in header
+    spectra  (numpy array)[N/A]    : counts of Silicon and InGaAs for both zenith and nadir
+    shutter  (numpy array)[N/A]    : shutter status (1:closed(dark), 0:open(light))
+    int_time (numpy array)[ms]     : integration time of Silicon and InGaAs for both zenith and nadir
+    temp (numpy array)    [Celsius]: temperature variables
+    jday_NSF (numpy array)[day]    : julian days (w.r.t 0001-01-01) of aircraft nagivation system
+    jday_cRIO(numpy array)[day]    : julian days (w.r.t 0001-01-01) of SSFR Inertial Navigation System (INS)
+    qual_flag(numpy array)[N/A]    : quality flag(1:good, 0:bad)
+    iterN (numpy array)   [N/A]    : number of data record
 
     Written by: Hong Chen (me@hongchen.cz)
     '''
@@ -36,8 +36,8 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
     residual = (fileSize-headLen) %  dataLen
     if not (fileSize>headLen and residual==0 and iterN>0):
         print('Warning [READ_CU_SSFR]: %s has invalid data size, return empty arrays.' % fname)
-        iterN = 0
-        comment    = []
+        iterN      = 0
+        comment    = ''
         spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
         shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
         int_time   = np.zeros((iterN, 4)     , dtype=np.float64) # integration time [ms]
@@ -46,7 +46,6 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
         jday_NSF   = np.zeros(iterN          , dtype=np.float64)
         jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
         return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
-
 
     filetype = filetype.lower()
     if filetype == 'sks1':
@@ -76,18 +75,9 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
     else:
         exit('Error [READ_SSFR]: do not support file type "%s".' % filetype)
 
-
-    spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
-    shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
-    int_time   = np.zeros((iterN, 4)     , dtype=np.float64) # integration time [ms]
-    temp       = np.zeros((iterN, 9)     , dtype=np.float64) # temperature
-    qual_flag  = np.ones(iterN           , dtype=np.int32)   # quality flag (1:good, 0:bad)
-    jday_NSF   = np.zeros(iterN          , dtype=np.float64)
-    jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
-
     if verbose:
         print('+' % fname)
-        print('Message [READ_SSFR]: Reading %s...' % fname)
+        print('Message [READ_CU_SSFR]: Reading %s...' % fname)
 
     f       = open(fname, 'rb')
     headRec = f.read(headLen)
@@ -97,10 +87,18 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
     else:
         comment = head[1]
 
+    spectra    = np.zeros((iterN, 256, 4), dtype=np.float64)
+    shutter    = np.zeros(iterN          , dtype=np.int32  )
+    int_time   = np.zeros((iterN, 4)     , dtype=np.float64)
+    temp       = np.zeros((iterN, 9)     , dtype=np.float64)
+    qual_flag  = np.ones(iterN           , dtype=np.int32)
+    jday_NSF   = np.zeros(iterN          , dtype=np.float64)
+    jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
+
     # read data record
     for i in range(iterN):
         dataRec = f.read(dataLen)
-        data     = struct.unpack('<d9ld9ll9dl2Bl257hl2Bl257hl2Bl257hlBBl257h', dataRec)
+        data     = struct.unpack(binFmt, dataRec)
 
         dataHead = data[:30]
         dataSpec = np.transpose(np.array(data[30:]).reshape((4, 261)))[:, [0, 2, 1, 3]]
@@ -114,18 +112,17 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
         if any([shutter_logic, eos_logic, null_logic, order_logic]):
             qual_flag[i] = 0
 
-        if True:
-            spectra[i, :, :]  = dataSpec[5:, :]
-            shutter[i]        = dataSpec[1, 0]
-            int_time[i, :]    = dataSpec[0, :]
-            temp[i, :]        = dataHead[21:]
+        spectra[i, :, :]  = dataSpec[5:, :]
+        shutter[i]        = dataSpec[1, 0]
+        int_time[i, :]    = dataSpec[0, :]
+        temp[i, :]        = dataHead[21:]
 
-            dtime          = datetime.datetime(dataHead[6] , dataHead[5] , dataHead[4] , dataHead[3] , dataHead[2] , dataHead[1] , int(round(dataHead[0]*1000000.0)))
-            dtime0         = datetime.datetime(dataHead[16], dataHead[15], dataHead[14], dataHead[13], dataHead[12], dataHead[11], int(round(dataHead[10]*1000000.0)))
+        dtime          = datetime.datetime(dataHead[6] , dataHead[5] , dataHead[4] , dataHead[3] , dataHead[2] , dataHead[1] , int(round(dataHead[0]*1000000.0)))
+        dtime0         = datetime.datetime(dataHead[16], dataHead[15], dataHead[14], dataHead[13], dataHead[12], dataHead[11], int(round(dataHead[10]*1000000.0)))
 
-            # calculate the proleptic Gregorian ordinal of the date
-            jday_NSF[i]    = (dtime  - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
-            jday_cRIO[i]   = (dtime0 - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
+        # calculate the proleptic Gregorian ordinal of the date
+        jday_NSF[i]    = (dtime  - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
+        jday_cRIO[i]   = (dtime0 - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
 
     return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
 
