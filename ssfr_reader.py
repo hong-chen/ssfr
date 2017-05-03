@@ -82,10 +82,7 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
     f       = open(fname, 'rb')
     headRec = f.read(headLen)
     head    = struct.unpack('<B144s3B', headRec)
-    if head[0] != 144:
-        f.seek(0)
-    else:
-        comment = head[1]
+    comment = head[1]
 
     spectra    = np.zeros((iterN, 256, 4), dtype=np.float64)
     shutter    = np.zeros(iterN          , dtype=np.int32  )
@@ -124,6 +121,8 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
         jday_NSF[i]    = (dtime  - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
         jday_cRIO[i]   = (dtime0 - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
 
+    if verbose:
+        print('-' % fname)
     return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
 
 def READ_NASA_SSFR(fname, filetype='sks1', verbose=False):
