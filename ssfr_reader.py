@@ -7,19 +7,22 @@ import datetime
 from scipy.io import readsav
 from scipy import stats
 
-def READ_SKS_ONE_V1(fname, headLen=148, dataLen=2260, verbose=False):
+def READ_SKS_ONE_V1(fname, filetype='sks', verbose=False):
 
-    filename  = fname.split('/')[-1]
-    filetype  = filename.split('.')[-1].lower()
+    filetype = filetype.lower()
 
     if filetype == 'sks':
         headLen = 148
         dataLen = 2260
         binFmt  = '<d9ld9ll9dl2Bl257hl2Bl257hl2Bl257hlBBl257h'
-    elif filetype == ''
-        headLen = 148
-        dataLen = 2276
+    elif filetype == 'sks2':
+        headLen = 0
+        dataLen = 2124
         binFmt  = '<d9ld9ll11dl2Bl257hl2Bl257hl2Bl257hlBBl257h'
+    elif filetype == 'osa2':
+        headLen = 0
+        dataLen = 2124
+        binFmt  = '<2l12B6l8L1024h'
 
     fileSize = os.path.getsize(fname)
     if fileSize > headLen:
