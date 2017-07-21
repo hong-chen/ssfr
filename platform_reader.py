@@ -9,6 +9,7 @@ from scipy import stats
 import pysolar
 
 # ++++++++++++++++++++++++    for .plt3 files   ++++++++++++++++++++++++++++++
+
 def READ_PLT3_ONE_V1(fname, vnames=None, dataLen=248, verbose=False):
 
     fileSize = os.path.getsize(fname)
@@ -89,40 +90,6 @@ class READ_PLT3:
         if type(fnames) is not list:
             exit('Error [READ_PLT3]: input variable "fnames" should be in list type.')
 
-        # vnames_dict  = {                    \
-        #                 'Computer_Hour':0,  \
-        #               'Computer_Minute':1,  \
-        #               'Computer_Second':2,  \
-        #                      'GPS_Time':3,  \
-        #                      'GPS_Week':4,  \
-        #                'Velocity_North':5,  \
-        #                 'Velocity_East':6,  \
-        #                   'Velocity_Up':7,  \
-        #                         'Pitch':8,  \
-        #                          'Roll':9,  \
-        #                      'Latitude':10, \
-        #                     'Longitude':11, \
-        #                        'Height':12, \
-        #               'Span_CPT_Status':13, \
-        #                   'Motor_Pitch':14, \
-        #                    'Motor_Roll':15, \
-        #      'Inclinometer_Temperature':16, \
-        #        'Motor_Roll_Temperature':17, \
-        #       'Motor_Pitch_Temperature':18, \
-        #             'Stage_Temperature':19, \
-        #             'Relative_Humidity':20, \
-        #           'Chassis_Temperature':21, \
-        #                'System_Voltage':22, \
-        #                    'ARINC_Roll':23, \
-        #                   'ARINC_Pitch':24, \
-        #     'Inclinometer_Roll_Voltage':25, \
-        #    'Inclinometer_Pitch_Voltage':26, \
-        #             'Inclinometer_Roll':27, \
-        #            'Inclinometer_Pitch':28, \
-        #                'Reference_Roll':29, \
-        #               'Reference_Pitch':30  \
-        #               }
-
         vnames=['GPS_Time', 'Span_CPT_Pitch', 'Span_CPT_Roll', 'Motor_Pitch', 'Motor_Roll', 'Longitude', 'Latitude', 'Height', 'ARINC_Pitch', 'ARINC_Roll', 'Inclinometer_Pitch', 'Inclinometer_Roll']
         Nx         = Ndata * len(fnames)
         dataAll    = np.zeros((Nx, len(vnames)), dtype=np.float64)
@@ -152,6 +119,22 @@ class READ_PLT3:
         self.ang_rol_a   = dataAll[:, 9]
         self.ang_pit_i   = dataAll[:, 10]# accelerometer pitch/roll
         self.ang_rol_i   = dataAll[:, 11]
+
+        # logic = (self.tmhr>42.0) & (self.lon>=-180.0) & (self.lon<=360.0) & (self.lat>=-90.0) & (self.lat<=90.0)
+        logic = (self.tmhr>0.0) & (self.lon>=-180.0) & (self.lon<=360.0) & (self.lat>=-90.0) & (self.lat<=90.0)
+        self.tmhr        = self.tmhr[logic]
+        self.ang_pit     = self.ang_pit[logic]
+        self.ang_rol     = self.ang_rol[logic]
+        self.ang_pit_m   = self.ang_pit_m[logic]
+        self.ang_rol_m   = self.ang_rol_m[logic]
+        self.lon         = self.lon[logic]
+        self.lat         = self.lat[logic]
+        self.alt         = self.alt[logic]
+        self.ang_pit_a   = self.ang_pit_a[logic]
+        self.ang_rol_a   = self.ang_rol_a[logic]
+        self.ang_pit_i   = self.ang_pit_i[logic]
+        self.ang_rol_i   = self.ang_rol_i[logic]
+
 # ----------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -166,13 +149,14 @@ if __name__ == '__main__':
     fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Integration/2017/Test Flights/data/20170717/platform/*.plt3'))
     # fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Integration/2017/Test Flights/data/20170717/platform/*.plt3'))
     plat    = READ_PLT3(fnames)
-    exit()
 
 
     # figure settings
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(111)
-    ax1.scatter(np.arange(plat.tmhr.size), plat.tmhr, s=1, c='k')
+    # ax1.scatter(plat.tmhr, plat.ang_rol, s=0.1, c='r')
+    # ax1.scatter(plat.tmhr, plat.ang_rol_m+0.3, s=0.1, c='b')
+    ax1.scatter(plat.lon, plat.lat, s=0.1, c='r')
     plt.savefig('test.png')
     plt.show()
 
