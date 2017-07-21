@@ -14,8 +14,9 @@ def READ_PLT3_ONE_V1(fname, vnames=None, dataLen=248, verbose=False):
     fileSize = os.path.getsize(fname)
     if fileSize > dataLen:
         iterN    = fileSize // dataLen
-        residual = fileSize%  dataLen
+        residual = fileSize %  dataLen
         if residual != 0:
+            print(residual)
             print('Warning [READ_PLT3_ONE_V1]: %s has invalid data size.' % fname)
     else:
         exit('Error [READ_PLT3_ONE_V1]: %s has invalid file size.' % fname)
@@ -29,8 +30,8 @@ def READ_PLT3_ONE_V1(fname, vnames=None, dataLen=248, verbose=False):
                    'Velocity_North':5,  \
                     'Velocity_East':6,  \
                       'Velocity_Up':7,  \
-                            'Pitch':8,  \
-                             'Roll':9,  \
+                   'Span_CPT_Pitch':8,  \
+                    'Span_CPT_Roll':9,  \
                          'Latitude':10, \
                         'Longitude':11, \
                            'Height':12, \
@@ -122,14 +123,13 @@ class READ_PLT3:
         #               'Reference_Pitch':30  \
         #               }
 
-        vnames=['GPS_Time', 'Pitch', 'Roll', 'Motor_Pitch', 'Motor_Roll', 'Longitude', 'Latitude', 'Height', 'ARINC_Pitch', 'ARINC_Roll', 'Inclinometer_Pitch', 'Inclinometer_Roll']
+        vnames=['GPS_Time', 'Span_CPT_Pitch', 'Span_CPT_Roll', 'Motor_Pitch', 'Motor_Roll', 'Longitude', 'Latitude', 'Height', 'ARINC_Pitch', 'ARINC_Roll', 'Inclinometer_Pitch', 'Inclinometer_Roll']
         Nx         = Ndata * len(fnames)
         dataAll    = np.zeros((Nx, len(vnames)), dtype=np.float64)
 
         Nstart = 0
         for fname in fnames:
             dataAll0 = READ_PLT3_ONE_V1(fname, vnames=vnames, dataLen=248, verbose=False)
-            print(dataAll0.shape)
             Nend = Nstart + dataAll0.shape[0]
             dataAll[Nstart:Nend, ...]  = dataAll0
             Nstart = Nend
@@ -152,7 +152,6 @@ class READ_PLT3:
         self.ang_rol_a   = dataAll[:, 9]
         self.ang_pit_i   = dataAll[:, 10]# accelerometer pitch/roll
         self.ang_rol_i   = dataAll[:, 11]
-
 # ----------------------------------------------------------------------------
 
 if __name__ == '__main__':
@@ -164,9 +163,11 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from matplotlib import rcParams
 
-    fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Integration/2017/Test Flights/data/20170716/platform/*.plt3'))
+    fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Integration/2017/Test Flights/data/20170717/platform/*.plt3'))
     # fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Integration/2017/Test Flights/data/20170717/platform/*.plt3'))
     plat    = READ_PLT3(fnames)
+    exit()
+
 
     # figure settings
     fig = plt.figure(figsize=(8, 6))
