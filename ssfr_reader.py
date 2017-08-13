@@ -132,6 +132,7 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
     return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
 
 def READ_NASA_SSFR(fname, filetype='osa2', verbose=False):
+
     fileSize = os.path.getsize(fname)
     iterN    = (fileSize-headLen) // dataLen
     residual = (fileSize-headLen) %  dataLen
