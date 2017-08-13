@@ -131,13 +131,23 @@ def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
         print('-' % fname)
     return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
 
-def READ_NASA_SSFR(fname, filetype='osa2', verbose=False):
+def READ_NASA_SSFR(fname, filetype='osa2', headLen=0, dataLen=2124, verbose=False):
 
     fileSize = os.path.getsize(fname)
     iterN    = (fileSize-headLen) // dataLen
     residual = (fileSize-headLen) %  dataLen
     if not (fileSize>headLen and residual==0 and iterN>0):
         print('Warning [READ_NASA_SSFR]: %s has invalid data size, return empty arrays.' % fname)
+        iterN      = 0
+        comment    = ''
+        spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
+        shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
+        int_time   = np.zeros((iterN, 4)     , dtype=np.float64) # integration time [ms]
+        temp       = np.zeros((iterN, 9)     , dtype=np.float64) # temperature
+        qual_flag  = np.ones(iterN           , dtype=np.int32)   # quality flag (1:good, 0:bad)
+        jday_NSF   = np.zeros(iterN          , dtype=np.float64)
+        jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
+        return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
 
     filetype = filetype.lower()
     if filetype == 'osa2':
@@ -151,12 +161,68 @@ def READ_NASA_SSFR(fname, filetype='osa2', verbose=False):
         # 1024h : zspecsi(256), zspecir(256), nspecsi(256), nspecir(256)
         # ---------------------------------------------------------------------------------------------------------------
         binFmt  = '<2l12B6l8L1024h'
-    else:
-        exit('Error [READ_NASA_SSFR]: do not support file type "%s".' % filetype)
 
-    return
+        spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
+        shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
+        int_time   = np.zeros((iterN, 4)     , dtype=np.float64) # integration time [ms]
+        temp       = np.zeros((iterN, 8)     , dtype=np.float64) # temperature
+        qual_flag  = np.ones(iterN           , dtype=np.int32)   # quality flag (1:good, 0:bad)
+        jday       = np.zeros(iterN          , dtype=np.float64)
+
+        f           = open(fname, 'rb')
+
+        # +++++++++++++++++++++++++++ read head ++++++++++++++++++++++++++++++
+        if headLen > 0:
+            headRec   = f.read(headLen)
+        # --------------------------------------------------------------------
+
+        # read data record
+        for i in range(iterN):
+            dataRec = f.read(dataLen)
+
+            data     = struct.unpack(binFmt, dataRec)
+
+            dataSpec = np.transpose(np.array(data[28:]).reshape((4, 256)))
+            # 0, 1, 2, 3 represent 'sz, iz, sn, in'
+            # transpose: change shape from (4, 256) to (256, 4)
+
+            if True:
+                spectra[i, :, :]  = dataSpec
+                shutter[i]        = data[19]
+                int_time[i, :]    = np.array(data[14:18])
+                temp[i, :]        = np.array(data[20:28])
+
+                # calculate the proleptic Gregorian ordinal of the date
+                dtime      = datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=data[0])
+                jday[i]    = (dtime  - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
+
+    return spectra, shutter, int_time, temp, jday, qual_flag, iterN
 
 if __name__ == '__main__':
+
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FixedLocator
+    from mpl_toolkits.basemap import Basemap
+
+    fname = '/Users/hoch4240/Google Drive/CU LASP/ORACLES/Data/ORACLES 2017/p3/20170812/SSFR/spc01581.OSA2'
+    spectra, shutter, int_time, temp, jday, qual_flag, iterN = READ_NASA_SSFR(fname)
+
+    print(spectra.shape)
+
+    # figure settings
+    fig = plt.figure(figsize=(8, 6))
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(np.arange(256), spectra[10, :, 1])
+    # ax1.legend(loc='best', fontsize=12, framealpha=0.4)
+    plt.show()
+
+    exit()
+
+
+
+
+
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # python         :          IDL
     #   l            :    long or lonarr
