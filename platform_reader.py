@@ -8,8 +8,6 @@ from scipy.io import readsav
 from scipy import stats
 import pysolar
 
-# ++++++++++++++++++++++++    for .plt3 files   ++++++++++++++++++++++++++++++
-
 def READ_PLT3_ONE_V1(fname, vnames=None, dataLen=248, verbose=False):
 
     fileSize = os.path.getsize(fname)
@@ -17,7 +15,6 @@ def READ_PLT3_ONE_V1(fname, vnames=None, dataLen=248, verbose=False):
         iterN    = fileSize // dataLen
         residual = fileSize %  dataLen
         if residual != 0:
-            print(residual)
             print('Warning [READ_PLT3_ONE_V1]: %s has invalid data size.' % fname)
     else:
         exit('Error [READ_PLT3_ONE_V1]: %s has invalid file size.' % fname)
@@ -85,6 +82,7 @@ def READ_PLT3_ONE_V1(fname, vnames=None, dataLen=248, verbose=False):
     return dataAll
 
 class READ_PLT3:
+
     def __init__(self, fnames, Ndata=15000, secOffset=0.0):
 
         if type(fnames) is not list:
@@ -121,7 +119,7 @@ class READ_PLT3:
         self.ang_rol_i   = dataAll[:, 11]
 
         # logic = (self.tmhr>42.0) & (self.lon>=-180.0) & (self.lon<=360.0) & (self.lat>=-90.0) & (self.lat<=90.0)
-        logic = (self.tmhr>0.0) & (self.lon>=-180.0) & (self.lon<=360.0) & (self.lat>=-90.0) & (self.lat<=90.0)
+        logic = (self.tmhr>1.0) & (self.lon>=-180.0) & (self.lon<=360.0) & (self.lat>=-90.0) & (self.lat<=90.0)
         self.tmhr        = self.tmhr[logic]
         self.ang_pit     = self.ang_pit[logic]
         self.ang_rol     = self.ang_rol[logic]
@@ -135,7 +133,41 @@ class READ_PLT3:
         self.ang_pit_i   = self.ang_pit_i[logic]
         self.ang_rol_i   = self.ang_rol_i[logic]
 
-# ----------------------------------------------------------------------------
+def CAL_SOLAR_ANGLES(julian_day, longitude, latitude, altitude):
+
+    dateRef = datetime.datetime(1, 1, 1)
+    jdayRef = 1.0
+
+    sza = np.zeros_like(julian_day)
+    saa = np.zeros_like(julian_day)
+
+    for i, jday in enumerate(julian_day):
+
+        dtime_i = (dateRef + datetime.timedelta(days=jday-jdayRef)).replace(tzinfo=datetime.timezone.utc)
+
+        sza_i = 90.0 - pysolar.solar.get_altitude(latitude[i], longitude[i], dtime_i, elevation=altitude[i])
+        if sza_i < 0.0 or sza_i > 90.0:
+            sza_i = np.nan
+        sza[i] = sza_i
+
+        saa_i = pysolar.solar.get_azimuth(latitude[i], longitude[i], dtime_i, elevation=altitude[i])
+        if saa_i >= 0.0:
+            if 0.0<=saa_i<=180.0:
+                saa_i = 180.0 - saa_i
+            elif 180.0<saa_i<=360.0:
+                saa_i = 540.0 - saa_i
+            else:
+                saa_i = np.nan
+        elif saa_i < 0.0:
+            if -180.0<=saa_i<0.0:
+                saa_i = -saa_i + 180.0
+            elif -360.0<=saa_i<-180.0:
+                saa_i = -saa_i - 180.0
+            else:
+                saa_i = np.nan
+        saa[i] = saa_i
+
+    return sza, saa
 
 if __name__ == '__main__':
 
@@ -146,7 +178,22 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from matplotlib import rcParams
 
-    fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Integration/2017/Test Flights/data/20170717/platform/*.plt3'))
+    julian_day = np.linspace(736554.0, 736555.0, 100)
+    longitude  = np.repeat(0.332889, 100)
+    latitude   = np.repeat(6.741197, 100)
+    altitude   = np.repeat(0.0, 100)
+
+    sza, saa = CAL_SOLAR_ANGLES(julian_day, longitude, latitude, altitude)
+    # figure settings
+    fig = plt.figure(figsize=(8, 6))
+    ax1 = fig.add_subplot(111)
+    ax1.scatter((julian_day-736554.0)*24.0, sza)
+    # ax1.legend(loc='best', fontsize=12, framealpha=0.4)
+    plt.show()
+    exit()
+
+    fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Data/ORACLES 2017/p3/20170812/ALP/*.plt3'))
+    # fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Integration/2017/Test Flights/data/20170717/platform/*.plt3'))
     # fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Integration/2017/Test Flights/data/20170717/platform/*.plt3'))
     plat    = READ_PLT3(fnames)
 
@@ -155,9 +202,8 @@ if __name__ == '__main__':
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(111)
     # ax1.scatter(plat.tmhr, plat.ang_rol, s=0.1, c='r')
-    # ax1.scatter(plat.tmhr, plat.ang_rol_m+0.3, s=0.1, c='b')
-    ax1.scatter(plat.lon, plat.lat, s=0.1, c='r')
-    plt.savefig('test.png')
+    ax1.scatter(plat.tmhr, plat.ang_rol_m+0.3, s=0.1, c='b')
+    # ax1.scatter(plat.lon, plat.lat, s=0.1, c='r')
     plt.show()
 
     exit()
