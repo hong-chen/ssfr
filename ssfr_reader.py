@@ -7,7 +7,7 @@ import datetime
 from scipy.io import readsav
 from scipy import stats
 
-def READ_CU_SSFR(fname, filetype='sks1', verbose=False):
+def READ_CU_SSFR(fname, filetype='sks1', headLen=148, dataLen=2260, verbose=False):
 
     '''
     Description:
@@ -218,10 +218,6 @@ if __name__ == '__main__':
     plt.show()
 
     exit()
-
-
-
-
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # python         :          IDL
