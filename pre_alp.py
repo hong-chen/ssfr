@@ -169,7 +169,20 @@ def CAL_SOLAR_ANGLES(julian_day, longitude, latitude, altitude):
 
     return sza, saa
 
+def READ_ICT(fname):
+    f = open(fname, 'r')
+    firstLine = f.readline()
+    f.close()
+
+    skip_header = int(firstLine.split(',')[0])
+
+
+
 if __name__ == '__main__':
+
+    fname = '/Users/hoch4240/Chen/work/07_ORACLES-2/cal/data/p3/20170813/Hskping_P3_20170813_R0.ict'
+    READ_ICT(fname)
+    exit()
 
     import matplotlib as mpl
     #mpl.use('Agg')
