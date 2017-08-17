@@ -121,6 +121,7 @@ class READ_PLT3:
         # logic = (self.tmhr>42.0) & (self.lon>=-180.0) & (self.lon<=360.0) & (self.lat>=-90.0) & (self.lat<=90.0)
         logic = (self.tmhr>1.0) & (self.lon>=-180.0) & (self.lon<=360.0) & (self.lat>=-90.0) & (self.lat<=90.0)
         self.tmhr        = self.tmhr[logic]
+        self.tmhr_corr   = self.tmhr_corr[logic]
         self.ang_pit     = self.ang_pit[logic]
         self.ang_rol     = self.ang_rol[logic]
         self.ang_pit_m   = self.ang_pit_m[logic]
@@ -169,20 +170,39 @@ def CAL_SOLAR_ANGLES(julian_day, longitude, latitude, altitude):
 
     return sza, saa
 
-def READ_ICT(fname):
-    f = open(fname, 'r')
-    firstLine = f.readline()
-    f.close()
+class READ_ICT_HSK:
 
-    skip_header = int(firstLine.split(',')[0])
+    def __init__(self, fname):
 
+        f = open(fname, 'r')
+        firstLine = f.readline()
+        skip_header = int(firstLine.split(',')[0])
 
+        vnames = []
+        units  = []
+        for i in range(7):
+            f.readline()
+        vname0, unit0 = f.readline().split(',')
+        vnames.append(vname0.strip())
+        units.append(unit0.strip())
+        Nvar = int(f.readline())
+        for i in range(2):
+            f.readline()
+        for i in range(Nvar):
+            vname0, unit0 = f.readline().split(',')
+            vnames.append(vname0.strip())
+            units.append(unit0.strip())
+        f.close()
+
+        data = np.genfromtxt(fname, skip_header=skip_header, delimiter=',')
+
+        self.data = {}
+
+        for i, vname in enumerate(vnames):
+            self.data[vname] = data[:, i]
 
 if __name__ == '__main__':
 
-    fname = '/Users/hoch4240/Chen/work/07_ORACLES-2/cal/data/p3/20170813/Hskping_P3_20170813_R0.ict'
-    READ_ICT(fname)
-    exit()
 
     import matplotlib as mpl
     #mpl.use('Agg')
@@ -190,6 +210,21 @@ if __name__ == '__main__':
     import matplotlib.gridspec as gridspec
     import matplotlib.pyplot as plt
     from matplotlib import rcParams
+
+    fname = '/Users/hoch4240/Chen/work/07_ORACLES-2/cal/data/p3/20170815/Hskping_P3_20170815_R0.ict'
+    hsk = READ_ICT_HSK(fname)
+
+    fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Data/ORACLES 2017/p3/20170815/ALP/*.plt3'))
+    alp = READ_PLT3(fnames)
+
+    # figure settings
+    fig = plt.figure(figsize=(8, 6))
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(hsk.data['Start_UTC']/3600.0, hsk.data['MSL_GPS_Altitude']/1000.0, label='Aircraft', s=1)
+    ax1.scatter(alp.tmhr_corr, alp.alt/1000.0, label='ALP', s=1, c='r')
+    # ax1.legend(loc='best', fontsize=12, framealpha=0.4)
+    plt.show()
+    exit()
 
     julian_day = np.linspace(736554.0, 736555.0, 100)
     longitude  = np.repeat(0.332889, 100)
