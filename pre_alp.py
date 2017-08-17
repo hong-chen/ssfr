@@ -118,10 +118,13 @@ class READ_PLT3:
         self.ang_pit_i   = dataAll[:, 10]# accelerometer pitch/roll
         self.ang_rol_i   = dataAll[:, 11]
 
-        # logic = (self.tmhr>42.0) & (self.lon>=-180.0) & (self.lon<=360.0) & (self.lat>=-90.0) & (self.lat<=90.0)
         logic = (self.tmhr>1.0) & (self.lon>=-180.0) & (self.lon<=360.0) & (self.lat>=-90.0) & (self.lat<=90.0)
         self.tmhr        = self.tmhr[logic]
         self.tmhr_corr   = self.tmhr_corr[logic]
+        while self.tmhr[0] > 24.0:
+            self.tmhr -= 24.0
+            self.tmhr_corr -=24.0
+
         self.ang_pit     = self.ang_pit[logic]
         self.ang_rol     = self.ang_rol[logic]
         self.ang_pit_m   = self.ang_pit_m[logic]
@@ -199,6 +202,7 @@ class READ_ICT_HSK:
         self.data = {}
 
         for i, vname in enumerate(vnames):
+            print(vname)
             self.data[vname] = data[:, i]
 
 if __name__ == '__main__':
@@ -221,7 +225,9 @@ if __name__ == '__main__':
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(111)
     ax1.scatter(hsk.data['Start_UTC']/3600.0, hsk.data['MSL_GPS_Altitude']/1000.0, label='Aircraft', s=1)
+    # ax1.scatter(hsk.data['Start_UTC']/3600.0, hsk.data['True_Heading'], label='Aircraft', s=1)
     ax1.scatter(alp.tmhr_corr, alp.alt/1000.0, label='ALP', s=1, c='r')
+    # ax1.scatter(alp.tmhr_corr, alp.ang_hed, label='ALP', s=1, c='r')
     # ax1.legend(loc='best', fontsize=12, framealpha=0.4)
     plt.show()
     exit()
