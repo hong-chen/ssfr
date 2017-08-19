@@ -215,18 +215,18 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from matplotlib import rcParams
 
-    fname = '/Users/hoch4240/Chen/work/07_ORACLES-2/cal/data/p3/20170815/Hskping_P3_20170815_R0.ict'
+    fname = '/Users/hoch4240/Chen/work/07_ORACLES-2/cal/data/p3/20170813/Hskping_P3_20170813_R0.ict'
     hsk = READ_ICT_HSK(fname)
 
-    fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Data/ORACLES 2017/p3/20170815/ALP/*.plt3'))
-    alp = READ_PLT3(fnames)
+    # fnames = sorted(glob.glob('/Users/hoch4240/Google Drive/CU LASP/ORACLES/Data/ORACLES 2017/p3/20170815/ALP/*.plt3'))
+    # alp = READ_PLT3(fnames)
 
     # figure settings
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(111)
     ax1.scatter(hsk.data['Start_UTC']/3600.0, hsk.data['MSL_GPS_Altitude']/1000.0, label='Aircraft', s=1)
     # ax1.scatter(hsk.data['Start_UTC']/3600.0, hsk.data['True_Heading'], label='Aircraft', s=1)
-    ax1.scatter(alp.tmhr_corr, alp.alt/1000.0, label='ALP', s=1, c='r')
+    # ax1.scatter(alp.tmhr_corr, alp.alt/1000.0, label='ALP', s=1, c='r')
     # ax1.scatter(alp.tmhr_corr, alp.ang_hed, label='ALP', s=1, c='r')
     # ax1.legend(loc='best', fontsize=12, framealpha=0.4)
     plt.show()
