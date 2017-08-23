@@ -213,7 +213,7 @@ if __name__ == '__main__':
     # figure settings
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(111)
-    ax1.scatter(np.arange(256), spectra[10, :, 1])
+    ax1.scatter(np.arange(256), spectra[10, :, 0])
     # ax1.legend(loc='best', fontsize=12, framealpha=0.4)
     plt.show()
 
@@ -239,4 +239,3 @@ if __name__ == '__main__':
     # in Python:
     # '<2l12B6l8L1024h'
     # ---------------------------------------------------------------------------------------------------------------
-    pass
