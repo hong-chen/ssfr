@@ -913,4 +913,4 @@ if __name__ == '__main__':
 
     # MULTI_FUSE(data_sks)
 
-    PLT_FUSE([data_sks, 70], testMode=True)
+    SSFR_FRAME([data_sks, 70], testMode=True)
