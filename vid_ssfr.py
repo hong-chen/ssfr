@@ -881,6 +881,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
     # ax4.get_yaxis().get_major_formatter().set_useOffset(False)
 
     if testMode:
+        plt.savefig('test.png')
         plt.show()
         exit()
     else:
