@@ -909,7 +909,8 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from matplotlib import rcParams
 
-    fnames = sorted(glob.glob('data/20180104/sat_test_s600i600/*.SKS'))
+    # fnames = sorted(glob.glob('data/20180104/sat_test_s600i600/*.SKS'))
+    fnames = sorted(glob.glob('data/20180104/cal_test_amesLC/*.SKS'))
     data_sks = READ_SKS(fnames)
 
     # MULTI_FUSE(data_sks)
