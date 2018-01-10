@@ -219,22 +219,22 @@ class READ_SKS:
                     else:
                         interp_x  = np.append(self.tmhr_corr[darkLL:darkLR], self.tmhr_corr[darkRL:darkRR])
                         if i==darkL.size-2:
-                            target_x  = self.tmhr_corr[darkLL:darkRR]
+                            target_x  = self.tmhr_corr[darkL[i]:darkR[i+1]]
                         else:
-                            target_x  = self.tmhr_corr[darkLL:darkRL]
+                            target_x  = self.tmhr_corr[darkL[i]:darkL[i+1]]
 
                         for ichan in range(Nchannel):
                             for isen in range(Nsensor):
                                 interp_y = np.append(self.spectra[darkLL:darkLR,ichan,isen], self.spectra[darkRL:darkRR,ichan,isen])
                                 slope, intercept, r_value, p_value, std_err  = stats.linregress(interp_x, interp_y)
                                 if i==darkL.size-2:
-                                    self.dark_offset[darkLL:darkRR, ichan, isen] = target_x*slope + intercept
-                                    self.spectra_dark_corr[darkLL:darkRR, ichan, isen] -= self.dark_offset[darkLL:darkRR, ichan, isen]
-                                    self.dark_std[darkLL:darkRR, ichan, isen] = np.std(interp_y)
+                                    self.dark_offset[darkL[i]:darkR[i+1], ichan, isen] = target_x*slope + intercept
+                                    self.spectra_dark_corr[darkL[i]:darkR[i+1], ichan, isen] -= self.dark_offset[darkL[i]:darkR[i+1], ichan, isen]
+                                    self.dark_std[darkL[i]:darkR[i+1], ichan, isen] = np.std(interp_y)
                                 else:
-                                    self.dark_offset[darkLL:darkRL, ichan, isen] = target_x*slope + intercept
-                                    self.spectra_dark_corr[darkLL:darkRL, ichan, isen] -= self.dark_offset[darkLL:darkRL, ichan, isen]
-                                    self.dark_std[darkLL:darkRL, ichan, isen] = np.std(interp_y)
+                                    self.dark_offset[darkL[i]:darkL[i+1], ichan, isen] = target_x*slope + intercept
+                                    self.spectra_dark_corr[darkL[i]:darkL[i+1], ichan, isen] -= self.dark_offset[darkL[i]:darkL[i+1], ichan, isen]
+                                    self.dark_std[darkL[i]:darkL[i+1], ichan, isen] = np.std(interp_y)
 
                 else:
                     self.shutter[darkL[i]:darkR[i+1]] = fillValue
@@ -398,7 +398,6 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
     ax_temp_ts_1.spines['bottom'].set_visible(False)
     ax_temp_ts_1.xaxis.tick_top()
     ax_temp_ts_1.tick_params(labeltop='off')
-
     # -
 
     # +
@@ -489,64 +488,91 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
     ax_dark_nad_si = fig.add_subplot(gs_counts_ts[1, 2])
     ax_dark_nad_in = fig.add_subplot(gs_counts_ts[1, 3])
 
-    logic = (data_sks.shutter==0) | (data_sks.shutter==1)
+    logic_0 = (data_sks.shutter==0) | (data_sks.shutter==1)
+    logic_1 = (data_sks.shutter_ori==0) & (data_sks.shutter!=0)
 
-    ylims_min = np.zeros(4)
-    ylims_max = np.zeros(4)
+    ylims_min_0 = np.zeros(4)
+    ylims_max_0 = np.zeros(4)
+    ylims_min_1 = np.zeros(4)
+    ylims_max_1 = np.zeros(4)
     for ii in range(4):
-        unit = 20 * ((((data_sks.dark_offset[logic, :, ii]).max()-(data_sks.dark_offset[logic, :, ii]).min())/10) // 20 + 1)
-        ylims_min[ii] = unit * (np.min(data_sks.dark_offset[logic, :, ii])//unit)
-        ylims_max[ii] = unit * (np.max(data_sks.dark_offset[logic, :, ii])//unit + 1)
-        if ((ylims_max[ii]-(data_sks.dark_offset[logic, :, ii]).max())<((data_sks.dark_offset[logic, :, ii]).min()-ylims_min[ii])):
-            ylims_max[ii] += unit
+        unit_0 = 20 * ((((data_sks.dark_offset[logic_0, :, ii]).max()-(data_sks.dark_offset[logic_0, :, ii]).min())/10) // 20 + 1)
+        ylims_min_0[ii] = unit_0 * (np.min(data_sks.dark_offset[logic_0, :, ii])//unit_0)
+        ylims_max_0[ii] = unit_0 * (np.max(data_sks.dark_offset[logic_0, :, ii])//unit_0 + 1)
+        if ((ylims_max_0[ii]-(data_sks.dark_offset[logic_0, :, ii]).max())<((data_sks.dark_offset[logic_0, :, ii]).min()-ylims_min_0[ii])):
+            ylims_max_0[ii] += unit_0
+
+        unit_1 = 20 * ((((data_sks.spectra[logic_1, :, ii]).max()-(data_sks.spectra[logic_1, :, ii]).min())/10) // 20 + 1)
+        ylims_min_1[ii] = unit_1 * (np.min(data_sks.spectra[logic_1, :, ii])//unit_1)
+        ylims_max_1[ii] = unit_1 * (np.max(data_sks.spectra[logic_1, :, ii])//unit_1 + 1)
+        if ((ylims_max_1[ii]-(data_sks.spectra[logic_1, :, ii]).max())<((data_sks.spectra[logic_1, :, ii]).min()-ylims_min_1[ii])):
+            ylims_max_1[ii] += unit_1
 
     xx = np.arange(256) + 1
-    if logic[index]:
+
+    ax_dark_zen_si.set_xlim((1, 256))
+    ax_dark_zen_si.set_xticklabels([])
+    ax_dark_zen_si.tick_params(axis='both', which='major', labelsize=8)
+    ax_dark_zen_si.axvline(100, ls='--', color='gray', lw=1.0)
+
+    ax_dark_zen_in.set_xlim((1, 256))
+    ax_dark_zen_in.set_xticklabels([])
+    ax_dark_zen_in.tick_params(axis='both', which='major', labelsize=8)
+    ax_dark_zen_in.axvline(100, ls='--', color='gray', lw=1.0)
+
+    ax_dark_nad_si.set_xlim((1, 256))
+    ax_dark_nad_si.set_xticklabels([])
+    ax_dark_nad_si.tick_params(axis='both', which='major', labelsize=8)
+    ax_dark_nad_si.axvline(100, ls='--', color='gray', lw=1.0)
+
+    ax_dark_nad_in.set_xlim((1, 256))
+    ax_dark_nad_in.set_xticklabels([])
+    ax_dark_nad_in.tick_params(axis='both', which='major', labelsize=8)
+    ax_dark_nad_in.axvline(100, ls='--', color='gray', lw=1.0)
+
+    if not (data_sks.shutter_ori[index]==0 and data_sks.shutter[index]!=0):
 
         ax_dark_zen_si.plot(xx, data_sks.dark_offset[index, :, 0], color='k', zorder=0)
-        ax_dark_zen_si.axvline(100, ls='--', color='gray', lw=1.0)
-        if data_sks.shutter[index] == 1:
+        if data_sks.shutter_ori[index] == 1:
             ax_dark_zen_si.scatter(xx, data_sks.spectra[index, :, 0], c='b', s=3, zorder=1)
-        ax_dark_zen_si.set_xlim((1, 256))
-        ax_dark_zen_si.set_ylim([ylims_min[0], ylims_max[0]])
         ax_dark_zen_si.set_title('Dark of Zen. Si.', color='Red')
-        ax_dark_zen_si.set_xticklabels([])
-        ax_dark_zen_si.tick_params(axis='both', which='major', labelsize=6)
 
         ax_dark_zen_in.plot(xx, data_sks.dark_offset[index, :, 1], color='k', zorder=0)
-        ax_dark_zen_in.axvline(100, ls='--', color='gray', lw=1.0)
-        if data_sks.shutter[index] == 1:
+        if data_sks.shutter_ori[index] == 1:
             ax_dark_zen_in.scatter(xx, data_sks.spectra[index, :, 1], c='b', s=3, zorder=1)
-        ax_dark_zen_in.set_xlim((1, 256))
-        ax_dark_zen_in.set_ylim([ylims_min[1], ylims_max[1]])
         ax_dark_zen_in.set_title('Dark of Zen. In.', color='Salmon')
-        ax_dark_zen_in.set_xticklabels([])
-        ax_dark_zen_in.tick_params(axis='both', which='major', labelsize=6)
 
         ax_dark_nad_si.plot(xx, data_sks.dark_offset[index, :, 2], color='k', zorder=0)
-        ax_dark_nad_si.axvline(100, ls='--', color='gray', lw=1.0)
-        if data_sks.shutter[index] == 1:
+        if data_sks.shutter_ori[index] == 1:
             ax_dark_nad_si.scatter(xx, data_sks.spectra[index, :, 2], c='b', s=3, zorder=1)
-        ax_dark_nad_si.set_xlim((1, 256))
-        ax_dark_nad_si.set_ylim([ylims_min[2], ylims_max[2]])
         ax_dark_nad_si.set_title('Dark of Nad. Si.', color='Blue')
-        ax_dark_nad_si.set_xticklabels([])
-        ax_dark_nad_si.tick_params(axis='both', which='major', labelsize=6)
 
         ax_dark_nad_in.plot(xx, data_sks.dark_offset[index, :, 3], color='k', zorder=0)
-        ax_dark_nad_in.axvline(100, ls='--', color='gray', lw=1.0)
-        if data_sks.shutter[index] == 1:
+        if data_sks.shutter_ori[index] == 1:
             ax_dark_nad_in.scatter(xx, data_sks.spectra[index, :, 3], c='b', s=3, zorder=1)
-        ax_dark_nad_in.set_xlim((1, 256))
-        ax_dark_nad_in.set_ylim([ylims_min[3], ylims_max[3]])
         ax_dark_nad_in.set_title('Dark of Nad. In.', color='SkyBlue')
-        ax_dark_nad_in.set_xticklabels([])
-        ax_dark_nad_in.tick_params(axis='both', which='major', labelsize=6)
+
+        ax_dark_zen_si.set_ylim([ylims_min_0[0], ylims_max_0[0]])
+        ax_dark_zen_in.set_ylim([ylims_min_0[1], ylims_max_0[1]])
+        ax_dark_nad_si.set_ylim([ylims_min_0[2], ylims_max_0[2]])
+        ax_dark_nad_in.set_ylim([ylims_min_0[3], ylims_max_0[3]])
     else:
-        ax_dark_zen_si.axis('off')
-        ax_dark_zen_in.axis('off')
-        ax_dark_nad_si.axis('off')
-        ax_dark_nad_in.axis('off')
+        ax_dark_zen_si.plot(xx, data_sks.spectra[index, :, 0], c='k', zorder=0)
+        ax_dark_zen_si.set_title('Light of Zen. Si.', color='Red')
+
+        ax_dark_zen_in.plot(xx, data_sks.spectra[index, :, 1], c='k', zorder=0)
+        ax_dark_zen_in.set_title('Light of Zen. In.', color='Salmon')
+
+        ax_dark_nad_si.plot(xx, data_sks.spectra[index, :, 2], c='k', zorder=0)
+        ax_dark_nad_si.set_title('Light of Nad. Si.', color='Blue')
+
+        ax_dark_nad_in.plot(xx, data_sks.spectra[index, :, 3], c='k', zorder=0)
+        ax_dark_nad_in.set_title('Light of Nad. In.', color='SkyBlue')
+
+        ax_dark_zen_si.set_ylim([ylims_min_1[0], ylims_max_1[0]])
+        ax_dark_zen_in.set_ylim([ylims_min_1[1], ylims_max_1[1]])
+        ax_dark_nad_si.set_ylim([ylims_min_1[2], ylims_max_1[2]])
+        ax_dark_nad_in.set_ylim([ylims_min_1[3], ylims_max_1[3]])
     # -
 
     # +
@@ -585,7 +611,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
             ax_corr_zen_si.scatter(xx, data_sks.dark_std[index, :, 0], c='b', s=3, zorder=1)
         ax_corr_zen_si.set_xlim([1, 256])
         ax_corr_zen_si.set_title('Dark-Corr. Zen. Si. (%d ms)' % (data_sks.int_time[index, 0]), color='Red')
-        ax_corr_zen_si.tick_params(axis='both', which='major', labelsize=6)
+        ax_corr_zen_si.tick_params(axis='both', which='major', labelsize=8)
 
         ax_corr_zen_in.plot(xx, data_sks.spectra_dark_corr[index, :, 1], color='k', zorder=0)
         ax_corr_zen_in.axvline(100, ls='--', color='gray', lw=1.0)
@@ -593,7 +619,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
             ax_corr_zen_in.scatter(xx, data_sks.dark_std[index, :, 1], c='b', s=3, zorder=1)
         ax_corr_zen_in.set_xlim([1, 256])
         ax_corr_zen_in.set_title('Dark-Corr. Zen. In. (%d ms)' % (data_sks.int_time[index, 1]), color='Salmon')
-        ax_corr_zen_in.tick_params(axis='both', which='major', labelsize=6)
+        ax_corr_zen_in.tick_params(axis='both', which='major', labelsize=8)
 
         ax_corr_nad_si.plot(xx, data_sks.spectra_dark_corr[index, :, 2], color='k', zorder=0)
         ax_corr_nad_si.axvline(100, ls='--', color='gray', lw=1.0)
@@ -601,7 +627,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
             ax_corr_nad_si.scatter(xx, data_sks.dark_std[index, :, 2], c='b', s=3, zorder=1)
         ax_corr_nad_si.set_xlim([1, 256])
         ax_corr_nad_si.set_title('Dark-Corr. Nad. Si. (%d ms)' % (data_sks.int_time[index, 2]), color='Blue')
-        ax_corr_nad_si.tick_params(axis='both', which='major', labelsize=6)
+        ax_corr_nad_si.tick_params(axis='both', which='major', labelsize=8)
 
         ax_corr_nad_in.plot(xx, data_sks.spectra_dark_corr[index, :, 3], color='k', zorder=0)
         ax_corr_nad_in.axvline(100, ls='--', color='gray', lw=1.0)
@@ -609,7 +635,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
             ax_corr_nad_in.scatter(xx, data_sks.dark_std[index, :, 3], c='b', s=3, zorder=1)
         ax_corr_nad_in.set_xlim([1, 256])
         ax_corr_nad_in.set_title('Dark-Corr.  Nad. In. (%d ms)' % (data_sks.int_time[index, 3]), color='SkyBlue')
-        ax_corr_nad_in.tick_params(axis='both', which='major', labelsize=6)
+        ax_corr_nad_in.tick_params(axis='both', which='major', labelsize=8)
     else:
         ax_corr_zen_si.axis('off')
         ax_corr_zen_in.axis('off')
