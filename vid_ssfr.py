@@ -7,333 +7,6 @@ import datetime
 from scipy.io import readsav
 from scipy import stats
 
-def NLIN_CORR(spectra, int_time, logic, fname_coef=None):
-    #{{{
-    if fname_coef is None:
-        exit('Error [NLIN_CORR]: Please specify coefficient file for non-linear correction.')
-
-    f = readsav(fname_coef)
-    if (int_time.mean()-f.iin_)>=0.001:
-        exit('Error [NLIN_CORR]: Inconsistent integration time.')
-
-    if f.z_ != 0 and f.z_ != 1:
-        exit('Error [NLIN_CORR]: Invalid zenith or nadir flag.')
-
-    if f.wls_ < 0:
-        exit('Error [NLIN_CORR]: Error in the coefficient file.')
-
-    print('Message [NLIN_CORR]: Performing nolinear-correction...')
-
-    Ndata, Nchannel = spectra.shape
-    for ichan in range(Nchannel):
-        spectra_tmp = spectra[:, ichan].copy()
-        spectra[:, ichan] = -999.
-
-        index = (spectra_tmp > -100)
-        spectra_tmp[index] /= f.in_[ichan]
-        print(f.bad_[1, ichan])
-
-    return spectra, logic
-    #}}}
-
-def CDATA_NLIN(dist,
-        wvl_ref=480,
-        tag='nadir',
-        fname_std='/argus/field/arise/cal/506C_NIST_resample_bulb'):
-
-    NChan = 256
-    NFile = dist.size
-
-    xxChan = np.arange(NChan)
-
-    if tag == 'zenith':
-        coef_si = np.array([301.946,  3.31877,  0.00037585,  -1.76779e-6, 0])
-        coef_in = np.array([2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8])
-        iSi     = 0
-        iIn     = 1
-    elif tag == 'nadir':
-        coef_si = np.array([302.818,  3.31912,  0.000343831, -1.81135e-6, 0])
-        coef_in = np.array([2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8])
-        iSi     = 2
-        iIn     = 3
-
-    wvl_si  = coef_si[0] + coef_si[1]*xxChan + coef_si[2]*xxChan**2 + coef_si[3]*xxChan**3 + coef_si[4]*xxChan**4
-    wvl_in  = coef_in[0] + coef_in[1]*xxChan + coef_in[2]*xxChan**2 + coef_in[3]*xxChan**3 + coef_in[4]*xxChan**4
-
-    fnames_sks = sorted(glob.glob('/argus/home/chen/work/02_arise/06_cal/data/lin_data/20161009_Field_A_150_150*.SKS'))
-    #fnames_sks = sorted(glob.glob('/argus/home/chen/work/02_arise/06_cal/data/lin_data/20161009_Field_A_200_200*.SKS'))
-    #fnames_sks = sorted(glob.glob('/argus/home/chen/work/02_arise/06_cal/data/lin_data/20161009_Field_A_250_250*.SKS'))
-    if len(fnames_sks) != NFile:
-        exit('Error [CDATA_NLIN]: the number of input .sks files are inconsistent with NFile.')
-
-    intTime_si  = np.zeros( NFile,            dtype=np.float64)
-    intTime_in  = np.zeros( NFile,            dtype=np.float64)
-    data2fit_si = np.zeros((NFile, NChan, 2), dtype=np.float64) # index 0: mean, index 1: standard deviation
-    data2fit_in = np.zeros((NFile, NChan, 2), dtype=np.float64)
-    dark_offset_si = np.zeros((NFile, NChan), dtype=np.float64)
-    dark_offset_in = np.zeros((NFile, NChan), dtype=np.float64)
-
-    for i in range(NFile):
-        fname_sks = fnames_sks[i]
-        data_sks  = READ_SKS([fname_sks])
-        logic = (data_sks.shutter==0)
-
-        intTime_si[i]        = np.mean(data_sks.int_time[logic, iSi])
-        intTime_in[i]        = np.mean(data_sks.int_time[logic, iIn])
-        data2fit_si[i, :, 0] = np.mean(data_sks.spectra_dark_corr[logic, :, iSi], axis=0)
-        data2fit_si[i, :, 1] = np.std( data_sks.spectra_dark_corr[logic, :, iSi], axis=0)
-        data2fit_in[i, :, 0] = np.mean(data_sks.spectra_dark_corr[logic, :, iIn], axis=0)
-        data2fit_in[i, :, 1] = np.std( data_sks.spectra_dark_corr[logic, :, iIn], axis=0)
-
-        dark_offset_si[i, :]    = np.mean(data_sks.dark_offset[logic, :, iSi], axis=0)
-        dark_offset_in[i, :]    = np.mean(data_sks.dark_offset[logic, :, iIn], axis=0)
-
-    # read standard (50cm) lamp file
-    # data_std[:, 0]: wavelength in [nm]
-    # data_std[:, 1]: irradiance in [microW cm^-2 nm^-1]
-    data_std = np.loadtxt(fname_std)
-    resp_si_interp = np.interp(wvl_si, data_std[:, 0], data_std[:, 1]*0.01)
-    resp_in_interp = np.interp(wvl_in, data_std[:, 0], data_std[:, 1]*0.01)
-
-    indexCal = 0
-    resp_si = None
-    resp_in = None
-    if resp_si is None and resp_in is None:
-        std_si  = data2fit_si[indexCal, :, 0]
-        std_in  = data2fit_in[indexCal, :, 0]
-        resp_si = std_si / intTime_si[indexCal] / resp_si_interp
-        resp_in = std_in / intTime_in[indexCal] / resp_in_interp
-
-    plt_logic = True
-    if plt_logic:
-        #{{{
-        rcParams['font.size'] = 12
-        rcParams['xtick.direction'] = 'in'
-        rcParams['ytick.direction'] = 'in'
-        fig = plt.figure(figsize=(16, 5))
-        gs  = gridspec.GridSpec(1, 3)
-        ax1 = plt.subplot(gs[0, 0])
-        ax2 = plt.subplot(gs[0, 1])
-        ax3 = plt.subplot(gs[0, 2])
-        ax1.plot(wvl_si, data2fit_si[indexCal, :, 0], color='k')
-        ax1.axvline(wvl_ref, color='grey', ls='--')
-        ax1.axhline(0, color='k', ls=':')
-        ax1.set_title('Silicon')
-        ax1.set_xlabel('Wavelength [nm]')
-        ax1.set_ylabel('Dark Corrected Counts')
-        ax1.set_xlim([200, 1200])
-        ax1.set_ylim([0, 18000])
-        ax1.ticklabel_format(style='sci',axis='y', scilimits=(-3,4))
-
-        ax2.plot(wvl_in, data2fit_in[indexCal, :, 0], color='k')
-        ax2.axhline(0, color='k', ls=':')
-        ax2.set_title('InGaAs')
-        ax2.set_xlabel('Wavelength [nm]')
-        ax2.set_ylabel('Dark Corrected Counts')
-        ax2.set_xlim([500, 2500])
-        ax2.ticklabel_format(style='sci',axis='y', scilimits=(-3,4))
-        ax2.set_ylim([0, 25000])
-
-        ax3.plot(data_std[:, 0], data_std[:, 1]*0.01, label='Lamp', zorder=0)
-        ax3.plot(wvl_si, data2fit_si[indexCal, :, 0]/intTime_si[indexCal]/resp_si, color='red', alpha=0.4, zorder=1)
-        ax3.fill_between(wvl_si, (data2fit_si[indexCal, :, 0]-data2fit_si[indexCal, :, 1])/intTime_si[indexCal]/resp_si, (data2fit_si[indexCal, :, 0]+data2fit_si[indexCal, :, 1])/intTime_si[indexCal]/resp_si, facecolor='r', alpha=0.4, lw=0, label='Cal Si', zorder=1)
-
-        ax3.plot(wvl_in, data2fit_in[indexCal, :, 0]/intTime_in[indexCal]/resp_in, color='blue', alpha=0.4, zorder=1)
-        ax3.fill_between(wvl_in, (data2fit_in[indexCal, :, 0]-data2fit_in[indexCal, :, 1])/intTime_in[indexCal]/resp_in, (data2fit_in[indexCal, :, 0]+data2fit_in[indexCal, :, 1])/intTime_in[indexCal]/resp_in, facecolor='b', alpha=0.4, lw=0, label='Cal In', zorder=1)
-        ax3.axhline(0, color='k', ls=':')
-        ax3.set_title('Lamp Spectrum')
-        ax3.set_xlabel('Wavelength [nm]')
-        ax3.set_ylabel('Irradiance [$\mathrm{W m^2 nm^{-1}}$]')
-        ax3.set_xlim([350, 2200])
-        ax3.set_ylim([0, 0.3])
-        ax3.legend(loc='upper right', fontsize=11, framealpha=0.2)
-        plt.savefig('fig0.png')
-        #plt.show()
-        #}}}
-    #exit()
-
-    plt_logic = True
-    if plt_logic:
-        for indexCal in range(NFile):
-            #{{{
-            rcParams['font.size'] = 12
-            rcParams['xtick.direction'] = 'in'
-            rcParams['ytick.direction'] = 'in'
-            fig = plt.figure(figsize=(16, 5))
-            gs  = gridspec.GridSpec(1, 3)
-            ax1 = plt.subplot(gs[0, 0])
-            ax2 = plt.subplot(gs[0, 1])
-            ax3 = plt.subplot(gs[0, 2])
-
-            ax1.plot(wvl_si, data2fit_si[indexCal, :, 0]/intTime_si[indexCal]/resp_si, color='red', alpha=0.6, zorder=1)
-            ax1.fill_between(wvl_si, (data2fit_si[indexCal, :, 0]-data2fit_si[indexCal, :, 1])/intTime_si[indexCal]/resp_si, (data2fit_si[indexCal, :, 0]+data2fit_si[indexCal, :, 1])/intTime_si[indexCal]/resp_si, facecolor='r', alpha=0.4, lw=0, label='Cal Si', zorder=1)
-            ax1.plot(wvl_in, data2fit_in[indexCal, :, 0]/intTime_in[indexCal]/resp_in, color='blue', alpha=0.6, zorder=1)
-            ax1.fill_between(wvl_in, (data2fit_in[indexCal, :, 0]-data2fit_in[indexCal, :, 1])/intTime_in[indexCal]/resp_in, (data2fit_in[indexCal, :, 0]+data2fit_in[indexCal, :, 1])/intTime_in[indexCal]/resp_in, facecolor='b', alpha=0.4, lw=0, label='Cal In', zorder=1)
-            ax1.axvline(wvl_ref, color='grey', ls='--')
-            ax1.set_title('Spectrum (Distance=%.1fcm)' % dist[indexCal])
-            ax1.set_xlabel('Wavelength [nm]')
-            ax1.set_ylabel('Irradiance [$\mathrm{W m^2 nm^{-1}}$]')
-            ax1.set_xlim([350, 2200])
-            ax1.set_ylim([0, 0.5])
-
-            ax2.plot(wvl_in, data2fit_in[indexCal, :, 0], color='b', alpha=0.6)
-            ax2.plot(wvl_in, dark_offset_in[indexCal, :], color='k', alpha=0.6)
-            ax2.set_title('InGaAs')
-            ax2.set_xlabel('Wavelength [nm]')
-            ax2.set_ylabel('Dark Corrected Counts')
-            ax2.set_xlim([500, 2500])
-            ax2.set_ylim([0, 50000])
-            ax2.ticklabel_format(style='sci',axis='y', scilimits=(-3,4))
-
-            ax3.plot(wvl_si, data2fit_si[indexCal, :, 0]/intTime_si[indexCal]/resp_si/resp_si_interp, color='r', alpha=0.6, zorder=1)
-            ax3.fill_between(wvl_si, (data2fit_si[indexCal, :, 0]-data2fit_si[indexCal, :, 1])/intTime_si[indexCal]/resp_si/resp_si_interp, (data2fit_si[indexCal, :, 0]+data2fit_si[indexCal, :, 1])/intTime_si[indexCal]/resp_si/resp_si_interp, facecolor='r', alpha=0.4, lw=0, label='Si', zorder=1)
-            ax3.plot(wvl_in, data2fit_in[indexCal, :, 0]/intTime_in[indexCal]/resp_in/resp_in_interp, color='b', alpha=0.6, zorder=2)
-            ax3.axvline(wvl_ref, color='grey', ls=':')
-            ax3.axhline(1.0, color='k', zorder=0)
-            ax3.axhline((50.0/dist[indexCal])**2, color='g', ls='--', alpha=0.6)
-            ax3.axhline((50.0/dist[indexCal])**2 * 1.03, color='g', ls='--', alpha=0.6, zorder=0)
-            ax3.axhline((50.0/dist[indexCal])**2 * 0.97, color='g', ls='--', alpha=0.6, zorder=0)
-            #ax3.set_title('Lamp Spectrum')
-            ax3.set_xlabel('Wavelength [nm]')
-            ax3.set_ylabel('Ratio [Measurement/Lamp]')
-            ax3.set_xlim([350, 1600])
-            ylim_mid = np.round((50.0/dist[indexCal])**2, decimals=1)
-            ax3.set_ylim([ylim_mid-0.4, ylim_mid+0.4])
-            plt.savefig('fig1_dist%2.2d.png' % indexCal)
-            plt.close(fig)
-            #}}}
-
-    poly_degree = 3
-    coef_linear = np.zeros((NChan, 2), dtype=np.float64)
-    coef_poly   = np.zeros((NChan, poly_degree+1), dtype=np.float64)
-    nlin_deg    = np.zeros((NChan, 2), dtype=np.float64)
-    x_minmax    = np.zeros((NChan, 2), dtype=np.float64)
-    index_wvl_ref = np.argmin(np.abs(wvl_si-wvl_ref))
-    for iChan in range(NChan):
-        interp_x0 = data2fit_in[:, iChan, 0] / std_in[iChan]
-        interp_y0 = data2fit_si[:, index_wvl_ref, 0] / std_si[index_wvl_ref]
-        index_sort = np.argsort(interp_x0)
-        interp_x = interp_x0[index_sort]
-        interp_y = interp_y0[index_sort]
-
-        coef_linear[iChan, 1], coef_linear[iChan, 0], r_value, p_value, std_err = stats.linregress(interp_x, interp_y)
-        coef_poly[iChan, ::-1] = np.polyfit(interp_x, interp_y, poly_degree)
-
-        x_minmax[iChan, 0] = np.min(interp_x)
-        x_minmax[iChan, 1] = np.max(interp_x)
-
-        lin_y  = coef_linear[iChan, 0] + coef_linear[iChan, 1]*interp_x
-        nlin_y = np.zeros_like(lin_y)
-        for exp in range(poly_degree+1):
-            nlin_y += coef_poly[iChan, exp]*interp_x**exp
-
-        nlin_deg[iChan, 0] = np.max(np.abs(( lin_y/(data2fit_si[:, index_wvl_ref, 0]/std_si[index_wvl_ref])-1.0)*100.0))
-        nlin_deg[iChan, 1] = np.max(np.abs((nlin_y/(data2fit_si[:, index_wvl_ref, 0]/std_si[index_wvl_ref])-1.0)*100.0))
-
-    plt_logic = True
-    if plt_logic:
-        for indexCal in range(NChan):
-            #{{{
-            rcParams['font.size'] = 12
-            rcParams['xtick.direction'] = 'in'
-            rcParams['ytick.direction'] = 'in'
-            fig = plt.figure(figsize=(11, 5))
-            gs  = gridspec.GridSpec(1, 2)
-            ax1 = plt.subplot(gs[0, 0])
-            ax2 = plt.subplot(gs[0, 1])
-
-            ax1.scatter(data2fit_si[:, index_wvl_ref, 0]/std_si[index_wvl_ref], data2fit_in[:, indexCal, 0]/std_in[indexCal], edgecolor='k', facecolor='none', alpha=0.6, s=60, zorder=1, marker='s')
-
-            xerr = (data2fit_si[:, index_wvl_ref, 1])/std_si[index_wvl_ref]
-            yerr = (data2fit_in[:, indexCal     , 1])/std_in[indexCal     ]
-            ax1.errorbar(data2fit_si[:, index_wvl_ref, 0]/std_si[index_wvl_ref], data2fit_in[:, indexCal, 0]/std_in[indexCal], xerr=xerr, yerr=yerr, fmt='none')
-
-            ax1.plot([1.0, 1.0], [0.8, 1.2], color='g')
-            ax1.plot([0.8, 1.2], [1.0, 1.0], color='g')
-            ax1.plot([-10, 10], [-10, 10], color='k', ls=':')
-
-            xx = np.linspace(-10, 10, 1000)
-            lin_y    = coef_linear[indexCal, 0] + coef_linear[indexCal, 1]*xx
-            nlin_y = np.zeros_like(lin_y)
-            for exp in range(poly_degree+1):
-                nlin_y += coef_poly[indexCal, exp]*xx**exp
-            ax1.plot( lin_y, xx, color='r', alpha=0.6)
-            ax1.plot(nlin_y, xx, color='b', alpha=0.6)
-
-            ax1.set_title('Channel %d' % (indexCal+1))
-            ax1.set_xlabel('Silicon/Silicon_Cal_50cm')
-            ax1.set_ylabel('InGaAs/InGaAs_Cal_50cm')
-            ax1.set_xlim([0.5, 2.5])
-            ax1.set_ylim([0.5, 2.5])
-
-            ax2.axvline(1.0, color='k', ls='--')
-            ax2.axhline( 0.3, color='g', ls=':')
-            ax2.axhline(-0.3, color='g', ls=':')
-            xx = data2fit_in[:, indexCal, 0] / std_in[indexCal]
-            lin_y    = coef_linear[indexCal, 0] + coef_linear[indexCal, 1]*xx
-            nlin_y = np.zeros_like(lin_y)
-            for exp in range(poly_degree+1):
-                nlin_y += coef_poly[indexCal, exp]*xx**exp
-
-            ax2.scatter(xx, (    xx/(data2fit_si[:, index_wvl_ref, 0]/std_si[index_wvl_ref])-1.0)*100.0, c='k', s=50, alpha=0.4, label='residual from 1:1')
-            ax2.scatter(xx, ( lin_y/(data2fit_si[:, index_wvl_ref, 0]/std_si[index_wvl_ref])-1.0)*100.0, c='r', s=50, alpha=0.9, label='residual from lin')
-            ax2.scatter(xx, (nlin_y/(data2fit_si[:, index_wvl_ref, 0]/std_si[index_wvl_ref])-1.0)*100.0, c='b', s=50, alpha=0.9, label='residual from nlin')
-
-            yy = data2fit_si[:, index_wvl_ref, 0] / std_si[index_wvl_ref]
-            ax2.scatter(xx, yy, edgecolor='k', facecolor='none', alpha=0.6, s=60, zorder=1, marker='s')
-
-            xerr = (data2fit_in[:, indexCal, 1]/std_in[indexCal])
-            xx = (data2fit_in[:, indexCal, 0]/std_in[indexCal])
-            yy = (nlin_y/(data2fit_si[:,index_wvl_ref,0]/std_si[index_wvl_ref])-1.0)*100.0
-            ax2.errorbar(xx, yy, xerr=xerr, yerr=0, fmt='none')
-
-            ax2.set_xlim([0.5, 2.5])
-            ax2.legend(loc='lower right', fontsize=8, framealpha=0.3)
-            ax2.set_xlabel('InGaAs/InGaAs_Cal_50cm')
-            ax2.set_ylabel('Non-linearity Degree [%]')
-            ax2.set_title('Wavelength %.2f nm' % wvl_in[indexCal])
-            plt.savefig('fig2_chan%3.3d.png' % (indexCal+1))
-            plt.close(fig)
-            #plt.show()
-            #}}}
-
-    plt_logic = False
-    if plt_logic:
-        rcParams['font.size'] = 12
-        rcParams['xtick.direction'] = 'in'
-        rcParams['ytick.direction'] = 'in'
-        fig = plt.figure(figsize=(11, 5))
-        ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
-
-        ax1.plot(wvl_in, coef_poly[:, -1])
-        ax1.axhline(0.0, color='red', lw=0.8, ls=':')
-        ax1.set_ylabel('Quadratic Term')
-        ax1.set_ylim([-0.1, 0.1])
-
-        #ax2.plot(wvl_in, nlin_deg[:, 1])
-        #ax2.set_ylim([162, 164])
-        #offset = np.zeros((NFile, NChan), dtype=np.float64)
-        #for i in range(NFile):
-            #xx = dist[i]
-            #for exp in range(poly_degree+1):
-                #nlin_y += coef_poly[:, exp]*xx**exp
-
-        #offset = np.array([])
-        #for indexCal in range(NChan):
-            #xx = data2fit_in[:, indexCal, 0] / std_in[indexCal]
-            #nlin_y = np.zeros_like(lin_y)
-            #for exp in range(poly_degree+1):
-                #nlin_y += coef_poly[indexCal, exp]*xx**exp
-            #offset = np.append(offset, nliny-)
-
-
-        ax2.set_ylabel('Offset')
-        ax2.set_xlabel('Wavelength [nm]')
-        plt.savefig('quadratic.png')
-        #plt.show()
-    #}}}
-
 def READ_SKS_V2(fname, headLen=148, dataLen=2276, verbose=False):
 
     fileSize = os.path.getsize(fname)
@@ -685,39 +358,97 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
     fig = plt.figure(figsize=(14, 8))
     fig.suptitle('CU SSFR %s' % dtime0.strftime('%Y-%m-%d %H:%M:%S'), fontsize=24, color='black')
 
-    gs = gridspec.GridSpec(4, 4)
-    gs.update(wspace=0.3)
-    gs.update(hspace=0.3)
+    gs_temp_ts = gridspec.GridSpec(2, 1)
 
     # +
     # plot temperatures in time series
-    # need to be modified
-    unit = 2 * (((np.nanmax(data_sks.temp)-np.nanmin(data_sks.temp))/10) // 2 + 1)
-    ylim_min = unit * ((np.nanmin(data_sks.temp))//unit)
-    ylim_max = unit * ((np.nanmax(data_sks.temp))//unit + 1)
-    if ((ylim_max-np.nanmax(data_sks.temp))<(np.nanmin(data_sks.temp)-ylim_min)):
+    indices = [0, 1, 2, 3, 7]
+    labels  = ['Ambient', 'InGaAs Body (Zen.)', 'InGaAs Body (Nad.)', 'Plate', 'PTC5K']
+    data_temp = data_sks.temp[:, indices]
+    unit = 2 * (((np.nanmax(data_temp)-np.nanmin(data_temp))/5) // 2 + 1)
+    ylim_min = unit * ((np.nanmin(data_temp))//unit - 1)
+    ylim_max = unit * ((np.nanmax(data_temp))//unit + 2)
+    if ((ylim_max-np.nanmax(data_temp))<(np.nanmin(data_temp)-ylim_min)):
         ylim_max += unit
 
-    ax_temp_ts = plt.subplot(gs[0, :])
-    colors = plt.cm.jet(np.linspace(0.0, 1.0, data_sks.temp.shape[-1]))
-    for ii in range(data_sks.temp.shape[-1]):
-        ax_temp_ts.scatter(data_sks.tmhr, data_sks.temp[:, ii], lw=0, marker='o', facecolor=colors[ii, :], edgecolor='none', s=10, alpha=1.0, zorder=1)
+    ax_temp_ts_1 = fig.add_subplot(gs_temp_ts[0, :])
+
+    patches = []
+
+    colors = plt.cm.jet(np.linspace(0.0, 1.0, data_temp.shape[-1]))
+    for ii in range(data_temp.shape[-1]):
+        ax_temp_ts_1.scatter(data_sks.tmhr, data_temp[:, ii], lw=0, marker='o', facecolor=colors[ii, :], edgecolor='none', s=10, alpha=1.0, zorder=1)
+        patches.append(mpatches.Patch(color=colors[ii, :] , label=labels[ii]))
 
     tmhr0    = (data_sks.tmhr[:-1]+data_sks.tmhr[1:])/2.0
     shutter0 = np.interp(tmhr0, data_sks.tmhr, data_sks.shutter)
     tmhr0    = np.append(tmhr0, tmhr0[-1]+1.0/3600.0)
     shutter0 = np.append(shutter0, shutter0[-1])
-    ax_temp_ts.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0<5.6)&(shutter0>0.9), facecolor='k', alpha=0.2, zorder=0)
-    ax_temp_ts.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0>4.9)               , facecolor='r', alpha=0.2, zorder=0)
-    ax_temp_ts.axvline(data_sks.tmhr[index], color='k', ls=':')
+    tmhr0    = np.append(tmhr0[0]-1.0/3600.0, tmhr0)
+    shutter0 = np.append(shutter0[0], shutter0)
+    ax_temp_ts_1.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0<5.6)&(shutter0>0.9), facecolor='k', alpha=0.2, zorder=0)
+    ax_temp_ts_1.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0>4.9)               , facecolor='r', alpha=0.2, zorder=0)
+    ax_temp_ts_1.axvline(data_sks.tmhr[index], color='k', ls=':')
 
-    ax_temp_ts.set_title('Temperature', fontsize='large')
-    ax_temp_ts.set_ylim((0, 40))
-    ax_temp_ts.xaxis.set_major_locator(FixedLocator(np.array([data_sks.tmhr[index]-0.0166666666, data_sks.tmhr[index], data_sks.tmhr[index]+0.0166666666])))
-    ax_temp_ts.set_xlim([data_sks.tmhr[index]-0.0166666666, data_sks.tmhr[index]+0.0166666667])
-    ax_temp_ts.set_xticklabels([])
+    ax_temp_ts_1.set_title('Temperature', fontsize='large', y=1.4)
+    ax_temp_ts_1.set_ylim((ylim_min, ylim_max))
+    ax_temp_ts_1.xaxis.set_major_locator(FixedLocator(np.array([data_sks.tmhr[index]-0.0166666666, data_sks.tmhr[index], data_sks.tmhr[index]+0.0166666666])))
+    ax_temp_ts_1.set_xlim([data_sks.tmhr[index]-0.0166666666, data_sks.tmhr[index]+0.0166666667])
+    ax_temp_ts_1.set_xticklabels([])
+    ax_temp_ts_1.spines['bottom'].set_visible(False)
+    ax_temp_ts_1.xaxis.tick_top()
+    ax_temp_ts_1.tick_params(labeltop='off')
+
     # -
 
+    # +
+    # plot temperatures in time series
+    indices = [5, 6]
+    labels  = ['InGaAs TEC (Zen.)', 'InGaAs TEC (Nad.)']
+    colors  = ['k', 'gray']
+    data_temp = data_sks.temp[:, indices]
+    unit = 2 * (((np.nanmax(data_temp)-np.nanmin(data_temp))/5) // 2 + 1)
+    ylim_min = unit * ((np.nanmin(data_temp))//unit - 1)
+    ylim_max = unit * ((np.nanmax(data_temp))//unit + 2)
+    if ((ylim_max-np.nanmax(data_temp))<(np.nanmin(data_temp)-ylim_min)):
+        ylim_max += unit
+
+    ax_temp_ts_2 = fig.add_subplot(gs_temp_ts[1, :])
+    ax_temp_ts_2.spines['top'].set_visible(False)
+
+    for ii in range(len(labels)):
+        ax_temp_ts_2.scatter(data_sks.tmhr, data_temp[:, ii], lw=0, marker='o', facecolor=colors[ii], edgecolor='none', s=10, alpha=1.0, zorder=1)
+        patches.append(mpatches.Patch(color=colors[ii] , label=labels[ii]))
+
+    tmhr0    = (data_sks.tmhr[:-1]+data_sks.tmhr[1:])/2.0
+    shutter0 = np.interp(tmhr0, data_sks.tmhr, data_sks.shutter)
+    tmhr0    = np.append(tmhr0, tmhr0[-1]+1.0/3600.0)
+    shutter0 = np.append(shutter0, shutter0[-1])
+    tmhr0    = np.append(tmhr0[0]-1.0/3600.0, tmhr0)
+    shutter0 = np.append(shutter0[0], shutter0)
+    ax_temp_ts_2.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0<5.6)&(shutter0>0.9), facecolor='k', alpha=0.2, zorder=0)
+    ax_temp_ts_2.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0>4.9)               , facecolor='r', alpha=0.2, zorder=0)
+    ax_temp_ts_2.axvline(data_sks.tmhr[index], color='k', ls=':')
+
+    ax_temp_ts_2.set_ylim((ylim_min, ylim_max))
+    ax_temp_ts_2.xaxis.set_major_locator(FixedLocator(np.array([data_sks.tmhr[index]-0.0166666666, data_sks.tmhr[index], data_sks.tmhr[index]+0.0166666666])))
+    ax_temp_ts_2.set_xlim([data_sks.tmhr[index]-0.0166666666, data_sks.tmhr[index]+0.0166666667])
+    ax_temp_ts_2.set_xticklabels([])
+    # -
+    ax_temp_ts_1.legend(handles=patches, bbox_to_anchor=(0., 1.01, 1., .102), loc=3, ncol=len(patches), mode="expand", borderaxespad=0., frameon=False, handletextpad=0.2, fontsize=9)
+    gs_temp_ts.update(bottom=0.7, top=0.85, hspace=0.1)
+
+    d = 0.003
+    kwargs = dict(transform=ax_temp_ts_1.transAxes, color='k', clip_on=False, lw=1.0)
+    ax_temp_ts_1.plot((-d, +d), (-d, +d), **kwargs)
+    ax_temp_ts_1.plot((1-d, 1+d), (-d, +d), **kwargs)
+
+    kwargs = dict(transform=ax_temp_ts_2.transAxes, color='k', clip_on=False, lw=1.0)
+    ax_temp_ts_2.plot((-d, +d), (1-d, 1+d), **kwargs)
+    ax_temp_ts_2.plot((1-d, 1+d), (1-d, 1+d), **kwargs)
+
+
+    gs_counts_ts = gridspec.GridSpec(3, 4)
     # +
     # plot counts for one channel ("Nchan") in time series
     logic = (data_sks.shutter==0) | (data_sks.shutter==1)
@@ -728,7 +459,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
     if ((ylim_max-(data_sks.spectra_dark_corr[logic, Nchan, :]).max())<((data_sks.spectra_dark_corr[logic, Nchan, :]).min()-ylim_min)):
         ylim_max += unit
 
-    ax_counts_ts = plt.subplot(gs[1, :])
+    ax_counts_ts = fig.add_subplot(gs_counts_ts[0, :])
     ax_counts_ts.scatter(data_sks.tmhr[logic], data_sks.spectra_dark_corr[:, Nchan, 0][logic], lw=0, marker='o', facecolor='Red'          , edgecolor='none', s=10, alpha=1.0, zorder=1)
     ax_counts_ts.scatter(data_sks.tmhr[logic], data_sks.spectra_dark_corr[:, Nchan, 1][logic], lw=0, marker='o', facecolor='Salmon'       , edgecolor='none', s=10, alpha=1.0, zorder=2)
     ax_counts_ts.scatter(data_sks.tmhr[logic], data_sks.spectra_dark_corr[:, Nchan, 2][logic], lw=0, marker='o', facecolor='Blue'         , edgecolor='none', s=10, alpha=1.0, zorder=3)
@@ -738,6 +469,8 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
     shutter0 = np.interp(tmhr0, data_sks.tmhr, data_sks.shutter)
     tmhr0    = np.append(tmhr0, tmhr0[-1]+1.0/3600.0)
     shutter0 = np.append(shutter0, shutter0[-1])
+    tmhr0    = np.append(tmhr0[0]-1.0/3600.0, tmhr0)
+    shutter0 = np.append(shutter0[0], shutter0)
     ax_counts_ts.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0<5.6)&(shutter0>0.9), facecolor='k', alpha=0.2, zorder=0)
     ax_counts_ts.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0>4.9)               , facecolor='r', alpha=0.2, zorder=0)
     ax_counts_ts.axvline(data_sks.tmhr[index], color='k', ls=':')
@@ -751,10 +484,10 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
 
     # +
     # plot spectral dark counts
-    ax_dark_zen_si = plt.subplot(gs[2, 0])
-    ax_dark_zen_in = plt.subplot(gs[2, 1])
-    ax_dark_nad_si = plt.subplot(gs[2, 2])
-    ax_dark_nad_in = plt.subplot(gs[2, 3])
+    ax_dark_zen_si = fig.add_subplot(gs_counts_ts[1, 0])
+    ax_dark_zen_in = fig.add_subplot(gs_counts_ts[1, 1])
+    ax_dark_nad_si = fig.add_subplot(gs_counts_ts[1, 2])
+    ax_dark_nad_in = fig.add_subplot(gs_counts_ts[1, 3])
 
     logic = (data_sks.shutter==0) | (data_sks.shutter==1)
 
@@ -778,6 +511,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
         ax_dark_zen_si.set_ylim([ylims_min[0], ylims_max[0]])
         ax_dark_zen_si.set_title('Dark of Zen. Si.', color='Red')
         ax_dark_zen_si.set_xticklabels([])
+        ax_dark_zen_si.tick_params(axis='both', which='major', labelsize=6)
 
         ax_dark_zen_in.plot(xx, data_sks.dark_offset[index, :, 1], color='k', zorder=0)
         ax_dark_zen_in.axvline(100, ls='--', color='gray', lw=1.0)
@@ -787,6 +521,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
         ax_dark_zen_in.set_ylim([ylims_min[1], ylims_max[1]])
         ax_dark_zen_in.set_title('Dark of Zen. In.', color='Salmon')
         ax_dark_zen_in.set_xticklabels([])
+        ax_dark_zen_in.tick_params(axis='both', which='major', labelsize=6)
 
         ax_dark_nad_si.plot(xx, data_sks.dark_offset[index, :, 2], color='k', zorder=0)
         ax_dark_nad_si.axvline(100, ls='--', color='gray', lw=1.0)
@@ -796,6 +531,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
         ax_dark_nad_si.set_ylim([ylims_min[2], ylims_max[2]])
         ax_dark_nad_si.set_title('Dark of Nad. Si.', color='Blue')
         ax_dark_nad_si.set_xticklabels([])
+        ax_dark_nad_si.tick_params(axis='both', which='major', labelsize=6)
 
         ax_dark_nad_in.plot(xx, data_sks.dark_offset[index, :, 3], color='k', zorder=0)
         ax_dark_nad_in.axvline(100, ls='--', color='gray', lw=1.0)
@@ -805,6 +541,7 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
         ax_dark_nad_in.set_ylim([ylims_min[3], ylims_max[3]])
         ax_dark_nad_in.set_title('Dark of Nad. In.', color='SkyBlue')
         ax_dark_nad_in.set_xticklabels([])
+        ax_dark_nad_in.tick_params(axis='both', which='major', labelsize=6)
     else:
         ax_dark_zen_si.axis('off')
         ax_dark_zen_in.axis('off')
@@ -814,21 +551,30 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
 
     # +
     # plot spectral dark-corrected counts
-    ax_corr_zen_si = plt.subplot(gs[3, 0])
-    ax_corr_zen_in = plt.subplot(gs[3, 1])
-    ax_corr_nad_si = plt.subplot(gs[3, 2])
-    ax_corr_nad_in = plt.subplot(gs[3, 3])
+    ax_corr_zen_si = fig.add_subplot(gs_counts_ts[2, 0])
+    ax_corr_zen_in = fig.add_subplot(gs_counts_ts[2, 1])
+    ax_corr_nad_si = fig.add_subplot(gs_counts_ts[2, 2])
+    ax_corr_nad_in = fig.add_subplot(gs_counts_ts[2, 3])
 
-    logic = (data_sks.shutter==0) | (data_sks.shutter==1)
+    logic_0 = (data_sks.shutter==0)
+    logic_1 = (data_sks.shutter==1)
 
-    ylims_min = np.zeros(4)
-    ylims_max = np.zeros(4)
+    ylims_min_0 = np.zeros(4)
+    ylims_max_0 = np.zeros(4)
+    ylims_min_1 = np.zeros(4)
+    ylims_max_1 = np.zeros(4)
     for ii in range(4):
-        unit = 20 * ((((data_sks.spectra_dark_corr[logic, :, ii]).max()-(data_sks.spectra_dark_corr[logic, :, ii]).min())/10) // 20 + 1)
-        ylims_min[ii] = unit * (np.min(data_sks.spectra_dark_corr[logic, :, ii])//unit)
-        ylims_max[ii] = unit * (np.max(data_sks.spectra_dark_corr[logic, :, ii])//unit + 1)
-        if ((ylims_max[ii]-(data_sks.spectra_dark_corr[logic, :, ii]).max())<((data_sks.spectra_dark_corr[logic, :, ii]).min()-ylims_min[ii])):
-            ylims_max[ii] += unit
+        unit_0 = 20 * ((((data_sks.spectra_dark_corr[logic_0, :, ii]).max()-(data_sks.spectra_dark_corr[logic_0, :, ii]).min())/10) // 20 + 1)
+        ylims_min_0[ii] = unit_0 * (np.min(data_sks.spectra_dark_corr[logic_0, :, ii])//unit_0)
+        ylims_max_0[ii] = unit_0 * (np.max(data_sks.spectra_dark_corr[logic_0, :, ii])//unit_0 + 1)
+        if ((ylims_max_0[ii]-(data_sks.spectra_dark_corr[logic_0, :, ii]).max())<((data_sks.spectra_dark_corr[logic_0, :, ii]).min()-ylims_min_0[ii])):
+            ylims_max_0[ii] += unit_0
+
+        unit_1 = 20 * ((((data_sks.spectra_dark_corr[logic_1, :, ii]).max()-(data_sks.spectra_dark_corr[logic_1, :, ii]).min())/10) // 20 + 1)
+        ylims_min_1[ii] = unit_1 * (np.min(data_sks.spectra_dark_corr[logic_1, :, ii])//unit_1)
+        ylims_max_1[ii] = unit_1 * (np.max(data_sks.spectra_dark_corr[logic_1, :, ii])//unit_1 + 1)
+        if ((ylims_max_1[ii]-(data_sks.spectra_dark_corr[logic_1, :, ii]).max())<((data_sks.spectra_dark_corr[logic_1, :, ii]).min()-ylims_min_1[ii])):
+            ylims_max_1[ii] += unit_1
 
     xx = np.arange(256) + 1
     if logic[index]:
@@ -838,38 +584,58 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
         if data_sks.shutter[index] == 1:
             ax_corr_zen_si.scatter(xx, data_sks.dark_std[index, :, 0], c='b', s=3, zorder=1)
         ax_corr_zen_si.set_xlim([1, 256])
-        ax_corr_zen_si.set_ylim([ylims_min[0], ylims_max[0]])
         ax_corr_zen_si.set_title('Dark-Corr. Zen. Si. (%d ms)' % (data_sks.int_time[index, 0]), color='Red')
+        ax_corr_zen_si.tick_params(axis='both', which='major', labelsize=6)
 
         ax_corr_zen_in.plot(xx, data_sks.spectra_dark_corr[index, :, 1], color='k', zorder=0)
         ax_corr_zen_in.axvline(100, ls='--', color='gray', lw=1.0)
         if data_sks.shutter[index] == 1:
             ax_corr_zen_in.scatter(xx, data_sks.dark_std[index, :, 1], c='b', s=3, zorder=1)
         ax_corr_zen_in.set_xlim([1, 256])
-        ax_corr_zen_in.set_ylim([ylims_min[1], ylims_max[1]])
         ax_corr_zen_in.set_title('Dark-Corr. Zen. In. (%d ms)' % (data_sks.int_time[index, 1]), color='Salmon')
+        ax_corr_zen_in.tick_params(axis='both', which='major', labelsize=6)
 
         ax_corr_nad_si.plot(xx, data_sks.spectra_dark_corr[index, :, 2], color='k', zorder=0)
         ax_corr_nad_si.axvline(100, ls='--', color='gray', lw=1.0)
         if data_sks.shutter[index] == 1:
             ax_corr_nad_si.scatter(xx, data_sks.dark_std[index, :, 2], c='b', s=3, zorder=1)
         ax_corr_nad_si.set_xlim([1, 256])
-        ax_corr_nad_si.set_ylim([ylims_min[2], ylims_max[2]])
         ax_corr_nad_si.set_title('Dark-Corr. Nad. Si. (%d ms)' % (data_sks.int_time[index, 2]), color='Blue')
+        ax_corr_nad_si.tick_params(axis='both', which='major', labelsize=6)
 
         ax_corr_nad_in.plot(xx, data_sks.spectra_dark_corr[index, :, 3], color='k', zorder=0)
         ax_corr_nad_in.axvline(100, ls='--', color='gray', lw=1.0)
         if data_sks.shutter[index] == 1:
             ax_corr_nad_in.scatter(xx, data_sks.dark_std[index, :, 3], c='b', s=3, zorder=1)
         ax_corr_nad_in.set_xlim([1, 256])
-        ax_corr_nad_in.set_ylim([ylims_min[3], ylims_max[3]])
         ax_corr_nad_in.set_title('Dark-Corr.  Nad. In. (%d ms)' % (data_sks.int_time[index, 3]), color='SkyBlue')
+        ax_corr_nad_in.tick_params(axis='both', which='major', labelsize=6)
     else:
         ax_corr_zen_si.axis('off')
         ax_corr_zen_in.axis('off')
         ax_corr_nad_si.axis('off')
         ax_corr_nad_in.axis('off')
+
+    if data_sks.shutter[index] == 0:
+        ax_corr_zen_si.set_ylim([ylims_min_0[0], ylims_max_0[0]])
+        ax_corr_zen_in.set_ylim([ylims_min_0[1], ylims_max_0[1]])
+        ax_corr_nad_si.set_ylim([ylims_min_0[2], ylims_max_0[2]])
+        ax_corr_nad_in.set_ylim([ylims_min_0[3], ylims_max_0[3]])
+    elif data_sks.shutter[index] == 1:
+        ax_corr_zen_si.set_ylim([ylims_min_1[0], ylims_max_1[0]])
+        ax_corr_zen_in.set_ylim([ylims_min_1[1], ylims_max_1[1]])
+        ax_corr_nad_si.set_ylim([ylims_min_1[2], ylims_max_1[2]])
+        ax_corr_nad_in.set_ylim([ylims_min_1[3], ylims_max_1[3]])
+
     # -
+    # gs_counts_ts.tight_layout(fig, rect=[0.0, 0.0, 1.0, 0.6])
+    gs_counts_ts.update(bottom=0.0, top=0.65)
+    gs_counts_ts.update(wspace=0.3, hspace=0.3)
+
+    # left = min(gs_temp_ts.left, gs_counts_ts.left)
+    # right= max(gs_temp_ts.right,gs_counts_ts.right)
+    # gs_temp_ts.update(left=left, right=right)
+    # gs_counts_ts.update(left=left, right=right)
 
     # ax1.get_yaxis().get_major_formatter().set_scientific(False)
     # ax1.get_yaxis().get_major_formatter().set_useOffset(False)
@@ -881,16 +647,25 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
     # ax4.get_yaxis().get_major_formatter().set_useOffset(False)
 
     if testMode:
-        plt.savefig('test.png')
         plt.show()
         exit()
     else:
-        plt.savefig('%s_%6.6d.png' % (nameTag, index))
+        plt.savefig('%s_%6.6d.png' % (nameTag, index), transparent=False, bbox_inches=None)
         plt.close(fig)
 
-def SSFR_VIDEO(data_sks, ncpu=6, fdir_graph='graph/tmp'):
+def SSFR_VIDEO(data_sks, ncpu=6, fdir_graph='graph/tmp', fname_vid='test.mp4'):
 
     import multiprocessing as mp
+
+    fdir_graph = os.path.abspath(fdir_graph)
+    fname_vid = os.path.abspath(fname_vid)
+
+    if not os.path.exists(fdir_graph):
+        os.system('mkdir -p %s' % fdir_graph)
+    if len(glob.glob('%s/*.png' % fdir_graph)) > 0:
+        os.system('find %s -name "*.png" | xargs rm -f' % fdir_graph)
+
+    os.chdir(fdir_graph)
 
     indice = np.arange(data_sks.shutter.size)
     inits  = [data_sks]*data_sks.shutter.size
@@ -900,19 +675,23 @@ def SSFR_VIDEO(data_sks, ncpu=6, fdir_graph='graph/tmp'):
     pool.close()
     pool.join()
 
+    command = 'ffmpeg -y -framerate 10 -pattern_type glob -i \'%s/*.png\' -vf scale=2010:-1 -c:v libx264 -pix_fmt yuv420p %s' % (fdir_graph, fname_vid)
+    print(command)
+    os.system(command)
+
 
 if __name__ == '__main__':
     import matplotlib as mpl
-    # mpl.use('Agg')
+    mpl.use('Agg')
     from matplotlib.ticker import FixedLocator, MaxNLocator
     import matplotlib.gridspec as gridspec
     import matplotlib.pyplot as plt
     from matplotlib import rcParams
+    import matplotlib.patches as mpatches
 
     # fnames = sorted(glob.glob('data/20180104/sat_test_s600i600/*.SKS'))
     fnames = sorted(glob.glob('data/20180104/cal_test_amesLC/*.SKS'))
     data_sks = READ_SKS(fnames)
 
-    # MULTI_FUSE(data_sks)
-
-    SSFR_FRAME([data_sks, 70], testMode=True)
+    # SSFR_FRAME([data_sks, 130], testMode=True)
+    SSFR_VIDEO(data_sks)
