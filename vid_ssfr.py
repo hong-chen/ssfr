@@ -672,6 +672,7 @@ def SSFR_VIDEO(data_sks, ncpu=6, fdir_graph='graph/tmp', fname_vid='test.mp4'):
     if len(glob.glob('%s/*.png' % fdir_graph)) > 0:
         os.system('find %s -name "*.png" | xargs rm -f' % fdir_graph)
 
+    fdir0 = os.path.abspath('./')
     os.chdir(fdir_graph)
 
     indice = np.arange(data_sks.shutter.size)
@@ -683,8 +684,8 @@ def SSFR_VIDEO(data_sks, ncpu=6, fdir_graph='graph/tmp', fname_vid='test.mp4'):
     pool.join()
 
     command = 'ffmpeg -y -framerate 10 -pattern_type glob -i \'%s/*.png\' -vf scale=2010:-1 -c:v libx264 -pix_fmt yuv420p %s' % (fdir_graph, fname_vid)
-    print(command)
     os.system(command)
+    os.chdir(fdir0)
 
 if __name__ == '__main__':
     import matplotlib as mpl
