@@ -345,7 +345,7 @@ def CAL_YLIMS(data, unit0=20, portion=0.1):
     data_min = np.nanmin(data)
     data_range = data_max-data_min
 
-    unit = unit0 * ((data_range*portion) // unit0)
+    unit = unit0 * max((data_range*portion)//unit0, 1)
 
     ylim_min = unit * (data_min//unit)
     while abs(data_min-ylim_min) < unit*0.1:
@@ -357,8 +357,7 @@ def CAL_YLIMS(data, unit0=20, portion=0.1):
 
     return [ylim_min, ylim_max]
 
-
-def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
+def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
 
     # extract input arguments
     data_sks, index = statements
@@ -386,6 +385,7 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
     shutter0 = np.append(shutter0, shutter0[-1])
     tmhr0    = np.append(tmhr0[0]-1.0/3600.0, tmhr0)
     shutter0 = np.append(shutter0[0], shutter0)
+
     # +
     # plot temperatures in time series
     indices = [0, 1, 2, 3, 7]
@@ -441,9 +441,12 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
     ax_temp_ts_2.set_xlim([data_sks.tmhr[index]-0.0166666666, data_sks.tmhr[index]+0.0166666667])
     ax_temp_ts_2.set_xticklabels([])
     # -
+
     ax_temp_ts_1.legend(handles=patches, bbox_to_anchor=(0., 1.01, 1., .102), loc=3, ncol=len(patches), mode="expand", borderaxespad=0., frameon=False, handletextpad=0.2, fontsize=9)
     gs_temp_ts.update(bottom=0.7, top=0.85, hspace=0.1)
 
+    # +
+    # plot broken y axis
     d = 0.003
     kwargs = dict(transform=ax_temp_ts_1.transAxes, color='k', clip_on=False, lw=1.0)
     ax_temp_ts_1.plot((-d, +d), (-d, +d), **kwargs)
@@ -452,13 +455,13 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
     kwargs = dict(transform=ax_temp_ts_2.transAxes, color='k', clip_on=False, lw=1.0)
     ax_temp_ts_2.plot((-d, +d), (1-d, 1+d), **kwargs)
     ax_temp_ts_2.plot((1-d, 1+d), (1-d, 1+d), **kwargs)
-
+    # -
 
     gs_counts_ts = gridspec.GridSpec(3, 4)
     # +
     # plot counts for one channel ("Nchan") in time series
-    logic = (data_sks.shutter==0) | (data_sks.shutter==1)
-    ylim_min, ylim_max = CAL_YLIMS(data_sks.spectra_dark_corr[logic, Nchan, :], unit0=20, portion=0.1)
+    logic_good = (data_sks.shutter==0) | (data_sks.shutter==1)
+    ylim_min, ylim_max = CAL_YLIMS(data_sks.spectra_dark_corr[logic_good, Nchan, :], unit0=20, portion=0.1)
 
     ax_counts_ts = fig.add_subplot(gs_counts_ts[0, :])
     ax_counts_ts.scatter(data_sks.tmhr, data_sks.spectra_dark_corr[:, Nchan, 0], lw=0, marker='o', facecolor='Red'          , edgecolor='none', s=10, alpha=1.0, zorder=1)
@@ -484,28 +487,9 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
     ax_dark_nad_si = fig.add_subplot(gs_counts_ts[1, 2])
     ax_dark_nad_in = fig.add_subplot(gs_counts_ts[1, 3])
 
-    logic0   = (data_sks.shutter_ori==1)
-    logic_0 = (data_sks.shutter==0) | (data_sks.shutter==1)
-    logic_1 = (data_sks.shutter_ori==0) & (data_sks.shutter!=0)
-
-    ylims_min_0 = np.zeros(4)
-    ylims_max_0 = np.zeros(4)
-    ylims_min_1 = np.zeros(4)
-    ylims_max_1 = np.zeros(4)
-    for ii in range(4):
-        data_max = max([(data_sks.dark_offset[logic_0, :, ii]).max(), (data_sks.spectra[logic0, :, ii]).max()])
-        data_min = min([(data_sks.dark_offset[logic_0, :, ii]).min(), (data_sks.spectra[logic0, :, ii]).min()])
-        unit_0 = 20 * (((data_max-data_min)/10) // 20 + 1)
-        ylims_min_0[ii] = unit_0 * (data_min//unit_0)
-        ylims_max_0[ii] = unit_0 * (data_max//unit_0 + 1)
-        if ((ylims_max_0[ii]-data_max)<(data_min-ylims_min_0[ii])):
-            ylims_max_0[ii] += unit_0
-
-        unit_1 = 20 * ((((data_sks.spectra[logic_1, :, ii]).max()-(data_sks.spectra[logic_1, :, ii]).min())/10) // 20 + 1)
-        ylims_min_1[ii] = unit_1 * (np.min(data_sks.spectra[logic_1, :, ii])//unit_1)
-        ylims_max_1[ii] = unit_1 * (np.max(data_sks.spectra[logic_1, :, ii])//unit_1 + 1)
-        if ((ylims_max_1[ii]-(data_sks.spectra[logic_1, :, ii]).max())<((data_sks.spectra[logic_1, :, ii]).min()-ylims_min_1[ii])):
-            ylims_max_1[ii] += unit_1
+    logic_dark_good = (data_sks.shutter==1)
+    logic_dark_bad  = (data_sks.shutter_ori==1) & (data_sks.shutter!=1)
+    logic_light_bad = (data_sks.shutter_ori==0) & (data_sks.shutter!=0)
 
     xx = np.arange(256) + 1
 
@@ -529,7 +513,7 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
     ax_dark_nad_in.tick_params(axis='both', which='major', labelsize=8)
     ax_dark_nad_in.axvline(100, ls='--', color='gray', lw=1.0)
 
-    if not (data_sks.shutter_ori[index]==0 and data_sks.shutter[index]!=0):
+    if (not logic_light_bad[index]):
 
         ax_dark_zen_si.plot(xx, data_sks.dark_offset[index, :, 0], color='k', zorder=0)
         if data_sks.shutter_ori[index] == 1:
@@ -551,10 +535,20 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
             ax_dark_nad_in.scatter(xx, data_sks.spectra[index, :, 3], c='b', s=3, zorder=1)
         ax_dark_nad_in.set_title('Dark of Nad. In.', color='SkyBlue')
 
-        ax_dark_zen_si.set_ylim([ylims_min_0[0], ylims_max_0[0]])
-        ax_dark_zen_in.set_ylim([ylims_min_0[1], ylims_max_0[1]])
-        ax_dark_nad_si.set_ylim([ylims_min_0[2], ylims_max_0[2]])
-        ax_dark_nad_in.set_ylim([ylims_min_0[3], ylims_max_0[3]])
+        if logic_dark_good[index]:
+            ax_dark_zen_si.set_ylim(CAL_YLIMS(data_sks.dark_offset[logic_dark_good, :, 0], unit0=20, portion=0.1))
+            ax_dark_zen_in.set_ylim(CAL_YLIMS(data_sks.dark_offset[logic_dark_good, :, 1], unit0=20, portion=0.1))
+            ax_dark_nad_si.set_ylim(CAL_YLIMS(data_sks.dark_offset[logic_dark_good, :, 2], unit0=20, portion=0.1))
+            ax_dark_nad_in.set_ylim(CAL_YLIMS(data_sks.dark_offset[logic_dark_good, :, 3], unit0=20, portion=0.1))
+        else:
+            data_tmp = np.append(data_sks.dark_offset[logic_dark_bad, :, 0], data_sks.spectra[logic_dark_bad, :, 0])
+            ax_dark_zen_si.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+            data_tmp = np.append(data_sks.dark_offset[logic_dark_bad, :, 1], data_sks.spectra[logic_dark_bad, :, 1])
+            ax_dark_zen_in.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+            data_tmp = np.append(data_sks.dark_offset[logic_dark_bad, :, 2], data_sks.spectra[logic_dark_bad, :, 2])
+            ax_dark_nad_si.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+            data_tmp = np.append(data_sks.dark_offset[logic_dark_bad, :, 3], data_sks.spectra[logic_dark_bad, :, 3])
+            ax_dark_nad_in.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
     else:
         ax_dark_zen_si.plot(xx, data_sks.spectra[index, :, 0], c='k', zorder=0)
         ax_dark_zen_si.set_title('Light of Zen. Si.', color='Red')
@@ -568,10 +562,10 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
         ax_dark_nad_in.plot(xx, data_sks.spectra[index, :, 3], c='k', zorder=0)
         ax_dark_nad_in.set_title('Light of Nad. In.', color='SkyBlue')
 
-        ax_dark_zen_si.set_ylim([ylims_min_1[0], ylims_max_1[0]])
-        ax_dark_zen_in.set_ylim([ylims_min_1[1], ylims_max_1[1]])
-        ax_dark_nad_si.set_ylim([ylims_min_1[2], ylims_max_1[2]])
-        ax_dark_nad_in.set_ylim([ylims_min_1[3], ylims_max_1[3]])
+        ax_dark_zen_si.set_ylim(CAL_YLIMS(data_sks.spectra[logic_light_bad, :, 0], unit0=20, portion=0.1))
+        ax_dark_zen_in.set_ylim(CAL_YLIMS(data_sks.spectra[logic_light_bad, :, 1], unit0=20, portion=0.1))
+        ax_dark_nad_si.set_ylim(CAL_YLIMS(data_sks.spectra[logic_light_bad, :, 2], unit0=20, portion=0.1))
+        ax_dark_nad_in.set_ylim(CAL_YLIMS(data_sks.spectra[logic_light_bad, :, 3], unit0=20, portion=0.1))
     # -
 
     # +
@@ -581,28 +575,10 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
     ax_corr_nad_si = fig.add_subplot(gs_counts_ts[2, 2])
     ax_corr_nad_in = fig.add_subplot(gs_counts_ts[2, 3])
 
-    logic_0 = (data_sks.shutter==0)
-    logic_1 = (data_sks.shutter_ori==1)
+    logic_light_good = (data_sks.shutter==0)
+    light_dark       = (data_sks.shutter_ori==1)
 
-    ylims_min_0 = np.zeros(4)
-    ylims_max_0 = np.zeros(4)
-    ylims_min_1 = np.zeros(4)
-    ylims_max_1 = np.zeros(4)
-    for ii in range(4):
-        unit_0 = 20 * ((((data_sks.spectra_dark_corr[logic_0, :, ii]).max()-(data_sks.spectra_dark_corr[logic_0, :, ii]).min())/10) // 20 + 1)
-        ylims_min_0[ii] = unit_0 * (np.min(data_sks.spectra_dark_corr[logic_0, :, ii])//unit_0)
-        ylims_max_0[ii] = unit_0 * (np.max(data_sks.spectra_dark_corr[logic_0, :, ii])//unit_0 + 1)
-        if ((ylims_max_0[ii]-(data_sks.spectra_dark_corr[logic_0, :, ii]).max())<((data_sks.spectra_dark_corr[logic_0, :, ii]).min()-ylims_min_0[ii])):
-            ylims_max_0[ii] += unit_0
-
-        unit_1 = 20 * ((((data_sks.spectra_dark_corr[logic_1, :, ii]).max()-(data_sks.spectra_dark_corr[logic_1, :, ii]).min())/10) // 20 + 1)
-        ylims_min_1[ii] = unit_1 * (np.min(data_sks.spectra_dark_corr[logic_1, :, ii])//unit_1)
-        ylims_max_1[ii] = unit_1 * (np.max(data_sks.spectra_dark_corr[logic_1, :, ii])//unit_1 + 1)
-        if ((ylims_max_1[ii]-(data_sks.spectra_dark_corr[logic_1, :, ii]).max())<((data_sks.spectra_dark_corr[logic_1, :, ii]).min()-ylims_min_1[ii])):
-            ylims_max_1[ii] += unit_1
-
-    xx = np.arange(256) + 1
-    if data_sks.shutter[index]==0 or data_sks.shutter_ori[index]==1:
+    if logic_good[index]:
 
         ax_corr_zen_si.plot(xx, data_sks.spectra_dark_corr[index, :, 0], color='k', zorder=0)
         ax_corr_zen_si.axvline(100, ls='--', color='gray', lw=1.0)
@@ -641,26 +617,20 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
         ax_corr_nad_si.axis('off')
         ax_corr_nad_in.axis('off')
 
-    if data_sks.shutter[index] == 0:
-        ax_corr_zen_si.set_ylim([ylims_min_0[0], ylims_max_0[0]])
-        ax_corr_zen_in.set_ylim([ylims_min_0[1], ylims_max_0[1]])
-        ax_corr_nad_si.set_ylim([ylims_min_0[2], ylims_max_0[2]])
-        ax_corr_nad_in.set_ylim([ylims_min_0[3], ylims_max_0[3]])
-    elif data_sks.shutter_ori[index] == 1:
-        ax_corr_zen_si.set_ylim([ylims_min_1[0], ylims_max_1[0]])
-        ax_corr_zen_in.set_ylim([ylims_min_1[1], ylims_max_1[1]])
-        ax_corr_nad_si.set_ylim([ylims_min_1[2], ylims_max_1[2]])
-        ax_corr_nad_in.set_ylim([ylims_min_1[3], ylims_max_1[3]])
+    if logic_light_good[index]:
+        ax_corr_zen_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 0], unit0=20, portion=0.1))
+        ax_corr_zen_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 1], unit0=20, portion=0.1))
+        ax_corr_nad_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 2], unit0=20, portion=0.1))
+        ax_corr_nad_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 3], unit0=20, portion=0.1))
+    elif logic_dark_good[index]:
+        ax_corr_zen_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 0], unit0=20, portion=0.1))
+        ax_corr_zen_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 1], unit0=20, portion=0.1))
+        ax_corr_nad_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 2], unit0=20, portion=0.1))
+        ax_corr_nad_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 3], unit0=20, portion=0.1))
 
     # -
-    # gs_counts_ts.tight_layout(fig, rect=[0.0, 0.0, 1.0, 0.6])
     gs_counts_ts.update(bottom=0.0, top=0.65)
     gs_counts_ts.update(wspace=0.3, hspace=0.3)
-
-    # left = min(gs_temp_ts.left, gs_counts_ts.left)
-    # right= max(gs_temp_ts.right,gs_counts_ts.right)
-    # gs_temp_ts.update(left=left, right=right)
-    # gs_counts_ts.update(left=left, right=right)
 
     # ax1.get_yaxis().get_major_formatter().set_scientific(False)
     # ax1.get_yaxis().get_major_formatter().set_useOffset(False)
@@ -679,7 +649,7 @@ def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
         plt.savefig('%s_%6.6d.png' % (nameTag, index), transparent=False)
         plt.close(fig)
 
-def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
+def SSFR_FRAME0(statements, Nchan=100, nameTag=None, testMode=False):
 
     # extract input arguments
     data_sks, index = statements
@@ -1050,10 +1020,9 @@ def SSFR_VIDEO(data_sks, ncpu=6, fdir_graph='graph/tmp', fname_vid='test.mp4'):
     print(command)
     os.system(command)
 
-
 if __name__ == '__main__':
     import matplotlib as mpl
-    # mpl.use('Agg')
+    mpl.use('Agg')
     from matplotlib.ticker import FixedLocator, MaxNLocator
     import matplotlib.gridspec as gridspec
     import matplotlib.pyplot as plt
@@ -1061,13 +1030,13 @@ if __name__ == '__main__':
     import matplotlib.patches as mpatches
 
     # fnames = sorted(glob.glob('data/20180104/sat_test_s600i600/*.SKS'))
-    # fnames = sorted(glob.glob('data/20180104/cal_test_amesLC/*.SKS'))
-    fnames = sorted(glob.glob('data/20171221/*.SKS'))
+    fnames = sorted(glob.glob('data/20180104/cal_test_amesLC/*.SKS'))
+    # fnames = sorted(glob.glob('data/20171221/*.SKS'))
     data_sks = READ_SKS(fnames)
     # print(data_sks.spectra_dark_corr[data_sks.shutter==0, :, 0].max())
     # print(data_sks.spectra[data_sks.shutter==0, :, 0].max())
     # print(data_sks.spectra[data_sks.shutter==0, :, 0].min())
     # exit()
 
-    SSFR_FRAME0([data_sks, 130], testMode=True)
-    # SSFR_VIDEO(data_sks)
+    # SSFR_FRAME0([data_sks, 130], testMode=True)
+    SSFR_VIDEO(data_sks)
