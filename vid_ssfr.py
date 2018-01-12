@@ -396,11 +396,11 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
 
     ax_temp_ts_1 = fig.add_subplot(gs_temp_ts[0, :])
 
-    colors = plt.cm.jet(np.linspace(0.0, 1.0, data_temp.shape[-1]))
+    colors = ['#e6194b', '#3cb44b', '#911eb4', '#0082c8', '#f58231']
     patches = []
     for ii in range(data_temp.shape[-1]):
-        ax_temp_ts_1.scatter(data_sks.tmhr, data_temp[:, ii], lw=0, marker='o', facecolor=colors[ii, :], edgecolor='none', s=10, alpha=1.0, zorder=1)
-        patches.append(mpatches.Patch(color=colors[ii, :] , label=labels[ii]))
+        ax_temp_ts_1.scatter(data_sks.tmhr, data_temp[:, ii], lw=0, marker='o', facecolor=colors[ii], edgecolor='none', s=10, alpha=1.0, zorder=1)
+        patches.append(mpatches.Patch(color=colors[ii] , label=labels[ii]))
 
     ax_temp_ts_1.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0<5.6)&(shutter0>0.9), facecolor='k', alpha=0.2, zorder=0)
     ax_temp_ts_1.fill_between(tmhr0, ylim_min, ylim_max, where=(shutter0>4.9)               , facecolor='r', alpha=0.2, zorder=0)
@@ -1038,5 +1038,5 @@ if __name__ == '__main__':
     # print(data_sks.spectra[data_sks.shutter==0, :, 0].min())
     # exit()
 
-    # SSFR_FRAME0([data_sks, 130], testMode=True)
-    SSFR_VIDEO(data_sks)
+    SSFR_FRAME([data_sks, 130], testMode=True)
+    # SSFR_VIDEO(data_sks)
