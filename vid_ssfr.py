@@ -516,30 +516,41 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
     if (not logic_light_bad[index]):
 
         ax_dark_zen_si.plot(xx, data_sks.dark_offset[index, :, 0], color='k', zorder=0)
-        if data_sks.shutter_ori[index] == 1:
-            ax_dark_zen_si.scatter(xx, data_sks.spectra[index, :, 0], c='b', s=3, zorder=1)
         ax_dark_zen_si.set_title('Dark of Zen. Si.', color='Red')
 
         ax_dark_zen_in.plot(xx, data_sks.dark_offset[index, :, 1], color='k', zorder=0)
-        if data_sks.shutter_ori[index] == 1:
-            ax_dark_zen_in.scatter(xx, data_sks.spectra[index, :, 1], c='b', s=3, zorder=1)
         ax_dark_zen_in.set_title('Dark of Zen. In.', color='Salmon')
 
         ax_dark_nad_si.plot(xx, data_sks.dark_offset[index, :, 2], color='k', zorder=0)
-        if data_sks.shutter_ori[index] == 1:
-            ax_dark_nad_si.scatter(xx, data_sks.spectra[index, :, 2], c='b', s=3, zorder=1)
         ax_dark_nad_si.set_title('Dark of Nad. Si.', color='Blue')
 
         ax_dark_nad_in.plot(xx, data_sks.dark_offset[index, :, 3], color='k', zorder=0)
-        if data_sks.shutter_ori[index] == 1:
-            ax_dark_nad_in.scatter(xx, data_sks.spectra[index, :, 3], c='b', s=3, zorder=1)
         ax_dark_nad_in.set_title('Dark of Nad. In.', color='SkyBlue')
 
-        if logic_dark_good[index]:
-            ax_dark_zen_si.set_ylim(CAL_YLIMS(data_sks.dark_offset[logic_dark_good, :, 0], unit0=20, portion=0.1))
-            ax_dark_zen_in.set_ylim(CAL_YLIMS(data_sks.dark_offset[logic_dark_good, :, 1], unit0=20, portion=0.1))
-            ax_dark_nad_si.set_ylim(CAL_YLIMS(data_sks.dark_offset[logic_dark_good, :, 2], unit0=20, portion=0.1))
-            ax_dark_nad_in.set_ylim(CAL_YLIMS(data_sks.dark_offset[logic_dark_good, :, 3], unit0=20, portion=0.1))
+        if logic_good[index]:
+            if logic_dark_good[index]:
+                ax_dark_zen_in.scatter(xx, data_sks.spectra[index, :, 1], c='b', s=3, zorder=1)
+                ax_dark_zen_si.scatter(xx, data_sks.spectra[index, :, 0], c='b', s=3, zorder=1)
+                ax_dark_nad_si.scatter(xx, data_sks.spectra[index, :, 2], c='b', s=3, zorder=1)
+                ax_dark_nad_in.scatter(xx, data_sks.spectra[index, :, 3], c='b', s=3, zorder=1)
+
+                data_tmp = np.append(data_sks.dark_offset[logic_good, :, 0], data_sks.spectra[logic_dark_good, :, 0])
+                ax_dark_zen_si.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+                data_tmp = np.append(data_sks.dark_offset[logic_good, :, 1], data_sks.spectra[logic_dark_good, :, 1])
+                ax_dark_zen_in.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+                data_tmp = np.append(data_sks.dark_offset[logic_good, :, 2], data_sks.spectra[logic_dark_good, :, 2])
+                ax_dark_nad_si.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+                data_tmp = np.append(data_sks.dark_offset[logic_good, :, 3], data_sks.spectra[logic_dark_good, :, 3])
+                ax_dark_nad_in.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+            else:
+                data_tmp = data_sks.dark_offset[logic_good, :, 0]
+                ax_dark_zen_si.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+                data_tmp = data_sks.dark_offset[logic_good, :, 1]
+                ax_dark_zen_in.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+                data_tmp = data_sks.dark_offset[logic_good, :, 2]
+                ax_dark_nad_si.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
+                data_tmp = data_sks.dark_offset[logic_good, :, 3]
+                ax_dark_nad_in.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
         else:
             data_tmp = np.append(data_sks.dark_offset[logic_dark_bad, :, 0], data_sks.spectra[logic_dark_bad, :, 0])
             ax_dark_zen_si.set_ylim(CAL_YLIMS(data_tmp, unit0=20, portion=0.1))
@@ -1030,7 +1041,7 @@ if __name__ == '__main__':
     import matplotlib.patches as mpatches
 
     # fnames = sorted(glob.glob('data/20180104/sat_test_s600i600/*.SKS'))
-    fnames = sorted(glob.glob('data/20180104/cal_test_amesLC/*.SKS'))
+    fnames = sorted(glob.glob('data/20180112/pcal_1324/*.SKS'))
     # fnames = sorted(glob.glob('data/20171221/*.SKS'))
     data_sks = READ_SKS(fnames)
     # print(data_sks.spectra_dark_corr[data_sks.shutter==0, :, 0].max())
@@ -1038,5 +1049,5 @@ if __name__ == '__main__':
     # print(data_sks.spectra[data_sks.shutter==0, :, 0].min())
     # exit()
 
-    SSFR_FRAME([data_sks, 130], testMode=True)
-    # SSFR_VIDEO(data_sks)
+    # SSFR_FRAME([data_sks, 130], testMode=True)
+    SSFR_VIDEO(data_sks)
