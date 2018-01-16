@@ -635,14 +635,14 @@ def SSFR_FRAME(statements, Nchan=100, nameTag=None, testMode=False):
         ax_corr_nad_in.axis('off')
 
     if logic_light_good[index]:
-        ax_corr_zen_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 0], unit0=20, portion=0.1))
-        ax_corr_zen_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 1], unit0=20, portion=0.1))
-        ax_corr_nad_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 2], unit0=20, portion=0.1))
-        ax_corr_nad_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 3], unit0=20, portion=0.1))
-        # ax_corr_zen_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 0], unit0=20, portion=0.1))
-        # ax_corr_zen_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 1], unit0=20, portion=0.1))
-        # ax_corr_nad_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 2], unit0=20, portion=0.1))
-        # ax_corr_nad_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 3], unit0=20, portion=0.1))
+        # ax_corr_zen_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 0], unit0=20, portion=0.1))
+        # ax_corr_zen_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 1], unit0=20, portion=0.1))
+        # ax_corr_nad_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 2], unit0=20, portion=0.1))
+        # ax_corr_nad_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_light_good, :, 3], unit0=20, portion=0.1))
+        ax_corr_zen_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 0], unit0=20, portion=0.1))
+        ax_corr_zen_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 1], unit0=20, portion=0.1))
+        ax_corr_nad_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 2], unit0=20, portion=0.1))
+        ax_corr_nad_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 3], unit0=20, portion=0.1))
     elif logic_dark_good[index]:
         ax_corr_zen_si.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 0], unit0=20, portion=0.1))
         ax_corr_zen_in.set_ylim(CAL_YLIMS(data_sks.spectra_dark_corr[logic_dark_good, :, 1], unit0=20, portion=0.1))
@@ -698,13 +698,9 @@ if __name__ == '__main__':
     import matplotlib.patches as mpatches
 
     # fnames = sorted(glob.glob('data/20180104/sat_test_s600i600/*.SKS'))
-    fnames = sorted(glob.glob('data/20180112/pcal_1324/*.SKS'))
+    fnames = sorted(glob.glob('data/20180110/zenith/s60i300/*.SKS'))
     # fnames = sorted(glob.glob('data/20171221/*.SKS'))
     data_sks = READ_SKS(fnames)
-    # print(data_sks.spectra_dark_corr[data_sks.shutter==0, :, 0].max())
-    # print(data_sks.spectra[data_sks.shutter==0, :, 0].max())
-    # print(data_sks.spectra[data_sks.shutter==0, :, 0].min())
-    # exit()
 
     # SSFR_FRAME([data_sks, 130], testMode=True)
     SSFR_VIDEO(data_sks)
