@@ -225,7 +225,6 @@ def READ_CU_SSFR_V2(fname, headLen=148, dataLen=2276, verbose=False):
 
     return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
 
-
 def READ_SKS_V2(fname, headLen=148, dataLen=2276, verbose=True):
 
     fileSize = os.path.getsize(fname)
@@ -300,7 +299,6 @@ def READ_SKS_V2(fname, headLen=148, dataLen=2276, verbose=True):
             jday_cRIO[i]   = (dtime0 - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
 
     return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
-
 
 def READ_NASA_SSFR(fname, filetype='osa2', headLen=0, dataLen=2124, verbose=False):
 

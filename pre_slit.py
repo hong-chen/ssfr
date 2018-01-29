@@ -34,6 +34,12 @@ def VIS_SLIT_FUNC():
 
     spline = UnivariateSpline(data_xx, data_yy-data_yy.max()/2.0, s=0)
     r1, r2 = spline.roots()
+
+    # xx, yy = CAL_SLIT_FUNC(6.0, xx=np.arange(-8.0, 8.01, 1.0))
+    # for i, xx0 in enumerate(xx):
+    #     print('%5.1f  %.16f' % (xx0, yy[i]))
+    # exit()
+
     ax1.plot(data_x, data_y, lw=2.0, color='k', marker='o', markersize=5, alpha=0.6, label='1.0 nm')
     ax1.plot([r1, r2], [data_yy.max()/2.0, data_y.max()/2.0], ls='--', color='k', alpha=0.6, lw=2.0)
     ax1.plot([r1, r1], [0.0, data_y.max()/2.0], ls='--', color='k', alpha=0.6, lw=2.0)
@@ -77,11 +83,17 @@ def NIR_SLIT_FUNC():
     data_x = data_10[:, 0]
     data_y = data_10[:, 1]
     data_xx = np.linspace(-16.0, 16.0, 10000)
+
     data_yy = np.interp(data_xx, data_x, data_y)
 
     spline = UnivariateSpline(data_xx, data_yy-data_yy.max()/2.0, s=0)
     r1, r2 = spline.roots()
-    print(r1, r2)
+
+    # xx, yy = CAL_SLIT_FUNC(12.0, xx=np.arange(-16.0, 16.01, 1.0))
+    # for i, xx0 in enumerate(xx):
+    #     print('%5.1f  %.16f' % (xx0, yy[i]))
+    # exit()
+
     ax1.plot(data_x, data_y, lw=2.0, color='k', marker='o', markersize=5, alpha=0.6, label='1.0 nm')
     ax1.plot([r1, r2], [data_yy.max()/2.0, data_y.max()/2.0], ls='--', color='k', alpha=0.6, lw=2.0)
     ax1.plot([r1, r1], [0.0, data_y.max()/2.0], ls='--', color='k', alpha=0.6, lw=2.0)
@@ -111,6 +123,16 @@ def NIR_SLIT_FUNC():
     exit()
     # ---------------------------------------------------------------------
 
+def CAL_SLIT_FUNC(FWHM, xx=np.arange(-16.0, 16.1, 0.1), x0=0.0):
+
+    sigma = FWHM / (2.0*np.sqrt(2.0*np.log(2.0)))
+
+    yy = np.exp(-(xx-x0)**2/(2.0*sigma**2))
+
+    return xx, yy
+
+
 if __name__ == '__main__':
 
-    NIR_SLIT_FUNC()
+    VIS_SLIT_FUNC()
+    # NIR_SLIT_FUNC()
