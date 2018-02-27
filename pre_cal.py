@@ -1046,7 +1046,7 @@ def PLOT():
     plt.savefig('20180112_resp.png')
     plt.show()
     exit()
-    # --------------------------------------------------------------------- 
+    # ---------------------------------------------------------------------
 
 
 
@@ -1152,6 +1152,55 @@ def PLOT_SPECTRA(tmhr_range):
 
 
 
+def PLOT_SPECTRA_RATIO(tmhr_range):
+
+    f = h5py.File('test_20180221_cu.h5', 'r')
+    spectra_flux_zen = f['spectra_flux_zen'][...]
+    spectra_flux_nad = f['spectra_flux_nad'][...]
+    wvl_zen          = f['wvl_zen'][...]
+    wvl_nad          = f['wvl_nad'][...]
+    shutter          = f['shutter'][...]
+    tmhr             = f['tmhr'][...]
+    f.close()
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(12, 6))
+    ax1 = fig.add_subplot(111)
+
+    logic = (tmhr>=tmhr_range[0])&(tmhr<=tmhr_range[1])
+    for i in range(logic.sum()):
+        spectra_flux_zen0 = spectra_flux_zen[logic, :][i, :]
+        spectra_flux_nad0 = np.interp(wvl_zen, wvl_nad, spectra_flux_nad[logic, :][i, :])
+        ax1.scatter(wvl_zen, spectra_flux_nad0/spectra_flux_zen0, c='red', s=1, label='CU SSFR', alpha=0.3)
+
+    f_nasa0 = readsav('test_20180221_nasa.out')
+    logic = (f_nasa0.tmhrs>=tmhr_range[0])&(f_nasa0.tmhrs<=tmhr_range[1])
+    for i in range(logic.sum()):
+        spectra_flux_zen0 = f_nasa0.zspectra[logic, :][i, :]
+        spectra_flux_nad0 = np.interp(f_nasa0.zenlambda, f_nasa0.nadlambda,  f_nasa0.nspectra[logic, :][i, :])
+        ax1.scatter(f_nasa0.zenlambda, spectra_flux_nad0/spectra_flux_zen0, c='blue', s=1, label='NASA SSFR', alpha=0.3)
+
+    f_nasa = readsav('test_20180221_nasa_corr.out')
+
+    logic = (f_nasa0.tmhrs>=tmhr_range[0])&(f_nasa0.tmhrs<=tmhr_range[1])
+    for i in range(logic.sum()):
+        spectra_flux_zen0 = f_nasa.zenspectra[logic, :][i, :]
+        spectra_flux_nad0 = np.interp(f_nasa.zenlambda, f_nasa.nadlambda,  f_nasa.nadspectra[logic, :][i, :])
+        ax1.scatter(f_nasa.zenlambda, spectra_flux_nad0/spectra_flux_zen0, c='green', s=1, label='NASA SSFR (CORR)', alpha=0.3)
+
+    ax1.set_title('SSFR from %.4f to %.4f' % (tmhr_range[0], tmhr_range[1]))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Ratio [Nadir/Zenith]')
+
+    ax1.set_ylim((0.8, 1.2))
+    plt.savefig('ssfr_ratio.png')
+
+    plt.show()
+    exit()
+    # ---------------------------------------------------------------------
+
+
+
 
 if __name__ == '__main__':
 
@@ -1176,9 +1225,10 @@ if __name__ == '__main__':
 
 
 
-    PLOT_TIME_SERIES(500.0)
+    # PLOT_TIME_SERIES(500.0)
     # PLOT_TIME_SERIES(1600.0)
     # PLOT_SPECTRA([19.2, 19.3])
+    PLOT_SPECTRA_RATIO([19.2, 19.3])
 
 
     exit()
