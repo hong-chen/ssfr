@@ -414,20 +414,20 @@ class READ_NASA_SSFR:
         jday       = jday[:Nend, ...]
         qual_flag  = qual_flag[:Nend, ...]
 
+        jdayRef = int(jday[0])
         self.tmhr_range = tmhr_range
-        logic = (jday_NSF-jdayRef>=0.0)&(jday_NSF-jdayRef<=2.0)
+        logic = (jday-jdayRef>=0.0)&(jday-jdayRef<=2.0)
 
         spectra    = spectra[logic, ...]
         shutter    = shutter[logic, ...]
         int_time   = int_time[logic, ...]
         temp       = temp[logic, ...]
-        jday_NSF   = jday_NSF[logic, ...]
-        jday_cRIO  = jday_cRIO[logic, ...]
+        jday       = jday[logic, ...]
         qual_flag  = qual_flag[logic, ...]
         # ------------------------------------------------------------------------------------------
 
-        self.jday_corr = jday_NSF - secOffset/86400.0
-        self.tmhr_corr = (jday_NSF-jdayRef)*24.0  - secOffset/3600.0
+        self.jday_corr = jday - secOffset/86400.0
+        self.tmhr_corr = (jday-jdayRef)*24.0  - secOffset/3600.0
         self.spectra   = spectra
         self.shutter   = shutter
         self.int_time  = int_time
@@ -441,47 +441,6 @@ class READ_NASA_SSFR:
             print('Dark correction...')
         self.DARK_CORR()
         # ------------------------------------------------------------------------------------------
-
-        # non-linear correction
-        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        if verbose:
-            print('Non-linearity correction...')
-        self.spectra_nlin_corr = self.spectra_dark_corr.copy()
-        fname_nlin ='/Users/hoch4240/Chen/work/01_ARISE/cal/data/ssfr/aux/20141121.sav'; Nsen = 1
-        self.NLIN_CORR(fname_nlin, Nsen)
-        fname_nlin ='/Users/hoch4240/Chen/work/01_ARISE/cal/data/ssfr/aux/20141119.sav'; Nsen = 3
-        self.NLIN_CORR(fname_nlin, Nsen)
-        # ------------------------------------------------------------------------------------------
-
-        # convert count to flux
-        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        # returns:
-        #     self.spectra_flux_zen, self.wvl_zen
-        #     self.spectra_flux_nad, self.wvl_nad
-        self.COUNT2FLUX(self.spectra_nlin_corr)
-        # ------------------------------------------------------------------------------------------
-
-        # interpolate to HSK
-        # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        f_hsk = READ_ICT_HSK(date, tmhr_range=tmhr_range)
-        tmhr  = f_hsk.data['Start_UTC']/3600.0
-
-        f_dn  = np.zeros((tmhr.size, self.wvl_zen.size), dtype=np.float64)
-        f_up  = np.zeros((tmhr.size, self.wvl_nad.size), dtype=np.float64)
-        for i in range(self.wvl_zen.size):
-            f_dn[:, i]  = np.interp(tmhr, self.tmhr_corr, self.spectra_flux_zen[:, i])
-        for i in range(self.wvl_nad.size):
-            f_up[:, i]   = np.interp(tmhr, self.tmhr_corr, self.spectra_flux_nad[:, i])
-
-        shutter_interp   = np.interp(tmhr, self.tmhr_corr, self.shutter)
-
-        # ---------------------------------------------------------------------
-        logic = np.abs(shutter_interp) > 0.000001
-        f_dn[logic, :]  = -1.0
-        f_up[logic, :]  = -1.0
-        # ------------------------------------------------------------------------------------------
-
-        self.tmhr, self.f_up, self.f_dn, self.logic = tmhr, f_up, f_dn, np.logical_not(logic)
 
     def DARK_CORR(self, mode=-1, darkExtend=2, lightExtend=2, countOffset=0, lightThr=10, darkThr=5):
 
@@ -628,122 +587,20 @@ class READ_NASA_SSFR:
         elif mode == -4:
             print('Message [DARK_CORR]: Not implemented...')
 
-    def NLIN_CORR(self, fname_nlin, Nsen, verbose=False):
-
-        int_time0 = np.mean(self.int_time[:, Nsen])
-        f_nlin = readsav(fname_nlin)
-
-        if abs(f_nlin.iin_-int_time0)>1.0e-5:
-            exit('Error [READ_SKS]: Integration time do not match.')
-
-        for iwvl in range(256):
-            xx0   = self.spectra_nlin_corr[:,iwvl,Nsen].copy()
-            xx    = np.zeros_like(xx0)
-            yy    = np.zeros_like(xx0)
-            self.spectra_nlin_corr[:,iwvl,Nsen] = -1.0
-            logic_xx     = (xx0>-100)
-            if verbose:
-                print('++++++++++++++++++++++++++++++++++++++++++++++++')
-                print('range', f_nlin.mxm_[0,iwvl]*f_nlin.in_[iwvl], f_nlin.mxm_[1,iwvl]*f_nlin.in_[iwvl])
-                print('good', logic_xx.sum(), xx0.size)
-            xx0[logic_xx] = xx0[logic_xx]/f_nlin.in_[iwvl]
-
-            if (f_nlin.bad_[1,iwvl]<1.0) and (f_nlin.mxm_[0,iwvl]>=1.0e-3):
-
-                #+ data in range (0, minimum)
-                yy_e = 0.0
-                for ideg in range(f_nlin.gr_):
-                    yy_e += f_nlin.res2_[ideg,iwvl]*f_nlin.mxm_[0,iwvl]**ideg
-                slope = yy_e/f_nlin.mxm_[0,iwvl]
-                logic_xx     = (xx0>-100) & (xx0<f_nlin.mxm_[0,iwvl])
-                if verbose:
-                    print('0-min', logic_xx.sum(), xx0.size)
-                    print('data', xx0[logic_xx])
-                xx[xx<0]     = 0.0
-                xx[logic_xx] = xx0[logic_xx]
-                yy[logic_xx] = xx[logic_xx]*slope
-
-                self.spectra_nlin_corr[logic_xx,iwvl,Nsen] = yy[logic_xx]*f_nlin.in_[iwvl]
-                #-
-
-                #+ data in range [minimum, maximum]
-                logic_xx     = (xx0>=f_nlin.mxm_[0,iwvl]) & (xx0<=f_nlin.mxm_[1,iwvl])
-                xx[logic_xx] = xx0[logic_xx]
-                if verbose:
-                    print('min-max', logic_xx.sum(), xx0.size)
-                    print('------------------------------------------------')
-                for ideg in range(f_nlin.gr_):
-                    yy[logic_xx] += f_nlin.res2_[ideg, iwvl]*xx[logic_xx]**ideg
-
-                self.spectra_nlin_corr[logic_xx,iwvl,Nsen] = yy[logic_xx]*f_nlin.in_[iwvl]
-                #-
-
-    def COUNT2FLUX(self, countIn,
-                   fname_ns = '/Users/hoch4240/Chen/work/01_ARISE/cal/data/ssfr/aux/20140924_s1n_150B_s300.sav',
-                   fname_ni = '/Users/hoch4240/Chen/work/01_ARISE/cal/data/ssfr/aux/20140924_s1n_150B_i300.sav',
-                   fname_zs = '/Users/hoch4240/Chen/work/01_ARISE/cal/data/ssfr/aux/20140921_s1z_150B_s300.sav',
-                   fname_zi = '/Users/hoch4240/Chen/work/01_ARISE/cal/data/ssfr/aux/20140921_s1z_150B_i300.sav'):
-
-        """
-        Convert digital count to flux (irradiance)
-        """
-
-        f_ns = readsav(fname_ns)
-        f_ni = readsav(fname_ni)
-        f_zs = readsav(fname_zs)
-        f_zi = readsav(fname_zi)
-
-        logic_nsi2 = (f_ns.wl_si2 <= f_ni.join)
-        logic_nin2 = (f_ni.wl_in2 >= f_ni.join)
-        nsi2 = logic_nsi2.sum()
-        nin2 = logic_nin2.sum()
-        n2 = nsi2 + nin2
-
-        logic_nsi1 = (f_zs.wl_si1 <= f_ni.join)
-        logic_nin1 = (f_zi.wl_in1 >= f_ni.join)
-        nsi1 = logic_nsi1.sum()
-        nin1 = logic_nin1.sum()
-        n1 = nsi1 + nin1
-
-        f_ns.resp2_si2[f_ns.resp2_si2<1.0e-10] = -1
-        f_ni.resp2_in2[f_ni.resp2_in2<1.0e-10] = -1
-        f_zs.resp2_si1[f_zs.resp2_si1<1.0e-10] = -1
-        f_zi.resp2_in1[f_zi.resp2_in1<1.0e-10] = -1
-
-        self.wvl_zen = np.append(f_zs.wl_si1[logic_nsi1], f_zi.wl_in1[logic_nin1][::-1])
-        self.wvl_nad = np.append(f_ns.wl_si2[logic_nsi2], f_ni.wl_in2[logic_nin2][::-1])
-        self.spectra_flux_zen = np.zeros((self.tmhr_corr.size, n1), dtype=np.float64)
-        self.spectra_flux_nad = np.zeros((self.tmhr_corr.size, n2), dtype=np.float64)
-        for i in range(self.tmhr_corr.size):
-            if self.shutter[i] == 0:
-                self.spectra_flux_zen[i, :nsi1] = countIn[i, logic_nsi1, 0]/float(self.int_time[i, 0])/f_zs.resp2_si1[logic_nsi1]
-                self.spectra_flux_zen[i, nsi1:] = (countIn[i, logic_nin1, 1]/float(self.int_time[i, 1])/f_zi.resp2_in1[logic_nin1])[::-1]
-                self.spectra_flux_nad[i, :nsi2] = countIn[i, logic_nsi2, 2]/float(self.int_time[i, 2])/f_ns.resp2_si2[logic_nsi2]
-                self.spectra_flux_nad[i, nsi2:] = (countIn[i, logic_nin2, 3]/float(self.int_time[i, 3])/f_ni.resp2_in2[logic_nin2])[::-1]
-            else:
-                self.spectra_flux_zen[i, :] = -1.0
-                self.spectra_flux_nad[i, :] = -1.0
-
-        self.spectra_flux_zen[self.spectra_flux_zen<0.0] = np.nan
-        self.spectra_flux_nad[self.spectra_flux_nad<0.0] = np.nan
-
 
 if __name__ == '__main__':
 
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     from matplotlib.ticker import FixedLocator
-    from mpl_toolkits.basemap import Basemap
 
-    fname = '/Users/hoch4240/Google Drive/CU LASP/ORACLES/Data/ORACLES 2017/p3/20170812/SSFR/spc01581.OSA2'
-    spectra, shutter, int_time, temp, jday, qual_flag, iterN = READ_NASA_SSFR(fname)
-
-    print(spectra.shape)
+    fname = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/20180302/zenith/s60i300/spc00000.OSA2'
+    f_ssfr = READ_NASA_SSFR([fname])
 
     # figure settings
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(111)
-    ax1.scatter(np.arange(256), spectra[10, :, 0])
+    ax1.scatter(f_ssfr.tmhr_corr, f_ssfr.shutter)
     # ax1.legend(loc='best', fontsize=12, framealpha=0.4)
     plt.show()
 

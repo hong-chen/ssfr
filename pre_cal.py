@@ -633,6 +633,107 @@ class CALIBRATION_CU_SSFR_20180221:
 
 
 
+class CALIBRATION_CU_SSFR_20180228:
+
+    def __init__(self, fdir_secondary):
+
+        self.CAL_WAVELENGTH()
+        self.CAL_SECONDARY_RESPONSE(fdir_secondary)
+
+
+    def CAL_WAVELENGTH(self):
+
+        self.chanNum = 256
+        xChan = np.arange(self.chanNum)
+
+        self.coef_zen_si = np.array([301.946,  3.31877,  0.00037585,  -1.76779e-6, 0])
+        self.coef_zen_in = np.array([2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8])
+
+        self.coef_nad_si = np.array([302.818,  3.31912,  0.000343831, -1.81135e-6, 0])
+        self.coef_nad_in = np.array([2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8])
+
+        self.wvl_zen_si = self.coef_zen_si[0] + self.coef_zen_si[1]*xChan + self.coef_zen_si[2]*xChan**2 + self.coef_zen_si[3]*xChan**3 + self.coef_zen_si[4]*xChan**4
+        self.wvl_zen_in = self.coef_zen_in[0] + self.coef_zen_in[1]*xChan + self.coef_zen_in[2]*xChan**2 + self.coef_zen_in[3]*xChan**3 + self.coef_zen_in[4]*xChan**4
+
+        self.wvl_nad_si = self.coef_nad_si[0] + self.coef_nad_si[1]*xChan + self.coef_nad_si[2]*xChan**2 + self.coef_nad_si[3]*xChan**3 + self.coef_nad_si[4]*xChan**4
+        self.wvl_nad_in = self.coef_nad_in[0] + self.coef_nad_in[1]*xChan + self.coef_nad_in[2]*xChan**2 + self.coef_nad_in[3]*xChan**3 + self.coef_nad_in[4]*xChan**4
+
+
+    def CAL_SECONDARY_RESPONSE(self, fdir_secondary, int_time_si=45, int_time_in=250, lampTag='150C'):
+
+        fdir_primary0    = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/ssfr6/20171106/1324'
+        fdir_transfer0   = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/ssfr6/20171106/150C'
+        fdir_secondary0  = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/ssfr6/20180221/150C'
+        nasa_cal = CALIBRATION_NASA_SSFR(fdir_primary0, fdir_transfer0, fdir_secondary0)
+
+        self.field_lamp_zen_si = np.interp(self.wvl_zen_si, nasa_cal.wvl_zen_si, nasa_cal.field_lamp_zen_si)
+        self.field_lamp_zen_in = np.interp(self.wvl_zen_in, nasa_cal.wvl_zen_in[::-1], nasa_cal.field_lamp_zen_in[::-1])
+        self.field_lamp_nad_si = np.interp(self.wvl_nad_si, nasa_cal.wvl_nad_si, nasa_cal.field_lamp_nad_si)
+        self.field_lamp_nad_in = np.interp(self.wvl_nad_in, nasa_cal.wvl_nad_in[::-1], nasa_cal.field_lamp_nad_in[::-1])
+
+        # for zenith
+        fname_pattern = '%s/zenith/s%di%d/cal/*.OSA2' % (fdir_secondary, int_time_si, int_time_in)
+        fnames  = glob.glob(fname_pattern)
+        if len(fnames) != 1:
+            exit('Error [CAL_SECONDARY_RESPONSE]: cannot find data for zenith cal.')
+        fname = fnames[0]
+        spectra, shutter, int_time, temp, jday, qual_flag, iterN = READ_NASA_SSFR_V1(fname)
+        spectra_mean = np.mean(spectra[2:-2, :, :], axis=0)
+        spectra_zen_si_l = spectra_mean[:, 0]
+        spectra_zen_in_l = spectra_mean[:, 1]
+
+        fname_pattern = '%s/zenith/s%di%d/dark/*.OSA2' % (fdir_secondary, int_time_si, int_time_in)
+        fnames  = glob.glob(fname_pattern)
+        if len(fnames) != 1:
+            exit('Error [CAL_SECONDARY_RESPONSE]: cannot find data for zenith dark.')
+        fname = fnames[0]
+        spectra, shutter, int_time, temp, jday, qual_flag, iterN = READ_NASA_SSFR_V1(fname)
+        spectra_mean = np.mean(spectra[2:-2, :, :], axis=0)
+        spectra_zen_si_d = spectra_mean[:, 0]
+        spectra_zen_in_d = spectra_mean[:, 1]
+
+        spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
+        spectra_zen_si[spectra_zen_si<=0.0] = 0.00000001
+
+        spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
+        spectra_zen_in[spectra_zen_in<=0.0] = 0.00000001
+
+        self.secondary_response_zen_si = spectra_zen_si / int_time_si / self.field_lamp_zen_si
+        self.secondary_response_zen_in = spectra_zen_in / int_time_in / self.field_lamp_zen_in
+
+
+        # for nadir
+        fname_pattern = '%s/nadir/s%di%d/cal/*.OSA2' % (fdir_secondary, int_time_si, int_time_in)
+        fnames  = glob.glob(fname_pattern)
+        if len(fnames) != 1:
+            exit('Error [CAL_SECONDARY_RESPONSE]: cannot find data for nadir cal.')
+        fname = fnames[0]
+        spectra, shutter, int_time, temp, jday, qual_flag, iterN = READ_NASA_SSFR_V1(fname)
+        spectra_mean = np.mean(spectra[2:-2, :, :], axis=0)
+        spectra_nad_si_l = spectra_mean[:, 2]
+        spectra_nad_in_l = spectra_mean[:, 3]
+
+        fname_pattern = '%s/nadir/s%di%d/dark/*.OSA2' % (fdir_secondary, int_time_si, int_time_in)
+        fnames  = glob.glob(fname_pattern)
+        if len(fnames) != 1:
+            exit('Error [CAL_SECONDARY_RESPONSE]: cannot find data for nadir dark.')
+        fname = fnames[0]
+        spectra, shutter, int_time, temp, jday, qual_flag, iterN = READ_NASA_SSFR_V1(fname)
+        spectra_mean = np.mean(spectra[2:-2, :, :], axis=0)
+        spectra_nad_si_d = spectra_mean[:, 2]
+        spectra_nad_in_d = spectra_mean[:, 3]
+
+        spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
+        spectra_nad_si[spectra_nad_si<=0.0] = 0.00000001
+
+        spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
+        spectra_nad_in[spectra_nad_in<=0.0] = 0.00000001
+
+        self.secondary_response_nad_si = spectra_nad_si / int_time_si / self.field_lamp_nad_si
+        self.secondary_response_nad_in = spectra_nad_in / int_time_in / self.field_lamp_nad_in
+        # ---------------------------------------------------------------------------
+
+
 def READ_SKS_V2(fname, headLen=148, dataLen=2276, verbose=False):
 
     fileSize = os.path.getsize(fname)
@@ -710,7 +811,7 @@ def READ_SKS_V2(fname, headLen=148, dataLen=2276, verbose=False):
 
 class READ_SKS:
 
-    def __init__(self, fnames, Ndata=600, secOffset=180.0, config=None):
+    def __init__(self, fnames, Ndata=600, secOffset=0.0, config=None):
 
         if type(fnames) is not list:
             exit('Error [READ_SKS]: input variable "fnames" should be in list type.')
@@ -762,7 +863,16 @@ class READ_SKS:
         self.DARK_CORR()
         self.COUNT2FLUX(self.spectra_dark_corr)
 
-        f = h5py.File('test_20180221_cu.h5', 'w')
+        # f = h5py.File('20180228_cu.h5', 'w')
+        # f['spectra_flux_zen'] = self.spectra_flux_zen
+        # f['spectra_flux_nad'] = self.spectra_flux_nad
+        # f['wvl_zen'] = self.wvl_zen
+        # f['wvl_nad'] = self.wvl_nad
+        # f['shutter'] = self.shutter
+        # f['tmhr']    = self.tmhr_corr
+        # f.close()
+
+        f = h5py.File('20180228_CU_20180228.h5', 'w')
         f['spectra_flux_zen'] = self.spectra_flux_zen
         f['spectra_flux_nad'] = self.spectra_flux_nad
         f['wvl_zen'] = self.wvl_zen
@@ -968,14 +1078,16 @@ class READ_SKS:
         #}}}
 
 
-    def COUNT2FLUX(self, countIn, wvl_zen_join=1000.0, wvl_nad_join=1000.0):
+    def COUNT2FLUX(self, countIn, wvl_zen_join=950.0, wvl_nad_join=950.0):
 
         """
         Convert digital count to flux (irradiance)
         """
 
-        fdir_secondary = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/20180221/cal'
-        cal = CALIBRATION_CU_SSFR_20180221(fdir_secondary)
+        # fdir_secondary = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/20180221/cal'
+        # cal = CALIBRATION_CU_SSFR_20180221(fdir_secondary)
+        fdir_secondary = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/20180228/150C'
+        cal = CALIBRATION_CU_SSFR_20180228(fdir_secondary)
 
         logic_zen_si = (cal.wvl_zen_si <= wvl_zen_join)
         logic_zen_in = (cal.wvl_zen_in >= wvl_zen_join)
@@ -1056,7 +1168,7 @@ def PLOT():
 
 def PLOT_TIME_SERIES(wvl0):
 
-    f = h5py.File('test_20180221_cu.h5', 'r')
+    f = h5py.File('20180228_CU_20180221.h5', 'r')
     spectra_flux_zen = f['spectra_flux_zen'][...]
     spectra_flux_nad = f['spectra_flux_nad'][...]
     wvl_zen          = f['wvl_zen'][...]
@@ -1104,7 +1216,7 @@ def PLOT_TIME_SERIES(wvl0):
 
 def PLOT_SPECTRA(tmhr_range):
 
-    f = h5py.File('test_20180221_cu.h5', 'r')
+    f = h5py.File('20180228_CU_20180221.h5', 'r')
     spectra_flux_zen = f['spectra_flux_zen'][...]
     spectra_flux_nad = f['spectra_flux_nad'][...]
     wvl_zen          = f['wvl_zen'][...]
@@ -1154,7 +1266,8 @@ def PLOT_SPECTRA(tmhr_range):
 
 def PLOT_SPECTRA_RATIO(tmhr_range):
 
-    f = h5py.File('test_20180221_cu.h5', 'r')
+    # f = h5py.File('test_20180221_cu.h5', 'r')
+    f = h5py.File('20180228_CU_20180221.h5', 'r')
     spectra_flux_zen = f['spectra_flux_zen'][...]
     spectra_flux_nad = f['spectra_flux_nad'][...]
     wvl_zen          = f['wvl_zen'][...]
@@ -1218,17 +1331,18 @@ if __name__ == '__main__':
 
 
 
-    # fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/20180221/data/*.SKS'))
+    # fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/20180228/data/*.SKS'))
     # f_sks = READ_SKS(fnames)
+    # exit()
 
 
 
 
 
-    # PLOT_TIME_SERIES(500.0)
+    PLOT_TIME_SERIES(500.0)
     # PLOT_TIME_SERIES(1600.0)
     # PLOT_SPECTRA([19.2, 19.3])
-    PLOT_SPECTRA_RATIO([19.2, 19.3])
+    # PLOT_SPECTRA_RATIO([19.2, 19.3])
 
 
     exit()

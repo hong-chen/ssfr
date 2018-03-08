@@ -1,5 +1,15 @@
 # SSFR-util
 
+---
+### Primary Calibration
+
+Standard lamp: F-1324
+
+
+
+
+---
+
 --------
 
 ## ssfr_reader.py
