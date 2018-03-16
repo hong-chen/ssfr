@@ -134,17 +134,29 @@ class READ_SKS:
         self.tmhr = (self.jday - int(self.jday[0])) * 24.0
         self.tmhr_corr = self.tmhr.copy()
 
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fig = plt.figure(figsize=(8, 6))
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(self.tmhr, self.int_time[:, 0])
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
+        # plt.savefig('test.png')
+        plt.show()
+        exit()
+        # ---------------------------------------------------------------------
+
         self.DARK_CORR()
 
-        f = h5py.File('20180307.h5', 'w')
-        f['spectra'] = self.spectra
-        f['spectra_dark_corr'] = self.spectra_dark_corr
-        f['tmhr']    = self.tmhr_corr
-        f['temp']    = self.temp
-        f['int_time'] = self.int_time
-        f['dark_offset'] = self.dark_offset
-        f.close()
-        exit()
+        # f = h5py.File('20180313_Alvin.h5', 'w')
+        # f['spectra'] = self.spectra
+        # f['spectra_dark_corr'] = self.spectra_dark_corr
+        # f['tmhr']    = self.tmhr_corr
+        # f['temp']    = self.temp
+        # f['int_time'] = self.int_time
+        # f['dark_offset'] = self.dark_offset
+        # f.close()
+        # exit()
 
         #self.spectra_nlin_corr = self.spectra_dark_corr.copy()
         #fname_nlin ='/argus/home/chen/work/02_arise/06_cal/aux/20141121.sav'
@@ -700,7 +712,7 @@ def SSFR_VIDEO(data_sks, ncpu=6, fdir_graph='graph/tmp', fname_vid='test.mp4'):
 
 if __name__ == '__main__':
     import matplotlib as mpl
-    mpl.use('Agg')
+    # mpl.use('Agg')
     from matplotlib.ticker import FixedLocator, MaxNLocator
     import matplotlib.gridspec as gridspec
     import matplotlib.pyplot as plt
@@ -708,9 +720,10 @@ if __name__ == '__main__':
     import matplotlib.patches as mpatches
 
     # fnames = sorted(glob.glob('data/20180104/sat_test_s600i600/*.SKS'))
-    fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/20180307/*.SKS'))
+    fnames = sorted(glob.glob('/Users/hoch4240/Desktop/SSFR/Belana/10.16.1.203/Skywatch_3-13-2018/*.SKS'))
     # fnames = sorted(glob.glob('data/20171221/*.SKS'))
     data_sks = READ_SKS(fnames)
+    exit()
 
     # SSFR_FRAME([data_sks, 35], testMode=True)
     SSFR_VIDEO(data_sks, fname_vid="20180307.mp4")

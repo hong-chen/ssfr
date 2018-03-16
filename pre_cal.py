@@ -280,9 +280,9 @@ class CALIBRATION_CU_SSFR:
     def __init__(self, fdir_primary, fdir_transfer, fdir_secondary):
 
         self.CAL_WAVELENGTH()
-        self.CAL_PRIMARY_RESPONSE(fdir_primary)
-        self.CAL_TRANSFER(fdir_transfer)
-        self.CAL_SECONDARY_RESPONSE(fdir_secondary)
+        # self.CAL_PRIMARY_RESPONSE(fdir_primary)
+        # self.CAL_TRANSFER(fdir_transfer)
+        # self.CAL_SECONDARY_RESPONSE(fdir_secondary)
 
 
     def CAL_WAVELENGTH(self):
@@ -1315,6 +1315,83 @@ def PLOT_SPECTRA_RATIO(tmhr_range):
 
 
 
+def PLOT_COUNTS_TIME_SERIES_ALVIN(wvl0):
+
+    f = h5py.File('20180312_Alvin.h5', 'r')
+    tmhr             = f['tmhr'][...]
+    spectra_dark_corr= f['spectra_dark_corr'][...]
+    f.close()
+
+    f_cal = CALIBRATION_CU_SSFR('', '', '')
+    # print(f_cal.wvl_zen_si)
+    # print(f_cal.wvl_zen_in)
+    # print(f_cal.wvl_nad_si)
+    # print(f_cal.wvl_nad_in)
+
+    if wvl0 > 950.0:
+        sensorIndices = [1, 3]
+        wvl_zen = f_cal.wvl_zen_in
+        wvl_nad = f_cal.wvl_nad_in
+    else:
+        sensorIndices = [0, 2]
+        wvl_zen = f_cal.wvl_zen_si
+        wvl_nad = f_cal.wvl_nad_si
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(12, 6))
+    ax1 = fig.add_subplot(111)
+
+    index = np.argmin(np.abs(wvl_zen-wvl0))
+    ax1.scatter(tmhr, spectra_dark_corr[:, :, sensorIndices[0]][:, index], edgecolor='red', marker='o', s=40, facecolor='none', label='CU SSFR Alvin Zenith', lw=0.8, alpha=0.3)
+    index = np.argmin(np.abs(wvl_nad-wvl0))
+    ax1.scatter(tmhr, spectra_dark_corr[:, :, sensorIndices[1]][:, index], edgecolor='blue', marker='o', s=40, facecolor='none', label='CU SSFR Alvin Nadir', lw=0.8, alpha=0.3)
+
+    ax1.set_title('SSFR Alvin at %dnm (20180312)' % wvl0)
+    ax1.set_xlabel('Time [hour]')
+    ax1.set_ylabel('Digital Counts')
+    ax1.set_ylim(bottom=0)
+    plt.legend()
+
+    plt.savefig('test_20180312_%dnm.png' % wvl0)
+    plt.close(fig)
+    # ---------------------------------------------------------------------
+
+
+def PLOT_COUNTS_SPECTRA_ALVIN(tmhr_range):
+
+    f = h5py.File('20180312_Alvin.h5', 'r')
+    tmhr             = f['tmhr'][...]
+    spectra_dark_corr= f['spectra_dark_corr'][...]
+    f.close()
+
+    logic = (tmhr>=tmhr_range[0]) & (tmhr<=tmhr_range[1])
+    spectra_dark_corr= spectra_dark_corr[logic, :, :]
+
+    f_cal = CALIBRATION_CU_SSFR('', '', '')
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(10, 5))
+    ax1 = fig.add_subplot(111)
+
+    for i in range(logic.sum()):
+        ax1.scatter(f_cal.wvl_zen_si, spectra_dark_corr[i, :, 0], edgecolor='red', marker='o', s=20, facecolor='none', label='CU SSFR Alvin Zenith Si', lw=0.8, alpha=0.3)
+        ax1.scatter(f_cal.wvl_zen_in, spectra_dark_corr[i, :, 1], edgecolor='magenta', marker='o', s=20, facecolor='none', label='CU SSFR Alvin Zenith In', lw=0.8, alpha=0.3)
+        ax1.scatter(f_cal.wvl_nad_si, spectra_dark_corr[i, :, 2], edgecolor='blue', marker='o', s=20, facecolor='none', label='CU SSFR Alvin Nadir Si', lw=0.8, alpha=0.3)
+        ax1.scatter(f_cal.wvl_nad_in, spectra_dark_corr[i, :, 3], edgecolor='cyan', marker='o', s=20, facecolor='none', label='CU SSFR Alvin Nadir In', lw=0.8, alpha=0.3)
+
+    ax1.set_title('SSFR Alvin from %.4f to %.4f (20180312)' % (tmhr_range[0], tmhr_range[1]))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Digital Counts')
+    ax1.set_ylim(bottom=0)
+    # plt.legend()
+
+    plt.savefig('test_20180312_%.4f-%.4f.png' % (tmhr_range[0], tmhr_range[1]))
+    plt.close(fig)
+    # ---------------------------------------------------------------------
+
+
+
+
 if __name__ == '__main__':
 
     import matplotlib as mpl
@@ -1339,7 +1416,13 @@ if __name__ == '__main__':
 
 
 
-    PLOT_TIME_SERIES(500.0)
+    for wvl0 in [600, 1200, 1600]:
+        PLOT_COUNTS_TIME_SERIES_ALVIN(wvl0)
+
+    PLOT_COUNTS_SPECTRA_ALVIN([21.0, 21.1])
+
+
+
     # PLOT_TIME_SERIES(1600.0)
     # PLOT_SPECTRA([19.2, 19.3])
     # PLOT_SPECTRA_RATIO([19.2, 19.3])
