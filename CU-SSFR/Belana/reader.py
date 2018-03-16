@@ -106,7 +106,7 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
 
 
 
-def DARK_CORRECTION(tmhr, shutter, spectra, int_time, mode=-1, darkExtend=2, lightExtend=2, countOffset=0, lightThr=10, darkThr=5, fillValue=-1):
+def DARK_CORRECTION(tmhr, shutter, spectra, int_time, mode="dark_interpolate", darkExtend=2, lightExtend=2, countOffset=0, lightThr=10, darkThr=5, fillValue=-1):
 
     if shutter[0] == 0:
         darkL = np.array([], dtype=np.int32)
