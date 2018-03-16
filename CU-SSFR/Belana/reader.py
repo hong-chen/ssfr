@@ -126,11 +126,24 @@ def DARK_CORRECTION(tmhr, shutter, spectra, int_time, mode="dark_interpolate", d
     else:
         darkR = np.hstack((darkR, shutter.size))
 
-    spectra_corr = spectra.copy() + countOffset
+    if darkL.size != darkR.size:
+        exit('Error [DARK_CORRECTION]: cannot find correct number of dark cycles.')
+    else:
+        if darkL.size == 1:
+            print('Warning [DARK_CORRECTION]: only one dark cycle is detected.')
+
+    if mode == 'dark_interpolate':
+
+        if darkL.size < 2:
+            exit('Error [DARK_CORRECTION]: cannot perform \'dark_interpolate\' with less than two dark cycles, try \'dark_mean\'.')
+
     dark_offset  = np.zeros(spectra.shape, dtype=np.float64)
+    Nrecord, Nchannel, Nsensor = spectra.shape
+
+
+    spectra_corr = spectra.copy() + countOffset
     dark_std     = np.zeros(spectra.shape, dtype=np.float64)
 
-    Nrecord, Nchannel, Nsensor = spectra.shape
     if mode == -1:
         if darkL.size-darkR.size==0:
             if darkL[0]>darkR[0] and darkL[-1]>darkR[-1]:
