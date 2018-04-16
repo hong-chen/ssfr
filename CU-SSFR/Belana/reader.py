@@ -17,19 +17,19 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
 
     How to use:
     fname = '/some/path/2015022000001.SKS'
-    comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN = READ_CU_SSFR(fname, verbose=False)
+    comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN = READ_CU_SSFR(fname, verbose=False)
 
     comment  (str)        [N/A]    : comment in header
     spectra  (numpy array)[N/A]    : counts of Silicon and InGaAs for both zenith and nadir
     shutter  (numpy array)[N/A]    : shutter status (1:closed(dark), 0:open(light))
     int_time (numpy array)[ms]     : integration time of Silicon and InGaAs for both zenith and nadir
     temp (numpy array)    [Celsius]: temperature variables
-    jday_NSF (numpy array)[day]    : julian days (w.r.t 0001-01-01) of aircraft nagivation system
+    jday_ARINC (numpy array)[day]  : julian days (w.r.t 0001-01-01) of aircraft nagivation system
     jday_cRIO(numpy array)[day]    : julian days (w.r.t 0001-01-01) of SSFR Inertial Navigation System (INS)
     qual_flag(numpy array)[N/A]    : quality flag(1:good, 0:bad)
     iterN (numpy array)   [N/A]    : number of data record
 
-    Written by: Hong Chen (me@hongchen.cz)
+    by Hong Chen (me@hongchen.cz)
     '''
 
     fileSize = os.path.getsize(fname)
@@ -37,16 +37,16 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
         iterN   = (fileSize-headLen) // dataLen
         residual = (fileSize-headLen) %  dataLen
         if residual != 0:
-            print('Warning [READ_CU_SSFR_V2]: %s has invalid data size.' % fname)
+            print('Warning [READ_CU_SSFR]: %s contains unreadable data, omit the last data record...' % fname)
     else:
-        exit('Error [READ_CU_SSFR_V2]: %s has invalid file size.' % fname)
+        exit('Error [READ_CU_SSFR]: %s has invalid file size.' % fname)
 
     spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
     shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
     int_time   = np.zeros((iterN, 4)     , dtype=np.float64) # integration time [ms]
     temp       = np.zeros((iterN, 11)    , dtype=np.float64) # temperature
     qual_flag  = np.ones(iterN           , dtype=np.int32)   # quality flag (1:good, 0:bad)
-    jday_NSF   = np.zeros(iterN          , dtype=np.float64)
+    jday_ARINC = np.zeros(iterN          , dtype=np.float64)
     jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
 
     f           = open(fname, 'rb')
@@ -99,10 +99,10 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
         dtime0         = datetime.datetime(dataHead[16], dataHead[15], dataHead[14], dataHead[13], dataHead[12], dataHead[11], int(round(dataHead[10]*1000000.0)))
 
         # calculate the proleptic Gregorian ordinal of the date
-        jday_NSF[i]    = (dtime  - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
+        jday_ARINC[i]  = (dtime  - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
         jday_cRIO[i]   = (dtime0 - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
 
-    return comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN
+    return comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN
 
 
 
@@ -279,15 +279,15 @@ if __name__ == '__main__':
 
 
     fname = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180315/1324/zenith/RB/s40_80i200_375/cal/20170314_spc00001.SKS'
-    comment, spectra, shutter, int_time, temp, jday_NSF, jday_cRIO, qual_flag, iterN = READ_CU_SSFR(fname, verbose=False)
+    comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN = READ_CU_SSFR(fname, verbose=False)
 
-    shutter, spectra_corr, dark_offset, dark_std = DARK_CORRECTION((jday_NSF-int(jday_NSF[0]))*24.0, shutter, spectra, int_time)
+    # shutter, spectra_corr, dark_offset, dark_std = DARK_CORRECTION((jday_ARINC-int(jday_ARINC[0]))*24.0, shutter, spectra, int_time)
 
     # figure settings
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(111)
-    ax1.scatter(jday_NSF, shutter)
-    # ax1.scatter(jday_NSF, int_time[:, 2])
+    ax1.scatter(jday_ARINC, int_time[:, 0])
+    # ax1.scatter(jday_ARINC, int_time[:, 2])
     # ax1.legend(loc='best', fontsize=k12, framealpha=0.4)
     plt.show()
 
