@@ -116,7 +116,7 @@ class CU_SSFR:
 
         '''
         fnames    : list of SSFR files to read
-        Ndata     : pre-defined number of data records, any number larger than the "number of data per file" will work
+        Ndata     : pre-defined number of data records, any number larger than the "number of data records per file" will work
         whichTime : "ARINC" or "cRIO"
         timeOffset: time offset in [seconds]
         '''
@@ -128,10 +128,10 @@ class CU_SSFR:
 
         Nx         = Ndata * len(fnames)
         comment    = []
-        spectra    = np.zeros((Nx, 256, 4), dtype=np.float64) # spectra
-        shutter    = np.zeros(Nx          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
-        int_time   = np.zeros((Nx, 4)     , dtype=np.float64) # integration time [ms]
-        temp       = np.zeros((Nx, 11)    , dtype=np.float64) # temperature
+        spectra    = np.zeros((Nx, 256, 4), dtype=np.float64)
+        shutter    = np.zeros(Nx          , dtype=np.int32  )
+        int_time   = np.zeros((Nx, 4)     , dtype=np.float64)
+        temp       = np.zeros((Nx, 11)    , dtype=np.float64)
         qual_flag  = np.zeros(Nx          , dtype=np.int32)
         jday_ARINC = np.zeros(Nx          , dtype=np.float64)
         jday_cRIO  = np.zeros(Nx          , dtype=np.float64)
@@ -172,12 +172,16 @@ class CU_SSFR:
         self.tmhr_corr = self.tmhr.copy() + float(timeOffset)/3600.0
 
 
+        # dark correction (light - dark)
 
 
 
 
 
 def DARK_CORRECTION(tmhr, shutter, spectra, int_time, mode="dark_interpolate", darkExtend=2, lightExtend=2, countOffset=0, lightThr=10, darkThr=5, fillValue=-1):
+
+
+
 
     if shutter[0] == 0:
         darkL = np.array([], dtype=np.int32)
@@ -350,14 +354,15 @@ if __name__ == '__main__':
 
 
     fname = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180315/1324/zenith/RB/s40_80i200_375/cal/20170314_spc00001.SKS'
-    comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN = READ_CU_SSFR(fname, verbose=False)
+
+    ssfr  = CU_SSFR([fname])
 
     # shutter, spectra_corr, dark_offset, dark_std = DARK_CORRECTION((jday_ARINC-int(jday_ARINC[0]))*24.0, shutter, spectra, int_time)
 
     # figure settings
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(111)
-    ax1.scatter(jday_ARINC, int_time[:, 0])
+    ax1.scatter(ssfr.tmhr, ssfr.int_time[:, 0])
     # ax1.scatter(jday_ARINC, int_time[:, 2])
     # ax1.legend(loc='best', fontsize=k12, framealpha=0.4)
     plt.show()
