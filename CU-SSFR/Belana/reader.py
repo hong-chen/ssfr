@@ -7,7 +7,6 @@ import datetime
 from scipy import stats
 
 
-
 def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
 
     '''
@@ -29,7 +28,7 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
     qual_flag(numpy array)[N/A]    : quality flag(1:good, 0:bad)
     iterN (numpy array)   [N/A]    : number of data record
 
-    by Hong Chen (me@hongchen.cz)
+    by Hong Chen (me@hongchen.cz), Sebastian Schmidt (sebastian.schmidt@lasp.colorado.edu)
     '''
 
     fileSize = os.path.getsize(fname)
@@ -50,6 +49,7 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
     jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
 
     f           = open(fname, 'rb')
+
     # read head
     headRec   = f.read(headLen)
     head      = struct.unpack('<B144s3B', headRec)
@@ -102,7 +102,78 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
         jday_ARINC[i]  = (dtime  - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
         jday_cRIO[i]   = (dtime0 - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
 
+    f.close()
+
     return comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN
+
+
+
+
+
+class CU_SSFR:
+
+    def __init__(self, fnames, Ndata=600, whichTime='arinc', timeOffset=0.0):
+
+        '''
+        fnames    : list of SSFR files to read
+        Ndata     : pre-defined number of data records, any number larger than the "number of data per file" will work
+        whichTime : "ARINC" or "cRIO"
+        timeOffset: time offset in [seconds]
+        '''
+
+        if type(fnames) is not list:
+            exit('Error [CU_SSFR]: input variable should be \'list\'.')
+        if len(fnames) == 0:
+            exit('Error [CU_SSFR]: input \'list\' is empty.')
+
+        Nx         = Ndata * len(fnames)
+        comment    = []
+        spectra    = np.zeros((Nx, 256, 4), dtype=np.float64) # spectra
+        shutter    = np.zeros(Nx          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
+        int_time   = np.zeros((Nx, 4)     , dtype=np.float64) # integration time [ms]
+        temp       = np.zeros((Nx, 11)    , dtype=np.float64) # temperature
+        qual_flag  = np.zeros(Nx          , dtype=np.int32)
+        jday_ARINC = np.zeros(Nx          , dtype=np.float64)
+        jday_cRIO  = np.zeros(Nx          , dtype=np.float64)
+
+        Nstart = 0
+        for fname in fnames:
+            comment0, spectra0, shutter0, int_time0, temp0, jday_ARINC0, jday_cRIO0, qual_flag0, iterN0 = READ_CU_SSFR(fname, verbose=False)
+
+            Nend = iterN0 + Nstart
+
+            comment.append(comment0)
+            spectra[Nstart:Nend, ...]    = spectra0
+            shutter[Nstart:Nend, ...]    = shutter0
+            int_time[Nstart:Nend, ...]   = int_time0
+            temp[Nstart:Nend, ...]       = temp0
+            jday_ARINC[Nstart:Nend, ...] = jday_ARINC0
+            jday_cRIO[Nstart:Nend, ...]  = jday_cRIO0
+            qual_flag[Nstart:Nend, ...]  = qual_flag0
+
+            Nstart = Nend
+
+        self.comment    = comment
+        self.spectra    = spectra[:Nend, ...]
+        self.shutter    = shutter[:Nend, ...]
+        self.int_time   = int_time[:Nend, ...]
+        self.temp       = temp[:Nend, ...]
+        self.jday_ARINC = jday_ARINC[:Nend, ...]
+        self.jday_cRIO  = jday_cRIO[:Nend, ...]
+        self.qual_flag  = qual_flag[:Nend, ...]
+
+        if whichTime.lower() == 'arinc':
+            self.jday = self.jday_ARINC.copy()
+        elif whichTime.lower() == 'crio':
+            self.jday = self.jday_cRIO.copy()
+        self.tmhr = (self.jday - int(self.jday[0])) * 24.0
+
+        self.jday_corr = self.jday.copy() + float(timeOffset)/86400.0
+        self.tmhr_corr = self.tmhr.copy() + float(timeOffset)/3600.0
+
+
+
+
 
 
 
