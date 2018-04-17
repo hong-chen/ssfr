@@ -184,9 +184,22 @@ class CU_SSFR:
             for intTime in intTimes:
                 indices = np.where(self.int_time[:, iSen]==intTime)[0]
 
-                print(indices)
+                self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode='mean')
                 # self.spectra_dark_corr[indices, iSen] =
 
+
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fig = plt.figure(figsize=(8, 6))
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(np.arange(256), self.spectra[21, :, 0])
+        ax1.scatter(np.arange(256), self.spectra_dark_corr[21, :, 0])
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
+        # plt.savefig('test.png')
+        plt.show()
+        exit()
+        # ---------------------------------------------------------------------
 
 
 
@@ -198,61 +211,72 @@ class CU_SSFR:
 
 def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-1):
 
-    if shutter[0] == 0:
-        darkL = np.array([], dtype=np.int32)
-        darkR = np.array([0], dtype=np.int32)
-    else:
-        darkR = np.array([], dtype=np.int32)
-        darkL = np.array([0], dtype=np.int32)
+    spectra_dark_corr = np.zeros_like(spectra)
+    spectra_dark_corr[...] = -1.0
 
-    darkL0 = np.squeeze(np.argwhere((shutter[1:]-shutter[:-1]) ==  1)) + 1
-    darkL  = np.hstack((darkL, darkL0))
+    # only dark or light cycle present
+    if np.unique(shutter).size == 1:
 
-    darkR0 = np.squeeze(np.argwhere((shutter[1:]-shutter[:-1]) == -1)) + 1
-    darkR  = np.hstack((darkR, darkR0))
+        if mode != 'mean':
+            print('Warning [DARK_CORRECTION]: only one light/dark cycle is detected, \'%s\' is not supported, switch to \'mean\'...' % mode)
+            mode = 'mean'
 
-    if shutter[-1] == 0:
-        darkL = np.hstack((darkL, shutter.size))
-    else:
-        darkR = np.hstack((darkR, shutter.size))
-
-    if darkL.size != darkR.size:
-        exit('Error [DARK_CORRECTION]: cannot find correct number of dark cycles.')
-    else:
-        if darkL.size == 1:
+        if np.unique(shutter)[0] == 0:
+            print('Warning [DARK_CORRECTION]: only one light cycle is detected.')
+            mean = np.mean(spectra[lightExtend:-lightExtend, :], axis=0)
+            spectra_dark_corr = np.tile(mean, spectra.shape[0]).reshape(spectra.shape)
+            return spectra_dark_corr
+        elif np.unique(shutter)[0] == 1:
             print('Warning [DARK_CORRECTION]: only one dark cycle is detected.')
-
-    # to be continued ...
-
-    if mode == 'dark_interpolate':
-
-        if darkL.size < 2:
-            exit('Error [DARK_CORRECTION]: cannot perform \'dark_interpolate\' with less than two dark cycles, try \'dark_mean\'.')
-
-    dark_offset  = np.zeros(spectra.shape, dtype=np.float64)
-    Nrecord, Nchannel, Nsensor = spectra.shape
-
-
-    spectra_corr = spectra.copy()
-    dark_std     = np.zeros(spectra.shape, dtype=np.float64)
-
-    if mode == -1:
-        if darkL.size-darkR.size==0:
-            if darkL[0]>darkR[0] and darkL[-1]>darkR[-1]:
-                darkL = darkL[:-1]
-                darkR = darkR[1:]
-        elif darkL.size-darkR.size==1:
-            if darkL[0]>darkR[0] and darkL[-1]<darkR[-1]:
-                darkL = darkL[1:]
-            elif darkL[0]<darkR[0] and darkL[-1]>darkR[-1]:
-                darkL = darkL[:-1]
-        elif darkR.size-darkL.size==1:
-            if darkL[0]>darkR[0] and darkL[-1]<darkR[-1]:
-                darkR = darkR[1:]
-            elif darkL[0]<darkR[0] and darkL[-1]>darkR[-1]:
-                darkR = darkR[:-1]
+            mean = np.mean(spectra[darkExtend:-darkExtend, :], axis=0)
+            spectra_dark_corr = np.tile(mean, spectra.shape[0]).reshape(spectra.shape)
+            return spectra_dark_corr
         else:
-            exit('Error [DARK_CORR]: darkL and darkR are wrong.')
+            print('Exit [DARK_CORRECTION]: cannot interpret shutter status.')
+
+    # both dark and light cycles present
+    else:
+
+        if shutter[0] == 0:
+            darkL = np.array([], dtype=np.int32)
+            darkR = np.array([0], dtype=np.int32)
+        else:
+            darkR = np.array([], dtype=np.int32)
+            darkL = np.array([0], dtype=np.int32)
+
+        darkL0 = np.squeeze(np.argwhere((shutter[1:]-shutter[:-1]) ==  1)) + 1
+        darkL  = np.hstack((darkL, darkL0))
+
+        darkR0 = np.squeeze(np.argwhere((shutter[1:]-shutter[:-1]) == -1)) + 1
+        darkR  = np.hstack((darkR, darkR0))
+
+        if shutter[-1] == 0:
+            darkL = np.hstack((darkL, shutter.size))
+        else:
+            darkR = np.hstack((darkR, shutter.size))
+
+        if darkL.size != darkR.size:
+            exit('Error [DARK_CORRECTION]: cannot find correct number of dark cycles.')
+
+
+        if mode == 'dark_interpolate':
+
+            if darkL.size-darkR.size==0:
+                if darkL[0]>darkR[0] and darkL[-1]>darkR[-1]:
+                    darkL = darkL[:-1]
+                    darkR = darkR[1:]
+            elif darkL.size-darkR.size==1:
+                if darkL[0]>darkR[0] and darkL[-1]<darkR[-1]:
+                    darkL = darkL[1:]
+                elif darkL[0]<darkR[0] and darkL[-1]>darkR[-1]:
+                    darkL = darkL[:-1]
+            elif darkR.size-darkL.size==1:
+                if darkL[0]>darkR[0] and darkL[-1]<darkR[-1]:
+                    darkR = darkR[1:]
+                elif darkL[0]<darkR[0] and darkL[-1]>darkR[-1]:
+                    darkR = darkR[:-1]
+            else:
+                exit('Error [DARK_CORR]: darkL and darkR are wrong.')
 
         for i in range(darkL.size-1):
             if darkR[i] < darkL[i]:
@@ -303,55 +327,6 @@ def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=
         shutter[darkRR:] = fillValue  # omit the data after the last dark cycle
 
         return shutter, spectra_corr, dark_offset, dark_std
-
-    elif mode == -2:
-        print('Message [DARK_CORR]: Not implemented...')
-
-    elif mode == -3:
-
-        #if darkL.size-darkR.size==0:
-            #if darkL[0]>darkR[0] and darkL[-1]>darkR[-1]:
-                #darkL = darkL[:-1]
-                #darkR = darkR[1:]
-        #elif darkL.size-darkR.size==1:
-            #if darkL[0]>darkR[0] and darkL[-1]<darkR[-1]:
-                #darkL = darkL[1:]
-            #elif darkL[0]<darkR[0] and darkL[-1]>darkR[-1]:
-                #darkL = darkL[:-1]
-        #elif darkR.size-darkL.size==1:
-            #if darkL[0]>darkR[0] and darkL[-1]<darkR[-1]:
-                #darkR = darkR[1:]
-            #elif darkL[0]<darkR[0] and darkL[-1]>darkR[-1]:
-                #darkR = darkR[:-1]
-        #else:
-            #exit('Error [READ_SKS.DARK_CORR]: darkL and darkR are wrong.')
-
-        for i in range(darkR.size):
-            darkLL = darkL[i]   + darkExtend
-            darkLR = darkR[i]   - darkExtend
-            lightL = darkR[i]   + lightExtend
-            lightR = darkL[i+1] - lightExtend
-
-            shutter[darkL[i]:darkLL] = fillValue
-            shutter[darkLR:darkR[i]] = fillValue
-            shutter[darkR[i]:lightL] = fillValue
-            shutter[lightR:darkL[i+1]] = fillValue
-
-            int_dark  = int_time[darkLL:darkLR].mean()
-            int_light = int_time[lightL:lightR].mean()
-            if np.abs(int_dark - int_light) > 0.0001:
-                shutter[lightL:lightR] = fillValue
-                exit('Error [READ_SKS.DARK_CORR]: inconsistent integration time.')
-            else:
-                for itmhr in range(darkLR, lightR):
-                    for isen in range(Nsensor):
-                        dark_offset0 = np.mean(spectra[darkLL:darkLR, :, isen], axis=0)
-                        dark_offset[itmhr, :, isen] = dark_offset0
-                spectra_corr[lightL:lightR,:,:] -= dark_offset[lightL:lightR,:,:]
-
-    elif mode == -4:
-        print('Message [DARK_CORR]: Not implemented...')
-
 
 
 
