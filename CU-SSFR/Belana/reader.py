@@ -115,6 +115,7 @@ class CU_SSFR:
     def __init__(self, fnames, Ndata=600, whichTime='arinc', timeOffset=0.0):
 
         '''
+        Description:
         fnames    : list of SSFR files to read
         Ndata     : pre-defined number of data records, any number larger than the "number of data records per file" will work
         whichTime : "ARINC" or "cRIO"
@@ -126,6 +127,8 @@ class CU_SSFR:
         if len(fnames) == 0:
             exit('Error [CU_SSFR]: input \'list\' is empty.')
 
+        # +
+        # read in all the data
         Nx         = Ndata * len(fnames)
         comment    = []
         spectra    = np.zeros((Nx, 256, 4), dtype=np.float64)
@@ -170,18 +173,30 @@ class CU_SSFR:
 
         self.jday_corr = self.jday.copy() + float(timeOffset)/86400.0
         self.tmhr_corr = self.tmhr.copy() + float(timeOffset)/3600.0
+        # -
+
+        # +
+        # dark correction (light-dark)
+        self.spectra_dark_corr      = self.spectra.copy()
+        self.spectra_dark_corr[...] = -1.0
+        for iSen in range(4):
+            intTimes = np.unique(self.int_time[:, iSen])
+            for intTime in intTimes:
+                indices = np.where(self.int_time[:, iSen]==intTime)[0]
+
+                print(indices)
+                # self.spectra_dark_corr[indices, iSen] =
 
 
-        # dark correction (light - dark)
+
+
+        # -
 
 
 
 
 
-def DARK_CORRECTION(tmhr, shutter, spectra, int_time, mode="dark_interpolate", darkExtend=2, lightExtend=2, countOffset=0, lightThr=10, darkThr=5, fillValue=-1):
-
-
-
+def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-1):
 
     if shutter[0] == 0:
         darkL = np.array([], dtype=np.int32)
@@ -207,6 +222,8 @@ def DARK_CORRECTION(tmhr, shutter, spectra, int_time, mode="dark_interpolate", d
         if darkL.size == 1:
             print('Warning [DARK_CORRECTION]: only one dark cycle is detected.')
 
+    # to be continued ...
+
     if mode == 'dark_interpolate':
 
         if darkL.size < 2:
@@ -216,7 +233,7 @@ def DARK_CORRECTION(tmhr, shutter, spectra, int_time, mode="dark_interpolate", d
     Nrecord, Nchannel, Nsensor = spectra.shape
 
 
-    spectra_corr = spectra.copy() + countOffset
+    spectra_corr = spectra.copy()
     dark_std     = np.zeros(spectra.shape, dtype=np.float64)
 
     if mode == -1:
@@ -261,30 +278,24 @@ def DARK_CORRECTION(tmhr, shutter, spectra, int_time, mode="dark_interpolate", d
                 shutter[darkL[i+1]:darkRL] = fillValue
                 shutter[darkRR:darkR[i+1]] = fillValue
 
-                int_dark  = np.append(int_time[darkLL:darkLR], int_time[darkRL:darkRR]).mean()
-                int_light = int_time[lightL:lightR].mean()
-
-                if np.abs(int_dark - int_light) > 0.0001:
-                    shutter[lightL:lightR] = fillValue
+                interp_x  = np.append(tmhr[darkLL:darkLR], tmhr[darkRL:darkRR])
+                if i==darkL.size-2:
+                    target_x  = tmhr[darkL[i]:darkR[i+1]]
                 else:
-                    interp_x  = np.append(tmhr[darkLL:darkLR], tmhr[darkRL:darkRR])
-                    if i==darkL.size-2:
-                        target_x  = tmhr[darkL[i]:darkR[i+1]]
-                    else:
-                        target_x  = tmhr[darkL[i]:darkL[i+1]]
+                    target_x  = tmhr[darkL[i]:darkL[i+1]]
 
-                    for ichan in range(Nchannel):
-                        for isen in range(Nsensor):
-                            interp_y = np.append(spectra[darkLL:darkLR,ichan,isen], spectra[darkRL:darkRR,ichan,isen])
-                            slope, intercept, r_value, p_value, std_err  = stats.linregress(interp_x, interp_y)
-                            if i==darkL.size-2:
-                                dark_offset[darkL[i]:darkR[i+1], ichan, isen] = target_x*slope + intercept
-                                spectra_corr[darkL[i]:darkR[i+1], ichan, isen] -= dark_offset[darkL[i]:darkR[i+1], ichan, isen]
-                                dark_std[darkL[i]:darkR[i+1], ichan, isen] = np.std(interp_y)
-                            else:
-                                dark_offset[darkL[i]:darkL[i+1], ichan, isen] = target_x*slope + intercept
-                                spectra_corr[darkL[i]:darkL[i+1], ichan, isen] -= dark_offset[darkL[i]:darkL[i+1], ichan, isen]
-                                dark_std[darkL[i]:darkL[i+1], ichan, isen] = np.std(interp_y)
+                for ichan in range(Nchannel):
+                    for isen in range(Nsensor):
+                        interp_y = np.append(spectra[darkLL:darkLR,ichan,isen], spectra[darkRL:darkRR,ichan,isen])
+                        slope, intercept, r_value, p_value, std_err  = stats.linregress(interp_x, interp_y)
+                        if i==darkL.size-2:
+                            dark_offset[darkL[i]:darkR[i+1], ichan, isen] = target_x*slope + intercept
+                            spectra_corr[darkL[i]:darkR[i+1], ichan, isen] -= dark_offset[darkL[i]:darkR[i+1], ichan, isen]
+                            dark_std[darkL[i]:darkR[i+1], ichan, isen] = np.std(interp_y)
+                        else:
+                            dark_offset[darkL[i]:darkL[i+1], ichan, isen] = target_x*slope + intercept
+                            spectra_corr[darkL[i]:darkL[i+1], ichan, isen] -= dark_offset[darkL[i]:darkL[i+1], ichan, isen]
+                            dark_std[darkL[i]:darkL[i+1], ichan, isen] = np.std(interp_y)
 
             else:
                 shutter[darkL[i]:darkR[i+1]] = fillValue
