@@ -183,14 +183,16 @@ class CU_SSFR:
             intTimes = np.unique(self.int_time[:, iSen])
             for intTime in intTimes:
                 indices = np.where(self.int_time[:, iSen]==intTime)[0]
-                self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode='mean')
+                self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode='dark_interpolate')
 
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         fig = plt.figure(figsize=(8, 6))
         ax1 = fig.add_subplot(111)
-        ax1.scatter(np.arange(256), self.spectra[21, :, 0])
-        ax1.scatter(np.arange(256), self.spectra_dark_corr[21, :, 0])
+        ax1.scatter(self.tmhr, self.spectra[:, 100, 0])
+        ax1.scatter(self.tmhr, self.spectra_dark_corr[:, 100, 0])
+        # ax1.scatter(np.arange(256), self.spectra[2000, :, 2])
+        # ax1.scatter(np.arange(256), self.spectra_dark_corr[2000, :, 2])
         # ax1.set_xlim(())
         # ax1.set_ylim(())
         # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
@@ -207,14 +209,17 @@ class CU_SSFR:
 
 
 
-def DARK_CORRECTION(tmhr, shutter0, spectra, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-1, verbose=False):
+def DARK_CORRECTION(tmhr, shutter0, spectra, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-99999, verbose=False):
 
     Nrecord, Nchannel = spectra.shape
     shutter = shutter0.copy()
 
-
+    dark_offset = np.zeros_like(spectra)
+    dark_std    = np.zeros_like(spectra)
     spectra_dark_corr = np.zeros_like(spectra)
-    spectra_dark_corr[...] = -1.0
+    dark_offset[...] = fillValue
+    dark_std[...]    = fillValue
+    spectra_dark_corr[...] = fillValue
 
 
     # only dark or light cycle present
@@ -308,24 +313,15 @@ def DARK_CORRECTION(tmhr, shutter0, spectra, mode="dark_interpolate", darkExtend
 
                 if lightR-lightL>lightThr and darkLR-darkLL>darkThr and darkRR-darkRL>darkThr:
 
-                    interp_x  = np.append(tmhr[darkLL:darkLR], tmhr[darkRL:darkRR])
+                    interp_x = np.append(tmhr[darkLL:darkLR], tmhr[darkRL:darkRR])
+                    target_x = tmhr[darkL[i]:darkL[i+1]]
 
-                    if i==darkL.size-2:
-                        target_x  = tmhr[darkL[i]:darkR[i+1]]
-                    else:
-                        target_x  = tmhr[darkL[i]:darkL[i+1]]
-
-                    for ichan in range(Nchannel):
-                        interp_y = np.append(spectra[darkLL:darkLR,ichan], spectra[darkRL:darkRR,ichan])
+                    for iChan in range(Nchannel):
+                        interp_y = np.append(spectra[darkLL:darkLR, iChan], spectra[darkRL:darkRR, iChan])
                         slope, intercept, r_value, p_value, std_err  = stats.linregress(interp_x, interp_y)
-                        if i==darkL.size-2:
-                            dark_offset[darkL[i]:darkR[i+1], ichan] = target_x*slope + intercept
-                            dark_std[darkL[i]:darkR[i+1], ichan] = np.std(interp_y)
-                            spectra_dark_corr[darkL[i]:darkR[i+1], ichan] -= dark_offset[darkL[i]:darkR[i+1], ichan]
-                        else:
-                            dark_offset[darkL[i]:darkL[i+1], ichan] = target_x*slope + intercept
-                            dark_std[darkL[i]:darkL[i+1], ichan] = np.std(interp_y)
-                            spectra_dark_corr[darkL[i]:darkL[i+1], ichan] -= dark_offset[darkL[i]:darkL[i+1], ichan, isen]
+                        dark_offset[darkL[i]:darkL[i+1], iChan] = target_x*slope + intercept
+                        dark_std[darkL[i]:darkL[i+1], iChan]    = np.std(interp_y)
+                        spectra_dark_corr[darkL[i]:darkL[i+1], iChan] = spectra[darkL[i]:darkL[i+1], iChan] - dark_offset[darkL[i]:darkL[i+1], iChan]
 
                 else:
                     shutter[darkL[i]:darkR[i+1]] = fillValue
@@ -345,21 +341,12 @@ if __name__ == '__main__':
     from matplotlib.ticker import FixedLocator
 
 
-    fname = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180315/1324/zenith/RB/s40_80i200_375/cal/20170314_spc00001.SKS'
+    # fname = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180315/1324/zenith/RB/s40_80i200_375/cal/20170314_spc00001.SKS'
+    # ssfr  = CU_SSFR([fname])
 
-    ssfr  = CU_SSFR([fname])
+    fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180313/data/*.SKS'))
+    ssfr   = CU_SSFR(fnames)
 
-    # shutter, spectra_corr, dark_offset, dark_std = DARK_CORRECTION((jday_ARINC-int(jday_ARINC[0]))*24.0, shutter, spectra, int_time)
-
-    # figure settings
-    fig = plt.figure(figsize=(8, 6))
-    ax1 = fig.add_subplot(111)
-    ax1.scatter(ssfr.tmhr, ssfr.int_time[:, 0])
-    # ax1.scatter(jday_ARINC, int_time[:, 2])
-    # ax1.legend(loc='best', fontsize=k12, framealpha=0.4)
-    plt.show()
-
-    exit()
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # python         :          IDL
