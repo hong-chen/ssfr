@@ -112,7 +112,7 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
 
 class CU_SSFR:
 
-    def __init__(self, fnames, Ndata=600, whichTime='arinc', timeOffset=0.0):
+    def __init__(self, fnames, Ndata=600, whichTime='arinc', timeOffset=0.0, dark_corr_mode='dark_interpolate'):
 
         '''
         Description:
@@ -177,55 +177,36 @@ class CU_SSFR:
 
         # +
         # dark correction (light-dark)
+        # variable name: self.spectra_dark_corr
+        fillValue = -99999
         self.spectra_dark_corr      = self.spectra.copy()
-        self.spectra_dark_corr[...] = -1.0
+        self.spectra_dark_corr[...] = fillValue
         for iSen in range(4):
             intTimes = np.unique(self.int_time[:, iSen])
             for intTime in intTimes:
                 indices = np.where(self.int_time[:, iSen]==intTime)[0]
-                self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode='dark_interpolate')
-
-
-        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        fig = plt.figure(figsize=(8, 6))
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(self.tmhr, self.spectra[:, 100, 0])
-        ax1.scatter(self.tmhr, self.spectra_dark_corr[:, 100, 0])
-        # ax1.scatter(np.arange(256), self.spectra[2000, :, 2])
-        # ax1.scatter(np.arange(256), self.spectra_dark_corr[2000, :, 2])
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
-        # plt.savefig('test.png')
-        plt.show()
-        exit()
-        # ---------------------------------------------------------------------
-
-
-
+                self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode=dark_corr_mode, fillValue=fillValue)
         # -
 
 
 
 
 
-def DARK_CORRECTION(tmhr, shutter0, spectra, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-99999, verbose=False):
+
+def DARK_CORRECTION(tmhr0, shutter0, spectra0, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-99999, verbose=False):
 
     Nrecord, Nchannel = spectra.shape
-    shutter = shutter0.copy()
+    tmhr              = tmrh0.copy()
+    shutter           = shutter0.copy()
+    spectra           = spectra0.copy()
 
-    dark_offset = np.zeros_like(spectra)
-    dark_std    = np.zeros_like(spectra)
-    spectra_dark_corr = np.zeros_like(spectra)
-    dark_offset[...] = fillValue
-    dark_std[...]    = fillValue
+    spectra_dark_corr      = np.zeros_like(spectra)
     spectra_dark_corr[...] = fillValue
-
 
     # only dark or light cycle present
     if np.unique(shutter).size == 1:
 
-        if mode != 'mean':
+        if mode.lower() != 'mean':
             print('Warning [DARK_CORRECTION]: only one light/dark cycle is detected, \'%s\' is not supported, switch to \'mean\'...' % mode)
             mode = 'mean'
 
@@ -247,6 +228,11 @@ def DARK_CORRECTION(tmhr, shutter0, spectra, mode="dark_interpolate", darkExtend
     # both dark and light cycles present
     else:
 
+        dark_offset            = np.zeros_like(spectra)
+        dark_std               = np.zeros_like(spectra)
+        dark_offset[...]       = fillValue
+        dark_std[...]          = fillValue
+
         if shutter[0] == 0:
             darkL = np.array([], dtype=np.int32)
             darkR = np.array([0], dtype=np.int32)
@@ -265,7 +251,7 @@ def DARK_CORRECTION(tmhr, shutter0, spectra, mode="dark_interpolate", darkExtend
         else:
             darkR = np.hstack((darkR, shutter.size))
 
-        # ???????????????????????????????????????????????????
+        # ??????????????????????????????????????????????????????????????????????????????
         # this part might need more work
         if darkL.size-darkR.size==0:
             if darkL[0]>darkR[0] and darkL[-1]>darkR[-1]:
@@ -283,12 +269,12 @@ def DARK_CORRECTION(tmhr, shutter0, spectra, mode="dark_interpolate", darkExtend
                 darkR = darkR[:-1]
         else:
             exit('Error [DARK_CORRECTION]: darkL and darkR do not match.')
-        # ???????????????????????????????????????????????????
+        # ??????????????????????????????????????????????????????????????????????????????
 
         if darkL.size != darkR.size:
             exit('Error [DARK_CORRECTION]: the number of dark cycles is incorrect.')
 
-        if mode == 'dark_interpolate':
+        if mode.lower() == 'dark_interpolate':
 
             shutter[:darkL[0]+darkExtend] = fillValue  # omit the data before the first dark cycle
 
@@ -327,9 +313,12 @@ def DARK_CORRECTION(tmhr, shutter0, spectra, mode="dark_interpolate", darkExtend
                     shutter[darkL[i]:darkR[i+1]] = fillValue
 
             shutter[darkRR:] = fillValue  # omit the data after the last dark cycle
+            spectra_dark_corr[shutter==fillValue, :] = fillValue
 
             return spectra_dark_corr
 
+        else:
+            exit('Error [DARK_CORRECTION]: \'%s\' has not been implemented yet.' % mode)
 
 
 
