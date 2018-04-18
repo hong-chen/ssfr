@@ -207,12 +207,15 @@ class CU_SSFR:
 
 
 
-def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-1, verbose=False):
+def DARK_CORRECTION(tmhr, shutter0, spectra, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-1, verbose=False):
+
+    Nrecord, Nchannel = spectra.shape
+    shutter = shutter0.copy()
+
 
     spectra_dark_corr = np.zeros_like(spectra)
     spectra_dark_corr[...] = -1.0
 
-    Nrecord, Nchannel = spectra.shape
 
     # only dark or light cycle present
     if np.unique(shutter).size == 1:
@@ -257,6 +260,8 @@ def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=
         else:
             darkR = np.hstack((darkR, shutter.size))
 
+        # ???????????????????????????????????????????????????
+        # this part might need more work
         if darkL.size-darkR.size==0:
             if darkL[0]>darkR[0] and darkL[-1]>darkR[-1]:
                 darkL = darkL[:-1]
@@ -273,35 +278,35 @@ def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=
                 darkR = darkR[:-1]
         else:
             exit('Error [DARK_CORRECTION]: darkL and darkR do not match.')
+        # ???????????????????????????????????????????????????
 
         if darkL.size != darkR.size:
             exit('Error [DARK_CORRECTION]: the number of dark cycles is incorrect.')
 
         if mode == 'dark_interpolate':
 
+            shutter[:darkL[0]+darkExtend] = fillValue  # omit the data before the first dark cycle
+
             for i in range(darkL.size-1):
+
                 if darkR[i] < darkL[i]:
                     exit('Error [DARK_CORRECTION]: darkR[%d]=%d is smaller than darkL[%d]=%d.' % (i,darkR[i],i,darkL[i]))
 
-                darkLL = darkL[i] + darkExtend
-                darkLR = darkR[i] - darkExtend
+                darkLL = darkL[i]   + darkExtend
+                darkLR = darkR[i]   - darkExtend
                 darkRL = darkL[i+1] + darkExtend
                 darkRR = darkR[i+1] - darkExtend
-
-                if i == 0:
-                    shutter[:darkLL] = fillValue  # omit the data before the first dark cycle
-
                 lightL = darkR[i]   + lightExtend
                 lightR = darkL[i+1] - lightExtend
 
-                if lightR-lightL>lightThr and darkLR-darkLL>darkThr and darkRR-darkRL>darkThr:
+                shutter[darkL[i]:darkLL] = fillValue
+                shutter[darkLR:darkR[i]] = fillValue
+                shutter[darkR[i]:lightL] = fillValue
+                shutter[lightR:darkL[i+1]] = fillValue
+                shutter[darkL[i+1]:darkRL] = fillValue
+                shutter[darkRR:darkR[i+1]] = fillValue
 
-                    shutter[darkL[i]:darkLL] = fillValue
-                    shutter[darkLR:darkR[i]] = fillValue
-                    shutter[darkR[i]:lightL] = fillValue
-                    shutter[lightR:darkL[i+1]] = fillValue
-                    shutter[darkL[i+1]:darkRL] = fillValue
-                    shutter[darkRR:darkR[i+1]] = fillValue
+                if lightR-lightL>lightThr and darkLR-darkLL>darkThr and darkRR-darkRL>darkThr:
 
                     interp_x  = np.append(tmhr[darkLL:darkLR], tmhr[darkRL:darkRR])
 
@@ -315,12 +320,12 @@ def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=
                         slope, intercept, r_value, p_value, std_err  = stats.linregress(interp_x, interp_y)
                         if i==darkL.size-2:
                             dark_offset[darkL[i]:darkR[i+1], ichan] = target_x*slope + intercept
-                            spectra_dark_corr[darkL[i]:darkR[i+1], ichan] -= dark_offset[darkL[i]:darkR[i+1], ichan]
                             dark_std[darkL[i]:darkR[i+1], ichan] = np.std(interp_y)
+                            spectra_dark_corr[darkL[i]:darkR[i+1], ichan] -= dark_offset[darkL[i]:darkR[i+1], ichan]
                         else:
                             dark_offset[darkL[i]:darkL[i+1], ichan] = target_x*slope + intercept
-                            spectra_dark_corr[darkL[i]:darkL[i+1], ichan] -= dark_offset[darkL[i]:darkL[i+1], ichan, isen]
                             dark_std[darkL[i]:darkL[i+1], ichan] = np.std(interp_y)
+                            spectra_dark_corr[darkL[i]:darkL[i+1], ichan] -= dark_offset[darkL[i]:darkL[i+1], ichan, isen]
 
                 else:
                     shutter[darkL[i]:darkR[i+1]] = fillValue
