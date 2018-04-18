@@ -183,9 +183,7 @@ class CU_SSFR:
             intTimes = np.unique(self.int_time[:, iSen])
             for intTime in intTimes:
                 indices = np.where(self.int_time[:, iSen]==intTime)[0]
-
                 self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode='mean')
-                # self.spectra_dark_corr[indices, iSen] =
 
 
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -209,7 +207,7 @@ class CU_SSFR:
 
 
 
-def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-1):
+def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-1, verbose=False):
 
     spectra_dark_corr = np.zeros_like(spectra)
     spectra_dark_corr[...] = -1.0
@@ -222,12 +220,14 @@ def DARK_CORRECTION(tmhr, shutter, spectra, mode="dark_interpolate", darkExtend=
             mode = 'mean'
 
         if np.unique(shutter)[0] == 0:
-            print('Warning [DARK_CORRECTION]: only one light cycle is detected.')
+            if verbose:
+                print('Warning [DARK_CORRECTION]: only one light cycle is detected.')
             mean = np.mean(spectra[lightExtend:-lightExtend, :], axis=0)
             spectra_dark_corr = np.tile(mean, spectra.shape[0]).reshape(spectra.shape)
             return spectra_dark_corr
         elif np.unique(shutter)[0] == 1:
-            print('Warning [DARK_CORRECTION]: only one dark cycle is detected.')
+            if verbose:
+                print('Warning [DARK_CORRECTION]: only one dark cycle is detected.')
             mean = np.mean(spectra[darkExtend:-darkExtend, :], axis=0)
             spectra_dark_corr = np.tile(mean, spectra.shape[0]).reshape(spectra.shape)
             return spectra_dark_corr
