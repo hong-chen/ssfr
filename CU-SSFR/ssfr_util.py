@@ -198,6 +198,7 @@ class CU_SSFR:
         # -
 
 
+
     def COUNT2FLUX(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0):
 
         """
@@ -374,6 +375,8 @@ class CALIBRATION_CU_SSFR:
         self.CAL_PRIMARY_RESPONSE(config)
         self.CAL_TRANSFER(config)
         self.CAL_SECONDARY_RESPONSE(config)
+
+        # self.CAL_ANGULAR_RESPONSE(config)
 
 
     def CAL_WAVELENGTH(self):
@@ -578,6 +581,9 @@ class CALIBRATION_CU_SSFR:
             self.secondary_response_nad_in = np.repeat(np.nan, self.chanNum)
 
 
+    def CAL_ANGULAR_RESPONSE(self, config):
+
+        print('under development')
 
 
 
@@ -666,14 +672,14 @@ if __name__ == '__main__':
     from matplotlib.ticker import FixedLocator
 
     config = {
-              'fname_primary_zen_cal'   : '/Users/hoch4240/Desktop/SSFR_cal/10.16.1.202/20180320/1324/zenith/108692-1/si45_90i250_400/cal/20180320_spc00001.SKS',
-              'fname_primary_zen_dark'  : '/Users/hoch4240/Desktop/SSFR_cal/10.16.1.202/20180320/1324/zenith/108692-1/si45_90i250_400/dark/20180320_spc00001.SKS',
-              'fname_primary_nad_cal'   : '/Users/hoch4240/Desktop/SSFR_cal/10.16.1.202/20180320/1324/nadir/2008-4/si45_90i250_400/cal/20180320_spc00001.SKS',
-              'fname_primary_nad_dark'  : '/Users/hoch4240/Desktop/SSFR_cal/10.16.1.202/20180320/1324/nadir/2008-4/si45_90i250_400/dark/20180320_spc00001.SKS',
-              'fname_transfer_zen_cal'  : '/Users/hoch4240/Desktop/SSFR_cal/10.16.1.202/20180320/150C/zenith/108692-1/si45_90i250_400/cal/20180320_spc00001.SKS',
-              'fname_transfer_zen_dark' : '/Users/hoch4240/Desktop/SSFR_cal/10.16.1.202/20180320/150C/zenith/108692-1/si45_90i250_400/dark/20180320_spc00001.SKS',
-              'fname_transfer_nad_cal'  : '/Users/hoch4240/Desktop/SSFR_cal/10.16.1.202/20180320/150C/nadir/2008-4/si45_90i250_400/cal/20180320_spc00001.SKS',
-              'fname_transfer_nad_dark' : '/Users/hoch4240/Desktop/SSFR_cal/10.16.1.202/20180320/150C/nadir/2008-4/si45_90i250_400/dark/20180320_spc00001.SKS',
+              'fname_primary_zen_cal'   : '/Users/hoch4240/Desktop/SSFR_cal/Alvin/20180320/1324/zenith/108692-1/si45_90i250_400/cal/20180320_spc00001.SKS',
+              'fname_primary_zen_dark'  : '/Users/hoch4240/Desktop/SSFR_cal/Alvin/20180320/1324/zenith/108692-1/si45_90i250_400/dark/20180320_spc00001.SKS',
+              'fname_primary_nad_cal'   : '/Users/hoch4240/Desktop/SSFR_cal/Alvin/20180320/1324/nadir/2008-4/si45_90i250_400/cal/20180320_spc00001.SKS',
+              'fname_primary_nad_dark'  : '/Users/hoch4240/Desktop/SSFR_cal/Alvin/20180320/1324/nadir/2008-4/si45_90i250_400/dark/20180320_spc00001.SKS',
+              'fname_transfer_zen_cal'  : '/Users/hoch4240/Desktop/SSFR_cal/Alvin/20180320/150C/zenith/108692-1/si45_90i250_400/cal/20180320_spc00001.SKS',
+              'fname_transfer_zen_dark' : '/Users/hoch4240/Desktop/SSFR_cal/Alvin/20180320/150C/zenith/108692-1/si45_90i250_400/dark/20180320_spc00001.SKS',
+              'fname_transfer_nad_cal'  : '/Users/hoch4240/Desktop/SSFR_cal/Alvin/20180320/150C/nadir/2008-4/si45_90i250_400/cal/20180320_spc00001.SKS',
+              'fname_transfer_nad_dark' : '/Users/hoch4240/Desktop/SSFR_cal/Alvin/20180320/150C/nadir/2008-4/si45_90i250_400/dark/20180320_spc00001.SKS',
               'fname_secondary_zen_cal' : None,
               'fname_secondary_zen_dark': None,
               'fname_secondary_nad_cal' : '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180313/150C/nadir/s45_90i250_400/cal/20180313_spc00002.SKS',
@@ -697,7 +703,6 @@ if __name__ == '__main__':
 
     fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180313/data/*.SKS'))
     ssfr   = CU_SSFR(fnames)
-
     ssfr.COUNT2FLUX(cal)
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -705,6 +710,11 @@ if __name__ == '__main__':
     ax1 = fig.add_subplot(111)
     # ax1.plot(ssfr.wvl_nad, ssfr.spectra_flux_nad[1000, :])
     # ax1.plot(ssfr.wvl_nad, ssfr.spectra_flux_nad[1001, :])
+    # ax1.plot(cal.wvl_nad_si, ssfr.spectra_dark_corr[1000, :, 2])
+    # ax1.plot(cal.wvl_nad_in, ssfr.spectra_dark_corr[1000, :, 3])
+    # ax1.plot(cal.wvl_nad_si, ssfr.spectra_dark_corr[1001, :, 2])
+    # ax1.plot(cal.wvl_nad_in, ssfr.spectra_dark_corr[1001, :, 3])
+
     ax1.scatter(ssfr.tmhr, ssfr.spectra_flux_nad[:, 100])
     # ax1.set_xlim(())
     # ax1.set_ylim(())
