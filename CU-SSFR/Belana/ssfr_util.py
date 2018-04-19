@@ -7,6 +7,10 @@ import datetime
 from scipy import stats
 
 
+
+
+
+
 def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
 
     '''
@@ -105,6 +109,7 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
     f.close()
 
     return comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN
+
 
 
 
@@ -319,6 +324,8 @@ def DARK_CORRECTION(tmhr0, shutter0, spectra0, mode="dark_interpolate", darkExte
 
         else:
             exit('Error [DARK_CORRECTION]: \'%s\' has not been implemented yet.' % mode)
+
+
 
 
 
