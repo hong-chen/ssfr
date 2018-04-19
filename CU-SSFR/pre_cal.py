@@ -1400,32 +1400,5 @@ if __name__ == '__main__':
     from matplotlib import rcParams
     import cartopy.crs as ccrs
 
-    # fdir_primary    = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/ssfr6/20171106/1324'
-    # fdir_transfer   = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/ssfr6/20171106/150C'
-    # fdir_secondary  = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/ssfr6/20180221/150C'
-    # nasa_cal = CALIBRATION_NASA_SSFR(fdir_primary, fdir_transfer, fdir_secondary)
-
-
-
-
-    # fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/data/20180228/data/*.SKS'))
-    # f_sks = READ_SKS(fnames)
-    # exit()
-
-
-
-
-
-    for wvl0 in [600, 1200, 1600]:
-        PLOT_COUNTS_TIME_SERIES_ALVIN(wvl0)
-
-    PLOT_COUNTS_SPECTRA_ALVIN([21.0, 21.1])
-
-
-
-    # PLOT_TIME_SERIES(1600.0)
-    # PLOT_SPECTRA([19.2, 19.3])
-    # PLOT_SPECTRA_RATIO([19.2, 19.3])
-
 
     exit()
