@@ -198,6 +198,37 @@ class CU_SSFR:
         # -
 
 
+    def COUNT2FLUX(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0):
+
+        """
+        Convert digital count to flux (irradiance)
+        """
+
+        logic_zen_si = (cal.wvl_zen_si <= wvl_zen_join)
+        logic_zen_in = (cal.wvl_zen_in >= wvl_zen_join)
+        n_zen_si = logic_zen_si.sum()
+        n_zen_in = logic_zen_in.sum()
+        n_zen    = n_zen_si + n_zen_in
+        self.wvl_zen = np.append(cal.wvl_zen_si[logic_zen_si], cal.wvl_zen_in[logic_zen_in][::-1])
+
+        logic_nad_si = (cal.wvl_nad_si <= wvl_nad_join)
+        logic_nad_in = (cal.wvl_nad_in >= wvl_nad_join)
+        n_nad_si = logic_nad_si.sum()
+        n_nad_in = logic_nad_in.sum()
+        n_nad    = n_nad_si + n_nad_in
+        self.wvl_nad = np.append(cal.wvl_nad_si[logic_nad_si], cal.wvl_nad_in[logic_nad_in][::-1])
+
+        self.spectra_flux_zen = np.zeros((self.tmhr.size, n_zen), dtype=np.float64)
+        self.spectra_flux_nad = np.zeros((self.tmhr.size, n_nad), dtype=np.float64)
+
+        for i in range(self.tmhr.size):
+            self.spectra_flux_zen[i, :n_zen_si] =  self.spectra_dark_corr[i, logic_zen_si, 0]/float(self.int_time[i, 0])/cal.secondary_response_zen_si[logic_zen_si]
+            self.spectra_flux_zen[i, n_zen_si:] = (self.spectra_dark_corr[i, logic_zen_in, 1]/float(self.int_time[i, 1])/cal.secondary_response_zen_in[logic_zen_in])[::-1]
+            self.spectra_flux_nad[i, :n_nad_si] =  self.spectra_dark_corr[i, logic_nad_si, 2]/float(self.int_time[i, 2])/cal.secondary_response_nad_si[logic_nad_si]
+            self.spectra_flux_nad[i, n_nad_si:] = (self.spectra_dark_corr[i, logic_nad_in, 3]/float(self.int_time[i, 3])/cal.secondary_response_nad_in[logic_nad_in])[::-1]
+
+
+
 
 
 
@@ -398,10 +429,12 @@ class CALIBRATION_CU_SSFR:
             spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-config['int_time_primary_zen_in'])<0.00001, :, 1], axis=0)
 
             spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
-            spectra_zen_si[spectra_zen_si<=0.0] = 0.00000001
+            # spectra_zen_si[spectra_zen_si<=0.0] = 0.00000001
+            spectra_zen_si[spectra_zen_si<=0.0] = np.nan
 
             spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
-            spectra_zen_in[spectra_zen_in<=0.0] = 0.00000001
+            # spectra_zen_in[spectra_zen_in<=0.0] = 0.00000001
+            spectra_zen_in[spectra_zen_in<=0.0] = np.nan
 
             self.primary_response_zen_si = spectra_zen_si / config['int_time_primary_zen_si'] / lampStd_zen_si
             self.primary_response_zen_in = spectra_zen_in / config['int_time_primary_zen_in'] / lampStd_zen_in
@@ -422,10 +455,12 @@ class CALIBRATION_CU_SSFR:
             spectra_nad_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-config['int_time_primary_nad_in'])<0.00001, :, 3], axis=0)
 
             spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
-            spectra_nad_si[spectra_nad_si<=0.0] = 0.00000001
+            # spectra_nad_si[spectra_nad_si<=0.0] = 0.00000001
+            spectra_nad_si[spectra_nad_si<=0.0] = np.nan
 
             spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
-            spectra_nad_in[spectra_nad_in<=0.0] = 0.00000001
+            # spectra_nad_in[spectra_nad_in<=0.0] = 0.00000001
+            spectra_nad_in[spectra_nad_in<=0.0] = np.nan
 
             self.primary_response_nad_si = spectra_nad_si / config['int_time_primary_nad_si'] / lampStd_nad_si
             self.primary_response_nad_in = spectra_nad_in / config['int_time_primary_nad_in'] / lampStd_nad_in
@@ -448,10 +483,12 @@ class CALIBRATION_CU_SSFR:
             spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-config['int_time_transfer_zen_in'])<0.00001, :, 1], axis=0)
 
             spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
-            spectra_zen_si[spectra_zen_si<=0.0] = 0.00000001
+            # spectra_zen_si[spectra_zen_si<=0.0] = 0.00000001
+            spectra_zen_si[spectra_zen_si<=0.0] = np.nan
 
             spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
-            spectra_zen_in[spectra_zen_in<=0.0] = 0.00000001
+            # spectra_zen_in[spectra_zen_in<=0.0] = 0.00000001
+            spectra_zen_in[spectra_zen_in<=0.0] = np.nan
 
             self.field_lamp_zen_si = spectra_zen_si / config['int_time_transfer_zen_si'] / self.primary_response_zen_si
             self.field_lamp_zen_in = spectra_zen_in / config['int_time_transfer_zen_in'] / self.primary_response_zen_in
@@ -472,10 +509,12 @@ class CALIBRATION_CU_SSFR:
             spectra_nad_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-config['int_time_transfer_nad_in'])<0.00001, :, 3], axis=0)
 
             spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
-            spectra_nad_si[spectra_nad_si<=0.0] = 0.00000001
+            # spectra_nad_si[spectra_nad_si<=0.0] = 0.00000001
+            spectra_nad_si[spectra_nad_si<=0.0] = np.nan
 
             spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
-            spectra_nad_in[spectra_nad_in<=0.0] = 0.00000001
+            # spectra_nad_in[spectra_nad_in<=0.0] = 0.00000001
+            spectra_nad_in[spectra_nad_in<=0.0] = np.nan
 
             self.field_lamp_nad_si = spectra_nad_si / config['int_time_transfer_nad_si'] / self.primary_response_nad_si
             self.field_lamp_nad_in = spectra_nad_in / config['int_time_transfer_nad_in'] / self.primary_response_nad_in
@@ -498,10 +537,12 @@ class CALIBRATION_CU_SSFR:
             spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-config['int_time_secondary_zen_in'])<0.00001, :, 1], axis=0)
 
             spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
-            spectra_zen_si[spectra_zen_si<=0.0] = 0.00000001
+            # spectra_zen_si[spectra_zen_si<=0.0] = 0.00000001
+            spectra_zen_si[spectra_zen_si<=0.0] = np.nan
 
             spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
-            spectra_zen_in[spectra_zen_in<=0.0] = 0.00000001
+            # spectra_zen_in[spectra_zen_in<=0.0] = 0.00000001
+            spectra_zen_in[spectra_zen_in<=0.0] = np.nan
 
             self.secondary_response_zen_si = spectra_zen_si / config['int_time_secondary_zen_si'] / self.field_lamp_zen_si
             self.secondary_response_zen_in = spectra_zen_in / config['int_time_secondary_zen_in'] / self.field_lamp_zen_in
@@ -522,10 +563,12 @@ class CALIBRATION_CU_SSFR:
             spectra_nad_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-config['int_time_secondary_nad_in'])<0.00001, :, 3], axis=0)
 
             spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
-            spectra_nad_si[spectra_nad_si<=0.0] = 0.00000001
+            # spectra_nad_si[spectra_nad_si<=0.0] = 0.00000001
+            spectra_nad_si[spectra_nad_si<=0.0] = np.nan
 
             spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
-            spectra_nad_in[spectra_nad_in<=0.0] = 0.00000001
+            # spectra_nad_in[spectra_nad_in<=0.0] = 0.00000001
+            spectra_nad_in[spectra_nad_in<=0.0] = np.nan
 
             self.secondary_response_nad_si = spectra_nad_si / config['int_time_secondary_nad_si'] / self.field_lamp_nad_si
             self.secondary_response_nad_in = spectra_nad_in / config['int_time_secondary_nad_in'] / self.field_lamp_nad_in
@@ -538,38 +581,6 @@ class CALIBRATION_CU_SSFR:
 
 
 
-
-
-def COUNT2FLUX(ssfr, cal, wvl_zen_join=950.0, wvl_nad_join=950.0):
-
-    """
-    Convert digital count to flux (irradiance)
-    """
-
-    logic_zen_si = (cal.wvl_zen_si <= wvl_zen_join)
-    logic_zen_in = (cal.wvl_zen_in >= wvl_zen_join)
-    n_zen_si = logic_zen_si.sum()
-    n_zen_in = logic_zen_in.sum()
-    n_zen    = n_zen_si + n_zen_in
-    wvl_zen = np.append(cal.wvl_zen_si[logic_zen_si], cal.wvl_zen_in[logic_zen_in][::-1])
-
-    logic_nad_si = (cal.wvl_nad_si <= wvl_nad_join)
-    logic_nad_in = (cal.wvl_nad_in >= wvl_nad_join)
-    n_nad_si = logic_nad_si.sum()
-    n_nad_in = logic_nad_in.sum()
-    n_nad    = n_nad_si + n_nad_in
-    wvl_nad = np.append(cal.wvl_nad_si[logic_nad_si], cal.wvl_nad_in[logic_nad_in][::-1])
-
-    spectra_flux_zen = np.zeros((ssfr.tmhr.size, n_zen), dtype=np.float64)
-    spectra_flux_nad = np.zeros((ssfr.tmhr.size, n_nad), dtype=np.float64)
-
-    for i in range(ssfr.tmhr.size):
-        spectra_flux_zen[i, :n_zen_si] =  ssfr.spectra_dark_corr[i, logic_zen_si, 0]/float(ssfr.int_time[i, 0])/cal.secondary_response_zen_si[logic_zen_si]
-        spectra_flux_zen[i, n_zen_si:] = (ssfr.spectra_dark_corr[i, logic_zen_in, 1]/float(ssfr.int_time[i, 1])/cal.secondary_response_zen_in[logic_zen_in])[::-1]
-        spectra_flux_nad[i, :n_nad_si] =  ssfr.spectra_dark_corr[i, logic_nad_si, 2]/float(ssfr.int_time[i, 2])/cal.secondary_response_nad_si[logic_nad_si]
-        spectra_flux_nad[i, n_nad_si:] = (ssfr.spectra_dark_corr[i, logic_nad_in, 3]/float(ssfr.int_time[i, 3])/cal.secondary_response_nad_in[logic_nad_in])[::-1]
-
-    return spectra_flux_zen, spectra_flux_nad
 
 
 
@@ -687,12 +698,14 @@ if __name__ == '__main__':
     fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180313/data/*.SKS'))
     ssfr   = CU_SSFR(fnames)
 
-    spectra_flux_zen, spectra_flux_nad = COUNT2FLUX(ssfr, cal)
+    ssfr.COUNT2FLUX(cal)
+
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     fig = plt.figure(figsize=(8, 6))
     ax1 = fig.add_subplot(111)
-    # ax1.scatter(ssfr.tmhr, spectra_flux_zen[:, 100])
-    ax1.plot(spectra_flux_nad[1000, :])
+    # ax1.plot(ssfr.wvl_nad, ssfr.spectra_flux_nad[1000, :])
+    # ax1.plot(ssfr.wvl_nad, ssfr.spectra_flux_nad[1001, :])
+    ax1.scatter(ssfr.tmhr, ssfr.spectra_flux_nad[:, 100])
     # ax1.set_xlim(())
     # ax1.set_ylim(())
     # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
