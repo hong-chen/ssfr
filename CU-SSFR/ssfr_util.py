@@ -657,7 +657,61 @@ def PLOT():
     # ---------------------------------------------------------------------
 
 
+def QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir'):
 
+    tag = tag.lower()
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(12, 5))
+    ax1 = fig.add_subplot(111)
+
+    colors = plt.cm.jet(np.linspace(0.0, 1.0, len(wavelengths)))
+
+    for i, wavelength in enumerate(wavelengths):
+        if tag == 'nadir':
+            index = np.argmin(np.abs(ssfr.wvl_nad-wavelength))
+            ax1.scatter(ssfr.tmhr, ssfr.spectra_flux_nad[:, index], c=colors[i, ...], s=3, label='%.2f nm' % ssfr.wvl_nad[index])
+        elif tag == 'zenith':
+            index = np.argmin(np.abs(ssfr.wvl_zen-wavelength))
+            ax1.scatter(ssfr.tmhr, ssfr.spectra_flux_zen[:, index], c=colors[i, ...], s=3, label='%.2f nm' % ssfr.wvl_nad[index])
+
+    ax1.set_ylim(bottom=0.0)
+    ax1.set_title('%s Time Series' % tag.title())
+    ax1.set_xlabel('Time [hour]')
+    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    ax1.legend(loc='upper left', fontsize=16, framealpha=0.4, scatterpoints=3, markerscale=3)
+    plt.savefig('time_series_%s.png' % tag)
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+def QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='nadir'):
+
+    tag = tag.lower()
+
+    indices = np.where((ssfr.tmhr>=tmhrRange[0]) & (ssfr.tmhr<=tmhrRange[1]))[0]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(12, 5))
+    ax1 = fig.add_subplot(111)
+
+    colors = plt.cm.jet(np.linspace(0.0, 1.0, indices.size))
+
+    for i, index in enumerate(indices):
+        if tag == 'nadir':
+            ax1.scatter(ssfr.wvl_nad, ssfr.spectra_flux_nad[index, :], c=colors[i, ...], s=1)
+        elif tag == 'zenith':
+            ax1.scatter(ssfr.wvl_zen, ssfr.spectra_flux_zen[index, :], c=colors[i, ...], s=1)
+
+    ax1.set_ylim(bottom=0.0)
+    ax1.set_title('%s Spectra [%.2f, %.2f]' % (tag.title(), tmhrRange[0], tmhrRange[1]))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    plt.savefig('spectra_%s.png' % tag)
+    plt.show()
+    # ---------------------------------------------------------------------
 
 
 
@@ -725,26 +779,8 @@ if __name__ == '__main__':
     ssfr   = CU_SSFR(fnames)
     ssfr.COUNT2FLUX(cal)
 
+    wavelengths = [600.0, 1260.0]
+    QUICKLOOK_TIME_SERIES(ssfr, wavelengths)
 
-
-    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    fig = plt.figure(figsize=(8, 6))
-    ax1 = fig.add_subplot(111)
-    # ax1.plot(ssfr.wvl_nad, ssfr.spectra_flux_nad[1000, :])
-    # ax1.plot(ssfr.wvl_nad, ssfr.spectra_flux_nad[1001, :])
-    # ax1.plot(cal.wvl_nad_si, ssfr.spectra_dark_corr[1000, :, 2])
-    # ax1.plot(cal.wvl_nad_in, ssfr.spectra_dark_corr[1000, :, 3])
-    # ax1.plot(cal.wvl_nad_si, ssfr.spectra_dark_corr[1001, :, 2])
-    # ax1.plot(cal.wvl_nad_in, ssfr.spectra_dark_corr[1001, :, 3])
-
-    ax1.scatter(ssfr.tmhr, ssfr.spectra_flux_nad[:, 100])
-    ax1.set_title('Wavelength at %.4f nm' % ssfr.wvl_nad[100])
-    ax1.set_xlabel('Time [hour]')
-    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
-    # ax1.set_xlim(())
-    # ax1.set_ylim(())
-    # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
-    # plt.savefig('test.png')
-    plt.show()
-    exit()
-    # ---------------------------------------------------------------------
+    # tmhrRange = [12.0, 12.1]
+    # QUICKLOOK_SPECTRA(ssfr, tmhrRange)
