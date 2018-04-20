@@ -117,6 +117,7 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
 
 class CU_SSFR:
 
+
     def __init__(self, fnames, Ndata=600, whichTime='arinc', timeOffset=0.0, dark_corr_mode='dark_interpolate'):
 
         '''
@@ -196,7 +197,6 @@ class CU_SSFR:
                 indices = np.where(self.int_time[:, iSen]==intTime)[0]
                 self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode=dark_corr_mode, fillValue=fillValue)
         # -
-
 
 
     def COUNT2RADIATION(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0, whichRadiation={'zenith':'radiance', 'nadir':'irradiance'}, wvlRange=[350, 2100]):
@@ -379,6 +379,7 @@ def DARK_CORRECTION(tmhr0, shutter0, spectra0, mode="dark_interpolate", darkExte
 
 
 class CALIBRATION_CU_SSFR:
+
 
     def __init__(self, config):
 
@@ -642,7 +643,7 @@ def QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir'):
             ax1.scatter(ssfr.tmhr, ssfr.spectra_zen[:, index], c=colors[i, ...], s=3, label='%.2f nm' % ssfr.wvl_nad[index])
 
     ax1.set_ylim(bottom=0.0)
-    ax1.set_title('%s Time Series' % tag.title())
+    ax1.set_title('%s %s Time Series' % (tag.title(), ssfr.whichRadiation[tag].title()))
     ax1.set_xlabel('Time [hour]')
     if rad == 'radiance':
         ax1.set_ylabel('Radiance [$\mathrm{W m^{-2} nm^{-1} sr^{-1}}$]')
@@ -679,7 +680,7 @@ def QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='nadir'):
             ax1.scatter(ssfr.wvl_zen, ssfr.spectra_zen[index, :], c=colors[i, ...], s=2)
 
     ax1.set_ylim(bottom=0.0)
-    ax1.set_title('%s Spectra [%.2f, %.2f]' % (tag.title(), tmhrRange[0], tmhrRange[1]))
+    ax1.set_title('%s %s Spectra [%.2f, %.2f]' % (tag.title(), ssfr.whichRadiation[tag].title(), tmhrRange[0], tmhrRange[1]))
     ax1.set_xlabel('Wavelength [nm]')
     if rad == 'radiance':
         ax1.set_ylabel('Radiance [$\mathrm{W m^{-2} nm^{-1} sr^{-1}}$]')
@@ -746,6 +747,7 @@ def PLOT():
 
 
 
+
 if __name__ == '__main__':
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -801,16 +803,23 @@ if __name__ == '__main__':
               'int_time_secondary_nad_si': [45, 90],
               'int_time_secondary_nad_in': [250, 375]
              }
-
     cal = CALIBRATION_CU_SSFR(config)
 
-    fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180313/data/*.SKS'))
+    # read in data
+    # ==============================================================
+    fdir   = '/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180313/data'
+    # ==============================================================
+    fnames = sorted(glob.glob('%s/*.SKS' % fdir))
     ssfr   = CU_SSFR(fnames)
+    # ==============================================================
     whichRadiation = {'zenith':'radiance', 'nadir':'irradiance'}
-    ssfr.COUNT2RADIATION(cal)
+    # ==============================================================
+    ssfr.COUNT2RADIATION(cal, whichRadiation=whichRadiation)
 
+    # plot time series
     wavelengths = [600.0, 1260.0]
     QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='zenith')
 
+    # plot spectra
     tmhrRange = [12.0, 12.1]
     QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='zenith')
