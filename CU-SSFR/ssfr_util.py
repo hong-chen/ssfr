@@ -434,6 +434,7 @@ class CALIBRATION_CU_SSFR:
             except:
                 self.primary_response_zen_si[intTime] = np.repeat(np.nan, self.chanNum)
 
+
         self.primary_response_zen_in = {}
         for intTime in config['int_time_primary_zen_in']:
             try:
@@ -720,10 +721,8 @@ if __name__ == '__main__':
     cal = CALIBRATION_CU_SSFR(config)
 
 
-
     fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180313/data/*.SKS'))
     ssfr   = CU_SSFR(fnames)
-    print(ssfr.int_time_info)
     ssfr.COUNT2FLUX(cal)
 
 
@@ -739,6 +738,9 @@ if __name__ == '__main__':
     # ax1.plot(cal.wvl_nad_in, ssfr.spectra_dark_corr[1001, :, 3])
 
     ax1.scatter(ssfr.tmhr, ssfr.spectra_flux_nad[:, 100])
+    ax1.set_title('Wavelength at %.4f nm' % ssfr.wvl_nad[100])
+    ax1.set_xlabel('Time [hour]')
+    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
     # ax1.set_xlim(())
     # ax1.set_ylim(())
     # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
