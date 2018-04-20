@@ -199,34 +199,45 @@ class CU_SSFR:
 
 
 
-    def COUNT2FLUX(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0):
+    def COUNT2RADIATION(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0, whichRadiation={'zenith':'radiance', 'nadir':'irradiance'}, wvlRange=[350, 2100]):
 
         """
-        Convert digital count to flux (irradiance)
+        Convert digital count to radiation (radiance or irradiance)
         """
 
-        logic_zen_si = (cal.wvl_zen_si <= wvl_zen_join)
-        logic_zen_in = (cal.wvl_zen_in >= wvl_zen_join)
+        self.whichRadiation = whichRadiation
+
+        logic_zen_si = (cal.wvl_zen_si >= wvlRange[0])  & (cal.wvl_zen_si <= wvl_zen_join)
+        logic_zen_in = (cal.wvl_zen_in >= wvl_zen_join) & (cal.wvl_zen_in <= wvlRange[1])
         n_zen_si = logic_zen_si.sum()
         n_zen_in = logic_zen_in.sum()
         n_zen    = n_zen_si + n_zen_in
         self.wvl_zen = np.append(cal.wvl_zen_si[logic_zen_si], cal.wvl_zen_in[logic_zen_in][::-1])
 
-        logic_nad_si = (cal.wvl_nad_si <= wvl_nad_join)
-        logic_nad_in = (cal.wvl_nad_in >= wvl_nad_join)
+        logic_nad_si = (cal.wvl_nad_si >= wvlRange[0])  & (cal.wvl_nad_si <= wvl_nad_join)
+        logic_nad_in = (cal.wvl_nad_in >= wvl_nad_join) & (cal.wvl_nad_in <= wvlRange[1])
         n_nad_si = logic_nad_si.sum()
         n_nad_in = logic_nad_in.sum()
         n_nad    = n_nad_si + n_nad_in
         self.wvl_nad = np.append(cal.wvl_nad_si[logic_nad_si], cal.wvl_nad_in[logic_nad_in][::-1])
 
-        self.spectra_flux_zen = np.zeros((self.tmhr.size, n_zen), dtype=np.float64)
-        self.spectra_flux_nad = np.zeros((self.tmhr.size, n_nad), dtype=np.float64)
+        self.spectra_zen = np.zeros((self.tmhr.size, n_zen), dtype=np.float64)
+        self.spectra_nad = np.zeros((self.tmhr.size, n_nad), dtype=np.float64)
 
         for i in range(self.tmhr.size):
-            self.spectra_flux_zen[i, :n_zen_si] =  self.spectra_dark_corr[i, logic_zen_si, 0]/float(self.int_time[i, 0])/cal.secondary_response_zen_si[90][logic_zen_si]
-            self.spectra_flux_zen[i, n_zen_si:] = (self.spectra_dark_corr[i, logic_zen_in, 1]/float(self.int_time[i, 1])/cal.secondary_response_zen_in[375][logic_zen_in])[::-1]
-            self.spectra_flux_nad[i, :n_nad_si] =  self.spectra_dark_corr[i, logic_nad_si, 2]/float(self.int_time[i, 2])/cal.secondary_response_nad_si[90][logic_nad_si]
-            self.spectra_flux_nad[i, n_nad_si:] = (self.spectra_dark_corr[i, logic_nad_in, 3]/float(self.int_time[i, 3])/cal.secondary_response_nad_in[375][logic_nad_in])[::-1]
+            if whichRadiation['zenith'] == 'radiance':
+                self.spectra_zen[i, :n_zen_si] =  self.spectra_dark_corr[i, logic_zen_si, 0]/float(self.int_time[i, 0])/(np.pi * cal.primary_response_zen_si[90][logic_zen_si])
+                self.spectra_zen[i, n_zen_si:] = (self.spectra_dark_corr[i, logic_zen_in, 1]/float(self.int_time[i, 1])/(np.pi * cal.primary_response_zen_in[375][logic_zen_in]))[::-1]
+            elif whichRadiation['zenith'] == 'irradiance':
+                self.spectra_zen[i, :n_zen_si] =  self.spectra_dark_corr[i, logic_zen_si, 0]/float(self.int_time[i, 0])/cal.secondary_response_zen_si[90][logic_zen_si]
+                self.spectra_zen[i, n_zen_si:] = (self.spectra_dark_corr[i, logic_zen_in, 1]/float(self.int_time[i, 1])/cal.secondary_response_zen_in[375][logic_zen_in])[::-1]
+
+            if whichRadiation['nadir'] == 'radiance':
+                self.spectra_nad[i, :n_nad_si] =  self.spectra_dark_corr[i, logic_nad_si, 2]/float(self.int_time[i, 2])/(np.pi * cal.primary_response_nad_si[90][logic_nad_si])
+                self.spectra_nad[i, n_nad_si:] = (self.spectra_dark_corr[i, logic_nad_in, 3]/float(self.int_time[i, 3])/(np.pi * cal.primary_response_nad_in[375][logic_nad_in]))[::-1]
+            elif whichRadiation['nadir'] == 'irradiance':
+                self.spectra_nad[i, :n_nad_si] =  self.spectra_dark_corr[i, logic_nad_si, 2]/float(self.int_time[i, 2])/cal.secondary_response_nad_si[90][logic_nad_si]
+                self.spectra_nad[i, n_nad_si:] = (self.spectra_dark_corr[i, logic_nad_in, 3]/float(self.int_time[i, 3])/cal.secondary_response_nad_in[375][logic_nad_in])[::-1]
 
 
 
@@ -398,11 +409,11 @@ class CALIBRATION_CU_SSFR:
         self.wvl_nad_in = self.coef_nad_in[0] + self.coef_nad_in[1]*xChan + self.coef_nad_in[2]*xChan**2 + self.coef_nad_in[3]*xChan**3 + self.coef_nad_in[4]*xChan**4
 
 
-    def CAL_PRIMARY_RESPONSE(self, config, lampTag='f-1324', fdirLamp='/Users/hoch4240/Chen/other/data/aux_ssfr'):
+    def CAL_PRIMARY_RESPONSE(self, config, lampTag='f-1324', fdirLamp='aux'):
 
         # read in calibrated lamp data and interpolated at SSFR wavelengths
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        self.fnameLamp = '%s/%s.dat' % (fdirLamp, lampTag)
+        self.fnameLamp = '%s/%s.dat' % (os.path.abspath(fdirLamp), lampTag)
         if not os.path.exists(self.fnameLamp):
             exit('Error [CALIBRATION_CU_SSFR.CAL_PRIMARY_RESPONSE]: cannot locate lamp standards for %s.' % lampTag.title())
 
@@ -614,6 +625,7 @@ class CALIBRATION_CU_SSFR:
 def QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir'):
 
     tag = tag.lower()
+    rad = ssfr.whichRadiation[tag]
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     fig = plt.figure(figsize=(12, 5))
@@ -624,15 +636,18 @@ def QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir'):
     for i, wavelength in enumerate(wavelengths):
         if tag == 'nadir':
             index = np.argmin(np.abs(ssfr.wvl_nad-wavelength))
-            ax1.scatter(ssfr.tmhr, ssfr.spectra_flux_nad[:, index], c=colors[i, ...], s=3, label='%.2f nm' % ssfr.wvl_nad[index])
+            ax1.scatter(ssfr.tmhr, ssfr.spectra_nad[:, index], c=colors[i, ...], s=3, label='%.2f nm' % ssfr.wvl_nad[index])
         elif tag == 'zenith':
             index = np.argmin(np.abs(ssfr.wvl_zen-wavelength))
-            ax1.scatter(ssfr.tmhr, ssfr.spectra_flux_zen[:, index], c=colors[i, ...], s=3, label='%.2f nm' % ssfr.wvl_nad[index])
+            ax1.scatter(ssfr.tmhr, ssfr.spectra_zen[:, index], c=colors[i, ...], s=3, label='%.2f nm' % ssfr.wvl_nad[index])
 
     ax1.set_ylim(bottom=0.0)
     ax1.set_title('%s Time Series' % tag.title())
     ax1.set_xlabel('Time [hour]')
-    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    if rad == 'radiance':
+        ax1.set_ylabel('Radiance [$\mathrm{W m^{-2} nm^{-1} sr^{-1}}$]')
+    elif rad == 'irradiance':
+        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
     ax1.legend(loc='upper left', fontsize=16, framealpha=0.4, scatterpoints=3, markerscale=3)
     plt.savefig('time_series_%s.png' % tag)
     plt.show()
@@ -647,6 +662,7 @@ def QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir'):
 def QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='nadir'):
 
     tag = tag.lower()
+    rad = ssfr.whichRadiation[tag]
 
     indices = np.where((ssfr.tmhr>=tmhrRange[0]) & (ssfr.tmhr<=tmhrRange[1]))[0]
 
@@ -658,14 +674,17 @@ def QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='nadir'):
 
     for i, index in enumerate(indices):
         if tag == 'nadir':
-            ax1.scatter(ssfr.wvl_nad, ssfr.spectra_flux_nad[index, :], c=colors[i, ...], s=2)
+            ax1.scatter(ssfr.wvl_nad, ssfr.spectra_nad[index, :], c=colors[i, ...], s=2)
         elif tag == 'zenith':
-            ax1.scatter(ssfr.wvl_zen, ssfr.spectra_flux_zen[index, :], c=colors[i, ...], s=2)
+            ax1.scatter(ssfr.wvl_zen, ssfr.spectra_zen[index, :], c=colors[i, ...], s=2)
 
     ax1.set_ylim(bottom=0.0)
     ax1.set_title('%s Spectra [%.2f, %.2f]' % (tag.title(), tmhrRange[0], tmhrRange[1]))
     ax1.set_xlabel('Wavelength [nm]')
-    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    if rad == 'radiance':
+        ax1.set_ylabel('Radiance [$\mathrm{W m^{-2} nm^{-1} sr^{-1}}$]')
+    elif rad == 'irradiance':
+        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
     plt.savefig('spectra_%s.png' % tag)
     plt.show()
     # ---------------------------------------------------------------------
@@ -787,10 +806,11 @@ if __name__ == '__main__':
 
     fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/20180313/data/*.SKS'))
     ssfr   = CU_SSFR(fnames)
-    ssfr.COUNT2FLUX(cal)
+    whichRadiation = {'zenith':'radiance', 'nadir':'irradiance'}
+    ssfr.COUNT2RADIATION(cal)
 
     wavelengths = [600.0, 1260.0]
-    QUICKLOOK_TIME_SERIES(ssfr, wavelengths)
+    QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='zenith')
 
-    # tmhrRange = [12.0, 12.1]
-    # QUICKLOOK_SPECTRA(ssfr, tmhrRange)
+    tmhrRange = [12.0, 12.1]
+    QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='zenith')
