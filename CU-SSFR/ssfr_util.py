@@ -423,99 +423,95 @@ class CALIBRATION_CU_SSFR:
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         self.primary_response_zen_si = {}
         for intTime in config['int_time_primary_zen_si']:
-            if config['fname_primary_zen_cal'] != None and config['fname_primary_zen_dark'] != None:
-                try:
-                    ssfr = CU_SSFR([config['fname_primary_zen_cal']], dark_corr_mode='mean')
-                    spectra_zen_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
-                    ssfr = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
-                    spectra_zen_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
-                    spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
-                    spectra_zen_si[spectra_zen_si<=0.0] = np.nan
-                    self.primary_response_zen_si[intTime] = spectra_zen_si / intTime / lampStd_zen_si
-                except:
-                    self.primary_response_zen_si[intTime] = np.repeat(np.nan, self.chanNum)
-            else:
+            try:
+                ssfr = CU_SSFR([config['fname_primary_zen_cal']], dark_corr_mode='mean')
+                spectra_zen_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
+                ssfr = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
+                spectra_zen_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
+                spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
+                spectra_zen_si[spectra_zen_si<=0.0] = np.nan
+                self.primary_response_zen_si[intTime] = spectra_zen_si / intTime / lampStd_zen_si
+            except:
                 self.primary_response_zen_si[intTime] = np.repeat(np.nan, self.chanNum)
 
         self.primary_response_zen_in = {}
         for intTime in config['int_time_primary_zen_in']:
-            if config['fname_primary_zen_cal'] != None and config['fname_primary_zen_dark'] != None:
-                try:
-                    ssfr = CU_SSFR([config['fname_primary_zen_cal']], dark_corr_mode='mean')
-                    spectra_zen_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
-                    ssfr = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
-                    spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
-                    spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
-                    spectra_zen_in[spectra_zen_in<=0.0] = np.nan
-                    self.primary_response_zen_in[intTime] = spectra_zen_in / intTime / lampStd_zen_in
-                except:
-                    self.primary_response_zen_in[intTime] = np.repeat(np.nan, self.chanNum)
-            else:
+            try:
+                ssfr = CU_SSFR([config['fname_primary_zen_cal']], dark_corr_mode='mean')
+                spectra_zen_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
+                ssfr = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
+                spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
+                spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
+                spectra_zen_in[spectra_zen_in<=0.0] = np.nan
+                self.primary_response_zen_in[intTime] = spectra_zen_in / intTime / lampStd_zen_in
+            except:
                 self.primary_response_zen_in[intTime] = np.repeat(np.nan, self.chanNum)
-        # ---------------------------------------------------------------------------
 
         # for nadir
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         self.primary_response_nad_si = {}
         for intTime in config['int_time_primary_nad_si']:
-            if config['fname_primary_nad_cal'] != None and config['fname_primary_nad_dark'] != None:
-                try:
-                    ssfr = CU_SSFR([config['fname_primary_nad_cal']], dark_corr_mode='mean')
-                    spectra_nad_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
-                    ssfr = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
-                    spectra_nad_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
-                    spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
-                    spectra_nad_si[spectra_nad_si<=0.0] = np.nan
-                    self.primary_response_nad_si[intTime] = spectra_nad_si / intTime / lampStd_nad_si
-                except:
-                    self.primary_response_nad_si[intTime] = np.repeat(np.nan, self.chanNum)
-            else:
+            try:
+                ssfr = CU_SSFR([config['fname_primary_nad_cal']], dark_corr_mode='mean')
+                spectra_nad_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
+                ssfr = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
+                spectra_nad_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
+                spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
+                spectra_nad_si[spectra_nad_si<=0.0] = np.nan
+                self.primary_response_nad_si[intTime] = spectra_nad_si / intTime / lampStd_nad_si
+            except:
                 self.primary_response_nad_si[intTime] = np.repeat(np.nan, self.chanNum)
 
         self.primary_response_nad_in = {}
         for intTime in config['int_time_primary_nad_in']:
-            if config['fname_primary_nad_cal'] != None and config['fname_primary_nad_dark'] != None:
-                try:
-                    ssfr = CU_SSFR([config['fname_primary_nad_cal']], dark_corr_mode='mean')
-                    spectra_nad_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
-                    ssfr = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
-                    spectra_nad_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
-                    spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
-                    spectra_nad_in[spectra_nad_in<=0.0] = np.nan
-                    self.primary_response_nad_in[intTime] = spectra_nad_in / intTime / lampStd_nad_in
-                except:
-                    self.primary_response_nad_in[intTime] = np.repeat(np.nan, self.chanNum)
-        else:
-            self.primary_response_nad_in[intTime] = np.repeat(np.nan, self.chanNum)
+            try:
+                ssfr = CU_SSFR([config['fname_primary_nad_cal']], dark_corr_mode='mean')
+                spectra_nad_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
+                ssfr = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
+                spectra_nad_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
+                spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
+                spectra_nad_in[spectra_nad_in<=0.0] = np.nan
+                self.primary_response_nad_in[intTime] = spectra_nad_in / intTime / lampStd_nad_in
+            except:
+                self.primary_response_nad_in[intTime] = np.repeat(np.nan, self.chanNum)
         # ---------------------------------------------------------------------------
 
 
     def CAL_TRANSFER(self, config):
 
         # for zenith
-        if config['fname_transfer_zen_cal'] != None and config['fname_transfer_zen_dark'] != None:
-            ssfr = CU_SSFR([config['fname_transfer_zen_cal']], dark_corr_mode='mean')
-            spectra_zen_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-config['int_time_transfer_zen_si'])<0.00001, :, 0], axis=0)
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        self.field_lamp_zen_si = {}
+        for intTime in config['int_time_transfer_zen_si']:
+            try:
+                ssfr = CU_SSFR([config['fname_transfer_zen_cal']], dark_corr_mode='mean')
+                spectra_zen_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
+                ssfr = CU_SSFR([config['fname_transfer_zen_dark']], dark_corr_mode='mean')
+                spectra_zen_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
+                spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
+                spectra_zen_si[spectra_zen_si<=0.0] = np.nan
+                self.field_lamp_zen_si[intTime] = spectra_zen_si / intTime / self.primary_response_zen_si[intTime]
+            except:
+                self.field_lamp_zen_si[intTime] = np.repeat(np.nan, self.chanNum)
+
+
+
+
             spectra_zen_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-config['int_time_transfer_zen_in'])<0.00001, :, 1], axis=0)
 
-            ssfr = CU_SSFR([config['fname_transfer_zen_dark']], dark_corr_mode='mean')
-            spectra_zen_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-config['int_time_transfer_zen_si'])<0.00001, :, 0], axis=0)
             spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-config['int_time_transfer_zen_in'])<0.00001, :, 1], axis=0)
 
-            spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
-            # spectra_zen_si[spectra_zen_si<=0.0] = 0.00000001
-            spectra_zen_si[spectra_zen_si<=0.0] = np.nan
 
             spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
             # spectra_zen_in[spectra_zen_in<=0.0] = 0.00000001
             spectra_zen_in[spectra_zen_in<=0.0] = np.nan
 
-            self.field_lamp_zen_si = spectra_zen_si / config['int_time_transfer_zen_si'] / self.primary_response_zen_si
             self.field_lamp_zen_in = spectra_zen_in / config['int_time_transfer_zen_in'] / self.primary_response_zen_in
         else:
             print('Warning [CALIBRATION_CU_SSFR.CAL_TRANSFER]: cannot locate data files for calculating zenith transfer, return NaN.')
             self.field_lamp_zen_si = np.repeat(np.nan, self.chanNum)
             self.field_lamp_zen_in = np.repeat(np.nan, self.chanNum)
+        # ---------------------------------------------------------------------------
 
 
         # for nadir
