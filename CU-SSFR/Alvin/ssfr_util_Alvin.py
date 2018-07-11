@@ -384,10 +384,11 @@ class CALIBRATION_CU_SSFR:
     def __init__(self, config):
 
         self.config = config
+
         self.CAL_WAVELENGTH()
-        self.CAL_PRIMARY_RESPONSE(config)
-        self.CAL_TRANSFER(config)
-        self.CAL_SECONDARY_RESPONSE(config)
+        self.CAL_PRIMARY_RESPONSE(self.config)
+        self.CAL_TRANSFER(self.config)
+        # self.CAL_SECONDARY_RESPONSE(config)
 
         # self.CAL_ANGULAR_RESPONSE(config)
 
@@ -432,62 +433,267 @@ class CALIBRATION_CU_SSFR:
         # ---------------------------------------------------------------------------
         # so far we have (W m^-2 nm^-1 as a function of wavelength)
 
+
+
         # for zenith
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # Silicon
         self.primary_response_zen_si = {}
-        for intTime in config['int_time_primary_zen_si']:
-            try:
-                ssfr = CU_SSFR([config['fname_primary_zen_cal']], dark_corr_mode='mean')
-                spectra_zen_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
-                ssfr = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
-                spectra_zen_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
-                spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
-                spectra_zen_si[spectra_zen_si<=0.0] = np.nan
-                self.primary_response_zen_si[intTime] = spectra_zen_si / intTime / lampStd_zen_si
-            except:
-                self.primary_response_zen_si[intTime] = np.repeat(np.nan, self.chanNum)
+        iSen = 0
+        try:
+            ssfr_l = CU_SSFR([config['fname_primary_zen_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
+
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_primary_zen_si'] = intTimes_l
+            else:
+                exit('Primary [Zenith Silicon]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_primary_zen_si']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.primary_response_zen_si[intTime] = spectra / intTime / lampStd_zen_si
+        except:
+            print('Primary [Zenith Silicon]: Cannot read calibration files.')
+            self.primary_response_zen_si[-1] = np.repeat(np.nan, self.chanNum)
 
 
+        # InGaAs
         self.primary_response_zen_in = {}
-        for intTime in config['int_time_primary_zen_in']:
-            try:
-                ssfr = CU_SSFR([config['fname_primary_zen_cal']], dark_corr_mode='mean')
-                spectra_zen_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
-                ssfr = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
-                spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
-                spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
-                spectra_zen_in[spectra_zen_in<=0.0] = np.nan
-                self.primary_response_zen_in[intTime] = spectra_zen_in / intTime / lampStd_zen_in
-            except:
-                self.primary_response_zen_in[intTime] = np.repeat(np.nan, self.chanNum)
+        iSen = 1
+        try:
+            ssfr_l = CU_SSFR([config['fname_primary_zen_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
+
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_primary_zen_in'] = intTimes_l
+            else:
+                exit('Primary [Zenith InGaAs]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_primary_zen_in']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.primary_response_zen_in[intTime] = spectra / intTime / lampStd_zen_in
+        except:
+            print('Primary [Zenith InGaAs]: Cannot read calibration files.')
+            self.primary_response_zen_in[-1] = np.repeat(np.nan, self.chanNum)
+        # ---------------------------------------------------------------------------
+
+
 
         # for nadir
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # Silicon
         self.primary_response_nad_si = {}
-        for intTime in config['int_time_primary_nad_si']:
-            try:
-                ssfr = CU_SSFR([config['fname_primary_nad_cal']], dark_corr_mode='mean')
-                spectra_nad_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
-                ssfr = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
-                spectra_nad_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
-                spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
-                spectra_nad_si[spectra_nad_si<=0.0] = np.nan
-                self.primary_response_nad_si[intTime] = spectra_nad_si / intTime / lampStd_nad_si
-            except:
-                self.primary_response_nad_si[intTime] = np.repeat(np.nan, self.chanNum)
+        iSen = 2
+        try:
+            ssfr_l = CU_SSFR([config['fname_primary_nad_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
 
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_primary_nad_si'] = intTimes_l
+            else:
+                exit('Primary [Nadir Silicon]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_primary_nad_si']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.primary_response_nad_si[intTime] = spectra / intTime / lampStd_nad_si
+        except:
+            print('Primary [Nadir Silicon]: Cannot read calibration files.')
+            self.primary_response_nad_si[-1] = np.repeat(np.nan, self.chanNum)
+
+
+        # InGaAs
         self.primary_response_nad_in = {}
-        for intTime in config['int_time_primary_nad_in']:
-            try:
-                ssfr = CU_SSFR([config['fname_primary_nad_cal']], dark_corr_mode='mean')
-                spectra_nad_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
-                ssfr = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
-                spectra_nad_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
-                spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
-                spectra_nad_in[spectra_nad_in<=0.0] = np.nan
-                self.primary_response_nad_in[intTime] = spectra_nad_in / intTime / lampStd_nad_in
-            except:
-                self.primary_response_nad_in[intTime] = np.repeat(np.nan, self.chanNum)
+        iSen = 3
+        try:
+            ssfr_l = CU_SSFR([config['fname_primary_nad_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
+
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_primary_nad_in'] = intTimes_l
+            else:
+                exit('Primary [Nadir InGaAs]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_primary_nad_in']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.primary_response_nad_in[intTime] = spectra / intTime / lampStd_nad_in
+        except:
+            print('Primary [Nadir InGaAs]: Cannot read calibration files.')
+            self.primary_response_nad_in[-1] = np.repeat(np.nan, self.chanNum)
+        # ---------------------------------------------------------------------------
+
+
+    def CAL_TRANSFER(self, config, lampTag='f-1324', fdirLamp='aux'):
+
+        # read in calibrated lamp data and interpolated at SSFR wavelengths
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        self.fnameLamp = '%s/%s.dat' % (os.path.abspath(fdirLamp), lampTag)
+        if not os.path.exists(self.fnameLamp):
+            exit('Error [CALIBRATION_CU_SSFR.CAL_PRIMARY_RESPONSE]: cannot locate lamp standards for %s.' % lampTag.title())
+
+        data = np.loadtxt(self.fnameLamp)
+        data_wvl  = data[:, 0]
+        if lampTag == 'f-1324':
+            data_flux = data[:, 1]*10000.0
+        elif lampTag == '506c':
+            data_flux = data[:, 1]*0.01
+
+        lampStd_zen_si = np.interp(self.wvl_zen_si, data_wvl, data_flux)
+        lampStd_zen_in = np.interp(self.wvl_zen_in, data_wvl, data_flux)
+        lampStd_nad_si = np.interp(self.wvl_nad_si, data_wvl, data_flux)
+        lampStd_nad_in = np.interp(self.wvl_nad_in, data_wvl, data_flux)
+        # ---------------------------------------------------------------------------
+        # so far we have (W m^-2 nm^-1 as a function of wavelength)
+
+
+
+        # for zenith
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # Silicon
+        self.primary_response_zen_si = {}
+        iSen = 0
+        try:
+            ssfr_l = CU_SSFR([config['fname_primary_zen_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
+
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_primary_zen_si'] = intTimes_l
+            else:
+                exit('Primary [Zenith Silicon]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_primary_zen_si']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.primary_response_zen_si[intTime] = spectra / intTime / lampStd_zen_si
+        except:
+            print('Primary [Zenith Silicon]: Cannot read calibration files.')
+            self.primary_response_zen_si[-1] = np.repeat(np.nan, self.chanNum)
+
+
+        # InGaAs
+        self.primary_response_zen_in = {}
+        iSen = 1
+        try:
+            ssfr_l = CU_SSFR([config['fname_primary_zen_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_primary_zen_dark']], dark_corr_mode='mean')
+
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_primary_zen_in'] = intTimes_l
+            else:
+                exit('Primary [Zenith InGaAs]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_primary_zen_in']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.primary_response_zen_in[intTime] = spectra / intTime / lampStd_zen_in
+        except:
+            print('Primary [Zenith InGaAs]: Cannot read calibration files.')
+            self.primary_response_zen_in[-1] = np.repeat(np.nan, self.chanNum)
+        # ---------------------------------------------------------------------------
+
+
+
+        # for nadir
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # Silicon
+        self.primary_response_nad_si = {}
+        iSen = 2
+        try:
+            ssfr_l = CU_SSFR([config['fname_primary_nad_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
+
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_primary_nad_si'] = intTimes_l
+            else:
+                exit('Primary [Nadir Silicon]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_primary_nad_si']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.primary_response_nad_si[intTime] = spectra / intTime / lampStd_nad_si
+        except:
+            print('Primary [Nadir Silicon]: Cannot read calibration files.')
+            self.primary_response_nad_si[-1] = np.repeat(np.nan, self.chanNum)
+
+
+        # InGaAs
+        self.primary_response_nad_in = {}
+        iSen = 3
+        try:
+            ssfr_l = CU_SSFR([config['fname_primary_nad_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_primary_nad_dark']], dark_corr_mode='mean')
+
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_primary_nad_in'] = intTimes_l
+            else:
+                exit('Primary [Nadir InGaAs]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_primary_nad_in']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.primary_response_nad_in[intTime] = spectra / intTime / lampStd_nad_in
+        except:
+            print('Primary [Nadir InGaAs]: Cannot read calibration files.')
+            self.primary_response_nad_in[-1] = np.repeat(np.nan, self.chanNum)
         # ---------------------------------------------------------------------------
 
 
@@ -776,40 +982,333 @@ if __name__ == '__main__':
     from matplotlib import rcParams
     import matplotlib.pyplot as plt
 
-    config = {
-              'fname_primary_zen_cal'   : 'SSFR_data/Calibrations/Alvin/20180320/1324/zenith/SSIM1/si45_90i250_400/cal/20180320_spc00001.SKS',
-              'fname_primary_zen_dark'  : 'SSFR_data/Calibrations/Alvin/20180320/1324/zenith/SSIM1/si45_90i250_400/dark/20180320_spc00001.SKS',
-              'fname_primary_nad_cal'   : 'SSFR_data/Calibrations/Alvin/20180320/1324/nadir/2008-4/si45_90i250_400/cal/20180320_spc00001.SKS',
-              'fname_primary_nad_dark'  : 'SSFR_data/Calibrations/Alvin/20180320/1324/nadir/2008-4/si45_90i250_400/dark/20180320_spc00001.SKS',
-              'fname_transfer_zen_cal'  : 'SSFR_data/Calibrations/Alvin/20180320/150C/zenith/SSIM1/si45_90i250_400/cal/20180320_spc00001.SKS',
-              'fname_transfer_zen_dark' : 'SSFR_data/Calibrations/Alvin/20180320/150C/zenith/SSIM1/si45_90i250_400/dark/20180320_spc00001.SKS',
-              'fname_transfer_nad_cal'  : 'SSFR_data/Calibrations/Alvin/20180320/150C/nadir/2008-4/si45_90i250_400/cal/20180320_spc00001.SKS',
-              'fname_transfer_nad_dark' : 'SSFR_data/Calibrations/Alvin/20180320/150C/nadir/2008-4/si45_90i250_400/dark/20180320_spc00001.SKS',
-
-              'fname_secondary_zen_cal' : 'SSFR_data/Calibrations/Alvin/20180501/150C/zenith/SSIM/s45_90i250_375/cal/20180430_spc00001.SKS',
-              'fname_secondary_zen_dark': 'SSFR_data/Calibrations/Alvin/20180501/150C/zenith/SSIM/s45_90i250_375/dark/20180430_spc00001.SKS',
-              'fname_secondary_nad_cal' : 'SSFR_data/Calibrations/Alvin/20180501/150C/nadir/2008-4/s45_90i250_375/cal/20180430_spc00001.SKS',
-              'fname_secondary_nad_dark': 'SSFR_data/Calibrations/Alvin/20180501/150C/nadir/2008-4/s45_90i250_375/dark/20180430_spc00001.SKS',
-
-              'int_time_primary_zen_si'  : [45, 90],
-              'int_time_primary_zen_in'  : [250, 375],
-              'int_time_primary_nad_si'  : [45, 90],
-              'int_time_primary_nad_in'  : [250, 375],
-              'int_time_transfer_zen_si' : [45, 90],
-              'int_time_transfer_zen_in' : [250, 375],
-              'int_time_transfer_nad_si' : [45, 90],
-              'int_time_transfer_nad_in' : [250, 375],
-              'int_time_secondary_zen_si': [45, 90],
-              'int_time_secondary_zen_in': [250, 375],
-              'int_time_secondary_nad_si': [45, 90],
-              'int_time_secondary_nad_in': [250, 375]
-             }
-
-
-
+    from ssfr_config import config
 
 
     cal = CALIBRATION_CU_SSFR(config)
+
+
+    date = datetime.datetime(2018, 5, 3)
+    # read in data
+    # ==============================================================
+    fdir   = '/Users/hoch4240/Desktop/SSFR/Alvin/%s/data' % date.strftime('%Y%m%d')
+    # ==============================================================
+    fnames = sorted(glob.glob('%s/*.SKS' % fdir))
+    ssfr   = CU_SSFR(fnames)
+    # ==============================================================
+    whichRadiation = {'zenith':'irradiance', 'nadir':'irradiance'}
+    # ==============================================================
+    ssfr.COUNT2RADIATION(cal, whichRadiation=whichRadiation)
+
+    f = h5py.File('%s_Alvin.h5' % date.strftime('%Y%m%d'), 'w')
+    f['spectra_zen'] = ssfr.spectra_zen
+    f['spectra_nad'] = ssfr.spectra_nad
+    f['wvl_zen'] = ssfr.wvl_zen
+    f['wvl_nad'] = ssfr.wvl_nad
+    f['tmhr']    = ssfr.tmhr
+    f['temp']    = ssfr.temp
+    f.close()
+    exit()
+
+    wavelengths = [600.0, 1260.0]
+    QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir')
+
+    tmhrRange = [4.0, 4.1]
+    QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='nadir')
+        # ---------------------------------------------------------------------------
+
+
+
+    def CAL_TRANSFER(self, config):
+
+        # for zenith
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        self.field_lamp_zen_si = {}
+        for intTime in config['int_time_transfer_zen_si']:
+            try:
+                ssfr = CU_SSFR([config['fname_transfer_zen_cal']], dark_corr_mode='mean')
+                spectra_zen_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
+                ssfr = CU_SSFR([config['fname_transfer_zen_dark']], dark_corr_mode='mean')
+                spectra_zen_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
+                spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
+                spectra_zen_si[spectra_zen_si<=0.0] = np.nan
+                self.field_lamp_zen_si[intTime] = spectra_zen_si / intTime / self.primary_response_zen_si[intTime]
+            except:
+                self.field_lamp_zen_si[intTime] = np.repeat(np.nan, self.chanNum)
+
+        self.field_lamp_zen_in = {}
+        for intTime in config['int_time_transfer_zen_in']:
+            try:
+                ssfr = CU_SSFR([config['fname_transfer_zen_cal']], dark_corr_mode='mean')
+                spectra_zen_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
+                ssfr = CU_SSFR([config['fname_transfer_zen_dark']], dark_corr_mode='mean')
+                spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
+                spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
+                spectra_zen_in[spectra_zen_in<=0.0] = np.nan
+                self.field_lamp_zen_in[intTime] = spectra_zen_in / intTime / self.primary_response_zen_in[intTime]
+            except:
+                self.field_lamp_zen_in[intTime] = np.repeat(np.nan, self.chanNum)
+        # ---------------------------------------------------------------------------
+
+
+        # for nadir
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        self.field_lamp_nad_si = {}
+        for intTime in config['int_time_transfer_nad_si']:
+            try:
+                ssfr = CU_SSFR([config['fname_transfer_nad_cal']], dark_corr_mode='mean')
+                spectra_nad_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
+                ssfr = CU_SSFR([config['fname_transfer_nad_dark']], dark_corr_mode='mean')
+                spectra_nad_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
+                spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
+                spectra_nad_si[spectra_nad_si<=0.0] = np.nan
+                self.field_lamp_nad_si[intTime] = spectra_nad_si / intTime / self.primary_response_nad_si[intTime]
+            except:
+                self.field_lamp_nad_si[intTime] = np.repeat(np.nan, self.chanNum)
+
+        self.field_lamp_nad_in = {}
+        for intTime in config['int_time_transfer_nad_in']:
+            try:
+                ssfr = CU_SSFR([config['fname_transfer_nad_cal']], dark_corr_mode='mean')
+                spectra_nad_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
+                ssfr = CU_SSFR([config['fname_transfer_nad_dark']], dark_corr_mode='mean')
+                spectra_nad_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
+                spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
+                spectra_nad_in[spectra_nad_in<=0.0] = np.nan
+                self.field_lamp_nad_in[intTime] = spectra_nad_in / intTime / self.primary_response_nad_in[intTime]
+            except:
+                self.field_lamp_nad_in[intTime] = np.repeat(np.nan, self.chanNum)
+        # ---------------------------------------------------------------------------
+
+
+    def CAL_SECONDARY_RESPONSE(self, config):
+
+        # for zenith
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        self.secondary_response_zen_si = {}
+        for intTime in config['int_time_secondary_zen_si']:
+            try:
+                ssfr = CU_SSFR([config['fname_secondary_zen_cal']], dark_corr_mode='mean')
+                spectra_zen_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
+                ssfr = CU_SSFR([config['fname_secondary_zen_dark']], dark_corr_mode='mean')
+                spectra_zen_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
+                spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
+                spectra_zen_si[spectra_zen_si<=0.0] = np.nan
+                self.secondary_response_zen_si[intTime] = spectra_zen_si / intTime / self.field_lamp_zen_si[intTime]
+            except:
+                self.secondary_response_zen_si[intTime] = np.repeat(np.nan, self.chanNum)
+
+        self.secondary_response_zen_in = {}
+        for intTime in config['int_time_secondary_zen_in']:
+            try:
+                ssfr = CU_SSFR([config['fname_secondary_zen_cal']], dark_corr_mode='mean')
+                spectra_zen_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
+                ssfr = CU_SSFR([config['fname_secondary_zen_dark']], dark_corr_mode='mean')
+                spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
+                spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
+                spectra_zen_in[spectra_zen_in<=0.0] = np.nan
+                self.secondary_response_zen_in[intTime] = spectra_zen_in / intTime / self.field_lamp_zen_in[intTime]
+            except:
+                self.secondary_response_zen_in[intTime] = np.repeat(np.nan, self.chanNum)
+
+        # for nadir
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        self.secondary_response_nad_si = {}
+        for intTime in config['int_time_secondary_nad_si']:
+            try:
+                ssfr = CU_SSFR([config['fname_secondary_nad_cal']], dark_corr_mode='mean')
+                spectra_nad_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
+                ssfr = CU_SSFR([config['fname_secondary_nad_dark']], dark_corr_mode='mean')
+                spectra_nad_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
+                spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
+                spectra_nad_si[spectra_nad_si<=0.0] = np.nan
+                self.secondary_response_nad_si[intTime] = spectra_nad_si / intTime / self.field_lamp_nad_si[intTime]
+            except:
+                self.secondary_response_nad_si[intTime] = np.repeat(np.nan, self.chanNum)
+
+        self.secondary_response_nad_in = {}
+        for intTime in config['int_time_secondary_nad_in']:
+            try:
+                ssfr = CU_SSFR([config['fname_secondary_nad_cal']], dark_corr_mode='mean')
+                spectra_nad_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
+                ssfr = CU_SSFR([config['fname_secondary_nad_dark']], dark_corr_mode='mean')
+                spectra_nad_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
+                spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
+                spectra_nad_in[spectra_nad_in<=0.0] = np.nan
+                self.secondary_response_nad_in[intTime] = spectra_nad_in / intTime / self.field_lamp_nad_in[intTime]
+            except:
+                self.secondary_response_nad_in[intTime] = np.repeat(np.nan, self.chanNum)
+        # ---------------------------------------------------------------------------
+
+
+    def CAL_ANGULAR_RESPONSE(self, config):
+
+        print('under development')
+
+
+
+
+
+
+
+def QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir'):
+
+    tag = tag.lower()
+    rad = ssfr.whichRadiation[tag]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(12, 5))
+    ax1 = fig.add_subplot(111)
+
+    colors = plt.cm.jet(np.linspace(0.0, 1.0, len(wavelengths)))
+
+    for i, wavelength in enumerate(wavelengths):
+        if tag == 'nadir':
+            index = np.argmin(np.abs(ssfr.wvl_nad-wavelength))
+            ax1.scatter(ssfr.tmhr, ssfr.spectra_nad[:, index], c=colors[i, ...], s=3, label='%.2f nm' % ssfr.wvl_nad[index])
+        elif tag == 'zenith':
+            index = np.argmin(np.abs(ssfr.wvl_zen-wavelength))
+            ax1.scatter(ssfr.tmhr, ssfr.spectra_zen[:, index], c=colors[i, ...], s=3, label='%.2f nm' % ssfr.wvl_nad[index])
+
+    ax1.set_ylim(bottom=0.0)
+    ax1.set_title('%s %s Time Series' % (tag.title(), ssfr.whichRadiation[tag].title()))
+    ax1.set_xlabel('Time [hour]')
+    if rad == 'radiance':
+        ax1.set_ylabel('Radiance [$\mathrm{W m^{-2} nm^{-1} sr^{-1}}$]')
+    elif rad == 'irradiance':
+        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    ax1.legend(loc='upper left', fontsize=16, framealpha=0.4, scatterpoints=3, markerscale=3)
+    plt.savefig('time_series_%s.png' % tag)
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+
+
+def QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='nadir'):
+
+    tag = tag.lower()
+    rad = ssfr.whichRadiation[tag]
+
+    indices = np.where((ssfr.tmhr>=tmhrRange[0]) & (ssfr.tmhr<=tmhrRange[1]))[0]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(12, 5))
+    ax1 = fig.add_subplot(111)
+
+    colors = plt.cm.jet(np.linspace(0.0, 1.0, indices.size))
+
+    for i, index in enumerate(indices):
+        if tag == 'nadir':
+            ax1.scatter(ssfr.wvl_nad, ssfr.spectra_nad[index, :], c=colors[i, ...], s=2)
+        elif tag == 'zenith':
+            ax1.scatter(ssfr.wvl_zen, ssfr.spectra_zen[index, :], c=colors[i, ...], s=2)
+
+    ax1.set_ylim(bottom=0.0)
+    ax1.set_title('%s %s Spectra [%.2f, %.2f]' % (tag.title(), ssfr.whichRadiation[tag].title(), tmhrRange[0], tmhrRange[1]))
+    ax1.set_xlabel('Wavelength [nm]')
+    if rad == 'radiance':
+        ax1.set_ylabel('Radiance [$\mathrm{W m^{-2} nm^{-1} sr^{-1}}$]')
+    elif rad == 'irradiance':
+        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    plt.savefig('spectra_%s.png' % tag)
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+
+
+def PLOT():
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    rcParams['font.size'] = 18
+    fig = plt.figure(figsize=(7, 6))
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(xChan, self.wvl_zen_si, label='Silicon', c='red')
+    ax1.scatter(xChan, self.wvl_zen_in, label='InGaAs', c='blue')
+    # ax1.scatter(xChan, self.wvl_nad_si, label='Silicon', c='red')
+    # ax1.scatter(xChan, self.wvl_nad_in, label='InGaAs', c='blue')
+    ax1.set_xlim((0, 255))
+    ax1.set_ylim((250, 2250))
+    ax1.set_xlabel('Channel Number')
+    ax1.set_ylabel('Wavelength [nm]')
+    # ax1.set_title('Nadir')
+    ax1.set_title('Zenith')
+    ax1.legend(loc='upper right', framealpha=0.4, fontsize=18)
+    plt.savefig('wvl_zenith.png')
+    plt.show()
+    exit()
+    # ---------------------------------------------------------------------
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(5, 3))
+    ax1 = fig.add_subplot(111)
+    # ax1.scatter(self.wvl_zen_si, lampStd_zen_si)
+    # ax1.scatter(self.wvl_zen_in, lampStd_zen_in)
+    ax1.scatter(self.wvl_nad_si, lampStd_nad_si)
+    # ax1.scatter(self.wvl_nad_in, lampStd_nad_in)
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    # ax1.set_xlim((200, 2600))
+    # ax1.xaxis.set_major_locator(FixedLocator(np.arange(200, 2601, 400)))
+    # ax1.set_ylim((0.0, 0.25))
+    # ax1.set_title('Zenith Silicon')
+    # ax1.set_title('Zenith InGaAs')
+    ax1.set_title('Nadir Silicon')
+    # ax1.set_title('Nadir InGaAs')
+    # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
+    # plt.savefig('std_zen_si.png')
+    # plt.savefig('std_zen_in.png')
+    plt.savefig('std_nad_si.png')
+    # plt.savefig('std_nad_in.png')
+    plt.show()
+    exit()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+
+
+if __name__ == '__main__':
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # python         :          IDL
+    #   l            :    long or lonarr
+    #   B            :    byte or bytarr
+    #   L            :    ulong
+    #   h            :    intarr
+    # E.g., in IDL:
+    #   spec  = {btime:lonarr(2)   , bcdtimstp:bytarr(12),$     2l12B
+    #            intime1:long(0)   , intime2:long(0)     ,$     6l
+    #            intime3:long(0)   , intime4:long(0)     ,$
+    #            accum:long(0)     , shsw:long(0)        ,$
+    #            zsit:ulong(0)     , nsit:ulong(0)       ,$     8L
+    #            zirt:ulong(0)     , nirt:ulong(0)       ,$
+    #            zirx:ulong(0)     , nirx:ulong(0)       ,$
+    #            xt:ulong(0)       , it:ulong(0)         ,$
+    #            zspecsi:intarr(np), zspecir:intarr(np)  ,$     1024h
+    #            nspecsi:intarr(np), nspecir:intarr(np)}
+    # in Python:
+    # '<2l12B6l8L1024h'
+    # ---------------------------------------------------------------------------------------------------------------
+
+    import matplotlib as mpl
+    from matplotlib import rcParams
+    import matplotlib.pyplot as plt
+
+    from ssfr_config import config
+
+
+    cal = CALIBRATION_CU_SSFR(config)
+    exit()
+
 
     date = datetime.datetime(2018, 5, 3)
     # read in data
