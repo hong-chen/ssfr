@@ -50,10 +50,72 @@ def CDATA_DIFFUSE_RATIO(date, altitude=np.arange(0.0, 10.1, 0.1), solar_zenith_a
             # ---------------------------------------------------------------------
 
 
+def CAL_SPEC_DIFF_RATIO_FROM_SPN1(tmhr, wvl, f_dn_diff, f_dn, diff_ratio_spn):
+
+    if f_dn_diff.ndim != 2 or f_dn.ndim != 2:
+        exit('Error [CAL_SPEC_DIFF_RATIO_FROM_SPN1]: wrong dimension of diffuse/global downwelling fluxes.')
+
+    # spectral diffuse fraction from model calculations
+    diff_ratio_mod = f_dn_diff / f_dn
+    diff_ratio_mod[np.isnan(diff_ratio_mod)] = 0.0
+
+    # "clear" fraction
+    f      = (1.0-diff_ratio_spn) / (np.trapz((f_dn*(1.0-diff_ratio_mod)), x=wvl, axis=1)/np.trapz(f_dn, x=wvl, axis=1))
+    f_spec = np.repeat(f, wvl.size).reshape((-1, wvl.size))
+
+    # spectral diffuse fraction
+    diff_ratio_spec = diff_ratio_mod*f_spec + (1.0-f_spec)
+
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    tmhrs = [21.3223, 22.0592, 22.5467]
+    colors = ['red', 'blue', 'green']
+
+    fig = plt.figure(figsize=(10, 8))
+    fig.suptitle('Zenith Spectral Diffuse Ratio on 2014-09-11 (Above Cloud)')
+    ax1 = fig.add_subplot(211)
+    ax1.scatter(tmhr, diff_ratio_spn, label='Diffuse Ratio (SPN1)', color='gray')
+    ax1.scatter(tmhr, f, label='"Clear" Fraction (f)', color='k')
+    ax1.set_ylim((0.0, 1.0))
+    ax1.set_xlabel('Time [Hour]')
+    for i, tmhr0 in enumerate(tmhrs):
+        ax1.axvline(tmhr0, color=colors[i], ls='--', lw=2.0)
+
+    plt.legend()
+
+
+    ax2 = fig.add_subplot(212)
+    for i, tmhr0 in enumerate(tmhrs):
+        index = np.argmin(np.abs(tmhr-tmhr0))
+        ax2.scatter(wvl, diff_ratio_spec[index, :], c=colors[i])
+        ax2.scatter(wvl, diff_ratio_mod[index, :], c=colors[i], alpha=0.2)
+
+    ax2.set_ylim((0.0, 1.0))
+    ax2.set_xlabel('Wavelength [nm]')
+    ax2.set_ylabel('Diffuse Ratio')
+    # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
+    plt.savefig('diff_ratio_spec.png')
+    plt.show()
+    exit()
+    # ---------------------------------------------------------------------
+
 
 
 
 if __name__ == '__main__':
 
-    date = datetime.datetime(2017, 8, 13)
-    CDATA_DIFFUSE_RATIO(date)
+    # date = datetime.datetime(2017, 8, 13)
+    # CDATA_DIFFUSE_RATIO(date)
+
+    f = h5py.File('data/bbr_info_20140911.h5', 'r')
+    diff_ratio_spn = f['diff_ratio'][...]
+    f.close()
+
+    f = h5py.File('data/lrt_info_20140911.h5', 'r')
+    tmhr      = f['tmhr'][...]
+    f_dn_diff = f['f_dn_diff'][...]
+    f_dn      = f['f_dn'][...]
+    wvl       = f['wvl'][...]
+    f.close()
+
+    CAL_SPEC_DIFF_RATIO_FROM_SPN1(tmhr, wvl, f_dn_diff, f_dn, diff_ratio_spn)
