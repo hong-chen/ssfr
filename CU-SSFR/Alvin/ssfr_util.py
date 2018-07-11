@@ -388,8 +388,29 @@ class CALIBRATION_CU_SSFR:
         self.CAL_WAVELENGTH()
         self.CAL_PRIMARY_RESPONSE(self.config)
         self.CAL_TRANSFER(self.config)
-        print(self.config)
+
+        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        fig = plt.figure(figsize=(8, 6))
+        ax1 = fig.add_subplot(111)
+        for intTime in self.primary_response_zen_si.keys():
+            # ax1.scatter(self.wvl_zen_si, self.primary_response_zen_si[intTime], c='r')
+            ax1.scatter(self.wvl_zen_si, self.field_lamp_zen_si[intTime], c='r')
+        for intTime in self.primary_response_zen_in.keys():
+            # ax1.scatter(self.wvl_zen_in, self.primary_response_zen_in[intTime], c='magenta')
+            ax1.scatter(self.wvl_zen_in, self.field_lamp_zen_in[intTime], c='magenta')
+        for intTime in self.primary_response_nad_si.keys():
+            # ax1.scatter(self.wvl_nad_si, self.primary_response_nad_si[intTime], c='b')
+            ax1.scatter(self.wvl_nad_si, self.field_lamp_nad_si[intTime], c='b')
+        for intTime in self.primary_response_nad_in.keys():
+            # ax1.scatter(self.wvl_nad_si, self.primary_response_nad_in[intTime], c='cyan')
+            ax1.scatter(self.wvl_nad_si, self.field_lamp_nad_in[intTime], c='cyan')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
+        # plt.savefig('test.png')
+        plt.show()
         exit()
+        # ---------------------------------------------------------------------
         # self.CAL_SECONDARY_RESPONSE(config)
 
         # self.CAL_ANGULAR_RESPONSE(config)
@@ -589,7 +610,7 @@ class CALIBRATION_CU_SSFR:
 
 
         # InGaAs
-        self.transfer_lamp_zen_in = {}
+        self.field_lamp_zen_in = {}
         iSen = 1
         try:
             ssfr_l = CU_SSFR([config['fname_transfer_zen_cal']] , dark_corr_mode='mean')
@@ -610,10 +631,10 @@ class CALIBRATION_CU_SSFR:
 
                 spectra = spectra_l - spectra_d
                 spectra[spectra<=0.0] = np.nan
-                self.transfer_lamp_zen_in[intTime] = spectra / intTime / self.primary_response_zen_in[intTime]
+                self.field_lamp_zen_in[intTime] = spectra / intTime / self.primary_response_zen_in[intTime]
         except:
             print('Transfer [Zenith InGaAs]: Cannot read calibration files.')
-            self.transfer_lamp_zen_in[-1] = np.repeat(np.nan, self.chanNum)
+            self.field_lamp_zen_in[-1] = np.repeat(np.nan, self.chanNum)
         # ---------------------------------------------------------------------------
 
 
@@ -621,7 +642,7 @@ class CALIBRATION_CU_SSFR:
         # for nadir
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         # Silicon
-        self.transfer_lamp_nad_si = {}
+        self.field_lamp_nad_si = {}
         iSen = 2
         try:
             ssfr_l = CU_SSFR([config['fname_transfer_nad_cal']] , dark_corr_mode='mean')
@@ -642,14 +663,14 @@ class CALIBRATION_CU_SSFR:
 
                 spectra = spectra_l - spectra_d
                 spectra[spectra<=0.0] = np.nan
-                self.transfer_lamp_nad_si[intTime] = spectra / intTime / self.primary_response_nad_si[intTime]
+                self.field_lamp_nad_si[intTime] = spectra / intTime / self.primary_response_nad_si[intTime]
         except:
             print('Transfer [Nadir Silicon]: Cannot read calibration files.')
-            self.transfer_lamp_nad_si[-1] = np.repeat(np.nan, self.chanNum)
+            self.field_lamp_nad_si[-1] = np.repeat(np.nan, self.chanNum)
 
 
         # InGaAs
-        self.transfer_lamp_nad_in = {}
+        self.field_lamp_nad_in = {}
         iSen = 3
         try:
             ssfr_l = CU_SSFR([config['fname_transfer_nad_cal']] , dark_corr_mode='mean')
@@ -670,10 +691,10 @@ class CALIBRATION_CU_SSFR:
 
                 spectra = spectra_l - spectra_d
                 spectra[spectra<=0.0] = np.nan
-                self.transfer_lamp_nad_in[intTime] = spectra / intTime / self.primary_response_nad_in[intTime]
+                self.field_lamp_nad_in[intTime] = spectra / intTime / self.primary_response_nad_in[intTime]
         except:
             print('Transfer [Nadir InGaAs]: Cannot read calibration files.')
-            self.transfer_lamp_nad_in[-1] = np.repeat(np.nan, self.chanNum)
+            self.field_lamp_nad_in[-1] = np.repeat(np.nan, self.chanNum)
         # ---------------------------------------------------------------------------
 
 
