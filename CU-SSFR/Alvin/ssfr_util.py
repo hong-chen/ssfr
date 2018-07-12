@@ -388,8 +388,8 @@ class CALIBRATION_CU_SSFR:
         self.CAL_WAVELENGTH()
         self.CAL_PRIMARY_RESPONSE(self.config)
         self.CAL_TRANSFER(self.config)
-        for key in self.config.keys():
-            print(key, self.config[key])
+        # for key in self.config.keys():
+        #     print(key, self.config[key])
         # self.CAL_SECONDARY_RESPONSE(config)
         # self.CAL_ANGULAR_RESPONSE(config)
 
@@ -439,6 +439,7 @@ class CALIBRATION_CU_SSFR:
         # for zenith
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         # Silicon
+        print('Primary [Zenith Silicon]: processing primary response...')
         self.primary_response_zen_si = {}
         iSen = 0
         try:
@@ -948,7 +949,7 @@ def PLOT_TRANSFER():
     alphas     = [1.0, 1.0]
 
     cal_a1 = CALIBRATION_CU_SSFR(config_a1)
-    exit()
+    # exit()
     cal_a2 = CALIBRATION_CU_SSFR(config_a2)
     cal_a3 = CALIBRATION_CU_SSFR(config_a3)
 
@@ -996,6 +997,8 @@ def PLOT_TRANSFER():
     plt.savefig('transfer_20180711.png', bbox_inches='tight')
     plt.show()
     # ---------------------------------------------------------------------
+
+
 
 
 
