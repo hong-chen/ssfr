@@ -388,31 +388,7 @@ class CALIBRATION_CU_SSFR:
         self.CAL_WAVELENGTH()
         self.CAL_PRIMARY_RESPONSE(self.config)
         self.CAL_TRANSFER(self.config)
-
-        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        fig = plt.figure(figsize=(8, 6))
-        ax1 = fig.add_subplot(111)
-        for intTime in self.primary_response_zen_si.keys():
-            # ax1.scatter(self.wvl_zen_si, self.primary_response_zen_si[intTime], c='r')
-            ax1.scatter(self.wvl_zen_si, self.field_lamp_zen_si[intTime], c='r')
-        for intTime in self.primary_response_zen_in.keys():
-            # ax1.scatter(self.wvl_zen_in, self.primary_response_zen_in[intTime], c='magenta')
-            ax1.scatter(self.wvl_zen_in, self.field_lamp_zen_in[intTime], c='magenta')
-        for intTime in self.primary_response_nad_si.keys():
-            # ax1.scatter(self.wvl_nad_si, self.primary_response_nad_si[intTime], c='b')
-            ax1.scatter(self.wvl_nad_si, self.field_lamp_nad_si[intTime], c='b')
-        for intTime in self.primary_response_nad_in.keys():
-            # ax1.scatter(self.wvl_nad_si, self.primary_response_nad_in[intTime], c='cyan')
-            ax1.scatter(self.wvl_nad_si, self.field_lamp_nad_in[intTime], c='cyan')
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.legend(loc='upper right', fontsize=10, framealpha=0.4)
-        # plt.savefig('test.png')
-        plt.show()
-        exit()
-        # ---------------------------------------------------------------------
         # self.CAL_SECONDARY_RESPONSE(config)
-
         # self.CAL_ANGULAR_RESPONSE(config)
 
 
@@ -891,6 +867,136 @@ def PLOT():
 
 
 
+
+def PLOT_PRIMARY_RESPONSE():
+
+    from ssfr_config import config_a1, config_a2, config_a3, config_b1, config_b2, config_b3
+
+    markers     = ['D', '*']
+    markersizes = [10, 4]
+    linestyles = ['-', '--']
+    colors     = ['red', 'blue', 'green']
+    linewidths = [1.0, 1.0]
+    alphas     = [1.0, 1.0]
+
+    cal_a1 = CALIBRATION_CU_SSFR(config_a1)
+    cal_a2 = CALIBRATION_CU_SSFR(config_a2)
+    cal_a3 = CALIBRATION_CU_SSFR(config_a3)
+
+    cals_a = [cal_a1, cal_a2, cal_a3]
+
+    cal_b1 = CALIBRATION_CU_SSFR(config_b1)
+    cal_b2 = CALIBRATION_CU_SSFR(config_b2)
+    cal_b3 = CALIBRATION_CU_SSFR(config_b3)
+
+    cals_b = [cal_b1, cal_b2, cal_b3]
+
+    cals = [cals_a, cals_b]
+    labels  = [['SSIM1 S45-90/I250-375', 'SSIM1 S45-45/I250-250', 'SSIM1 S90-90/I375-375'], ['10862 S45-90/I250-375', '10862 S45-45/I250-250', '10862 S90-90/I375-375']]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 6))
+    ax1 = fig.add_subplot(111)
+    for i, cals0 in enumerate(cals):
+        for j, cal0 in enumerate(cals0):
+            label0 = labels[i][j]
+
+            # if 'SSIM1' in label0:
+            intTimes_si = list(cal0.primary_response_zen_si.keys())
+            intTimes_in = list(cal0.primary_response_zen_in.keys())
+
+            for k in range(len(intTimes_si)):
+
+                label = '%s (S%dI%d)' % (label0, intTimes_si[k], intTimes_in[k])
+
+                if k==0:
+                    ax1.plot(cal0.wvl_zen_si, cal0.primary_response_zen_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                    ax1.plot(cal0.wvl_zen_in, cal0.primary_response_zen_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                if k==1:
+                    ax1.plot(cal0.wvl_zen_si, cal0.primary_response_zen_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+                    ax1.plot(cal0.wvl_zen_in, cal0.primary_response_zen_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+
+
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+
+    ax1.set_title('Primary Response (Zenith 20180711)')
+    ax1.set_xlim((250, 2250))
+    ax1.set_ylim((0, 600))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Primary Response')
+    plt.savefig('pri_resp_20180711.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+
+def PLOT_TRANSFER():
+
+    from ssfr_config import config_a1, config_a2, config_a3, config_b1, config_b2, config_b3
+
+    markers     = ['D', '*']
+    markersizes = [10, 4]
+    linestyles = ['-', '--']
+    colors     = ['red', 'blue', 'green']
+    linewidths = [1.0, 1.0]
+    alphas     = [1.0, 1.0]
+
+    cal_a1 = CALIBRATION_CU_SSFR(config_a1)
+    cal_a2 = CALIBRATION_CU_SSFR(config_a2)
+    cal_a3 = CALIBRATION_CU_SSFR(config_a3)
+
+    cals_a = [cal_a1, cal_a2, cal_a3]
+
+    cal_b1 = CALIBRATION_CU_SSFR(config_b1)
+    cal_b2 = CALIBRATION_CU_SSFR(config_b2)
+    cal_b3 = CALIBRATION_CU_SSFR(config_b3)
+
+    cals_b = [cal_b1, cal_b2, cal_b3]
+
+    cals = [cals_a, cals_b]
+    labels  = [['SSIM1 S45-90/I250-375', 'SSIM1 S45-45/I250-250', 'SSIM1 S90-90/I375-375'], ['10862 S45-90/I250-375', '10862 S45-45/I250-250', '10862 S90-90/I375-375']]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 6))
+    ax1 = fig.add_subplot(111)
+    for i, cals0 in enumerate(cals):
+        for j, cal0 in enumerate(cals0):
+            label0 = labels[i][j]
+
+            # if 'SSIM1' in label0:
+            intTimes_si = list(cal0.field_lamp_zen_si.keys())
+            intTimes_in = list(cal0.field_lamp_zen_in.keys())
+
+            for k in range(len(intTimes_si)):
+
+                label = '%s (S%dI%d)' % (label0, intTimes_si[k], intTimes_in[k])
+
+                if k==0:
+                    ax1.plot(cal0.wvl_zen_si, cal0.field_lamp_zen_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                    ax1.plot(cal0.wvl_zen_in, cal0.field_lamp_zen_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                if k==1:
+                    ax1.plot(cal0.wvl_zen_si, cal0.field_lamp_zen_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+                    ax1.plot(cal0.wvl_zen_in, cal0.field_lamp_zen_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+
+
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+
+    ax1.set_title('Field Calibrator (Zenith 20180711)')
+    ax1.set_xlim((250, 2250))
+    ax1.set_ylim((0, 0.4))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    plt.savefig('transfer_20180711.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
 if __name__ == '__main__':
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -918,11 +1024,18 @@ if __name__ == '__main__':
     from matplotlib import rcParams
     import matplotlib.pyplot as plt
 
-    from ssfr_config import config
 
 
-    cal = CALIBRATION_CU_SSFR(config)
+    # PLOT_PRIMARY_RESPONSE()
+    PLOT_TRANSFER()
     exit()
+
+
+
+
+
+
+
 
 
     date = datetime.datetime(2018, 5, 3)
