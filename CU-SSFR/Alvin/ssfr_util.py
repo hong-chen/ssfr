@@ -388,6 +388,8 @@ class CALIBRATION_CU_SSFR:
         self.CAL_WAVELENGTH()
         self.CAL_PRIMARY_RESPONSE(self.config)
         self.CAL_TRANSFER(self.config)
+        for key in self.config.keys():
+            print(key, self.config[key])
         # self.CAL_SECONDARY_RESPONSE(config)
         # self.CAL_ANGULAR_RESPONSE(config)
 
@@ -652,6 +654,7 @@ class CALIBRATION_CU_SSFR:
             ssfr_l = CU_SSFR([config['fname_transfer_nad_cal']] , dark_corr_mode='mean')
             ssfr_d = CU_SSFR([config['fname_transfer_nad_dark']], dark_corr_mode='mean')
 
+            print(ssfr_d.int_time[0, :])
             intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
             intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
 
@@ -945,6 +948,7 @@ def PLOT_TRANSFER():
     alphas     = [1.0, 1.0]
 
     cal_a1 = CALIBRATION_CU_SSFR(config_a1)
+    exit()
     cal_a2 = CALIBRATION_CU_SSFR(config_a2)
     cal_a3 = CALIBRATION_CU_SSFR(config_a3)
 
