@@ -655,7 +655,6 @@ class CALIBRATION_CU_SSFR:
             ssfr_l = CU_SSFR([config['fname_transfer_nad_cal']] , dark_corr_mode='mean')
             ssfr_d = CU_SSFR([config['fname_transfer_nad_dark']], dark_corr_mode='mean')
 
-            print(ssfr_d.int_time[0, :])
             intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
             intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
 
@@ -872,9 +871,9 @@ def PLOT():
 
 
 
-def PLOT_PRIMARY_RESPONSE():
+def PLOT_PRIMARY_RESPONSE_20180711():
 
-    from ssfr_config import config_a1, config_a2, config_a3, config_b1, config_b2, config_b3
+    from ssfr_config import config_20180711_a1, config_20180711_a2, config_20180711_a3, config_20180711_b1, config_20180711_b2, config_20180711_b3
 
     markers     = ['D', '*']
     markersizes = [10, 4]
@@ -883,15 +882,15 @@ def PLOT_PRIMARY_RESPONSE():
     linewidths = [1.0, 1.0]
     alphas     = [1.0, 1.0]
 
-    cal_a1 = CALIBRATION_CU_SSFR(config_a1)
-    cal_a2 = CALIBRATION_CU_SSFR(config_a2)
-    cal_a3 = CALIBRATION_CU_SSFR(config_a3)
+    cal_a1 = CALIBRATION_CU_SSFR(config_20180711_a1)
+    cal_a2 = CALIBRATION_CU_SSFR(config_20180711_a2)
+    cal_a3 = CALIBRATION_CU_SSFR(config_20180711_a3)
 
     cals_a = [cal_a1, cal_a2, cal_a3]
 
-    cal_b1 = CALIBRATION_CU_SSFR(config_b1)
-    cal_b2 = CALIBRATION_CU_SSFR(config_b2)
-    cal_b3 = CALIBRATION_CU_SSFR(config_b3)
+    cal_b1 = CALIBRATION_CU_SSFR(config_20180711_b1)
+    cal_b2 = CALIBRATION_CU_SSFR(config_20180711_b2)
+    cal_b3 = CALIBRATION_CU_SSFR(config_20180711_b3)
 
     cals_b = [cal_b1, cal_b2, cal_b3]
 
@@ -937,9 +936,9 @@ def PLOT_PRIMARY_RESPONSE():
 
 
 
-def PLOT_TRANSFER():
+def PLOT_TRANSFER_20180711():
 
-    from ssfr_config import config_a1, config_a2, config_a3, config_b1, config_b2, config_b3
+    from ssfr_config import config_20180711_a1, config_20180711_a2, config_20180711_a3, config_20180711_b1, config_20180711_b2, config_20180711_b3
 
     markers     = ['D', '*']
     markersizes = [10, 4]
@@ -948,16 +947,15 @@ def PLOT_TRANSFER():
     linewidths = [1.0, 1.0]
     alphas     = [1.0, 1.0]
 
-    cal_a1 = CALIBRATION_CU_SSFR(config_a1)
-    # exit()
-    cal_a2 = CALIBRATION_CU_SSFR(config_a2)
-    cal_a3 = CALIBRATION_CU_SSFR(config_a3)
+    cal_a1 = CALIBRATION_CU_SSFR(config_20180711_a1)
+    cal_a2 = CALIBRATION_CU_SSFR(config_20180711_a2)
+    cal_a3 = CALIBRATION_CU_SSFR(config_20180711_a3)
 
     cals_a = [cal_a1, cal_a2, cal_a3]
 
-    cal_b1 = CALIBRATION_CU_SSFR(config_b1)
-    cal_b2 = CALIBRATION_CU_SSFR(config_b2)
-    cal_b3 = CALIBRATION_CU_SSFR(config_b3)
+    cal_b1 = CALIBRATION_CU_SSFR(config_20180711_b1)
+    cal_b2 = CALIBRATION_CU_SSFR(config_20180711_b2)
+    cal_b3 = CALIBRATION_CU_SSFR(config_20180711_b3)
 
     cals_b = [cal_b1, cal_b2, cal_b3]
 
@@ -1003,6 +1001,118 @@ def PLOT_TRANSFER():
 
 
 
+def PLOT_PRIMARY_RESPONSE_20180712():
+
+    from ssfr_config import config_20180712_a1, config_20180712_a2, config_20180712_b1
+
+    markers     = ['D', '*']
+    markersizes = [10, 4]
+    linestyles = ['-', '--']
+    colors     = ['red', 'blue', 'green']
+    linewidths = [1.0, 1.0]
+    alphas     = [1.0, 1.0]
+
+    cal_a1 = CALIBRATION_CU_SSFR(config_20180712_a1)
+    cal_a2 = CALIBRATION_CU_SSFR(config_20180712_a2)
+    cal_a3 = CALIBRATION_CU_SSFR(config_20180712_b1)
+
+    cals = [[cal_a1, cal_a2, cal_a3]]
+    labels  = [['2008-04 S45-90/I250-375', '2008-04 S90-150/I250-375', 'L2008-2 S45-90/I250-375']]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 6))
+    ax1 = fig.add_subplot(111)
+    for i, cals0 in enumerate(cals):
+        for j, cal0 in enumerate(cals0):
+            label0 = labels[i][j]
+
+            intTimes_si = list(cal0.primary_response_nad_si.keys())
+            intTimes_in = list(cal0.primary_response_nad_in.keys())
+
+            for k in range(len(intTimes_si)):
+
+                label = '%s (S%dI%d)' % (label0, intTimes_si[k], intTimes_in[k])
+
+                if k==0:
+                    ax1.plot(cal0.wvl_nad_si, cal0.primary_response_nad_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                    ax1.plot(cal0.wvl_nad_in, cal0.primary_response_nad_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                if k==1:
+                    ax1.plot(cal0.wvl_nad_si, cal0.primary_response_nad_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+                    ax1.plot(cal0.wvl_nad_in, cal0.primary_response_nad_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+
+
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+
+    ax1.set_title('Primary Response (Nadir 20180712)')
+    ax1.set_xlim((250, 2250))
+    ax1.set_ylim((0, 600))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Primary Response')
+    plt.savefig('pri_resp_20180712.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+
+def PLOT_TRANSFER_20180712():
+
+    from ssfr_config import config_20180712_a1, config_20180712_a2, config_20180712_b1
+
+    markers     = ['D', '*']
+    markersizes = [10, 4]
+    linestyles = ['-', '--']
+    colors     = ['red', 'blue', 'green']
+    linewidths = [1.0, 1.0]
+    alphas     = [1.0, 1.0]
+
+    cal_a1 = CALIBRATION_CU_SSFR(config_20180712_a1)
+    cal_a2 = CALIBRATION_CU_SSFR(config_20180712_a2)
+    cal_a3 = CALIBRATION_CU_SSFR(config_20180712_b1)
+
+    cals = [[cal_a1, cal_a2, cal_a3]]
+    labels  = [['2008-04 S45-90/I250-375', '2008-04 S90-150/I250-375', 'L2008-2 S45-90/I250-375']]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 6))
+    ax1 = fig.add_subplot(111)
+    for i, cals0 in enumerate(cals):
+        for j, cal0 in enumerate(cals0):
+            label0 = labels[i][j]
+
+            intTimes_si = list(cal0.field_lamp_nad_si.keys())
+            intTimes_in = list(cal0.field_lamp_nad_in.keys())
+
+            for k in range(len(intTimes_si)):
+
+                label = '%s (S%dI%d)' % (label0, intTimes_si[k], intTimes_in[k])
+
+                if k==0:
+                    ax1.plot(cal0.wvl_nad_si, cal0.field_lamp_nad_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                    ax1.plot(cal0.wvl_nad_in, cal0.field_lamp_nad_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                if k==1:
+                    ax1.plot(cal0.wvl_nad_si, cal0.field_lamp_nad_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+                    ax1.plot(cal0.wvl_nad_in, cal0.field_lamp_nad_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+
+
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+
+    ax1.set_title('Field Calibrator (Nadir 20180712)')
+    ax1.set_xlim((250, 2250))
+    ax1.set_ylim((0, 0.4))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    plt.savefig('transfer_20180712.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+
 
 if __name__ == '__main__':
 
@@ -1033,8 +1143,11 @@ if __name__ == '__main__':
 
 
 
-    # PLOT_PRIMARY_RESPONSE()
-    PLOT_TRANSFER()
+    # PLOT_PRIMARY_RESPONSE_20180711()
+    # PLOT_TRANSFER_20180711()
+
+    # PLOT_PRIMARY_RESPONSE_20180712()
+    PLOT_TRANSFER_20180712()
     exit()
 
 
