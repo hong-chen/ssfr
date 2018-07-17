@@ -1113,6 +1113,180 @@ def PLOT_TRANSFER_20180712():
 
 
 
+def PLOT_PRIMARY_RESPONSE_PRE_POST_NADIR():
+
+    from ssfr_config_pre_post import config_20180320_n1, config_20180320_n2, config_20180712_n1, config_20180712_n2
+
+    markers     = ['D', '*']
+    markersizes = [10, 4]
+    linestyles = ['-', '--']
+    colors     = ['red', 'magenta', 'blue', 'cyan']
+    linewidths = [1.0, 1.0]
+    alphas     = [1.0, 1.0]
+
+    cal_a1 = CALIBRATION_CU_SSFR(config_20180320_n1)
+    cal_a2 = CALIBRATION_CU_SSFR(config_20180320_n2)
+    cal_b1 = CALIBRATION_CU_SSFR(config_20180712_n1)
+    cal_b2 = CALIBRATION_CU_SSFR(config_20180712_n2)
+
+    cals = [[cal_a1, cal_a2, cal_b1, cal_b2]]
+    labels  = [['Nadir 2008-04 (Pre. 20180320)', 'Nadir L2008-2 (Pre. 20180320)', 'Nadir 2008-04 (Post 20180712)', 'Nadir L2008-2 (Post 20180712)']]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 6))
+    ax1 = fig.add_subplot(111)
+    for i, cals0 in enumerate(cals):
+        for j, cal0 in enumerate(cals0):
+            label0 = labels[i][j]
+
+            intTimes_si = list(cal0.primary_response_nad_si.keys())
+            intTimes_in = list(cal0.primary_response_nad_in.keys())
+
+            for k in range(len(intTimes_si)):
+
+                label = '%s (S%dI%d)' % (label0, intTimes_si[k], intTimes_in[k])
+
+                if k==0:
+                    ax1.plot(cal0.wvl_nad_si, cal0.primary_response_nad_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                    ax1.plot(cal0.wvl_nad_in, cal0.primary_response_nad_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                if k==1:
+                    ax1.plot(cal0.wvl_nad_si, cal0.primary_response_nad_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+                    ax1.plot(cal0.wvl_nad_in, cal0.primary_response_nad_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+
+
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+
+    ax1.set_title('Primary Response (Nadir)')
+    # ax1.set_xlim((250, 2250))
+    # ax1.set_ylim((0, 600))
+    ax1.set_xlim((350, 700))
+    ax1.set_ylim((200, 500))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Primary Response')
+    # plt.savefig('pri_resp_pre_post_nadir.png', bbox_inches='tight')
+    plt.savefig('pri_resp_pre_post_nadir_zoomed.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+def PLOT_PRIMARY_RESPONSE_PRE_POST_ZENITH():
+
+    from ssfr_config_pre_post import config_20180320_z1, config_20180320_z2, config_20180711_z1, config_20180711_z2
+
+    markers     = ['D', '*']
+    markersizes = [10, 4]
+    linestyles = ['-', '--']
+    colors     = ['red', 'magenta', 'blue', 'cyan']
+    linewidths = [1.0, 1.0]
+    alphas     = [1.0, 1.0]
+
+    cal_a1 = CALIBRATION_CU_SSFR(config_20180320_z1)
+    cal_a2 = CALIBRATION_CU_SSFR(config_20180320_z2)
+    cal_b1 = CALIBRATION_CU_SSFR(config_20180711_z1)
+    cal_b2 = CALIBRATION_CU_SSFR(config_20180711_z2)
+
+    cals = [[cal_a1, cal_a2, cal_b1, cal_b2]]
+    labels  = [['Zenith SSIM1 (Pre. 20180320)', 'Zenith 108692-1 (Pre. 20180320)', 'Zenith SSIM1 (Post 20180711)', 'Zenith 108692-1 (Post 20180711)']]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 6))
+    ax1 = fig.add_subplot(111)
+    for i, cals0 in enumerate(cals):
+        for j, cal0 in enumerate(cals0):
+            label0 = labels[i][j]
+
+            intTimes_si = list(cal0.primary_response_zen_si.keys())
+            intTimes_in = list(cal0.primary_response_zen_in.keys())
+
+            for k in range(len(intTimes_si)):
+
+                label = '%s (S%dI%d)' % (label0, intTimes_si[k], intTimes_in[k])
+
+                if k==0:
+                    ax1.plot(cal0.wvl_zen_si, cal0.primary_response_zen_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                    ax1.plot(cal0.wvl_zen_in, cal0.primary_response_zen_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                if k==1:
+                    ax1.plot(cal0.wvl_zen_si, cal0.primary_response_zen_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+                    ax1.plot(cal0.wvl_zen_in, cal0.primary_response_zen_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+
+
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+
+    ax1.set_title('Primary Response (Zenith)')
+    # ax1.set_xlim((250, 2250))
+    # ax1.set_ylim((0, 600))
+    ax1.set_xlim((350, 700))
+    ax1.set_ylim((200, 500))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Primary Response')
+    # plt.savefig('pri_resp_pre_post_zenith.png', bbox_inches='tight')
+    plt.savefig('pri_resp_pre_post_zenith_zoomed.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+def PLOT_TRANSFER_20180712():
+
+    from ssfr_config import config_20180712_a1, config_20180712_a2, config_20180712_b1
+
+    markers     = ['D', '*']
+    markersizes = [10, 4]
+    linestyles = ['-', '--']
+    colors     = ['red', 'blue', 'green']
+    linewidths = [1.0, 1.0]
+    alphas     = [1.0, 1.0]
+
+    cal_a1 = CALIBRATION_CU_SSFR(config_20180712_a1)
+    cal_a2 = CALIBRATION_CU_SSFR(config_20180712_a2)
+    cal_a3 = CALIBRATION_CU_SSFR(config_20180712_b1)
+
+    cals = [[cal_a1, cal_a2, cal_a3]]
+    labels  = [['2008-04 S45-90/I250-375', '2008-04 S90-150/I250-375', 'L2008-2 S45-90/I250-375']]
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 6))
+    ax1 = fig.add_subplot(111)
+    for i, cals0 in enumerate(cals):
+        for j, cal0 in enumerate(cals0):
+            label0 = labels[i][j]
+
+            intTimes_si = list(cal0.field_lamp_nad_si.keys())
+            intTimes_in = list(cal0.field_lamp_nad_in.keys())
+
+            for k in range(len(intTimes_si)):
+
+                label = '%s (S%dI%d)' % (label0, intTimes_si[k], intTimes_in[k])
+
+                if k==0:
+                    ax1.plot(cal0.wvl_nad_si, cal0.field_lamp_nad_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                    ax1.plot(cal0.wvl_nad_in, cal0.field_lamp_nad_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i])
+                if k==1:
+                    ax1.plot(cal0.wvl_nad_si, cal0.field_lamp_nad_si[intTimes_si[k]], label=label, color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+                    ax1.plot(cal0.wvl_nad_in, cal0.field_lamp_nad_in[intTimes_in[k]], color=colors[j], lw=linewidths[i], alpha=alphas[i], ls=linestyles[i], marker='o')
+
+
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+
+    ax1.set_title('Field Calibrator (Nadir 20180712)')
+    ax1.set_xlim((250, 2250))
+    ax1.set_ylim((0, 0.4))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    plt.savefig('transfer_20180712.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+
 
 if __name__ == '__main__':
 
@@ -1147,41 +1321,10 @@ if __name__ == '__main__':
     # PLOT_TRANSFER_20180711()
 
     # PLOT_PRIMARY_RESPONSE_20180712()
-    PLOT_TRANSFER_20180712()
+    # PLOT_TRANSFER_20180712()
+
+    PLOT_PRIMARY_RESPONSE_PRE_POST_NADIR()
+    # PLOT_PRIMARY_RESPONSE_PRE_POST_ZENITH()
+    # PLOT_TRANSFER_PRE_POST()
+
     exit()
-
-
-
-
-
-
-
-
-
-    date = datetime.datetime(2018, 5, 3)
-    # read in data
-    # ==============================================================
-    fdir   = '/Users/hoch4240/Desktop/SSFR/Alvin/%s/data' % date.strftime('%Y%m%d')
-    # ==============================================================
-    fnames = sorted(glob.glob('%s/*.SKS' % fdir))
-    ssfr   = CU_SSFR(fnames)
-    # ==============================================================
-    whichRadiation = {'zenith':'irradiance', 'nadir':'irradiance'}
-    # ==============================================================
-    ssfr.COUNT2RADIATION(cal, whichRadiation=whichRadiation)
-
-    f = h5py.File('%s_Alvin.h5' % date.strftime('%Y%m%d'), 'w')
-    f['spectra_zen'] = ssfr.spectra_zen
-    f['spectra_nad'] = ssfr.spectra_nad
-    f['wvl_zen'] = ssfr.wvl_zen
-    f['wvl_nad'] = ssfr.wvl_nad
-    f['tmhr']    = ssfr.tmhr
-    f['temp']    = ssfr.temp
-    f.close()
-    exit()
-
-    wavelengths = [600.0, 1260.0]
-    QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir')
-
-    tmhrRange = [4.0, 4.1]
-    QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='nadir')
