@@ -196,6 +196,7 @@ class CU_SSFR:
             for intTime in intTimes:
                 indices = np.where(self.int_time[:, iSen]==intTime)[0]
                 self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode=dark_corr_mode, fillValue=fillValue)
+        print(self.int_time_info)
         # -
 
 
@@ -388,9 +389,7 @@ class CALIBRATION_CU_SSFR:
         self.CAL_WAVELENGTH()
         self.CAL_PRIMARY_RESPONSE(self.config)
         self.CAL_TRANSFER(self.config)
-        # for key in self.config.keys():
-        #     print(key, self.config[key])
-        # self.CAL_SECONDARY_RESPONSE(config)
+        self.CAL_SECONDARY_RESPONSE(config)
         # self.CAL_ANGULAR_RESPONSE(config)
 
 
@@ -681,59 +680,120 @@ class CALIBRATION_CU_SSFR:
 
         # for zenith
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # Silicon
         self.secondary_response_zen_si = {}
-        for intTime in config['int_time_secondary_zen_si']:
-            try:
-                ssfr = CU_SSFR([config['fname_secondary_zen_cal']], dark_corr_mode='mean')
-                spectra_zen_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
-                ssfr = CU_SSFR([config['fname_secondary_zen_dark']], dark_corr_mode='mean')
-                spectra_zen_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 0]-intTime)<0.00001, :, 0], axis=0)
-                spectra_zen_si = spectra_zen_si_l - spectra_zen_si_d
-                spectra_zen_si[spectra_zen_si<=0.0] = np.nan
-                self.secondary_response_zen_si[intTime] = spectra_zen_si / intTime / self.field_lamp_zen_si[intTime]
-            except:
-                self.secondary_response_zen_si[intTime] = np.repeat(np.nan, self.chanNum)
+        iSen = 0
+        try:
+            ssfr_l = CU_SSFR([config['fname_secondary_zen_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_secondary_zen_dark']], dark_corr_mode='mean')
 
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_secondary_zen_si'] = intTimes_l
+            else:
+                exit('Secondary [Zenith Silicon]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_secondary_zen_si']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.secondary_response_zen_si[intTime] = spectra / intTime / self.field_lamp_zen_si[intTime]
+        except:
+            print('Secondary [Zenith Silicon]: Cannot read calibration files.')
+            self.secondary_response_zen_si[-1] = np.repeat(np.nan, self.chanNum)
+
+
+        # InGaAs
         self.secondary_response_zen_in = {}
-        for intTime in config['int_time_secondary_zen_in']:
-            try:
-                ssfr = CU_SSFR([config['fname_secondary_zen_cal']], dark_corr_mode='mean')
-                spectra_zen_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
-                ssfr = CU_SSFR([config['fname_secondary_zen_dark']], dark_corr_mode='mean')
-                spectra_zen_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 1]-intTime)<0.00001, :, 1], axis=0)
-                spectra_zen_in = spectra_zen_in_l - spectra_zen_in_d
-                spectra_zen_in[spectra_zen_in<=0.0] = np.nan
-                self.secondary_response_zen_in[intTime] = spectra_zen_in / intTime / self.field_lamp_zen_in[intTime]
-            except:
-                self.secondary_response_zen_in[intTime] = np.repeat(np.nan, self.chanNum)
+        iSen = 1
+        try:
+            ssfr_l = CU_SSFR([config['fname_secondary_zen_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_secondary_zen_dark']], dark_corr_mode='mean')
+
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_secondary_zen_in'] = intTimes_l
+            else:
+                exit('Secondary [Zenith InGaAs]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_secondary_zen_in']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.secondary_response_zen_in[intTime] = spectra / intTime / self.field_lamp_zen_in[intTime]
+        except:
+            print('Secondary [Zenith InGaAs]: Cannot read calibration files.')
+            self.secondary_response_zen_in[-1] = np.repeat(np.nan, self.chanNum)
+        # ---------------------------------------------------------------------------
+
+
 
         # for nadir
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        # Silicon
         self.secondary_response_nad_si = {}
-        for intTime in config['int_time_secondary_nad_si']:
-            try:
-                ssfr = CU_SSFR([config['fname_secondary_nad_cal']], dark_corr_mode='mean')
-                spectra_nad_si_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
-                ssfr = CU_SSFR([config['fname_secondary_nad_dark']], dark_corr_mode='mean')
-                spectra_nad_si_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 2]-intTime)<0.00001, :, 2], axis=0)
-                spectra_nad_si = spectra_nad_si_l - spectra_nad_si_d
-                spectra_nad_si[spectra_nad_si<=0.0] = np.nan
-                self.secondary_response_nad_si[intTime] = spectra_nad_si / intTime / self.field_lamp_nad_si[intTime]
-            except:
-                self.secondary_response_nad_si[intTime] = np.repeat(np.nan, self.chanNum)
+        iSen = 2
+        try:
+            ssfr_l = CU_SSFR([config['fname_secondary_nad_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_secondary_nad_dark']], dark_corr_mode='mean')
 
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_secondary_nad_si'] = intTimes_l
+            else:
+                exit('Secondary [Nadir Silicon]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_secondary_nad_si']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.secondary_response_nad_si[intTime] = spectra / intTime / self.field_lamp_nad_si[intTime]
+        except:
+            print('Secondary [Nadir Silicon]: Cannot read calibration files.')
+            self.secondary_response_nad_si[-1] = np.repeat(np.nan, self.chanNum)
+
+
+        # InGaAs
         self.secondary_response_nad_in = {}
-        for intTime in config['int_time_secondary_nad_in']:
-            try:
-                ssfr = CU_SSFR([config['fname_secondary_nad_cal']], dark_corr_mode='mean')
-                spectra_nad_in_l = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
-                ssfr = CU_SSFR([config['fname_secondary_nad_dark']], dark_corr_mode='mean')
-                spectra_nad_in_d = np.mean(ssfr.spectra_dark_corr[np.abs(ssfr.int_time[:, 3]-intTime)<0.00001, :, 3], axis=0)
-                spectra_nad_in = spectra_nad_in_l - spectra_nad_in_d
-                spectra_nad_in[spectra_nad_in<=0.0] = np.nan
-                self.secondary_response_nad_in[intTime] = spectra_nad_in / intTime / self.field_lamp_nad_in[intTime]
-            except:
-                self.secondary_response_nad_in[intTime] = np.repeat(np.nan, self.chanNum)
+        iSen = 3
+        try:
+            ssfr_l = CU_SSFR([config['fname_secondary_nad_cal']] , dark_corr_mode='mean')
+            ssfr_d = CU_SSFR([config['fname_secondary_nad_dark']], dark_corr_mode='mean')
+
+            intTimes_l = list(np.unique(ssfr_l.int_time[:, iSen]))
+            intTimes_d = list(np.unique(ssfr_d.int_time[:, iSen]))
+
+            if intTimes_l == intTimes_d:
+                config['int_time_secondary_nad_in'] = intTimes_l
+            else:
+                exit('Secondary [Nadir InGaAs]: dark and light integration times doesn\'t match.')
+
+            for intTime in config['int_time_secondary_nad_in']:
+
+                spectra_l = np.mean(ssfr_l.spectra_dark_corr[np.abs(ssfr_l.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+                spectra_d = np.mean(ssfr_d.spectra_dark_corr[np.abs(ssfr_d.int_time[:, iSen]-intTime)<0.00001, :, iSen], axis=0)
+
+                spectra = spectra_l - spectra_d
+                spectra[spectra<=0.0] = np.nan
+                self.secondary_response_nad_in[intTime] = spectra / intTime / self.field_lamp_nad_in[intTime]
+        except:
+            print('Secondary [Nadir InGaAs]: Cannot read calibration files.')
+            self.secondary_response_nad_in[-1] = np.repeat(np.nan, self.chanNum)
         # ---------------------------------------------------------------------------
 
 
@@ -1286,6 +1346,162 @@ def PLOT_TRANSFER_20180712():
 
 
 
+def PLOT_PRIMARY_RESPONSE_20180719():
+
+    from ssfr_config_skywatch_20180719 import config_20180719
+
+    cal0 = CALIBRATION_CU_SSFR(config_20180719)
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 4))
+    ax1 = fig.add_subplot(121)
+
+    intTimes_si = list(cal0.primary_response_nad_si.keys())
+    intTimes_in = list(cal0.primary_response_nad_in.keys())
+    for k in range(len(intTimes_si)):
+        label = 'S%dI%d' % (intTimes_si[k], intTimes_in[k])
+        if k==0:
+            ax1.plot(cal0.wvl_nad_si, cal0.primary_response_nad_si[intTimes_si[k]], label=label, color='r', lw=2.0)
+            ax1.plot(cal0.wvl_nad_in, cal0.primary_response_nad_in[intTimes_in[k]], color='magenta', lw=2.0)
+        if k==1:
+            ax1.plot(cal0.wvl_nad_si, cal0.primary_response_nad_si[intTimes_si[k]], label=label, color='b', lw=2.0)
+            ax1.plot(cal0.wvl_nad_in, cal0.primary_response_nad_in[intTimes_in[k]], color='cyan', lw=2.0)
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+    ax1.set_title('Primary Response (Nadir 2008-04)')
+    ax1.set_xlim((250, 2250))
+    ax1.set_ylim((0, 600))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Response')
+
+    ax2 = fig.add_subplot(122)
+    intTimes_si = list(cal0.primary_response_zen_si.keys())
+    intTimes_in = list(cal0.primary_response_zen_in.keys())
+    for k in range(len(intTimes_si)):
+        label = 'S%dI%d' % (intTimes_si[k], intTimes_in[k])
+        if k==0:
+            ax2.plot(cal0.wvl_zen_si, cal0.primary_response_zen_si[intTimes_si[k]], label=label, color='r', lw=2.0)
+            ax2.plot(cal0.wvl_zen_in, cal0.primary_response_zen_in[intTimes_in[k]], color='magenta', lw=2.0)
+        if k==1:
+            ax2.plot(cal0.wvl_zen_si, cal0.primary_response_zen_si[intTimes_si[k]], label=label, color='b', lw=2.0)
+            ax2.plot(cal0.wvl_zen_in, cal0.primary_response_zen_in[intTimes_in[k]], color='cyan', lw=2.0)
+    ax2.legend(loc='upper right', fontsize=14, framealpha=0.4)
+    ax2.set_title('Primary Response (Zenith SSIM1)')
+    ax2.set_xlim((250, 2250))
+    ax2.set_ylim((0, 600))
+    ax2.set_xlabel('Wavelength [nm]')
+    ax2.set_ylabel('Response')
+
+
+    plt.savefig('pri_resp_20180719.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+def PLOT_TRANSFER_20180719():
+
+    from ssfr_config_skywatch_20180719 import config_20180719
+
+    cal0 = CALIBRATION_CU_SSFR(config_20180719)
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 4))
+    ax1 = fig.add_subplot(121)
+
+    intTimes_si = list(cal0.field_lamp_nad_si.keys())
+    intTimes_in = list(cal0.field_lamp_nad_in.keys())
+    for k in range(len(intTimes_si)):
+        label = 'S%dI%d' % (intTimes_si[k], intTimes_in[k])
+        if k==0:
+            ax1.plot(cal0.wvl_nad_si, cal0.field_lamp_nad_si[intTimes_si[k]], label=label, color='r', lw=2.0)
+            ax1.plot(cal0.wvl_nad_in, cal0.field_lamp_nad_in[intTimes_in[k]], color='magenta', lw=2.0)
+        if k==1:
+            ax1.plot(cal0.wvl_nad_si, cal0.field_lamp_nad_si[intTimes_si[k]], label=label, color='b', lw=2.0)
+            ax1.plot(cal0.wvl_nad_in, cal0.field_lamp_nad_in[intTimes_in[k]], color='cyan', lw=2.0)
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+    ax1.set_title('Field Lamp (Nadir 2008-04)')
+    ax1.set_xlim((250, 2250))
+    ax1.set_ylim((0, 0.4))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
+
+    ax2 = fig.add_subplot(122)
+    intTimes_si = list(cal0.field_lamp_zen_si.keys())
+    intTimes_in = list(cal0.field_lamp_zen_in.keys())
+    for k in range(len(intTimes_si)):
+        label = 'S%dI%d' % (intTimes_si[k], intTimes_in[k])
+        if k==0:
+            ax2.plot(cal0.wvl_zen_si, cal0.field_lamp_zen_si[intTimes_si[k]], label=label, color='r', lw=2.0)
+            ax2.plot(cal0.wvl_zen_in, cal0.field_lamp_zen_in[intTimes_in[k]], color='magenta', lw=2.0)
+        if k==1:
+            ax2.plot(cal0.wvl_zen_si, cal0.field_lamp_zen_si[intTimes_si[k]], label=label, color='b', lw=2.0)
+            ax2.plot(cal0.wvl_zen_in, cal0.field_lamp_zen_in[intTimes_in[k]], color='cyan', lw=2.0)
+    ax2.legend(loc='upper right', fontsize=14, framealpha=0.4)
+    ax2.set_title('Field Lamp (Zenith SSIM1)')
+    ax2.set_xlim((250, 2250))
+    ax2.set_ylim((0, 0.4))
+    ax2.set_xlabel('Wavelength [nm]')
+    ax2.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
+
+    plt.savefig('transfer_20180719.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
+
+
+
+def PLOT_SECONDARY_RESPONSE_20180719():
+
+    from ssfr_config_skywatch_20180719 import config_20180719
+
+    cal0 = CALIBRATION_CU_SSFR(config_20180719)
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 4))
+    ax1 = fig.add_subplot(121)
+
+    intTimes_si = list(cal0.secondary_response_nad_si.keys())
+    intTimes_in = list(cal0.secondary_response_nad_in.keys())
+    for k in range(len(intTimes_si)):
+        label = 'S%dI%d' % (intTimes_si[k], intTimes_in[k])
+        if k==0:
+            ax1.plot(cal0.wvl_nad_si, cal0.secondary_response_nad_si[intTimes_si[k]], label=label, color='r', lw=2.0)
+            ax1.plot(cal0.wvl_nad_in, cal0.secondary_response_nad_in[intTimes_in[k]], color='magenta', lw=2.0)
+        if k==1:
+            ax1.plot(cal0.wvl_nad_si, cal0.secondary_response_nad_si[intTimes_si[k]], label=label, color='b', lw=2.0)
+            ax1.plot(cal0.wvl_nad_in, cal0.secondary_response_nad_in[intTimes_in[k]], color='cyan', lw=2.0)
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+    ax1.set_title('Secondary Response (Nadir 2008-04)')
+    ax1.set_xlim((250, 2250))
+    ax1.set_ylim((0, 600))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Response')
+
+    ax2 = fig.add_subplot(122)
+    intTimes_si = list(cal0.secondary_response_zen_si.keys())
+    intTimes_in = list(cal0.secondary_response_zen_in.keys())
+    for k in range(len(intTimes_si)):
+        label = 'S%dI%d' % (intTimes_si[k], intTimes_in[k])
+        if k==0:
+            ax2.plot(cal0.wvl_zen_si, cal0.secondary_response_zen_si[intTimes_si[k]], label=label, color='r', lw=2.0)
+            ax2.plot(cal0.wvl_zen_in, cal0.secondary_response_zen_in[intTimes_in[k]], color='magenta', lw=2.0)
+        if k==1:
+            ax2.plot(cal0.wvl_zen_si, cal0.secondary_response_zen_si[intTimes_si[k]], label=label, color='b', lw=2.0)
+            ax2.plot(cal0.wvl_zen_in, cal0.secondary_response_zen_in[intTimes_in[k]], color='cyan', lw=2.0)
+    ax2.legend(loc='upper right', fontsize=14, framealpha=0.4)
+    ax2.set_title('Secondary Response (Zenith SSIM1)')
+    ax2.set_xlim((250, 2250))
+    ax2.set_ylim((0, 600))
+    ax2.set_xlabel('Wavelength [nm]')
+    ax2.set_ylabel('Response')
+
+    plt.savefig('sec_resp_20180719.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
 
 
 if __name__ == '__main__':
@@ -1316,15 +1532,16 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
 
-
     # PLOT_PRIMARY_RESPONSE_20180711()
     # PLOT_TRANSFER_20180711()
 
     # PLOT_PRIMARY_RESPONSE_20180712()
     # PLOT_TRANSFER_20180712()
 
-    PLOT_PRIMARY_RESPONSE_PRE_POST_NADIR()
+    # PLOT_PRIMARY_RESPONSE_PRE_POST_NADIR()
     # PLOT_PRIMARY_RESPONSE_PRE_POST_ZENITH()
     # PLOT_TRANSFER_PRE_POST()
 
-    exit()
+    # PLOT_PRIMARY_RESPONSE_20180719()
+    # PLOT_TRANSFER_20180719()
+    # PLOT_SECONDARY_RESPONSE_20180719()
