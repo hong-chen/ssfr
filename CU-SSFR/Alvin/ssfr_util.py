@@ -196,7 +196,6 @@ class CU_SSFR:
             for intTime in intTimes:
                 indices = np.where(self.int_time[:, iSen]==intTime)[0]
                 self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode=dark_corr_mode, fillValue=fillValue)
-        print(self.int_time_info)
         # -
 
 
@@ -226,20 +225,47 @@ class CU_SSFR:
         self.spectra_nad = np.zeros((self.tmhr.size, n_nad), dtype=np.float64)
 
         for i in range(self.tmhr.size):
+            # for zenith
+            intTime_si = self.int_time[i, 0]
+            if intTime_si not in cal.primary_response_zen_si.keys():
+                intTime_si_tag = -1
+            else:
+                intTime_si_tag = intTime_si
+
+            intTime_in = self.int_time[i, 1]
+            if intTime_in not in cal.primary_response_zen_in.keys():
+                # intTime_in_tag = -1
+                intTime_in_tag = 250
+            else:
+                intTime_in_tag = intTime_in
+
             if whichRadiation['zenith'] == 'radiance':
-                self.spectra_zen[i, :n_zen_si] =  self.spectra_dark_corr[i, logic_zen_si, 0]/float(self.int_time[i, 0])/(np.pi * cal.primary_response_zen_si[90][logic_zen_si])
-                self.spectra_zen[i, n_zen_si:] = (self.spectra_dark_corr[i, logic_zen_in, 1]/float(self.int_time[i, 1])/(np.pi * cal.primary_response_zen_in[375][logic_zen_in]))[::-1]
+                self.spectra_zen[i, :n_zen_si] =  (self.spectra_dark_corr[i, logic_zen_si, 0]/intTime_si)/(np.pi * cal.primary_response_zen_si[intTime_si_tag][logic_zen_si])
+                self.spectra_zen[i, n_zen_si:] = ((self.spectra_dark_corr[i, logic_zen_in, 1]/intTime_in)/(np.pi * cal.primary_response_zen_in[intTime_in_tag][logic_zen_in]))[::-1]
             elif whichRadiation['zenith'] == 'irradiance':
-                self.spectra_zen[i, :n_zen_si] =  self.spectra_dark_corr[i, logic_zen_si, 0]/float(self.int_time[i, 0])/cal.secondary_response_zen_si[90][logic_zen_si]
-                self.spectra_zen[i, n_zen_si:] = (self.spectra_dark_corr[i, logic_zen_in, 1]/float(self.int_time[i, 1])/cal.secondary_response_zen_in[375][logic_zen_in])[::-1]
+                self.spectra_zen[i, :n_zen_si] =  (self.spectra_dark_corr[i, logic_zen_si, 0]/intTime_si)/(cal.secondary_response_zen_si[intTime_si_tag][logic_zen_si])
+                self.spectra_zen[i, n_zen_si:] = ((self.spectra_dark_corr[i, logic_zen_in, 1]/intTime_in)/(cal.secondary_response_zen_in[intTime_in_tag][logic_zen_in]))[::-1]
+
+            # for nadir
+            intTime_si = self.int_time[i, 2]
+            if intTime_si not in cal.primary_response_nad_si.keys():
+                intTime_si_tag = -1
+            else:
+                intTime_si_tag = intTime_si
+
+            intTime_in = self.int_time[i, 3]
+            if intTime_in not in cal.primary_response_nad_in.keys():
+                # intTime_in_tag = -1
+                intTime_in_tag = 250
+            else:
+                intTime_in_tag = intTime_in
 
             if whichRadiation['nadir'] == 'radiance':
-                self.spectra_nad[i, :n_nad_si] =  self.spectra_dark_corr[i, logic_nad_si, 2]/float(self.int_time[i, 2])/(np.pi * cal.primary_response_nad_si[90][logic_nad_si])
-                self.spectra_nad[i, n_nad_si:] = (self.spectra_dark_corr[i, logic_nad_in, 3]/float(self.int_time[i, 3])/(np.pi * cal.primary_response_nad_in[375][logic_nad_in]))[::-1]
+                self.spectra_nad[i, :n_nad_si] =  (self.spectra_dark_corr[i, logic_nad_si, 2]/intTime_si)/(np.pi * cal.primary_response_nad_si[intTime_si_tag][logic_nad_si])
+                self.spectra_nad[i, n_nad_si:] = ((self.spectra_dark_corr[i, logic_nad_in, 3]/intTime_in)/(np.pi * cal.primary_response_nad_in[intTime_in_tag][logic_nad_in]))[::-1]
             elif whichRadiation['nadir'] == 'irradiance':
-                self.spectra_nad[i, :n_nad_si] =  self.spectra_dark_corr[i, logic_nad_si, 2]/float(self.int_time[i, 2])/cal.secondary_response_nad_si[90][logic_nad_si]
-                self.spectra_nad[i, n_nad_si:] = (self.spectra_dark_corr[i, logic_nad_in, 3]/float(self.int_time[i, 3])/cal.secondary_response_nad_in[375][logic_nad_in])[::-1]
-
+                self.spectra_nad[i, :n_nad_si] =  (self.spectra_dark_corr[i, logic_nad_si, 2]/intTime_si)/(cal.secondary_response_nad_si[intTime_si_tag][logic_nad_si])
+                self.spectra_nad[i, n_nad_si:] = ((self.spectra_dark_corr[i, logic_nad_in, 3]/intTime_in)/(cal.secondary_response_nad_in[intTime_in_tag][logic_nad_in]))[::-1]
 
 
 
@@ -1504,6 +1530,39 @@ def PLOT_SECONDARY_RESPONSE_20180719():
 
 
 
+
+
+def CDATA_20180719():
+
+    from ssfr_config_skywatch_20180719 import config_20180719
+
+    cal = CALIBRATION_CU_SSFR(config_20180719)
+
+    date = datetime.datetime(2018, 7, 19)
+    # read in data
+    # ==============================================================
+    fdir   = '/Users/hoch4240/Chen/work/07_ORACLES-2/filtered-spn/data/SSFR/20180719/Alvin/s45_90i250_375'
+    # ==============================================================
+    fnames = sorted(glob.glob('%s/*.SKS' % fdir))
+    ssfr   = CU_SSFR(fnames)
+    # ==============================================================
+    whichRadiation = {'zenith':'irradiance', 'nadir':'irradiance'}
+    # ==============================================================
+    ssfr.COUNT2RADIATION(cal, whichRadiation=whichRadiation)
+
+    f = h5py.File('%s_Alvin.h5' % date.strftime('%Y%m%d'), 'w')
+    f['spectra_zen'] = ssfr.spectra_zen
+    f['spectra_nad'] = ssfr.spectra_nad
+    f['wvl_zen'] = ssfr.wvl_zen
+    f['wvl_nad'] = ssfr.wvl_nad
+    f['tmhr']    = ssfr.tmhr
+    f['temp']    = ssfr.temp
+    f.close()
+    exit()
+
+
+
+
 if __name__ == '__main__':
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1545,3 +1604,5 @@ if __name__ == '__main__':
     # PLOT_PRIMARY_RESPONSE_20180719()
     # PLOT_TRANSFER_20180719()
     # PLOT_SECONDARY_RESPONSE_20180719()
+
+    CDATA_20180719()
