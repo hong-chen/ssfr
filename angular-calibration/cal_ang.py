@@ -40,6 +40,8 @@ def CAL_COS_RESP(fnames, which='nadir', intTimes_si=[45.0, 90.0], intTimes_in=[2
             ssfr            = CU_SSFR([fname], dark_corr_mode='dark_interpolate')
             logic_si = (np.abs(ssfr.int_time[:, index_si]-intTime_si)<0.00001)&(ssfr.shutter==0)
             logic_in = (np.abs(ssfr.int_time[:, index_in]-intTime_in)<0.00001)&(ssfr.shutter==0)
+            logic_si[:10]  = False; logic_si[-10:] = False
+            logic_in[:10]  = False; logic_in[-10:] = False
             counts_si[:, i] = np.mean(ssfr.spectra_dark_corr[logic_si, :, index_si], axis=0)
             counts_in[:, i] = np.mean(ssfr.spectra_dark_corr[logic_in, :, index_in], axis=0)
 
@@ -123,39 +125,13 @@ if __name__ == '__main__':
     # fnames = sorted(glob.glob('/Users/hoch4240/Chen/mygit/SSFR-util/CU-SSFR/Alvin/data/post_cals/20180712/Alvin/508/nadir/LCN-A-01/L2008-2/s45_90i250_375/pos/*.SKS')) + sorted(glob.glob('/Users/hoch4240/Chen/mygit/SSFR-util/CU-SSFR/Alvin/data/post_cals/20180712/Alvin/508/nadir/LCN-A-01/L2008-2/s45_90i250_375/neg/*.SKS'))
     # PLOT_COS_RESP(fnames, ang, which='Nadir', intTimes_si=[45.0, 90.0], intTimes_in=[250.0, 375.0], cable='L2008-2')
 
-    fnames = sorted(glob.glob('/Users/hoch4240/Chen/mygit/SSFR-util/CU-SSFR/Alvin/data/post_cals/20180712/Alvin/508/zenith/LCN-A-02/SSIM1/s45_90i250_375/pos/*.SKS')) + sorted(glob.glob('/Users/hoch4240/Chen/mygit/SSFR-util/CU-SSFR/Alvin/data/post_cals/20180712/Alvin/508/zenith/LCN-A-02/SSIM1/s45_90i250_375/neg/*.SKS'))
-    PLOT_COS_RESP(fnames, ang, which='Zenith', intTimes_si=[45.0, 90.0], intTimes_in=[250.0, 375.0], cable='SSIM1')
+    # fnames = sorted(glob.glob('/Users/hoch4240/Chen/mygit/SSFR-util/CU-SSFR/Alvin/data/post_cals/20180712/Alvin/508/zenith/LCN-A-02/SSIM1/s45_90i250_375/pos/*.SKS')) + sorted(glob.glob('/Users/hoch4240/Chen/mygit/SSFR-util/CU-SSFR/Alvin/data/post_cals/20180712/Alvin/508/zenith/LCN-A-02/SSIM1/s45_90i250_375/neg/*.SKS'))
+    # PLOT_COS_RESP(fnames, ang, which='Zenith', intTimes_si=[45.0, 90.0], intTimes_in=[250.0, 375.0], cable='SSIM1')
+
+    fnames = sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/post_cals/20180723/Belana/508/nadir/LCN-B/111080/s45_90i250_375/pos/*.SKS')) + sorted(glob.glob('/Users/hoch4240/Chen/work/00_reuse/SSFR-util/CU-SSFR/Belana/data/post_cals/20180723/Belana/508/nadir/LCN-B/111080/s45_90i250_375/neg/*.SKS'))
+    PLOT_COS_RESP(fnames, ang, which='Nadir', intTimes_si=[45.0, 90.0], intTimes_in=[250.0, 375.0], cable='111080')
+
+    # fnames = sorted(glob.glob('/Users/hoch4240/Chen/mygit/SSFR-util/CU-SSFR/Alvin/data/post_cals/20180712/Alvin/508/zenith/LCN-A-02/SSIM1/s45_90i250_375/pos/*.SKS')) + sorted(glob.glob('/Users/hoch4240/Chen/mygit/SSFR-util/CU-SSFR/Alvin/data/post_cals/20180712/Alvin/508/zenith/LCN-A-02/SSIM1/s45_90i250_375/neg/*.SKS'))
+    # PLOT_COS_RESP(fnames, ang, which='Zenith', intTimes_si=[45.0, 90.0], intTimes_in=[250.0, 375.0], cable='SSIM1')
 
     exit()
-
-
-    fdir_zenith_s60i300  = '/argus/home/chen/work/06_oracles/04_cal/data/20161222/dist/zenith/s60i300'
-    fdir_zenith_s100i300 = '/argus/home/chen/work/06_oracles/04_cal/data/20161222/dist/zenith/s100i300'
-    fdir_nadir_s30i100   = '/argus/home/chen/work/06_oracles/04_cal/data/20161222/dist/nadir/s30i100'
-    fdir_nadir_s60i200   = '/argus/home/chen/work/06_oracles/04_cal/data/20161222/dist/nadir/s60i200'
-    fdir_nadir_s100i300  = '/argus/home/chen/work/06_oracles/04_cal/data/20161222/dist/nadir/s100i300'
-    #CDATA_NLIN(dist, tag='nadir')
-    #CDATA_NLIN(dist, tag='zenith')
-    #exit()
-
-    dist = np.array([50, 45, 50, 40, 50, 35, 50, 55, 50, 60, 50, 65, 50, 70, 50])
-    wvl_in, coef_zenith_s60i300  = CDATA_NLIN(dist, tag='zenith', fdir=fdir_zenith_s60i300)
-    wvl_in, coef_zenith_s100i300 = CDATA_NLIN(dist, tag='zenith', fdir=fdir_zenith_s100i300)
-    wvl_in, coef_nadir_s30i100   = CDATA_NLIN(dist, tag='nadir',  fdir=fdir_nadir_s30i100)
-    wvl_in, coef_nadir_s60i200   = CDATA_NLIN(dist, tag='nadir',  fdir=fdir_nadir_s60i200)
-    wvl_in, coef_nadir_s100i300  = CDATA_NLIN(dist, tag='nadir',  fdir=fdir_nadir_s100i300)
-
-    fig = plt.figure(figsize=(12, 5))
-    ax1 = fig.add_subplot(111)
-    ax1.plot(wvl_in, coef_zenith_s60i300[:, -1], label='zenith s60i300')
-    ax1.plot(wvl_in, coef_zenith_s100i300[:, -1],label='zenith s100i300')
-    ax1.plot(wvl_in, coef_nadir_s30i100[:, -1],label='nadir s30i100')
-    ax1.plot(wvl_in, coef_nadir_s60i200[:, -1],label='nadir s60i200')
-    ax1.plot(wvl_in, coef_nadir_s100i300[:, -1],label='nadir s100i300')
-    #ax1.axhline(0.0, color='k', ls=':')
-    ax1.set_ylim([-0.2, 0.2])
-    ax1.set_title('Polynomial Coefficient')
-    ax1.set_xlabel('Wavelength [nm]')
-    plt.legend(fontsize=10, framealpha=0.2, loc='upper left')
-    plt.savefig('coef.png')
-    plt.show()
