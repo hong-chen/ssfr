@@ -22,23 +22,52 @@ Calibrations
 1. Primary and Transfer Calibrations
 =====================================
 
-Standard lamp: F-1324 or 506C
-Field calibrator:
+Standard lamp in the lab: F-1324 (or 506C)
+
+- The standard lamps are NIST traceble lamps, which relate SSFR measured digital counts to
+  radiative fluxes.
+
+Lamp in the field calibrator: 150C (or 150D or 150E)
+
+- These lamps are not calibrated.
+
+
 
 =======================
 2. Angular Calibrations
 =======================
+
+In the lab, we use an uncalibrated lamp (507) to perform the angluar calibration. To perform this
+calibration, we mount the SSFR light collector to a rotating stage, which can be controlled through
+a computer via command lines.
+
+For the reference, the angles [units: degree] we picked are:
+::
+
+    0.0,  5.0,  10.0,  15.0,  20.0,  25.0,  30.0,  40.0,  50.0,  60.0,  70.0,  80.0,  90.0,
+    0.0, -5.0, -10.0, -15.0, -20.0, -25.0, -30.0, -40.0, -50.0, -60.0, -70.0, -80.0, -90.0, 0.0
+
 
 
 ================
 3. Distance Test
 ================
 
+In the lab, we use an uncalibrated lamp (507) to perform the distance test. The lamp is mounted on
+a rack that can be moved back and forth with a specified distance according to the readings of the
+ruler attached to the rack.
+
+For the reference, the distances [units: cm] we picked are:
+::
+
+    50.0 ,45.0 ,50.0 ,40.0 ,50.0 ,35.0 ,50.0 ,55.0 ,50.0 ,60.0 ,50.0 ,65.0, 50.0
 
 ======================
 4*. Field Calibrations
 ======================
 
+The field calibrator is sent to the field with SSFR. The field calibration will be performed regularly to
+trace the stability of the SSFR measurements.
 
 
 
