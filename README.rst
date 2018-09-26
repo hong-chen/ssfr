@@ -78,16 +78,32 @@ Corrections
 ~~~~~~~~~~~
 
 =================
-Cosine Correction
+1. Cosine Correction
 =================
 
+Since the angular responses are different for direct and diffuse light, the wavelength dependent
+diffuse-to-direct ratio needs to be calculated first.
 
 
 
 
-========================
-Non-linearity Correction
-========================
+
+
+
+
+===========================
+2. Non-linearity Correction
+===========================
+
+
+
+
+
+======================
+3*. Azimuth Correction
+======================
+This correction has only been applied to the dataset collected during Arctic Radiation - IceBridge
+Sea&Ice Experiment (ARISE).
 
 
 
