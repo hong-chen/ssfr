@@ -1,4 +1,22 @@
+import numpy
 import pysolar
+
+
+
+
+
+def CAL_JULIAN_DAY(date, tmhr):
+
+    julian_day = np.zeros_like(tmhr, dtype=np.float64)
+
+    for i, tmhr0 in tmhr:
+        jday[i]   = (date - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0 + tmhr0/24.0
+
+    return julian_day
+
+
+
+
 
 def CAL_SOLAR_ANGLES(julian_day, longitude, latitude, altitude):
 
@@ -36,5 +54,9 @@ def CAL_SOLAR_ANGLES(julian_day, longitude, latitude, altitude):
 
     return sza, saa
 
+
+
+
 if __name__ == '__main__':
+
     pass
