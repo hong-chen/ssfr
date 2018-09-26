@@ -6,12 +6,14 @@ How to Install
 ==============
 ::
 
-    pip install SSFR-util
+    pip3 install SSFR-util
 
 ==========
 How to Use
 ==========
 
+|
+|
 
 Calibrations
 ~~~~~~~~~~~~
@@ -40,6 +42,8 @@ Field calibrator:
 
 
 
+|
+|
 
 Corrections
 ~~~~~~~~~~~
@@ -59,7 +63,8 @@ Non-linearity Correction
 
 
 
-
+|
+|
 
 Additional Notes
 ~~~~~~~~~~~~~~~~
