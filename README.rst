@@ -1,5 +1,5 @@
-SSFR-util
-~~~~~~~~~
+SSFR-util (Under Development...)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ==============
 How to Install
@@ -16,12 +16,29 @@ How to Use
 Calibrations
 ~~~~~~~~~~~~
 
-==================================
-1. Primary and Secondary Calibrations
-==================================
+=====================================
+1. Primary and Transfer Calibrations
+=====================================
 
 Standard lamp: F-1324 or 506C
 Field calibrator:
+
+=======================
+2. Angular Calibrations
+=======================
+
+
+================
+3. Distance Test
+================
+
+
+======================
+4*. Field Calibrations
+======================
+
+
+
 
 
 Corrections
