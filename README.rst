@@ -1,22 +1,75 @@
 SSFR-util
 ~~~~~~~~~
 
-===================
-Primary Calibration
-===================
-
-Standard lamp: F-1324
-
-
-
-
-
 ==============
-ssfr_reader.py
+How to Install
 ==============
+::
 
-- `READ_CU_SSFR(fname, filetype='sk1', verbose=False)`
+    pip install SSFR-util
+
+==========
+How to Use
+==========
 
 
-- `READ_NASA_SSFR(fname, filetype='osa2', verbose=False)`
+Calibrations
+~~~~~~~~~~~~
+
+==================================
+1. Primary and Secondary Calibrations
+==================================
+
+Standard lamp: F-1324 or 506C
+Field calibrator:
+
+
+Corrections
+~~~~~~~~~~~
+
+=================
+Cosine Correction
+=================
+
+
+
+
+
+========================
+Non-linearity Correction
+========================
+
+
+
+
+
+
+Additional Notes
+~~~~~~~~~~~~~~~~
+
+===================================
+IDL to Python Translation (Example)
+===================================
+::
+
+     python         :          IDL
+       l            :    long or lonarr
+       B            :    byte or bytarr
+       L            :    ulong
+       h            :    intarr
+
+     E.g., in IDL:
+       spec  = {btime:lonarr(2)   , bcdtimstp:bytarr(12),$     2l12B
+                intime1:long(0)   , intime2:long(0)     ,$     6l
+                intime3:long(0)   , intime4:long(0)     ,$
+                accum:long(0)     , shsw:long(0)        ,$
+                zsit:ulong(0)     , nsit:ulong(0)       ,$     8L
+                zirt:ulong(0)     , nirt:ulong(0)       ,$
+                zirx:ulong(0)     , nirx:ulong(0)       ,$
+                xt:ulong(0)       , it:ulong(0)         ,$
+                zspecsi:intarr(np), zspecir:intarr(np)  ,$     1024h
+                nspecsi:intarr(np), nspecir:intarr(np)}
+     in Python:
+
+     '<2l12B6l8L1024h'
 
