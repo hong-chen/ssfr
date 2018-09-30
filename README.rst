@@ -77,9 +77,14 @@ trace the stability of the SSFR measurements.
 Corrections
 ~~~~~~~~~~~
 
-=================
-1. Cosine Correction
-=================
+==================
+1. Dark Correction
+==================
+
+
+====================
+2. Cosine Correction
+====================
 
 Since the angular responses are different for direct and diffuse light, the wavelength dependent
 diffuse-to-direct ratio needs to be calculated first.
@@ -92,7 +97,7 @@ diffuse-to-direct ratio needs to be calculated first.
 
 
 ===========================
-2. Non-linearity Correction
+3. Non-linearity Correction
 ===========================
 
 
@@ -100,7 +105,7 @@ diffuse-to-direct ratio needs to be calculated first.
 
 
 ======================
-3*. Azimuth Correction
+4*. Azimuth Correction
 ======================
 This correction has only been applied to the dataset collected during Arctic Radiation - IceBridge
 Sea&Ice Experiment (ARISE).

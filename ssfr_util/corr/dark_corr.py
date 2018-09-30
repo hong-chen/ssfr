@@ -1,6 +1,9 @@
 import numpy as np
 from scipy import stats
 
+
+
+
 def DARK_CORRECTION(tmhr0, shutter0, spectra0, mode="dark_interpolate", darkExtend=2, lightExtend=2, lightThr=10, darkThr=5, fillValue=-99999, verbose=False):
 
     tmhr              = tmhr0.copy()
@@ -127,6 +130,10 @@ def DARK_CORRECTION(tmhr0, shutter0, spectra0, mode="dark_interpolate", darkExte
 
         else:
             exit('Error [DARK_CORRECTION]: \'%s\' has not been implemented yet.' % mode)
+
+
+
+
 
 if __name__ == "__main__":
 
