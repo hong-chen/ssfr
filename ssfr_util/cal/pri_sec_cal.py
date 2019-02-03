@@ -1,11 +1,11 @@
 import h5py
-from pyhdf.SD import SD, SDC
 import numpy as np
 from scipy import interpolate
 from scipy.io import readsav
 
-class CALIBRATION_CU_SSFR:
 
+
+class CALIBRATION_CU_SSFR:
 
     def __init__(self, config):
 
@@ -16,7 +16,6 @@ class CALIBRATION_CU_SSFR:
         self.CAL_TRANSFER(self.config)
         self.CAL_SECONDARY_RESPONSE(config)
         # self.CAL_ANGULAR_RESPONSE(config)
-
 
     def CAL_WAVELENGTH(self):
 
@@ -34,7 +33,6 @@ class CALIBRATION_CU_SSFR:
 
         self.wvl_nad_si = self.coef_nad_si[0] + self.coef_nad_si[1]*xChan + self.coef_nad_si[2]*xChan**2 + self.coef_nad_si[3]*xChan**3 + self.coef_nad_si[4]*xChan**4
         self.wvl_nad_in = self.coef_nad_in[0] + self.coef_nad_in[1]*xChan + self.coef_nad_in[2]*xChan**2 + self.coef_nad_in[3]*xChan**3 + self.coef_nad_in[4]*xChan**4
-
 
     def CAL_PRIMARY_RESPONSE(self, config, lampTag='f-1324', fdirLamp='aux'):
 
@@ -179,7 +177,6 @@ class CALIBRATION_CU_SSFR:
             self.primary_response_nad_in[-1] = np.repeat(np.nan, self.chanNum)
         # ---------------------------------------------------------------------------
 
-
     def CAL_TRANSFER(self, config):
 
         # for zenith
@@ -299,7 +296,6 @@ class CALIBRATION_CU_SSFR:
             print('Transfer [Nadir InGaAs]: Cannot read calibration files.')
             self.field_lamp_nad_in[-1] = np.repeat(np.nan, self.chanNum)
         # ---------------------------------------------------------------------------
-
 
     def CAL_SECONDARY_RESPONSE(self, config):
 
@@ -421,10 +417,10 @@ class CALIBRATION_CU_SSFR:
             self.secondary_response_nad_in[-1] = np.repeat(np.nan, self.chanNum)
         # ---------------------------------------------------------------------------
 
-
     def CAL_ANGULAR_RESPONSE(self, config):
 
         print('under development')
+
 
 
 
