@@ -423,6 +423,10 @@ class CALIBRATION_CU_SSFR:
 
 
 
+def TEST():
+
+    pass
 
 if __name__ == '__main__':
-    pass
+
+    TEST()
