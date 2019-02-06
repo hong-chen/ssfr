@@ -18,8 +18,6 @@ def IF_FILE_EXISTS(fname, exitTag=True):
 
 
 
-
-
 def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
 
     '''
@@ -123,10 +121,7 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
 
 
 
-
-
 class CU_SSFR:
-
 
     def __init__(self, fnames, Ndata=600, whichTime='arinc', timeOffset=0.0, dark_corr_mode='dark_interpolate'):
 
@@ -209,7 +204,6 @@ class CU_SSFR:
                 self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode=dark_corr_mode, fillValue=fillValue)
         # -
 
-
     def COUNT2RADIATION(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0, whichRadiation={'zenith':'radiance', 'nadir':'irradiance'}, wvlRange=[350, 2100]):
 
         """
@@ -280,8 +274,6 @@ class CU_SSFR:
 
 
 
-
-
 def QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir'):
 
     tag = tag.lower()
@@ -315,10 +307,6 @@ def QUICKLOOK_TIME_SERIES(ssfr, wavelengths, tag='nadir'):
 
 
 
-
-
-
-
 def QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='nadir'):
 
     tag = tag.lower()
@@ -348,10 +336,6 @@ def QUICKLOOK_SPECTRA(ssfr, tmhrRange, tag='nadir'):
     plt.savefig('spectra_%s.png' % tag)
     plt.show()
     # ---------------------------------------------------------------------
-
-
-
-
 
 
 

@@ -93,8 +93,9 @@ class CALIBRATION_CU_SSFR:
                 spectra = spectra_l - spectra_d
                 spectra[spectra<=0.0] = np.nan
                 self.primary_response_zen_si[intTime] = spectra / intTime / lampStd_zen_si
-        except:
+        except Exception as e:
             print('Primary [Zenith Silicon]: Cannot read calibration files.')
+            print(e)
             self.primary_response_zen_si[-1] = np.repeat(np.nan, self.chanNum)
 
 
