@@ -49,79 +49,105 @@ def PREP_DATA_2D(data_list):
     e.g., zen_spec has dimension of [1000, 400], nad_spec will also need to have dimension of [1000, 400]
     """
 
-    data_x = {}; data_time = {}
-    data_y = {}; data_spec = {}
+    data_1 = {}
+    data_2 = {}
+    nml    = []
 
     for data_dict in data_list:
-        data_x[data_dict['name']] = data_dict['x']
+
+        nml.append(data_dict['name'])
+
+        data_1['%s_x' % data_dict['name']] = data_dict['x']
+        data_1['%s_y' % data_dict['name']] = data_dict['data'][:, 0]
         for i in range(data_dict['y'].size):
-            data_x['%s_%d' % (data_dict['name'], i)] = data_dict['data'][:, i]
+            data_1['%s_%d' % (data_dict['name'], i)] = data_dict['data'][:, i]
 
-        data_y[data_dict['name']] = data_dict['y']
+        data_2['%s_x' % data_dict['name']] = data_dict['y']
+        data_2['%s_y' % data_dict['name']] = data_dict['data'][0, :]
         for i in range(data_dict['x'].size):
-            data_y['%s_%d' % (data_dict['name'], i)] = data_dict['data'][i, :]
+            data_2['%s_%d' % (data_dict['name'], i)] = data_dict['data'][i, :]
 
-    return data_x, data_y
+    return data_1, data_2, nml
 
 
 
 def GEN_QUICKLOOK_2D(data_list):
 
-    data_x, data_y = PREP_DATA_2D(data_list)
+    config = {
+            'y': {'name':'Rad./Irrad.'},
+            1  : {'name':'Time', 'units':'Hour', 'title':'Time Series'},
+            2  : {'name':'Wavelength', 'units':'nm', 'title':'SSFR Spectra'},
+            }
+    colors = ['red', 'blue']
 
-    # stop here
+    data_1, data_2, nml = PREP_DATA_2D(data_list)
 
-    data_x  = ColumnDataSource(data=data_x)
-    data_y  = ColumnDataSource(data=data_y)
+    data_1c  = ColumnDataSource(data=data_1)
+    data_2c  = ColumnDataSource(data=data_2)
 
-    t_x_s = 0.1 * (data_time_dict['tmhr'].min()//0.1 - 1)
-    t_x_e = 0.1 * (data_time_dict['tmhr'].max()//0.1 + 1)
+    xs_1s = []
+    xe_1s = []
+    for vname in nml:
+        xs_1s.append(0.1*(data_1['%s_x' % vname].min()//0.1 - 1))
+        xe_1s.append(0.1*(data_1['%s_x' % vname].max()//0.1 + 1))
+    xs_1 = min(xs_1s)
+    xe_1 = max(xe_1s)
 
-    w_time = Slider(start=t_x_s, end=t_x_e, value=t_x_s, step=0.0001, width=800, title="Time [Hour]", format="0[.]0000")
-    w_spec = Slider(start=300, end=2200, value=600, step=1, width=800, title="Wavelength [nm]")
+    w_1 = Slider(start=xs_1, end=xe_1, value=xs_1, step=0.0001, width=800, title="%s [%s]" % (config[1]['name'], config[1]['units']), format="0[.]0000")
 
-    plt_time    = figure(plot_height=300, plot_width=800, title='Time Series',
-                  tools="reset,save,box_zoom,ywheel_zoom", active_scroll="ywheel_zoom", x_axis_label='Time [Hour]', y_axis_label='Rad./Irrad.',
-                  x_range=[t_x_s, t_x_e], y_range=[0.0, 1.4], output_backend="webgl")
+    p_1 = figure(plot_height=300, plot_width=800, title=config[1]['title'],
+                 tools="reset,save,box_zoom,ywheel_zoom", active_scroll="ywheel_zoom", x_axis_label='%s [%s]' % (config[1]['name'], config[1]['units']), \
+                 y_axis_label=config['y']['name'], x_range=[xs_1, xe_1], y_range=[0.0, 1.4], output_backend="webgl")
+    p_1.title.text_font_size             = "1.3em"
+    p_1.title.align                      = "center"
+    p_1.xaxis.axis_label_text_font_style = "normal"
+    p_1.yaxis.axis_label_text_font_style = "normal"
+    p_1.xaxis.axis_label_text_font_size  = "1.0em"
+    p_1.xaxis.major_label_text_font_size = "1.0em"
+    p_1.yaxis.axis_label_text_font_size  = "1.0em"
+    p_1.yaxis.major_label_text_font_size = "1.0em"
 
-    plt_time.title.text_font_size             = "1.3em"
-    plt_time.title.align                      = "center"
-    plt_time.xaxis.axis_label_text_font_style = "normal"
-    plt_time.yaxis.axis_label_text_font_style = "normal"
-    plt_time.xaxis.axis_label_text_font_size  = "1.0em"
-    plt_time.xaxis.major_label_text_font_size = "1.0em"
-    plt_time.yaxis.axis_label_text_font_size  = "1.0em"
-    plt_time.yaxis.major_label_text_font_size = "1.0em"
+    c_line_1 = Span(location=w_1.value, dimension='height', line_color='gray', line_dash='dashed', line_width=2)
+    p_1.add_layout(c_line_1)
 
-    c_tline = Span(location=w_time.value, dimension='height', line_color='gray', line_dash='dashed', line_width=2)
-    plt_time.add_layout(c_tline)
-
-    plt_time.circle('tmhr', 'plot_zen', source=data_time, color='red' , size=3, legend='Zenith')
-    plt_time.circle('tmhr', 'plot_nad', source=data_time, color='blue', size=3, legend='Nadir')
-    plt_time.legend.location = 'top_right'
+    for i, vname in enumerate(nml):
+        p_1.circle('%s_x' % vname, '%s_y' % vname, source=data_1c, color=colors[i], size=3, legend=vname)
+    p_1.legend.location = 'top_right'
 
 
-    plt_spec= figure(plot_height=300, plot_width=800, title='SSFR Spectra',
-                  tools="reset,save,box_zoom,ywheel_zoom", active_scroll="ywheel_zoom", x_axis_label='Wavelength [nm]', y_axis_label='Rad./Irrad.',
-                  x_range=[300, 2200], y_range=[0.0, 1.4], output_backend="webgl")
 
-    plt_spec.title.text_font_size = "1.3em"
-    plt_spec.title.align     = "center"
-    plt_spec.xaxis.axis_label_text_font_style = "normal"
-    plt_spec.yaxis.axis_label_text_font_style = "normal"
-    plt_spec.xaxis.axis_label_text_font_size  = "1.0em"
-    plt_spec.xaxis.major_label_text_font_size = "1.0em"
-    plt_spec.yaxis.axis_label_text_font_size  = "1.0em"
-    plt_spec.yaxis.major_label_text_font_size = "1.0em"
+    w_2 = Slider(start=300, end=2200, value=600, step=1, width=800, title="%s [%s]" % (config[2]['name'], config[2]['units']))
 
-    c_sline = Span(location=w_spec.value, dimension='height', line_color='gray', line_dash='dashed', line_width=2)
-    plt_spec.add_layout(c_sline)
+    p_2 = figure(plot_height=300, plot_width=800, title=config[2]['title'],
+                 tools="reset,save,box_zoom,ywheel_zoom", active_scroll="ywheel_zoom", x_axis_label='%s [%s]' % (config[2]['name'], config[2]['units']), \
+                 y_axis_label=config['y']['name'], x_range=[300, 2200], y_range=[0.0, 1.4], output_backend="webgl")
 
-    plt_spec.circle('wvl_zen', 'plot_zen', source=data_spec, color='red' , size=3, legend='Zenith')
-    plt_spec.circle('wvl_nad', 'plot_nad', source=data_spec, color='blue', size=3, legend='Nadir')
-    plt_spec.legend.location = 'top_right'
+    p_2.title.text_font_size             = "1.3em"
+    p_2.title.align                      = "center"
+    p_2.xaxis.axis_label_text_font_style = "normal"
+    p_2.yaxis.axis_label_text_font_style = "normal"
+    p_2.xaxis.axis_label_text_font_size  = "1.0em"
+    p_2.xaxis.major_label_text_font_size = "1.0em"
+    p_2.yaxis.axis_label_text_font_size  = "1.0em"
+    p_2.yaxis.major_label_text_font_size = "1.0em"
 
-    w_spec.callback = CustomJS(args=dict(plt=plt_time, span=c_sline, slider=w_spec, source1=data_time, source2=data_spec), code="""
+    c_line_2 = Span(location=w_2.value, dimension='height', line_color='gray', line_dash='dashed', line_width=2)
+    p_2.add_layout(c_line_2)
+
+    for i, vname in enumerate(nml):
+        p_2.circle('%s_x' % vname, '%s_y' % vname, source=data_2c, color=colors[i], size=3, legend=vname)
+    p_2.legend.location = 'top_right'
+
+    layout = column(p_1, widgetbox(w_2), widgetbox(w_1), p_2)
+    # curdoc().add_root(layout)
+    # curdoc().title = "SSFR Quick Look"
+    html = file_html(layout, CDN, "quicklook")
+    print(html)
+    exit()
+
+
+    w_2.callback = CustomJS(args=dict(plt=p_1, span=c_line_2, slider=w_2, source1=data_1c, source2=data_2c, vnames=nml), code="""
+
 function closest (num, arr) {
     var curr = 0;
     var diff = Math.abs (num - arr[curr]);
@@ -136,11 +162,13 @@ function closest (num, arr) {
 }
 
 var data1 = source1.data;
-var x = data1['tmhr'];
-y1 = data1['plot_zen'];
-y2 = data1['plot_nad'];
-
 var data2 = source2.data;
+for (i=0; i < nml.length; i++) {
+    var vname = vnames[i];
+    var x = data1[vname+'_x'];
+    var y = data1[vname+'_y'];
+}
+
 var wvl = data2['wvl_zen'];
 var index = closest(slider.value, wvl);
 var index_s = index.toString();
@@ -158,7 +186,7 @@ span.location = slider.value;
 plt.title.text = title;
     """)
 
-    w_time.callback = CustomJS(args=dict(plt=plt_spec, span=c_tline, slider=w_time, source1=data_time, source2=data_spec), code="""
+    w_1.callback = CustomJS(args=dict(plt=p_2, span=c_line_1, slider=w_1, source1=data_1c, source2=data_2c), code="""
 function closest (num, arr) {
     var curr = 0;
     var diff = Math.abs (num - arr[curr]);
@@ -173,7 +201,7 @@ function closest (num, arr) {
 }
 
 var data1 = source1.data;
-var x = data1['tmhr'];
+var x = data1['x'];
 
 var data2 = source2.data;
 y1 = data2['plot_zen'];
@@ -195,7 +223,7 @@ plt.title.text = title;
 span.location = slider.value;
     """)
 
-    layout = column(plt_time, widgetbox(w_spec), widgetbox(w_time), plt_spec)
+    layout = column(plt_time, widgetbox(w_y), widgetbox(w_x), plt_y)
     # curdoc().add_root(layout)
     # curdoc().title = "SSFR Quick Look"
     html = file_html(layout, CDN, "%s on %s" % (ssfr, date))
@@ -223,7 +251,6 @@ if __name__ == '__main__':
             {'name':'nad' , 'data':spectra_nad, 'x':tmhr, 'y':wvl_nad}
             ]
 
-    data_x, data_y = PREP_DATA_2D(data_list)
+    # data_x, data_y = PREP_DATA_2D(data_list)
 
-
-    # GEN_QUICKLOOK(data_time, data_spec, ssfr='Belana', date='20180430')
+    GEN_QUICKLOOK_2D(data_list)

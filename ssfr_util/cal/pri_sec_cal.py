@@ -1,7 +1,17 @@
+import os
 import h5py
 import numpy as np
 from scipy import interpolate
 from scipy.io import readsav
+import matplotlib as mpl
+# mpl.use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FixedLocator
+from matplotlib import rcParams
+import matplotlib.gridspec as gridspec
+import matplotlib.patches as mpatches
+# import cartopy.crs as ccrs
+
 
 
 
@@ -34,7 +44,7 @@ class CALIBRATION_CU_SSFR:
         self.wvl_nad_si = self.coef_nad_si[0] + self.coef_nad_si[1]*xChan + self.coef_nad_si[2]*xChan**2 + self.coef_nad_si[3]*xChan**3 + self.coef_nad_si[4]*xChan**4
         self.wvl_nad_in = self.coef_nad_in[0] + self.coef_nad_in[1]*xChan + self.coef_nad_in[2]*xChan**2 + self.coef_nad_in[3]*xChan**3 + self.coef_nad_in[4]*xChan**4
 
-    def CAL_PRIMARY_RESPONSE(self, config, lampTag='f-1324', fdirLamp='aux'):
+    def CAL_PRIMARY_RESPONSE(self, config, lampTag='f-1324', fdirLamp='../data'):
 
         # read in calibrated lamp data and interpolated at SSFR wavelengths
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -55,7 +65,6 @@ class CALIBRATION_CU_SSFR:
         lampStd_nad_in = np.interp(self.wvl_nad_in, data_wvl, data_flux)
         # ---------------------------------------------------------------------------
         # so far we have (W m^-2 nm^-1 as a function of wavelength)
-
 
 
         # for zenith
@@ -425,7 +434,54 @@ class CALIBRATION_CU_SSFR:
 
 def TEST():
 
-    pass
+    from conf import config
+
+    cal0 = CALIBRATION_CU_SSFR(config)
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fig = plt.figure(figsize=(16, 4))
+    ax1 = fig.add_subplot(121)
+
+    intTimes_si = list(cal0.primary_response_nad_si.keys())
+    intTimes_in = list(cal0.primary_response_nad_in.keys())
+    for k in range(len(intTimes_si)):
+        label = 'S%dI%d' % (intTimes_si[k], intTimes_in[k])
+        if k==0:
+            ax1.plot(cal0.wvl_nad_si, cal0.primary_response_nad_si[intTimes_si[k]], label=label, color='r', lw=2.0)
+            ax1.plot(cal0.wvl_nad_in, cal0.primary_response_nad_in[intTimes_in[k]], color='magenta', lw=2.0)
+        if k==1:
+            ax1.plot(cal0.wvl_nad_si, cal0.primary_response_nad_si[intTimes_si[k]], label=label, color='b', lw=2.0)
+            ax1.plot(cal0.wvl_nad_in, cal0.primary_response_nad_in[intTimes_in[k]], color='cyan', lw=2.0)
+    ax1.legend(loc='upper right', fontsize=14, framealpha=0.4)
+    ax1.set_title('Primary Response (Nadir 2008-04)')
+    ax1.set_xlim((250, 2250))
+    ax1.set_ylim((0, 600))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Response')
+
+    ax2 = fig.add_subplot(122)
+    intTimes_si = list(cal0.primary_response_zen_si.keys())
+    intTimes_in = list(cal0.primary_response_zen_in.keys())
+    for k in range(len(intTimes_si)):
+        label = 'S%dI%d' % (intTimes_si[k], intTimes_in[k])
+        if k==0:
+            ax2.plot(cal0.wvl_zen_si, cal0.primary_response_zen_si[intTimes_si[k]], label=label, color='r', lw=2.0)
+            ax2.plot(cal0.wvl_zen_in, cal0.primary_response_zen_in[intTimes_in[k]], color='magenta', lw=2.0)
+        if k==1:
+            ax2.plot(cal0.wvl_zen_si, cal0.primary_response_zen_si[intTimes_si[k]], label=label, color='b', lw=2.0)
+            ax2.plot(cal0.wvl_zen_in, cal0.primary_response_zen_in[intTimes_in[k]], color='cyan', lw=2.0)
+    ax2.legend(loc='upper right', fontsize=14, framealpha=0.4)
+    ax2.set_title('Primary Response (Zenith SSIM1)')
+    ax2.set_xlim((250, 2250))
+    ax2.set_ylim((0, 600))
+    ax2.set_xlabel('Wavelength [nm]')
+    ax2.set_ylabel('Response')
+
+    # plt.savefig('pri_resp_20180719.png', bbox_inches='tight')
+    plt.show()
+    # ---------------------------------------------------------------------
+
+
 
 if __name__ == '__main__':
 
