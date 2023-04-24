@@ -16,6 +16,7 @@ dependencies:
   - netcdf4=1.5.*
   - owslib=0.27.*
   - cartopy=0.18.*
+  - pysolar
   - bokeh=2.4.*
   - vim=8.2.*
   - powerline-status=2.7.*

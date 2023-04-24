@@ -25,7 +25,6 @@ setup(
      license = 'MIT',
      packages = find_packages(),
      install_requires = [
-         'nose',
          'numpy',
          'scipy',
          'h5py',
