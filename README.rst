@@ -1,8 +1,7 @@
 SSFR Software Package
 ~~~~~~~~~~~~~~~~~~~~~
-Solar Spectral Flux Radiometer (SSFR) is an airborne instrument co-developed by teams
-at NASA Ames Research Center (led by Prof. Peter Pilewskie, discontinued) and at LASP
-of University of Colorado Boulder (led by Prof. Sebastian Schmidt).
+SSFR (Solar Spectral Flux Radiometer) is an airborne instrument co-developed by teams
+at NASA Ames Research Center (discontinued) and at LASP of University of Colorado Boulder.
 
 This repository contains code for processing SSFR data by applying required calibrations and corrections.
 
