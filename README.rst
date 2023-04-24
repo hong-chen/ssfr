@@ -7,6 +7,18 @@ This repository contains code for processing SSFR data by applying required cali
 
 A more detailed description can be found `here <https://docs.google.com/document/d/1ObczXucJQktyTgKZlBkL04fjhHFx1ydW0sPaiG7iZ9k/edit?usp=sharing>`_ (under development).
 
+So far, the SSFR has been deployed in the following airborne missions:
+
+* `NASA CAMP²Ex <https://espo.nasa.gov/camp2ex/content/CAMP2Ex>`_ (on P-3 in 2019);
+
+* `NASA ORACLES <https://espo.nasa.gov/ORACLES/content/ORACLES>`_ (on ER-2 and P-3 in 2016, 2017 and 2018) ;
+
+* `NASA ARISE <https://espo.nasa.gov/arise/content/ARISE>`_ (on C-130 in 2014);
+
+* `NASA SEAC⁴RS <https://espo.nasa.gov/seac4rs>`_ (on DC-8 in 2013);
+
+* `NASA SAFARI 2000 <https://espo.nasa.gov/content/SAFARI_2000>`_ (on ER-2 and Convair-580 in 2000).
+
 ==============
 How to Install
 ==============
