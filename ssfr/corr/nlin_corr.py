@@ -2,8 +2,6 @@ import numpy as np
 from scipy import stat
 
 
-
-
 def NONLINEARITY_CORR(fname_nlin, Nsen, verbose=False):
 
     int_time0 = np.mean(self.int_time[:, Nsen])

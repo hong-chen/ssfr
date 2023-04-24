@@ -3,11 +3,9 @@
 import os
 import sys
 import glob
-import h5py
 import struct
 import numpy as np
 import datetime
-from scipy import stats
 
 
 
@@ -127,7 +125,7 @@ def READ_CU_SSFR(fname, headLen=148, dataLen=2276, verbose=False):
 class CU_SSFR:
 
 
-    def __init__(self, fnames, Ndata=600, whichTime='arinc', timeOffset=0.0, dark_corr_mode='dark_interpolate'):
+    def __init__(self, fnames, Ndata=600, whichTime='arinc', timeOffset=0.0):
 
         '''
         Description:
@@ -191,98 +189,48 @@ class CU_SSFR:
         self.tmhr_corr = self.tmhr.copy() + float(timeOffset)/3600.0
         # -
 
-        self.port_info     = {0:'Zenith Silicon', 1:'Zenith InGaAs', 2:'Nadir Silicon', 3:'Nadir InGaAs'}
-        self.int_time_info = {}
-        # +
-        # dark correction (light-dark)
-        # variable name: self.spectra_dark_corr
-        fillValue = np.nan
-        self.fillValue = fillValue
-        self.spectra_dark_corr      = self.spectra.copy()
-        self.spectra_dark_corr[...] = fillValue
-        for iSen in range(4):
-            intTimes = np.unique(self.int_time[:, iSen])
-            self.int_time_info[self.port_info[iSen]] = intTimes
-            for intTime in intTimes:
-                indices = np.where(self.int_time[:, iSen]==intTime)[0]
-                self.spectra_dark_corr[indices, :, iSen] = DARK_CORRECTION(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode=dark_corr_mode, fillValue=fillValue)
-        # -
 
 
-    def COUNT2RADIATION(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0, whichRadiation={'zenith':'radiance', 'nadir':'irradiance'}, wvlRange=[350, 2100]):
+def CAL_WAVELENGTH(Nspec, chanNum=256):
 
-        """
-        Convert digital count to radiation (radiance or irradiance)
-        """
 
-        self.whichRadiation = whichRadiation
+    if Nspec == 0:
+        coef = np.array([301.946,  3.31877,  0.00037585,  -1.76779e-6, 0])
+    elif Nspec == 1:
+        coef = np.array([2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8])
+    elif Nspec == 2:
+        coef = np.array([302.818,  3.31912,  0.000343831, -1.81135e-6, 0])
+    elif Nspec == 3:
+        coef = np.array([2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8])
+    else:
+        sys.exit('Error [CAL_WAVELENGTH]: cannot recognize input \'Nspec=%d\'.' % Nspec)
 
-        logic_zen_si = (cal.wvl_zen_si >= wvlRange[0])  & (cal.wvl_zen_si <= wvl_zen_join)
-        logic_zen_in = (cal.wvl_zen_in >= wvl_zen_join) & (cal.wvl_zen_in <= wvlRange[1])
-        n_zen_si = logic_zen_si.sum()
-        n_zen_in = logic_zen_in.sum()
-        n_zen    = n_zen_si + n_zen_in
-        self.wvl_zen = np.append(cal.wvl_zen_si[logic_zen_si], cal.wvl_zen_in[logic_zen_in][::-1])
+    xChan = np.arange(chanNum)
 
-        logic_nad_si = (cal.wvl_nad_si >= wvlRange[0])  & (cal.wvl_nad_si <= wvl_nad_join)
-        logic_nad_in = (cal.wvl_nad_in >= wvl_nad_join) & (cal.wvl_nad_in <= wvlRange[1])
-        n_nad_si = logic_nad_si.sum()
-        n_nad_in = logic_nad_in.sum()
-        n_nad    = n_nad_si + n_nad_in
-        self.wvl_nad = np.append(cal.wvl_nad_si[logic_nad_si], cal.wvl_nad_in[logic_nad_in][::-1])
+    wvl  = coef[0] + coef[1]*xChan + coef[2]*xChan**2 + coef[3]*xChan**3 + coef[4]*xChan**4
 
-        self.spectra_zen = np.zeros((self.tmhr.size, n_zen), dtype=np.float64)
-        self.spectra_nad = np.zeros((self.tmhr.size, n_nad), dtype=np.float64)
-
-        for i in range(self.tmhr.size):
-            # for zenith
-            intTime_si = self.int_time[i, 0]
-            if intTime_si not in cal.primary_response_zen_si.keys():
-                intTime_si_tag = -1
-            else:
-                intTime_si_tag = intTime_si
-
-            intTime_in = self.int_time[i, 1]
-            if intTime_in not in cal.primary_response_zen_in.keys():
-                # intTime_in_tag = -1
-                intTime_in_tag = 250
-            else:
-                intTime_in_tag = intTime_in
-
-            if whichRadiation['zenith'] == 'radiance':
-                self.spectra_zen[i, :n_zen_si] =  (self.spectra_dark_corr[i, logic_zen_si, 0]/intTime_si)/(np.pi * cal.primary_response_zen_si[intTime_si_tag][logic_zen_si])
-                self.spectra_zen[i, n_zen_si:] = ((self.spectra_dark_corr[i, logic_zen_in, 1]/intTime_in)/(np.pi * cal.primary_response_zen_in[intTime_in_tag][logic_zen_in]))[::-1]
-            elif whichRadiation['zenith'] == 'irradiance':
-                self.spectra_zen[i, :n_zen_si] =  (self.spectra_dark_corr[i, logic_zen_si, 0]/intTime_si)/(cal.secondary_response_zen_si[intTime_si_tag][logic_zen_si])
-                self.spectra_zen[i, n_zen_si:] = ((self.spectra_dark_corr[i, logic_zen_in, 1]/intTime_in)/(cal.secondary_response_zen_in[intTime_in_tag][logic_zen_in]))[::-1]
-
-            # for nadir
-            intTime_si = self.int_time[i, 2]
-            if intTime_si not in cal.primary_response_nad_si.keys():
-                intTime_si_tag = -1
-            else:
-                intTime_si_tag = intTime_si
-
-            intTime_in = self.int_time[i, 3]
-            if intTime_in not in cal.primary_response_nad_in.keys():
-                # intTime_in_tag = -1
-                intTime_in_tag = 250
-            else:
-                intTime_in_tag = intTime_in
-
-            if whichRadiation['nadir'] == 'radiance':
-                self.spectra_nad[i, :n_nad_si] =  (self.spectra_dark_corr[i, logic_nad_si, 2]/intTime_si)/(np.pi * cal.primary_response_nad_si[intTime_si_tag][logic_nad_si])
-                self.spectra_nad[i, n_nad_si:] = ((self.spectra_dark_corr[i, logic_nad_in, 3]/intTime_in)/(np.pi * cal.primary_response_nad_in[intTime_in_tag][logic_nad_in]))[::-1]
-            elif whichRadiation['nadir'] == 'irradiance':
-                self.spectra_nad[i, :n_nad_si] =  (self.spectra_dark_corr[i, logic_nad_si, 2]/intTime_si)/(cal.secondary_response_nad_si[intTime_si_tag][logic_nad_si])
-                self.spectra_nad[i, n_nad_si:] = ((self.spectra_dark_corr[i, logic_nad_in, 3]/intTime_in)/(cal.secondary_response_nad_in[intTime_in_tag][logic_nad_in]))[::-1]
+    return wvl
 
 
 
 if __name__ == '__main__':
 
     fdir      = sys.argv[1]
-    wvl       = sys.argv[2]
+    Nspec     = sys.argv[2]; Nspec=int(Nspec)
     fname_out = sys.argv[3]
 
-    print(fdir, wvl, fname_out)
+    if os.path.exists(fdir):
+        fnames = sorted(glob.glob('%s/*.SKS' % fdir))
+    else:
+        sys.exit('Error [sks2txt]\'%s\' does not exist.' % fdir)
+
+    fnames = fnames[:2]
+    wvls   = CAL_WAVELENGTH(Nspec)
+
+    ssfr0 = CU_SSFR(fnames)
+    with open(fname_out, 'w') as f_out:
+        firstLine = '#          tmhr,' + ','.join(['%15f' % wvl for wvl in wvls]) + '\n'
+        f_out.write(firstLine)
+        for i in range(ssfr0.tmhr_corr.size):
+            dataLine = '%15f,' % ssfr0.tmhr_corr[i] + ','.join(['%15f' % spectra0 for spectra0 in ssfr0.spectra[i, :, int(Nspec)]]) + '\n'
+            f_out.write(dataLine)

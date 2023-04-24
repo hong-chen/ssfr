@@ -1,16 +1,12 @@
-SSFR Code Package
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ==============
 How to Install
 ==============
 ::
 
-    pip3 install SSFR-util
+    git clone https://gitlab.com/cu-arg/ssfr.git
+    python setup.py develop
 
-==========
-How to Use
-==========
 
 |
 |
@@ -27,9 +23,31 @@ Standard lamp in the lab: F-1324 (or 506C)
 - The standard lamps are NIST traceble lamps, which relate SSFR measured digital counts to
   radiative fluxes.
 
+The primary calibration files are preferred to be stored under file directries using the following naming convention:
+
+::
+
+    /some/path/1324/zenith_LC1/s60i300/cal
+    /some/path/1324/zenith_LC1/s60i300/dark
+    /some/path/1324/nadir_LC2/s60i300/cal
+    /some/path/1324/nadir_LC2/s60i300/dark
+
+To process the primary calibration, use the following code block as a reference,
+
+
 Lamp in the field calibrator: 150C (or 150D or 150E)
 
 - These lamps are not calibrated.
+
+The transfer calibration files are preferred to be stored under file directries using the following naming convention:
+
+::
+
+    /some/path/150C/zenith_LC1/s60i300/cal
+    /some/path/150C/zenith_LC1/s60i300/dark
+    /some/path/150C/nadir_LC2/s60i300/cal
+    /some/path/150C/nadir_LC2/s60i300/dark
+
 
 
 
@@ -37,7 +55,7 @@ Lamp in the field calibrator: 150C (or 150D or 150E)
 2. Angular Calibrations
 =======================
 
-In the lab, we use an uncalibrated lamp (507) to perform the angluar calibration. To perform this
+In the lab, we use an uncalibrated lamp (507 or 508) to perform the angluar calibration. To perform this
 calibration, we mount the SSFR light collector to a rotating stage, which can be controlled through
 a computer via command lines.
 
@@ -72,8 +90,17 @@ For the reference, the distances [units: cm] we picked are:
 4*. Field Calibrations
 ======================
 
-The field calibrator is sent to the field with SSFR. The field calibration will be performed regularly to
-trace the stability of the SSFR measurements.
+The field calibrator travels with SSFR during the research campaign. The field calibration will be performed regularly to
+trace the stability of the SSFR measurements. The procedures are similar to the procedures of transfer calibration.
+
+The calibration files are preferred to be stored under file directries using the following naming convention:
+
+::
+
+    /some/path/150C/zenith_LC1/s60i300/cal
+    /some/path/150C/zenith_LC1/s60i300/dark
+    /some/path/150C/nadir_LC2/s60i300/cal
+    /some/path/150C/nadir_LC2/s60i300/dark
 
 
 
@@ -87,18 +114,19 @@ Corrections
 1. Dark Correction
 ==================
 
+The effective SSFR counts are the dark counts (when shutter if on) deducted from the light counts (when shutter is off).
+
 
 ====================
 2. Cosine Correction
 ====================
 
-Since the angular responses are different for direct and diffuse light, the wavelength dependent
-diffuse-to-direct ratio needs to be calculated first.
-
-
-
-
-
+From the angular calibration, we obtained spectral angular responses. These angular responses can be used to correct
+the direct light measurements (zenith when clear sky). However, when the light is diffused (nadir, zenith when cirrus above),
+we will need to use integrated angular response to perform correction. The diffuse-to-global ratio is needed before cosine
+correction. In ORACLES 2018 and CAMP2Ex, the direct measured diffuse-to-global ratio from SPN-S and SPN-F can be used
+for the cosine correction of SSFR. RTM calculations can also be used to provide diffuse-to-global ratio if measurements are
+not avaiable (e.g., ARISE, ORACLES 2016, ORACLES 2017).
 
 
 
@@ -113,10 +141,9 @@ diffuse-to-direct ratio needs to be calculated first.
 ======================
 4*. Azimuth Correction
 ======================
-This correction has only been applied to the dataset collected during Arctic Radiation - IceBridge
-Sea&Ice Experiment (ARISE).
 
-
+This correction has only been applied to the ARISE dataset. The azimuth correction used the data collected during
+a circling maneuver, where instrument can provide measurements at azimuth angle from 0 to 360.
 
 
 |

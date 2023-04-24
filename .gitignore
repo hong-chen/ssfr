@@ -1,3 +1,40 @@
-python
-*egg-info
-old
+# system files
+.DS_Store
+
+# python files
+*.pyc
+__pycache__
+*.egg-info
+dist
+build
+*other*
+
+# media files
+*graph*
+*.png
+*.mp4
+
+# tests
+*test*
+
+# data files
+*old*
+*data*
+*.hdf
+*.h5
+*.nc
+*.pk
+*.pkl
+*.html
+*.pro
+*.ict
+*idl*
+
+# libRadtran
+randomseed
+
+# exceptions for er3t
+!tests
+!examples
+!ssfr/data
+!ssfr/data/*.dat
