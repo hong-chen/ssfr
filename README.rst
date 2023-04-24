@@ -1,5 +1,5 @@
-SSFR (Solar Spectral Flux Radiometer)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SSFR (Solar Spectral Flux Radiometer) Software Package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This is a code package for processing data collected by SSFR, which is an airborne instrument co-developed by teams
 at NASA Ames Research Center (first led by Warren Gore, then by Prof. Peter Pilewskie) and at LASP of University
 of Colorado Boulder (now by Prof. Sebastian Schmidt).
@@ -13,4 +13,3 @@ How to Install
 
     git clone https://github.com/hong-chen/ssfr.git
     python setup.py develop
-
