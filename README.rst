@@ -26,15 +26,15 @@ References
   clouds on shortwave irradiance: evaluation of estimates from spaceborne passive imagery with
   aircraft observations, Atmos. Meas. Tech., 14, 2673–2697, doi:10.5194/amt-14-2673-2021, 2021.
 
- * `Schmidt and Pilewskie, 2012 <https://doi.org/10.1007/978-3-642-15531-4_6>`_
+* `Schmidt and Pilewskie, 2012 <https://doi.org/10.1007/978-3-642-15531-4_6>`_
 
-   Schmidt, S. and Pilewskie, P.: Airborne measurements of spectral shortwave radiation in cloud
-   and aerosol remote sensing and energy budget studies, in: Light Scattering Reviews, Vol. 6:
-   Light Scattering and Remote Sensing of Atmosphere and Surface, edited by: Kokhanovsky, A. A.,
-   Springer, Berlin Heidelberg, 239–288, doi:10.1007/978-3-642-15531-4_6, 2012. 
+  Schmidt, S. and Pilewskie, P.: Airborne measurements of spectral shortwave radiation in cloud
+  and aerosol remote sensing and energy budget studies, in: Light Scattering Reviews, Vol. 6:
+  Light Scattering and Remote Sensing of Atmosphere and Surface, edited by: Kokhanovsky, A. A.,
+  Springer, Berlin Heidelberg, 239–288, doi:10.1007/978-3-642-15531-4_6, 2012. 
 
- * `Pilewskie et al., 2003 <https://doi.org/10.1029/2002JD002411>`_
+* `Pilewskie et al., 2003 <https://doi.org/10.1029/2002JD002411>`_
 
-   Pilewskie, P., Pommier, J., Bergstrom, R., Gore, W., Howard, S., Rabbette, M., Schmid, B., Hobbs, P. V.,
-   and Tsay, S. C.: Solar spectral radiative forcing during the Southern African Regional Science Initiative,
-   J. Geophys. Res., 108, 8486, doi:10.1029/2002JD002411, 2003. 
+  Pilewskie, P., Pommier, J., Bergstrom, R., Gore, W., Howard, S., Rabbette, M., Schmid, B., Hobbs, P. V.,
+  and Tsay, S. C.: Solar spectral radiative forcing during the Southern African Regional Science Initiative,
+  J. Geophys. Res., 108, 8486, doi:10.1029/2002JD002411, 2003. 
