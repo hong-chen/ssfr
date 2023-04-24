@@ -1,4 +1,4 @@
-SSFR-util (Under Development...)
+SSFR Code Package
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ==============
