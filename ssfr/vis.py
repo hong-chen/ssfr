@@ -28,7 +28,53 @@ __all__ = ['quicklook_bokeh_ssfr', 'quicklook_bokeh_ssfr_and_spns']
 
 def plot_ssfr_raw(fname):
 
-    pass
+    filename = os.path.basename(fname)
+    file_ext = filename.split('.')[-1]
+
+    if file_ext.lower() in ['osa2', 'osa']:
+        ssfr_tag = 'NASA Ames SSFR'
+        data0 = ssfr.nasa_ssfr.read_ssfr_raw(fname)
+    elif file_ext.lower() in ['sks', 'sks2']:
+        ssfr_tag = 'CU LASP SSFR'
+        data0 = ssfr.lasp_ssfr.read_ssfr_raw(fname)
+    else:
+        msg = '\nError [plot_ssfr_raw]: Cannot recognize SSFR system from given file extension <.%s>.' % file_ext
+        raise OSError(msg)
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    info = 'Quick Look Plot for <%s>' % (filename, ssfr_tag)
+
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 12))
+        fig.suptitle('Quick Look Plot for <%s>' % (filename, ssfr_tag))
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+        # ax1.scatter(x, y, s=6, c='k', lw=0.0)
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
 
 
 

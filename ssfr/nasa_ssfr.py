@@ -136,7 +136,16 @@ def read_ssfr_raw(fname, headLen=0, dataLen=2124, verbose=False):
         dtime      = datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=data[0])
         jday[i]    = (dtime  - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
 
-    return spectra, shutter, int_time, temp, jday, qual_flag, iterN
+    data_ = {
+          'spectra' : spectra,
+          'shutter' : shutter,
+         'int_time' : int_time,
+             'temp' : temp,
+             'jday' : jday,
+        'qual_flag' : qual_flag,
+            'iterN' : iterN,
+            }
+    return data_
 
 class read_ssfr:
 
@@ -163,7 +172,7 @@ class read_ssfr:
     def __init__(self, fnames, fname_raw=None, date_ref=None, tmhr_range=None,  Ndata=600, time_add_offset=0.0, verbose=False):
 
         if fname_raw is not None:
-            data_v0 = load_h5(fname_raw)
+            data_v0 = ssfr.util.load_h5(fname_raw)
             self.jday = data_v0['jday']
             self.tmhr = data_v0['tmhr']
             self.shutter = data_v0['shutter']
@@ -194,14 +203,15 @@ class read_ssfr:
             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             Nstart = 0
             for fname in fnames:
-                spectra0, shutter0, int_time0, temp0, jday0, qual_flag0, iterN0 = read_ssfr_raw(fname)
-                Nend = iterN0 + Nstart
-                spectra[Nstart:Nend, ...]    = spectra0
-                shutter[Nstart:Nend, ...]    = shutter0
-                int_time[Nstart:Nend, ...]   = int_time0
-                temp[Nstart:Nend, ...]       = temp0
-                jday[Nstart:Nend, ...]       = jday0
-                qual_flag[Nstart:Nend, ...]  = qual_flag0
+
+                data0 = read_ssfr_raw(fname)
+                Nend = data0['iterN'] + Nstart
+                spectra[Nstart:Nend, ...]    = data0['spectra']
+                shutter[Nstart:Nend, ...]    = data0['shutter']
+                int_time[Nstart:Nend, ...]   = data0['int_time']
+                temp[Nstart:Nend, ...]       = data0['temp']
+                jday[Nstart:Nend, ...]       = data0['jday']
+                qual_flag[Nstart:Nend, ...]  = data0['qual_flag']
                 Nstart = Nend
             # ------------------------------------------------------------------------------------------
 
