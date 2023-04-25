@@ -33,6 +33,7 @@ How to Install
     git clone https://github.com/hong-chen/ssfr.git
 
     cd ssfr
+
     conda env create -f ssfr-env.yml
     conda activate ssfr
 
