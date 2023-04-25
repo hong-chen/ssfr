@@ -88,8 +88,7 @@ def cdata_cos_resp(
         which_lc='zenith',
         Nchan=256,
         wvl_joint=950.0,
-        wvl_start=350.0,
-        wvl_end=2200.0,
+        wvl_range=[350.0, 2200.0],
         int_time={'si':60, 'in':300},
         verbose=True
         ):
@@ -159,6 +158,8 @@ def cdata_cos_resp(
 
     wvls = get_ssfr_wavelength()
 
+    wvl_start = wvl_range[0]
+    wvl_end   = wvl_range[-1]
     logic_si = (wvls['%s_si' % which_lc] >= wvl_start) & (wvls['%s_si' % which_lc] <= wvl_joint)
     logic_in = (wvls['%s_in' % which_lc] >  wvl_joint)  & (wvls['%s_in' % which_lc] <= wvl_end)
 

@@ -113,6 +113,7 @@ def cal_rad_resp(
     rad_resp_si = spectra / int_time['si'] / resp['si']
     #\----------------------------------------------------------------------------/#
 
+
     # InGaAs
     #/----------------------------------------------------------------------------\#
     counts_l  = ssfr_l.spectra[:, :, index_in]
@@ -143,33 +144,34 @@ def cdata_rad_resp(
         filename_tag=None,
         pri_lamp_tag='f-1324',
         which_lc='zenith',
-        which_ssfr='nasa',
+        which_ssfr='lasp',
         wvl_joint=950.0,
-        wvl_start=350.0,
-        wvl_end=2200.0,
+        wvl_range=[350.0, 2200.0],
         int_time={'si':60, 'in':300}
         ):
 
     which_lc = which_lc.lower()
 
     if fnames_pri is not None:
-        pri_resp = cal_rad_resp(fnames_pri, resp=None, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
+        pri_resp = cal_rad_resp(fnames_pri, resp=None, which_ssfr=which_ssfr, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
     else:
         sys.exit('Error [cdata_rad_resp]: Cannot proceed without primary calibration files.')
 
     if fnames_tra is not None:
-        transfer = cal_rad_resp(fnames_tra, resp=pri_resp, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
+        transfer = cal_rad_resp(fnames_tra, resp=pri_resp, which_ssfr=which_ssfr, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
     else:
         sys.exit('Error [cdata_rad_resp]: Cannot proceed without transfer calibration files.')
 
     if fnames_sec is not None:
-        sec_resp = cal_rad_resp(fnames_sec, resp=transfer, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
+        sec_resp = cal_rad_resp(fnames_sec, resp=transfer, which_ssfr=which_ssfr, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
     else:
         print('Warning [cdata_rad_resp]: Secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...')
-        sec_resp = cal_rad_resp(fnames_tra, transfer, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
+        sec_resp = cal_rad_resp(fnames_tra, transfer, which_ssfr=which_ssfr, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
 
     wvls = ssfr.util.get_nasa_ssfr_wavelength()
 
+    wvl_start = wvl_range[0]
+    wvl_end   = wvl_range[-1]
     logic_si = (wvls['%s_si' % which_lc] >= wvl_start) & (wvls['%s_si' % which_lc] <= wvl_joint)
     logic_in = (wvls['%s_in' % which_lc] >  wvl_joint)  & (wvls['%s_in' % which_lc] <= wvl_end)
 
