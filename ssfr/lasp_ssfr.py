@@ -73,8 +73,9 @@ def read_ssfr_raw(
 
     How to use:
     fname = '/some/path/2015022000001.SKS'
-    comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN = read_ssfr_raw(fname, verbose=False)
+    data0 = read_ssfr_raw(fname, verbose=False)
 
+    data0 contains the following variables:
     comment  (str)        [N/A]    : comment in header
     spectra  (numpy array)[N/A]    : counts of Silicon and InGaAs for both zenith and nadir
     shutter  (numpy array)[N/A]    : shutter status (1:closed(dark), 0:open(light))
@@ -85,7 +86,7 @@ def read_ssfr_raw(
     qual_flag(numpy array)[N/A]    : quality flag(1:good, 0:bad)
     iterN (numpy array)   [N/A]    : number of data record
 
-    by Hong Chen (hong.chen@lasp.colorado.edu), Sebastian Schmidt (sebastian.schmidt@lasp.colorado.edu)
+    Hong Chen (hong.chen@lasp.colorado.edu)
     '''
 
     ssfr.util.if_file_exists(fname, exitTag=True)
