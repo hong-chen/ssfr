@@ -9,9 +9,6 @@ import numpy as np
 from scipy import interpolate
 from scipy.io import readsav
 
-from ssfr.util import lasp_ssfr, nasa_ssfr, get_nasa_ssfr_wavelength
-from ssfr.corr import dark_corr
-
 
 
 __all__ = ['cdata_nlin_coef']
