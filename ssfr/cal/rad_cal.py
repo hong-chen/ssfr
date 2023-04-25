@@ -8,8 +8,6 @@ from scipy.io import readsav
 
 import ssfr
 
-from ssfr.util import nasa_ssfr, lasp_ssfr, get_nasa_ssfr_wavelength, cal_weighted_flux
-from ssfr.corr import dark_corr
 
 
 __all__ = ['cal_rad_resp', 'cdata_rad_resp', 'load_rad_resp_h5']
@@ -48,17 +46,17 @@ def cal_rad_resp(
         else:
             data_flux = data[:, 1]*10000.0
 
-        wvls   = get_nasa_ssfr_wavelength()
+        wvls   = ssfr.util.get_nasa_ssfr_wavelength()
         wvl_si = wvls['%s_si' % which_lc]
         wvl_in = wvls['%s_in' % which_lc]
 
         lampStd_si = np.zeros_like(wvl_si)
         for i in range(lampStd_si.size):
-            lampStd_si[i] = cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
+            lampStd_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
 
         lampStd_in = np.zeros_like(wvl_in)
         for i in range(lampStd_in.size):
-            lampStd_in[i] = cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+            lampStd_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
         resp = {'si':lampStd_si,
                 'in':lampStd_in}
@@ -66,8 +64,8 @@ def cal_rad_resp(
         # so far we have (W m^-2 nm^-1 as a function of wavelength)
 
 
-    ssfr_l = nasa_ssfr([fnames['cal']])
-    ssfr_d = nasa_ssfr([fnames['dark']])
+    ssfr_l = ssfr.util.nasa_ssfr([fnames['cal']])
+    ssfr_d = ssfr.util.nasa_ssfr([fnames['dark']])
 
     # Silicon
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -140,7 +138,7 @@ def cdata_rad_resp(
         print('Warning [cdata_rad_resp]: Secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...')
         sec_resp = cal_rad_resp(fnames_tra, transfer, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
 
-    wvls = get_nasa_ssfr_wavelength()
+    wvls = ssfr.util.get_nasa_ssfr_wavelength()
 
     logic_si = (wvls['%s_si' % which_lc] >= wvl_start) & (wvls['%s_si' % which_lc] <= wvl_joint)
     logic_in = (wvls['%s_in' % which_lc] >  wvl_joint)  & (wvls['%s_in' % which_lc] <= wvl_end)
