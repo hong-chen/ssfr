@@ -28,11 +28,9 @@ def cal_rad_resp(
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
     if which_ssfr == 'nasa':
-        import ssfr.util.get_nasa_ssfr_wavelength as get_ssfr_wavelength
-        import ssfr.util.nasa_ssfr as read_ssfr
+        from ssfr.nasa_ssfr import get_ssfr_wavelength, read_ssfr
     elif which_ssfr == 'lasp':
-        import ssfr.util.get_lasp_ssfr_wavelength as get_ssfr_wavelength
-        import ssfr.util.lasp_ssfr as read_ssfr
+        from ssfr.lasp_ssfr import get_ssfr_wavelength, read_ssfr
     else:
         msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
         raise ValueError(msg)
