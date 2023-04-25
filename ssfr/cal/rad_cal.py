@@ -17,27 +17,54 @@ __all__ = ['cal_rad_resp', 'cdata_rad_resp', 'load_rad_resp_h5']
 def cal_rad_resp(
         fnames,
         resp=None,
-        which_ssfr='nasa',
+        which_ssfr='lasp',
         which_lc='zenith',
         pri_lamp_tag='f-1324',
         int_time={'si':60, 'in':300}
         ):
 
+
+    # check SSFR spectrometer
+    #/----------------------------------------------------------------------------\#
+    which_ssfr = which_ssfr.lower()
+    if which_ssfr == 'nasa':
+        import ssfr.util.get_nasa_ssfr_wavelength as get_ssfr_wavelength
+        import ssfr.util.nasa_ssfr as read_ssfr
+    elif which_ssfr == 'lasp':
+        import ssfr.util.get_lasp_ssfr_wavelength as get_ssfr_wavelength
+        import ssfr.util.lasp_ssfr as read_ssfr
+    else:
+        msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
+
+
+    # check light collector
+    #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
     if which_lc == 'zenith':
         index_si = 0
         index_in = 1
-    if which_lc == 'nadir':
+    elif which_lc == 'nadir':
         index_si = 2
         index_in = 3
+    else:
+        msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith\'> or <\'nadir\'>).' % which_lc
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
 
+
+    # get radiometric response
+    # by default (resp=None), this function will perform primary radiometric calibration
+    #/----------------------------------------------------------------------------\#
     if resp is None:
 
         # read in calibrated lamp data and interpolated at SSFR wavelengths
-        # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        #/--------------------------------------------------------------\#
         fnameLamp = '%s/%s.dat' % (ssfr.common.fdir_data, pri_lamp_tag)
         if not os.path.exists(fnameLamp):
-            sys.exit('Error [cal_rad_resp]: Cannot locate lamp standards for \'%s\'.' % pri_lamp_tag.title())
+            msg = '\nError [cal_rad_resp]: Cannot locate lamp file for <%s>.' % pri_lamp_tag.title()
+            raise OSError(msg)
 
         data      = np.loadtxt(fnameLamp)
         data_wvl  = data[:, 0]
@@ -46,7 +73,7 @@ def cal_rad_resp(
         else:
             data_flux = data[:, 1]*10000.0
 
-        wvls   = ssfr.util.get_nasa_ssfr_wavelength()
+        wvls   = get_ssfr_wavelength()
         wvl_si = wvls['%s_si' % which_lc]
         wvl_in = wvls['%s_in' % which_lc]
 
@@ -58,46 +85,51 @@ def cal_rad_resp(
         for i in range(lampStd_in.size):
             lampStd_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
+        # at this point we have (W m^-2 nm^-1 as a function of wavelength)
         resp = {'si':lampStd_si,
                 'in':lampStd_in}
-        # ---------------------------------------------------------------------------
-        # so far we have (W m^-2 nm^-1 as a function of wavelength)
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
 
 
-    ssfr_l = ssfr.util.nasa_ssfr([fnames['cal']])
-    ssfr_d = ssfr.util.nasa_ssfr([fnames['dark']])
+    # read raw data
+    #/----------------------------------------------------------------------------\#
+    ssfr_l = read_ssfr([fnames['cal']])
+    ssfr_d = read_ssfr([fnames['dark']])
+    #\----------------------------------------------------------------------------/#
+
 
     # Silicon
-    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    #/----------------------------------------------------------------------------\#
     counts_l  = ssfr_l.spectra[:, :, index_si]
     counts_d  = ssfr_d.spectra[:, :, index_si]
 
-    logic_l   = (np.abs(ssfr_l.int_time[:, index_si]-int_time['si'])<0.00001)
+    logic_l   = (np.abs(ssfr_l.int_time[:, index_si]-int_time['si'])<0.00001) & (ssfr_l.shutter==0)
     spectra_l = np.mean(counts_l[logic_l, :], axis=0)
 
-    logic_d   = (np.abs(ssfr_d.int_time[:, index_si]-int_time['si'])<0.00001)
+    logic_d   = (np.abs(ssfr_d.int_time[:, index_si]-int_time['si'])<0.00001) & (ssfr_l.shutter==1)
     spectra_d = np.mean(counts_d[logic_d, :], axis=0)
 
     spectra   = spectra_l - spectra_d
     spectra[spectra<=0.0] = np.nan
     rad_resp_si = spectra / int_time['si'] / resp['si']
-    # ---------------------------------------------------------------------------
+    #\----------------------------------------------------------------------------/#
 
     # InGaAs
-    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    #/----------------------------------------------------------------------------\#
     counts_l  = ssfr_l.spectra[:, :, index_in]
     counts_d  = ssfr_d.spectra[:, :, index_in]
 
-    logic_l   = (np.abs(ssfr_l.int_time[:, index_in]-int_time['in'])<0.00001)
+    logic_l   = (np.abs(ssfr_l.int_time[:, index_in]-int_time['in'])<0.00001) & (ssfr_l.shutter==0)
     spectra_l = np.mean(counts_l[logic_l, :], axis=0)
 
-    logic_d   = (np.abs(ssfr_d.int_time[:, index_in]-int_time['in'])<0.00001)
+    logic_d   = (np.abs(ssfr_d.int_time[:, index_in]-int_time['in'])<0.00001) & (ssfr_l.shutter==1)
     spectra_d = np.mean(counts_d[logic_d, :], axis=0)
 
     spectra   = spectra_l - spectra_d
     spectra[spectra<=0.0] = np.nan
     rad_resp_in = spectra / int_time['in'] / resp['in']
-    # ---------------------------------------------------------------------------
+    #\----------------------------------------------------------------------------/#
 
     rad_resp = {'si':rad_resp_si,
                 'in':rad_resp_in}
