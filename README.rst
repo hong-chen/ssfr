@@ -8,7 +8,7 @@ retrieve cloud/aerosol optical properties.
 
 This repository provides legacy code for processing SSFR data by applying necessary calibrations
 and corrections. Due to different deployment conditions of the instrument, the data processing procedures can vary
-significantly for different missions. Please contact the `SSFR science team <https://lasp.colorado.edu/airs/group>`_
+significantly for different missions. Please contact `SSFR science team <https://lasp.colorado.edu/airs/group>`_
 for more information if you have any questions regarding SSFR data processing for a specific mission.
 
 A more detailed SSFR manual can be found `here <https://docs.google.com/document/d/1ObczXucJQktyTgKZlBkL04fjhHFx1ydW0sPaiG7iZ9k/edit?usp=sharing>`_ (under development).
