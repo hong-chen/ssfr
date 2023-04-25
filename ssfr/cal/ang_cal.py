@@ -20,13 +20,19 @@ __all__ = ['cal_cos_resp', 'cdata_cos_resp', 'load_cos_resp_h5']
 
 
 
-def cal_cos_resp(fnames, which='zenith', int_time={'si':60, 'in':300}, Nchan=256):
+def cal_cos_resp(
+        fnames,
+        which_ssfr='lasp',
+        which_lc='zenith',
+        int_time={'si':60, 'in':300},
+        Nchan=256
+        ):
 
-    which = which.lower()
-    if which == 'zenith':
+    which_lc = which_lc.lower()
+    if which_lc == 'zenith':
         index_si = 0
         index_in = 1
-    elif which == 'nadir':
+    elif which_lc == 'nadir':
         index_si = 2
         index_in = 3
 
@@ -58,11 +64,21 @@ def cal_cos_resp(fnames, which='zenith', int_time={'si':60, 'in':300}, Nchan=256
 
 
 
-def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joint=950.0, wvl_start=350.0, wvl_end=2200.0, int_time={'si':60, 'in':300}, verbose=True):
+def cdata_cos_resp(
+        fnames,
+        filename_tag=None,
+        which_lc='zenith',
+        Nchan=256,
+        wvl_joint=950.0,
+        wvl_start=350.0,
+        wvl_end=2200.0,
+        int_time={'si':60, 'in':300},
+        verbose=True
+        ):
 
-    which = which.lower()
+    which_lc = which_lc.lower()
 
-    cos_resp = cal_cos_resp(fnames, which=which, Nchan=Nchan, int_time=int_time)
+    cos_resp = cal_cos_resp(fnames, which_lc=which_lc, Nchan=Nchan, int_time=int_time)
 
     angles = np.array([fnames[fname] for fname in fnames.keys()])
     cos_mu = np.cos(np.deg2rad(angles))
@@ -100,10 +116,10 @@ def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joi
 
     wvls = ssfr.util.get_nasa_ssfr_wavelength()
 
-    logic_si = (wvls['%s_si' % which] >= wvl_start) & (wvls['%s_si' % which] <= wvl_joint)
-    logic_in = (wvls['%s_in' % which] >  wvl_joint)  & (wvls['%s_in' % which] <= wvl_end)
+    logic_si = (wvls['%s_si' % which_lc] >= wvl_start) & (wvls['%s_si' % which_lc] <= wvl_joint)
+    logic_in = (wvls['%s_in' % which_lc] >  wvl_joint)  & (wvls['%s_in' % which_lc] <= wvl_end)
 
-    wvl_data      = np.concatenate((wvls['%s_si' % which][logic_si], wvls['%s_in' % which][logic_in]))
+    wvl_data      = np.concatenate((wvls['%s_si' % which_lc][logic_si], wvls['%s_in' % which_lc][logic_in]))
 
     cos_resp_data = np.hstack((cos_resp_all['si'][:, logic_si], cos_resp_all['in'][:, logic_in]))
     cos_resp_std_data = np.hstack((cos_resp_std_all['si'][:, logic_si], cos_resp_std_all['in'][:, logic_in]))
@@ -143,11 +159,11 @@ def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joi
         fig = plt.figure(figsize=(8, 6))
         ax1 = fig.add_subplot(111)
 
-        ax1.fill_between(wvls['%s_si' % which], cos_resp_all['si'][index, :]-cos_resp_std_all['si'][index, :], cos_resp_all['si'][index, :]+cos_resp_std_all['si'][index, :], facecolor='red', lw=0.0, alpha=0.3)
-        ax1.scatter(wvls['%s_si' % which], cos_resp_all['si'][index, :], s=6, c='red', lw=0.0)
+        ax1.fill_between(wvls['%s_si' % which_lc], cos_resp_all['si'][index, :]-cos_resp_std_all['si'][index, :], cos_resp_all['si'][index, :]+cos_resp_std_all['si'][index, :], facecolor='red', lw=0.0, alpha=0.3)
+        ax1.scatter(wvls['%s_si' % which_lc], cos_resp_all['si'][index, :], s=6, c='red', lw=0.0)
 
-        ax1.fill_between(wvls['%s_in' % which], cos_resp_all['in'][index, :]-cos_resp_std_all['in'][index, :], cos_resp_all['in'][index, :]+cos_resp_std_all['in'][index, :], facecolor='blue', lw=0.0, alpha=0.3)
-        ax1.scatter(wvls['%s_in' % which], cos_resp_all['in'][index, :], s=6, c='blue', lw=0.0)
+        ax1.fill_between(wvls['%s_in' % which_lc], cos_resp_all['in'][index, :]-cos_resp_std_all['in'][index, :], cos_resp_all['in'][index, :]+cos_resp_std_all['in'][index, :], facecolor='blue', lw=0.0, alpha=0.3)
+        ax1.scatter(wvls['%s_in' % which_lc], cos_resp_all['in'][index, :], s=6, c='blue', lw=0.0)
 
         ax1.scatter(wvl, cos_resp[index, :], s=3, c='k', lw=0.0)
 
@@ -168,7 +184,7 @@ def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joi
         exit()
     # =============================================================================
 
-    info = 'Light Collector: %s\nJoint Wavelength: %.4fnm\nStart Wavelength: %.4fnm\nEnd Wavelength: %.4fnm\nIntegration Time for Silicon Channel: %dms\nIntegration Time for InGaAs Channel: %dms\nProcessed Files:\n' % (which.title(), wvl_joint, wvl_start, wvl_end, int_time['si'], int_time['in'])
+    info = 'Light Collector: %s\nJoint Wavelength: %.4fnm\nStart Wavelength: %.4fnm\nEnd Wavelength: %.4fnm\nIntegration Time for Silicon Channel: %dms\nIntegration Time for InGaAs Channel: %dms\nProcessed Files:\n' % (which_lc.title(), wvl_joint, wvl_start, wvl_end, int_time['si'], int_time['in'])
     for key in fnames.keys():
         line = 'At %3d [degree] Angle: %s\n' % (fnames[key], key)
         info += line
