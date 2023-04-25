@@ -10,12 +10,8 @@ from scipy.io import readsav
 
 from ssfr.util import load_h5, dtime_to_jday
 
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-from plotly.offline import plot, iplot
 
-
-__all__ = ['quicklook_plotly', 'quicklook_bokeh_ssfr', 'quicklook_bokeh_ssfr_and_spns']
+__all__ = ['quicklook_bokeh_ssfr', 'quicklook_bokeh_ssfr_and_spns']
 
 
 
@@ -52,6 +48,11 @@ def pre_process_plotly(fname, tmhr_range=[12.0, 20.0], tmhr_step=10, wvl_step=5)
     return data_new
 
 def quicklook_plotly(fname, wvl0=500.0, tmhr_range=[12, 20], wvl_range=[300, 2200], description=None):
+
+    from plotly.subplots import make_subplots
+    import plotly.graph_objects as go
+    from plotly.offline import plot, iplot
+
 
     data    = pre_process(fname, tmhr_step=10)
     # for key in data.keys():
