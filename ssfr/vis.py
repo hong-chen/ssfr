@@ -2,222 +2,33 @@ import os
 import sys
 import glob
 import datetime
-import multiprocessing as mp
 import h5py
 import numpy as np
-from scipy import interpolate
-from scipy.io import readsav
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.path as mpl_path
+import matplotlib.image as mpl_img
+import matplotlib.patches as mpatches
+import matplotlib.gridspec as gridspec
+from matplotlib import rcParams, ticker
+from matplotlib.ticker import FixedLocator
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+# import cartopy.crs as ccrs
+# mpl.use('Agg')
 
-from ssfr.util import load_h5, dtime_to_jday
+
+
+import ssfr
+
 
 
 __all__ = ['quicklook_bokeh_ssfr', 'quicklook_bokeh_ssfr_and_spns']
 
 
 
-def pre_process_plotly(fname, tmhr_range=[12.0, 20.0], tmhr_step=10, wvl_step=5):
+def plot_ssfr_raw(fname):
 
-    data  = load_h5(fname)
-
-    tmhr     = data['tmhr']
-    zen_wvl  = data['zen_wvl']
-    nad_wvl  = data['nad_wvl']
-
-    if tmhr_range is None:
-        tmhr_range = [0.0, 24.0]
-
-    logic_tmhr = (tmhr>=tmhr_range[0]) & (tmhr<=tmhr_range[1])
-
-    data_new = {}
-    data_new['tmhr']    = tmhr[logic_tmhr][::tmhr_step]
-    data_new['zen_wvl'] = zen_wvl[::wvl_step]
-    data_new['nad_wvl'] = nad_wvl[::wvl_step]
-
-    for key in data.keys():
-
-        if key not in ['tmhr', 'zen_wvl', 'nad_wvl']:
-            data0      = data[key]
-
-            if (data0.ndim == 1) and (data0.size == tmhr.size):
-                data_new[key] = data0[logic_tmhr][::tmhr_step]
-            elif (data0.ndim==2) and (data0.shape[0]==tmhr.size) and (data0.shape[1]==zen_wvl.size or data0.shape[1]==nad_wvl.size):
-                data_new[key] = data0[logic_tmhr, :][::tmhr_step, ::wvl_step]
-            elif (data0.ndim==2) and (data0.shape[1]==tmhr.size) and (data0.shape[0]==zen_wvl.size or data0.shape[0]==nad_wvl.size):
-                data_new[key] = data0[logic_tmhr, :][::wvl_step, ::tmhr_step]
-
-    return data_new
-
-def quicklook_plotly(fname, wvl0=500.0, tmhr_range=[12, 20], wvl_range=[300, 2200], description=None):
-
-    from plotly.subplots import make_subplots
-    import plotly.graph_objects as go
-    from plotly.offline import plot, iplot
-
-
-    data    = pre_process(fname, tmhr_step=10)
-    # for key in data.keys():
-    #     print(key, data[key].shape)
-
-
-    tmhr    = data['tmhr']
-    zen_wvl = data['zen_wvl']
-    nad_wvl = data['nad_wvl']
-
-    fig = make_subplots(
-            rows=2, cols=2,
-            specs=[[{              'type': 'xy'}, {    'type': 'xy'}],
-                   [{'colspan': 2, 'type': 'xy'}, None             ]],
-            subplot_titles=('Map', 'Spectra', 'Time Series (%.2f nm)' % wvl0))
-
-    # flight track
-    index_plot1 = len(fig.data)
-    fig.add_trace(go.Scattergl(x=data['lon'], y=data['lat'], name='P3', mode='markers', marker=dict(size=2, color=tmhr, colorscale='rainbow', opacity=0.2)), row=1, col=1)
-    indices_plot1 = np.arange(tmhr.size) + len(fig.data)
-    for i in range(tmhr.size):
-        fig.add_trace(go.Scattergl(visible=False, x=data['lon'][:i+1], y=data['lat'][:i+1], name='P3', mode='markers', marker=dict(size=2, color='black', opacity=1.0)), row=1, col=1)
-
-    # fig.add_trace(go.Scatter3d(x=data['lon'], y=data['lat'], z=data['alt']/1000.0, name='P3', mode='markers', marker=dict(size=2, color=tmhr, colorscale='rainbow', opacity=0.2)), row=1, col=2)
-    # indices_plot2 = np.arange(tmhr.size) + len(fig.data)
-    # for i in range(tmhr.size):
-    #     fig.add_trace(go.Scatter3d(visible=False, x=data['lon'][:i+1], y=data['lat'][:i+1], z=data['alt'][:i+1]/1000.0, name='P3', mode='markers', marker=dict(size=2, color='black', opacity=1.0)), row=1, col=2)
-
-
-    # spectra
-    index_spectra_zen   = len(fig.data)
-    fig.add_trace(go.Scattergl(x=zen_wvl, y=data['zen_flux'][0, :], mode='lines', name='Downwelling', line=dict(color='blue')), row=1, col=2)
-    indices_spectra_zen = np.arange(tmhr.size) + len(fig.data)
-    for i in range(tmhr.size):
-        fig.add_trace(go.Scattergl(visible=False, x=zen_wvl, y=data['zen_flux'][i, :], mode='lines', name='Downwelling', line=dict(color='blue')), row=1, col=2)
-
-    index_spectra_nad   = len(fig.data)
-    fig.add_trace(go.Scattergl(x=nad_wvl, y=data['nad_flux'][0, :], mode='lines', name='Upwelling'  , line=dict(color='red' )), row=1, col=2)
-    indices_spectra_nad = np.arange(tmhr.size) + len(fig.data)
-    for i in range(tmhr.size):
-        fig.add_trace(go.Scattergl(visible=False, x=nad_wvl, y=data['nad_flux'][i, :], mode='lines', name='Downwelling', line=dict(color='red')), row=1, col=2)
-
-    # time series
-    index_zen = np.argmin(np.abs(data['zen_wvl']-wvl0))
-    index_timeseries_zen = len(fig.data)
-    fig.add_trace(go.Scattergl(x=tmhr, y=data['zen_flux'][:, index_zen], mode='markers', name='Downwelling', marker=dict(size=3, color='blue', opacity=0.2)), row=2, col=1)
-    indices_timeseries_zen = np.arange(tmhr.size) + len(fig.data)
-    for i in range(tmhr.size):
-        fig.add_trace(go.Scattergl(visible=False, x=tmhr[:i+1], y=data['zen_flux'][:i+1, index_zen], mode='markers', name='Downwelling', marker=dict(size=3, color='blue', opacity=1.0)), row=2, col=1)
-
-    index_nad = np.argmin(np.abs(data['nad_wvl']-wvl0))
-    index_timeseries_nad = len(fig.data)
-    fig.add_trace(go.Scattergl(x=tmhr, y=data['nad_flux'][:, index_nad], mode='markers', name='Upwelling'  , marker=dict(size=3, color='red' , opacity=0.2)), row=2, col=1)
-    indices_timeseries_nad = np.arange(tmhr.size) + len(fig.data)
-    for i in range(tmhr.size):
-        fig.add_trace(go.Scattergl(visible=False, x=tmhr[:i+1], y=data['nad_flux'][:i+1, index_nad], mode='markers', name='Downwelling', marker=dict(size=3, color='red', opacity=1.0)), row=2, col=1)
-
-    fig.update_xaxes(title_text='$\mathrm{Longitude [^\circ]}$', row=1, col=1)
-    fig.update_yaxes(title_text='$\mathrm{Latitude [^\circ]}$' , row=1, col=1)
-    fig.update_xaxes(title_text='Wavelength[nm]', range=wvl_range, row=1, col=2)
-    fig.update_yaxes(title_text='$\mathrm{Flux [W m^{-2} nm^{-1}]}$', row=1, col=2)
-    fig.update_xaxes(title_text='Time[Hour]', range=tmhr_range, row=2, col=1)
-    fig.update_yaxes(title_text='$\mathrm{Flux [W m^{-2} nm^{-1}]}$', row=2, col=1)
-
-    if description is not None:
-        title = 'SSFR Quicklook Plot (%s)' % description
-    else:
-        title = 'SSFR Quicklook Plot'
-
-    # Create and add slider
-    steps = []
-    for i in range(tmhr.size):
-        step = dict(
-            method = 'restyle',
-            args   = ['visible', [False] * len(fig.data)],)
-        step['args'][1][indices_plot1[i]]          = True  # Toggle i'th trace to "visible"
-        step['args'][1][index_plot1]               = True  # Toggle i'th trace to "visible"
-        step['args'][1][indices_spectra_zen[i]]    = True  # Toggle i'th trace to "visible"
-        step['args'][1][indices_spectra_nad[i]]    = True  # Toggle i'th trace to "visible"
-        step['args'][1][indices_timeseries_zen[i]] = True  # Toggle i'th trace to "visible"
-        step['args'][1][index_timeseries_zen]      = True  # Toggle i'th trace to "visible"
-        step['args'][1][indices_timeseries_nad[i]] = True  # Toggle i'th trace to "visible"
-        step['args'][1][index_timeseries_nad]      = True  # Toggle i'th trace to "visible"
-        steps.append(step)
-
-    sliders = [dict(
-        active=0,
-        currentvalue={"prefix": "Time [Hour]: "},
-        pad={"t": 50},
-        steps=steps)]
-
-    fig.update_layout(showlegend=False, title_text=title, sliders=sliders)
-    plot(fig, filename='fig.html', include_mathjax='cdn')
-
-def examples1():
-
-    import plotly.graph_objs as go
-    from plotly.subplots import make_subplots
-
-    fig = make_subplots(1, 2)
-
-    fig.add_scatter(y=[1, 3, 2], row=1, col=1, visible=True)
-    fig.add_scatter(y=[3, 1, 1.5], row=1, col=1, visible='legendonly')
-    fig.add_scatter(y=[2, 2, 1], row=1, col=1, visible='legendonly')
-    fig.add_scatter(y=[1, 3, 2], row=1, col=2, visible=True)
-    fig.add_scatter(y=[1.5, 2, 2.5], row=1, col=2, visible='legendonly')
-    fig.add_scatter(y=[2.5, 1.2, 2.9], row=1, col=2, visible='legendonly')
-
-    steps = []
-    for i in range(3):
-        step = dict(
-        method = 'restyle',
-        args = ['visible', ['legendonly'] * len(fig.data)],
-        )
-        step['args'][1][i] = True
-        step['args'][1][i+3] = True
-        steps.append(step)
-
-    sliders = [dict(
-        steps = steps,)]
-
-    fig.layout.sliders = sliders
-
-    go.FigureWidget(fig)
-
-def examples2():
-
-    import plotly.graph_objects as go
-    import numpy as np
-
-    # Create figure
-    fig = go.Figure()
-
-    # Add traces, one for each slider step
-    for step in np.arange(0, 5, 0.1):
-        fig.add_trace(
-            go.Scatter(
-            visible=False,
-            line=dict(color="#00CED1", width=6),
-            name="𝜈 = " + str(step),
-            x=np.arange(0, 10, 0.01),
-            y=np.sin(step * np.arange(0, 10, 0.01))))
-
-    # Make 10th trace visible
-    fig.data[20].visible = True
-
-    # Create and add slider
-    steps = []
-    for i in range(len(fig.data)):
-        step = dict(
-            method="restyle",
-            args=["visible", [False] * len(fig.data)],)
-        step["args"][1][i] = True  # Toggle i'th trace to "visible"
-        steps.append(step)
-
-    sliders = [dict(
-        active=20,
-        currentvalue={"prefix": "Frequency: "},
-        pad={"t": 50},
-        steps=steps)]
-
-    fig.update_layout(
-        sliders=sliders)
-
-    fig.show()
+    pass
 
 
 
@@ -237,7 +48,7 @@ def lonlat_to_xy(lon, lat):
 
 def pre_bokeh(fname, fname_spns=None, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=1, wvl_step=1, wvl_step_spns=4):
 
-    data0 = load_h5(fname)
+    data0 = ssfr.util.load_h5(fname)
 
     if tmhr_range is None:
         logic_tmhr = np.repeat(True, data0['tmhr'].size)
@@ -246,7 +57,7 @@ def pre_bokeh(fname, fname_spns=None, tmhr0=None, wvl0=None, tmhr_range=None, tm
 
     data = {}
     data['tmhr']     = data0['tmhr'][logic_tmhr][::tmhr_step]
-    data['jday']     = data0['jday'][logic_tmhr][::tmhr_step] - dtime_to_jday(datetime.datetime(1969, 12, 31))
+    data['jday']     = data0['jday'][logic_tmhr][::tmhr_step] - ssfr.util.dtime_to_jday(datetime.datetime(1969, 12, 31))
     data['lon']      = data0['lon'][logic_tmhr][::tmhr_step]
     data['lat']      = data0['lat'][logic_tmhr][::tmhr_step]
     data['alt']      = data0['alt'][logic_tmhr][::tmhr_step]/1000.0
@@ -363,7 +174,7 @@ def pre_bokeh(fname, fname_spns=None, tmhr0=None, wvl0=None, tmhr_range=None, tm
     # prepare data for spns
     # ===================================================================================
     if fname_spns is not None:
-        data1 = load_h5(fname_spns)
+        data1 = ssfr.util.load_h5(fname_spns)
         data['spns_wvl'] = data1['wvl'][::wvl_step_spns]
         data['dif_flux'] = data1['dif_flux'][logic_tmhr, :][::tmhr_step, ::wvl_step_spns]
         data['tot_flux'] = data1['tot_flux'][logic_tmhr, :][::tmhr_step, ::wvl_step_spns]
