@@ -1,18 +1,12 @@
 import os
 import glob
-import h5py
 import struct
-import pysolar
-from collections import OrderedDict
-import xml.etree.ElementTree as ET
+import warnings
 import numpy as np
 import datetime
-from scipy import stats
 
 import ssfr
-from ssfr.common import fdir_data
-# from ssfr.corr import dark_corr
-import ssfr.corr
+
 
 
 
@@ -50,11 +44,15 @@ def get_ssfr_wavelength(chanNum=256):
 
     return wvl_dict
 
-def read_ssfr_raw(fname, headLen=148, dataLen=2276, verbose=False):
+def read_ssfr_raw(
+        fname,
+        headLen=148,
+        dataLen=2276,
+        verbose=False
+        ):
 
     '''
-    Reader code for Solar Spectral Flux Radiometer (SSFR) developed by Dr. Sebastian Schmidt's group
-    at the University of Colorado Bouder.
+    Reader code for Solar Spectral Flux Radiometer at LASP of University of Colorado Bouder (LASP-SSFR).
 
     Input:
         fname: string, file path of the SSFR data
@@ -97,9 +95,11 @@ def read_ssfr_raw(fname, headLen=148, dataLen=2276, verbose=False):
         iterN   = (fileSize-headLen) // dataLen
         residual = (fileSize-headLen) %  dataLen
         if residual != 0:
-            print('Warning [read_ssfr_raw]: %s contains unreadable data, omit the last data record...' % fname)
+            msg = '\nWarning [read_ssfr_raw]: <%s> contains unreadable data, omit the last data record...' % fname
+            warnings.warn(msg)
     else:
-        exit('Error [read_ssfr_raw]: %s has invalid file size.' % fname)
+        msg = '\nError [read_ssfr_raw]: <%s> has invalid file size.' % fname
+        raise OSError(msg)
 
     spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
     shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
@@ -120,10 +120,10 @@ def read_ssfr_raw(fname, headLen=148, dataLen=2276, verbose=False):
         comment = head[1]
 
     if verbose:
-        print('++++++++++++++++++++++++++++++++++++++++++++++++++')
-        print('Comments in %s...' % fname.split('/')[-1])
+        print('#/--------------------------------------------------------------\#')
+        print('Comments in <%s>...' % fname.split('/')[-1])
         print(comment)
-        print('--------------------------------------------------')
+        print('#\--------------------------------------------------------------/#')
 
     # read data record
     for i in range(iterN):
@@ -165,7 +165,19 @@ def read_ssfr_raw(fname, headLen=148, dataLen=2276, verbose=False):
 
     f.close()
 
-    return comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN
+    data_ = {
+             'comment': comment,
+             'spectra': spectra,
+             'shutter': shutter,
+            'int_time': int_time,
+                'temp': temp,
+          'jday_ARINC': jday_ARINC,
+           'jday_cRIO': jday_cRIO,
+           'qual_flag': qual_flag,
+               'iterN': iterN,
+            }
+
+    return data_
 
 class read_ssfr:
 
