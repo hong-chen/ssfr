@@ -7,7 +7,7 @@ from scipy import interpolate
 from scipy.io import readsav
 
 import ssfr
-from ssfr.util import nasa_ssfr, cu_ssfr, get_nasa_ssfr_wavelength, cal_weighted_flux
+from ssfr.util import nasa_ssfr, lasp_ssfr, get_nasa_ssfr_wavelength, cal_weighted_flux
 from ssfr.corr import dark_corr
 
 

@@ -18,8 +18,8 @@ import ssfr.corr
 
 __all__ = ['if_file_exists', 'cal_julian_day', 'cal_solar_angles', 'prh2za', 'muslope', 'dtime_to_jday', 'jday_to_dtime', \
            'load_h5', 'save_h5', 'cal_time_offset', 'cal_weighted_flux', 'read_ict', 'write_ict', \
-           'read_iwg', 'read_cu_ssfr', 'cu_ssfr', 'read_nasa_ssfr', 'nasa_ssfr', \
-           'get_cu_ssfr_wavelength', 'get_nasa_ssfr_wavelength']
+           'read_iwg', 'read_lasp_ssfr', 'lasp_ssfr', 'read_nasa_ssfr', 'nasa_ssfr', \
+           'get_lasp_ssfr_wavelength', 'get_nasa_ssfr_wavelength']
 
 
 
@@ -375,7 +375,7 @@ def read_iwg(fname, date_ref=None, tmhr_range=None):
 
 
 
-def get_cu_ssfr_wavelength(chanNum=256):
+def get_lasp_ssfr_wavelength(chanNum=256):
 
     xChan = np.arange(chanNum)
 
@@ -400,7 +400,7 @@ def get_cu_ssfr_wavelength(chanNum=256):
 
     return wvl_dict
 
-def read_cu_ssfr(fname, headLen=148, dataLen=2276, verbose=False):
+def read_lasp_ssfr(fname, headLen=148, dataLen=2276, verbose=False):
 
     '''
     Reader code for Solar Spectral Flux Radiometer (SSFR) developed by Dr. Sebastian Schmidt's group
@@ -425,7 +425,7 @@ def read_cu_ssfr(fname, headLen=148, dataLen=2276, verbose=False):
 
     How to use:
     fname = '/some/path/2015022000001.SKS'
-    comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN = read_cu_ssfr(fname, verbose=False)
+    comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN = read_lasp_ssfr(fname, verbose=False)
 
     comment  (str)        [N/A]    : comment in header
     spectra  (numpy array)[N/A]    : counts of Silicon and InGaAs for both zenith and nadir
@@ -447,9 +447,9 @@ def read_cu_ssfr(fname, headLen=148, dataLen=2276, verbose=False):
         iterN   = (fileSize-headLen) // dataLen
         residual = (fileSize-headLen) %  dataLen
         if residual != 0:
-            print('Warning [read_cu_ssfr]: %s contains unreadable data, omit the last data record...' % fname)
+            print('Warning [read_lasp_ssfr]: %s contains unreadable data, omit the last data record...' % fname)
     else:
-        exit('Error [read_cu_ssfr]: %s has invalid file size.' % fname)
+        exit('Error [read_lasp_ssfr]: %s has invalid file size.' % fname)
 
     spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
     shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
@@ -517,7 +517,7 @@ def read_cu_ssfr(fname, headLen=148, dataLen=2276, verbose=False):
 
     return comment, spectra, shutter, int_time, temp, jday_ARINC, jday_cRIO, qual_flag, iterN
 
-class cu_ssfr:
+class lasp_ssfr:
 
     def __init__(self, fnames, Ndata=600, whichTime='arinc', timeOffset=0.0, dark_corr_mode='interp'):
 
@@ -530,10 +530,10 @@ class cu_ssfr:
         '''
 
         if not isinstance(fnames, list):
-            exit("Error [CU_SSFR]: input variable 'fnames' should be a Python list.")
+            exit("Error [lasp_ssfr]: input variable 'fnames' should be a Python list.")
 
         if len(fnames) == 0:
-            exit("Error [CU_SSFR]: input variable 'fnames' is empty.")
+            exit("Error [lasp_ssfr]: input variable 'fnames' is empty.")
 
         # +
         # read in all the data
@@ -549,7 +549,7 @@ class cu_ssfr:
 
         Nstart = 0
         for fname in fnames:
-            comment0, spectra0, shutter0, int_time0, temp0, jday_ARINC0, jday_cRIO0, qual_flag0, iterN0 = READ_CU_SSFR(fname, verbose=False)
+            comment0, spectra0, shutter0, int_time0, temp0, jday_ARINC0, jday_cRIO0, qual_flag0, iterN0 = read_lasp_ssfr(fname, verbose=False)
 
             Nend = iterN0 + Nstart
 
