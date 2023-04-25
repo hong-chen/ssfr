@@ -20,7 +20,7 @@ __all__ = ['cal_cos_resp', 'cdata_cos_resp', 'load_cos_resp_h5']
 
 
 
-def cal_cos_resp(fnames, which='zenith', intTime={'si':60, 'in':300}, Nchan=256):
+def cal_cos_resp(fnames, which='zenith', int_time={'si':60, 'in':300}, Nchan=256):
 
     which = which.lower()
     if which == 'zenith':
@@ -38,8 +38,8 @@ def cal_cos_resp(fnames, which='zenith', intTime={'si':60, 'in':300}, Nchan=256)
 
         ssfr0 = ssfr.util.nasa_ssfr([fname])
 
-        logic_si = (np.abs(ssfr0.int_time[:, index_si]-intTime['si'])<0.00001)
-        logic_in = (np.abs(ssfr0.int_time[:, index_in]-intTime['in'])<0.00001)
+        logic_si = (np.abs(ssfr0.int_time[:, index_si]-int_time['si'])<0.00001)
+        logic_in = (np.abs(ssfr0.int_time[:, index_in]-int_time['in'])<0.00001)
 
         shutter, counts = ssfr.corr.dark_corr(ssfr0.tmhr[logic_si], ssfr0.shutter[logic_si], ssfr0.spectra[logic_si, :, index_si], mode='mean')
         logic  = (logic_si) & (shutter==0)
@@ -58,11 +58,11 @@ def cal_cos_resp(fnames, which='zenith', intTime={'si':60, 'in':300}, Nchan=256)
 
 
 
-def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joint=950.0, wvl_start=350.0, wvl_end=2200.0, intTime={'si':60, 'in':300}, verbose=True):
+def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joint=950.0, wvl_start=350.0, wvl_end=2200.0, int_time={'si':60, 'in':300}, verbose=True):
 
     which = which.lower()
 
-    cos_resp = cal_cos_resp(fnames, which=which, Nchan=Nchan, intTime=intTime)
+    cos_resp = cal_cos_resp(fnames, which=which, Nchan=Nchan, int_time=int_time)
 
     angles = np.array([fnames[fname] for fname in fnames.keys()])
     cos_mu = np.cos(np.deg2rad(angles))
@@ -123,9 +123,9 @@ def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joi
         coef[i, :] = np.polyfit(wvl[logic], cos_resp[i, :][logic], order)
 
     if filename_tag is not None:
-        fname_out = '%s_cos-resp_s%3.3di%3.3d.h5' % (filename_tag, intTime['si'], intTime['in'])
+        fname_out = '%s_cos-resp_s%3.3di%3.3d.h5' % (filename_tag, int_time['si'], int_time['in'])
     else:
-        fname_out = 'cos-resp_s%3.3di%3.3d.h5' % (intTime['si'], intTime['in'])
+        fname_out = 'cos-resp_s%3.3di%3.3d.h5' % (int_time['si'], int_time['in'])
 
     # =============================================================================
     if False:
@@ -168,7 +168,7 @@ def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joi
         exit()
     # =============================================================================
 
-    info = 'Light Collector: %s\nJoint Wavelength: %.4fnm\nStart Wavelength: %.4fnm\nEnd Wavelength: %.4fnm\nIntegration Time for Silicon Channel: %dms\nIntegration Time for InGaAs Channel: %dms\nProcessed Files:\n' % (which.title(), wvl_joint, wvl_start, wvl_end, intTime['si'], intTime['in'])
+    info = 'Light Collector: %s\nJoint Wavelength: %.4fnm\nStart Wavelength: %.4fnm\nEnd Wavelength: %.4fnm\nIntegration Time for Silicon Channel: %dms\nIntegration Time for InGaAs Channel: %dms\nProcessed Files:\n' % (which.title(), wvl_joint, wvl_start, wvl_end, int_time['si'], int_time['in'])
     for key in fnames.keys():
         line = 'At %3d [degree] Angle: %s\n' % (fnames[key], key)
         info += line

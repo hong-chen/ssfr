@@ -22,7 +22,7 @@ def cal_rad_resp(
         which_ssfr='nasa',
         which_lc='zenith',
         pri_lamp_tag='f-1324',
-        intTime={'si':60, 'in':300}
+        int_time={'si':60, 'in':300}
         ):
 
     which_lc = which_lc.lower()
@@ -74,15 +74,15 @@ def cal_rad_resp(
     counts_l  = ssfr_l.spectra[:, :, index_si]
     counts_d  = ssfr_d.spectra[:, :, index_si]
 
-    logic_l   = (np.abs(ssfr_l.int_time[:, index_si]-intTime['si'])<0.00001)
+    logic_l   = (np.abs(ssfr_l.int_time[:, index_si]-int_time['si'])<0.00001)
     spectra_l = np.mean(counts_l[logic_l, :], axis=0)
 
-    logic_d   = (np.abs(ssfr_d.int_time[:, index_si]-intTime['si'])<0.00001)
+    logic_d   = (np.abs(ssfr_d.int_time[:, index_si]-int_time['si'])<0.00001)
     spectra_d = np.mean(counts_d[logic_d, :], axis=0)
 
     spectra   = spectra_l - spectra_d
     spectra[spectra<=0.0] = np.nan
-    rad_resp_si = spectra / intTime['si'] / resp['si']
+    rad_resp_si = spectra / int_time['si'] / resp['si']
     # ---------------------------------------------------------------------------
 
     # InGaAs
@@ -90,15 +90,15 @@ def cal_rad_resp(
     counts_l  = ssfr_l.spectra[:, :, index_in]
     counts_d  = ssfr_d.spectra[:, :, index_in]
 
-    logic_l   = (np.abs(ssfr_l.int_time[:, index_in]-intTime['in'])<0.00001)
+    logic_l   = (np.abs(ssfr_l.int_time[:, index_in]-int_time['in'])<0.00001)
     spectra_l = np.mean(counts_l[logic_l, :], axis=0)
 
-    logic_d   = (np.abs(ssfr_d.int_time[:, index_in]-intTime['in'])<0.00001)
+    logic_d   = (np.abs(ssfr_d.int_time[:, index_in]-int_time['in'])<0.00001)
     spectra_d = np.mean(counts_d[logic_d, :], axis=0)
 
     spectra   = spectra_l - spectra_d
     spectra[spectra<=0.0] = np.nan
-    rad_resp_in = spectra / intTime['in'] / resp['in']
+    rad_resp_in = spectra / int_time['in'] / resp['in']
     # ---------------------------------------------------------------------------
 
     rad_resp = {'si':rad_resp_si,
@@ -119,26 +119,26 @@ def cdata_rad_resp(
         wvl_joint=950.0,
         wvl_start=350.0,
         wvl_end=2200.0,
-        intTime={'si':60, 'in':300}
+        int_time={'si':60, 'in':300}
         ):
 
     which_lc = which_lc.lower()
 
     if fnames_pri is not None:
-        pri_resp = cal_rad_resp(fnames_pri, resp=None, which_lc=which_lc, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
+        pri_resp = cal_rad_resp(fnames_pri, resp=None, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
     else:
         sys.exit('Error [cdata_rad_resp]: Cannot proceed without primary calibration files.')
 
     if fnames_tra is not None:
-        transfer = cal_rad_resp(fnames_tra, resp=pri_resp, which_lc=which_lc, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
+        transfer = cal_rad_resp(fnames_tra, resp=pri_resp, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
     else:
         sys.exit('Error [cdata_rad_resp]: Cannot proceed without transfer calibration files.')
 
     if fnames_sec is not None:
-        sec_resp = cal_rad_resp(fnames_sec, resp=transfer, which_lc=which_lc, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
+        sec_resp = cal_rad_resp(fnames_sec, resp=transfer, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
     else:
         print('Warning [cdata_rad_resp]: Secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...')
-        sec_resp = cal_rad_resp(fnames_tra, transfer, which_lc=which_lc, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
+        sec_resp = cal_rad_resp(fnames_tra, transfer, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
 
     wvls = get_nasa_ssfr_wavelength()
 
@@ -157,9 +157,9 @@ def cdata_rad_resp(
     sec_resp = sec_resp_data[indices_sort]
 
     if filename_tag is not None:
-        fname_out = '%s_rad-resp_s%3.3di%3.3d.h5' % (filename_tag, intTime['si'], intTime['in'])
+        fname_out = '%s_rad-resp_s%3.3di%3.3d.h5' % (filename_tag, int_time['si'], int_time['in'])
     else:
-        fname_out = 'rad-resp_s%3.3di%3.3d.h5' % (intTime['si'], intTime['in'])
+        fname_out = 'rad-resp_s%3.3di%3.3d.h5' % (int_time['si'], int_time['in'])
 
     f = h5py.File(fname_out, 'w')
     f['wvl']       = wvl
