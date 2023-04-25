@@ -9,8 +9,6 @@ import numpy as np
 from scipy import interpolate
 from scipy.io import readsav
 
-# from ssfr.util import lasp_ssfr, nasa_ssfr, get_nasa_ssfr_wavelength
-# from ssfr.corr import dark_corr
 import ssfr.util
 import ssfr.corr
 
@@ -28,6 +26,21 @@ def cal_cos_resp(
         Nchan=256
         ):
 
+    # check SSFR spectrometer
+    #/----------------------------------------------------------------------------\#
+    which_ssfr = which_ssfr.lower()
+    if which_ssfr == 'nasa':
+        from ssfr.nasa_ssfr import read_ssfr
+    elif which_ssfr == 'lasp':
+        from ssfr.lasp_ssfr import read_ssfr
+    else:
+        msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
+
+
+    # check light collector
+    #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
     if which_lc == 'zenith':
         index_si = 0
@@ -35,6 +48,10 @@ def cal_cos_resp(
     elif which_lc == 'nadir':
         index_si = 2
         index_in = 3
+    else:
+        msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith\'> or <\'nadir\'>).' % which_lc
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
 
     Nfile = len(fnames)
 
@@ -42,7 +59,7 @@ def cal_cos_resp(
     counts_in   = np.zeros((Nfile, Nchan), dtype=np.float64)
     for i, fname in enumerate(fnames.keys()):
 
-        ssfr0 = ssfr.util.nasa_ssfr([fname])
+        ssfr0 = read_ssfr([fname])
 
         logic_si = (np.abs(ssfr0.int_time[:, index_si]-int_time['si'])<0.00001)
         logic_in = (np.abs(ssfr0.int_time[:, index_in]-int_time['in'])<0.00001)
@@ -67,6 +84,7 @@ def cal_cos_resp(
 def cdata_cos_resp(
         fnames,
         filename_tag=None,
+        which_ssfr='lasp',
         which_lc='zenith',
         Nchan=256,
         wvl_joint=950.0,
@@ -76,9 +94,34 @@ def cdata_cos_resp(
         verbose=True
         ):
 
-    which_lc = which_lc.lower()
+    # check SSFR spectrometer
+    #/----------------------------------------------------------------------------\#
+    which_ssfr = which_ssfr.lower()
+    if which_ssfr == 'nasa':
+        from ssfr.nasa_ssfr import get_ssfr_wavelength
+    elif which_ssfr == 'lasp':
+        from ssfr.lasp_ssfr import get_ssfr_wavelength
+    else:
+        msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
 
-    cos_resp = cal_cos_resp(fnames, which_lc=which_lc, Nchan=Nchan, int_time=int_time)
+
+    # check light collector
+    #/----------------------------------------------------------------------------\#
+    which_lc = which_lc.lower()
+    if which_lc == 'zenith':
+        index_si = 0
+        index_in = 1
+    elif which_lc == 'nadir':
+        index_si = 2
+        index_in = 3
+    else:
+        msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith\'> or <\'nadir\'>).' % which_lc
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
+
+    cos_resp = cal_cos_resp(fnames, which_ssfr=which_ssfr, which_lc=which_lc, Nchan=Nchan, int_time=int_time)
 
     angles = np.array([fnames[fname] for fname in fnames.keys()])
     cos_mu = np.cos(np.deg2rad(angles))
@@ -114,7 +157,7 @@ def cdata_cos_resp(
         f = interpolate.interp1d(cos_mu0, cos_resp_std0['in'][:, i], fill_value='extrapolate')
         cos_resp_std_all['in'][:, i] = f(cos_mu_all)
 
-    wvls = ssfr.util.get_nasa_ssfr_wavelength()
+    wvls = get_ssfr_wavelength()
 
     logic_si = (wvls['%s_si' % which_lc] >= wvl_start) & (wvls['%s_si' % which_lc] <= wvl_joint)
     logic_in = (wvls['%s_in' % which_lc] >  wvl_joint)  & (wvls['%s_in' % which_lc] <= wvl_end)
