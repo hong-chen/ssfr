@@ -58,7 +58,7 @@ def cal_cos_resp(fnames, which='zenith', intTime={'si':60, 'in':300}, Nchan=256)
 
 
 
-def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_join=950.0, wvl_start=350.0, wvl_end=2200.0, intTime={'si':60, 'in':300}, verbose=True):
+def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joint=950.0, wvl_start=350.0, wvl_end=2200.0, intTime={'si':60, 'in':300}, verbose=True):
 
     which = which.lower()
 
@@ -100,8 +100,8 @@ def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joi
 
     wvls = ssfr.util.get_nasa_ssfr_wavelength()
 
-    logic_si = (wvls['%s_si' % which] >= wvl_start) & (wvls['%s_si' % which] <= wvl_join)
-    logic_in = (wvls['%s_in' % which] >  wvl_join)  & (wvls['%s_in' % which] <= wvl_end)
+    logic_si = (wvls['%s_si' % which] >= wvl_start) & (wvls['%s_si' % which] <= wvl_joint)
+    logic_in = (wvls['%s_in' % which] >  wvl_joint)  & (wvls['%s_in' % which] <= wvl_end)
 
     wvl_data      = np.concatenate((wvls['%s_si' % which][logic_si], wvls['%s_in' % which][logic_in]))
 
@@ -155,7 +155,7 @@ def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joi
         p0 = np.poly1d(coef[index, :])
         ax1.plot(wvl_new, p0(wvl_new), lw=3.0, alpha=0.6, color='g')
 
-        ax1.axvline(wvl_join, ls='--', color='gray')
+        ax1.axvline(wvl_joint, ls='--', color='gray')
 
         ax1.set_title('%s\n$\mu$=%.4f (%.2f$^\circ$)' % (os.path.basename(fname_out), cos_mu_all[index], np.rad2deg(np.arccos(cos_mu_all[index]))))
 
@@ -168,7 +168,7 @@ def cdata_cos_resp(fnames, filename_tag=None, which='zenith', Nchan=256, wvl_joi
         exit()
     # =============================================================================
 
-    info = 'Light Collector: %s\nJoint Wavelength: %.4fnm\nStart Wavelength: %.4fnm\nEnd Wavelength: %.4fnm\nIntegration Time for Silicon Channel: %dms\nIntegration Time for InGaAs Channel: %dms\nProcessed Files:\n' % (which.title(), wvl_join, wvl_start, wvl_end, intTime['si'], intTime['in'])
+    info = 'Light Collector: %s\nJoint Wavelength: %.4fnm\nStart Wavelength: %.4fnm\nEnd Wavelength: %.4fnm\nIntegration Time for Silicon Channel: %dms\nIntegration Time for InGaAs Channel: %dms\nProcessed Files:\n' % (which.title(), wvl_joint, wvl_start, wvl_end, intTime['si'], intTime['in'])
     for key in fnames.keys():
         line = 'At %3d [degree] Angle: %s\n' % (fnames[key], key)
         info += line

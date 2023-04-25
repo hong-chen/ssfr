@@ -7,6 +7,7 @@ from scipy import interpolate
 from scipy.io import readsav
 
 import ssfr
+
 from ssfr.util import nasa_ssfr, lasp_ssfr, get_nasa_ssfr_wavelength, cal_weighted_flux
 from ssfr.corr import dark_corr
 
@@ -18,16 +19,17 @@ __all__ = ['cal_rad_resp', 'cdata_rad_resp', 'load_rad_resp_h5']
 def cal_rad_resp(
         fnames,
         resp=None,
-        which='zenith',
+        which_ssfr='nasa',
+        which_lc='zenith',
         pri_lamp_tag='f-1324',
         intTime={'si':60, 'in':300}
         ):
 
-    which = which.lower()
-    if which == 'zenith':
+    which_lc = which_lc.lower()
+    if which_lc == 'zenith':
         index_si = 0
         index_in = 1
-    if which == 'nadir':
+    if which_lc == 'nadir':
         index_si = 2
         index_in = 3
 
@@ -47,8 +49,8 @@ def cal_rad_resp(
             data_flux = data[:, 1]*10000.0
 
         wvls   = get_nasa_ssfr_wavelength()
-        wvl_si = wvls['%s_si' % which]
-        wvl_in = wvls['%s_in' % which]
+        wvl_si = wvls['%s_si' % which_lc]
+        wvl_in = wvls['%s_in' % which_lc]
 
         lampStd_si = np.zeros_like(wvl_si)
         for i in range(lampStd_si.size):
@@ -112,37 +114,38 @@ def cdata_rad_resp(
         fnames_sec=None,
         filename_tag=None,
         pri_lamp_tag='f-1324',
-        which='zenith',
-        wvl_join=950.0,
+        which_lc='zenith',
+        which_ssfr='nasa',
+        wvl_joint=950.0,
         wvl_start=350.0,
         wvl_end=2200.0,
         intTime={'si':60, 'in':300}
         ):
 
-    which = which.lower()
+    which_lc = which_lc.lower()
 
     if fnames_pri is not None:
-        pri_resp = cal_rad_resp(fnames_pri, resp=None, which=which, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
+        pri_resp = cal_rad_resp(fnames_pri, resp=None, which_lc=which_lc, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
     else:
         sys.exit('Error [cdata_rad_resp]: Cannot proceed without primary calibration files.')
 
     if fnames_tra is not None:
-        transfer = cal_rad_resp(fnames_tra, resp=pri_resp, which=which, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
+        transfer = cal_rad_resp(fnames_tra, resp=pri_resp, which_lc=which_lc, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
     else:
         sys.exit('Error [cdata_rad_resp]: Cannot proceed without transfer calibration files.')
 
     if fnames_sec is not None:
-        sec_resp = cal_rad_resp(fnames_sec, resp=transfer, which=which, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
+        sec_resp = cal_rad_resp(fnames_sec, resp=transfer, which_lc=which_lc, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
     else:
         print('Warning [cdata_rad_resp]: Secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...')
-        sec_resp = cal_rad_resp(fnames_tra, transfer, which=which, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
+        sec_resp = cal_rad_resp(fnames_tra, transfer, which_lc=which_lc, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
 
     wvls = get_nasa_ssfr_wavelength()
 
-    logic_si = (wvls['%s_si' % which] >= wvl_start) & (wvls['%s_si' % which] <= wvl_join)
-    logic_in = (wvls['%s_in' % which] >  wvl_join)  & (wvls['%s_in' % which] <= wvl_end)
+    logic_si = (wvls['%s_si' % which_lc] >= wvl_start) & (wvls['%s_si' % which_lc] <= wvl_joint)
+    logic_in = (wvls['%s_in' % which_lc] >  wvl_joint)  & (wvls['%s_in' % which_lc] <= wvl_end)
 
-    wvl_data      = np.concatenate((wvls['%s_si' % which][logic_si], wvls['%s_in' % which][logic_in]))
+    wvl_data      = np.concatenate((wvls['%s_si' % which_lc][logic_si], wvls['%s_in' % which_lc][logic_in]))
     pri_resp_data = np.hstack((pri_resp['si'][logic_si], pri_resp['in'][logic_in]))
     transfer_data = np.hstack((transfer['si'][logic_si], transfer['in'][logic_in]))
     sec_resp_data = np.hstack((sec_resp['si'][logic_si], sec_resp['in'][logic_in]))
