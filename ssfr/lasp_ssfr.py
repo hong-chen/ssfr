@@ -90,7 +90,7 @@ def read_ssfr_raw(fname, headLen=148, dataLen=2276, verbose=False):
     by Hong Chen (hong.chen@lasp.colorado.edu), Sebastian Schmidt (sebastian.schmidt@lasp.colorado.edu)
     '''
 
-    if_file_exists(fname, exitTag=True)
+    ssfr.util.if_file_exists(fname, exitTag=True)
 
     fileSize = os.path.getsize(fname)
     if fileSize > headLen:
