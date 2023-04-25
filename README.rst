@@ -1,17 +1,23 @@
 SSFR Software Package
 ~~~~~~~~~~~~~~~~~~~~~
 SSFR (Solar Spectral Flux Radiometer) is an airborne instrument co-developed by teams
-at NASA Ames Research Center (discontinued) and at LASP of University of Colorado Boulder.
+at NASA Ames Research Center (discontinued) and LASP of University of Colorado Boulder.
+SSFR takes simultaneous downwelling and upwelling spectral irradiance measurements ranging
+from 300 nm to 2400 nm, which can be used to study cloud/aerosol radiative effects and
+retrieve cloud/aerosol optical properties.
 
-This repository maintains code for processing SSFR data by applying required calibrations and corrections.
+This repository provides legacy code for processing SSFR data by applying necessary calibrations
+and corrections. Due to different deployment conditions of the instrument, the data processing procedures can vary
+significantly for different missions. Please contact the `SSFR science team <https://lasp.colorado.edu/airs/group>`_
+for more information if you have any questions regarding SSFR data processing for a specific mission.
 
-A more detailed description can be found `here <https://docs.google.com/document/d/1ObczXucJQktyTgKZlBkL04fjhHFx1ydW0sPaiG7iZ9k/edit?usp=sharing>`_ (under development).
+A more detailed SSFR manual can be found `here <https://docs.google.com/document/d/1ObczXucJQktyTgKZlBkL04fjhHFx1ydW0sPaiG7iZ9k/edit?usp=sharing>`_ (under development).
 
-So far, the SSFR has been deployed in the following airborne missions:
+So far, the SSFR has participated in the following airborne missions:
 
 * `NASA CAMP²Ex <https://espo.nasa.gov/camp2ex/content/CAMP2Ex>`_ (on P-3 in 2019);
 
-* `NASA ORACLES <https://espo.nasa.gov/ORACLES/content/ORACLES>`_ (on ER-2 and P-3 in 2016, 2017 and 2018) ;
+* `NASA ORACLES <https://espo.nasa.gov/ORACLES/content/ORACLES>`_ (on ER-2 and P-3 in 2016; on P-3 in 2017 and 2018) ;
 
 * `NASA ARISE <https://espo.nasa.gov/arise/content/ARISE>`_ (on C-130 in 2014);
 
