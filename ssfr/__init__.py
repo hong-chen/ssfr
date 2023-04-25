@@ -3,6 +3,5 @@ from . import corr
 from . import common
 from . import util
 from . import plot
-from .util import *
-from .plot import *
-from .common import *
+from . import lasp_ssfr
+from . import nasa_ssfr
