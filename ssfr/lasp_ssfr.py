@@ -76,6 +76,7 @@ def read_ssfr_raw(
     data0 = read_ssfr_raw(fname, verbose=False)
 
     data0 contains the following variables:
+
     comment  (str)        [N/A]    : comment in header
     spectra  (numpy array)[N/A]    : counts of Silicon and InGaAs for both zenith and nadir
     shutter  (numpy array)[N/A]    : shutter status (1:closed(dark), 0:open(light))
@@ -85,8 +86,6 @@ def read_ssfr_raw(
     jday_cRIO(numpy array)[day]    : julian days (w.r.t 0001-01-01) of SSFR Inertial Navigation System (INS)
     qual_flag(numpy array)[N/A]    : quality flag(1:good, 0:bad)
     iterN (numpy array)   [N/A]    : number of data record
-
-    Hong Chen (hong.chen@lasp.colorado.edu)
     '''
 
     ssfr.util.if_file_exists(fname, exitTag=True)
@@ -219,18 +218,19 @@ class read_ssfr:
 
         Nstart = 0
         for fname in fnames:
-            comment0, spectra0, shutter0, int_time0, temp0, jday_ARINC0, jday_cRIO0, qual_flag0, iterN0 = read_ssfr_raw(fname, verbose=False)
 
-            Nend = iterN0 + Nstart
+            data0 = read_ssfr_raw(fname, verbose=False)
 
-            comment.append(comment0)
-            spectra[Nstart:Nend, ...]    = spectra0
-            shutter[Nstart:Nend, ...]    = shutter0
-            int_time[Nstart:Nend, ...]   = int_time0
-            temp[Nstart:Nend, ...]       = temp0
-            jday_ARINC[Nstart:Nend, ...] = jday_ARINC0
-            jday_cRIO[Nstart:Nend, ...]  = jday_cRIO0
-            qual_flag[Nstart:Nend, ...]  = qual_flag0
+            Nend = data0['iterN'] + Nstart
+
+            comment.append(data0['comment'])
+            spectra[Nstart:Nend, ...]    = data0['spectra']
+            shutter[Nstart:Nend, ...]    = data0['shutter']
+            int_time[Nstart:Nend, ...]   = data0['int_time']
+            temp[Nstart:Nend, ...]       = data0['temp']
+            jday_ARINC[Nstart:Nend, ...] = data0['jday_ARINC']
+            jday_cRIO[Nstart:Nend, ...]  = data0['jday_cRIO']
+            qual_flag[Nstart:Nend, ...]  = data0['qual_flag']
 
             Nstart = Nend
 
