@@ -33,7 +33,8 @@ build
 # libRadtran
 randomseed
 
-# exceptions for er3t
+# exceptions for ssfr
+future_dev/*
 !tests
 !examples
 !ssfr/data
