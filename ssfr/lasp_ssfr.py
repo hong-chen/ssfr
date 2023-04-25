@@ -171,6 +171,7 @@ def read_ssfr_raw(
              'shutter': shutter,
             'int_time': int_time,
                 'temp': temp,
+                'jday': jday_ARINC,
           'jday_ARINC': jday_ARINC,
            'jday_cRIO': jday_cRIO,
            'qual_flag': qual_flag,
