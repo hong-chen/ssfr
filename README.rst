@@ -2,7 +2,7 @@ SSFR Software Package
 ~~~~~~~~~~~~~~~~~~~~~
 SSFR (Solar Spectral Flux Radiometer) is an airborne instrument co-developed by teams
 at NASA Ames Research Center (discontinued) and LASP of University of Colorado Boulder.
-SSFR takes simultaneous downwelling and upwelling spectral irradiance measurements ranging
+SSFR provides simultaneous downwelling and upwelling spectral irradiance measurements ranging
 from 300 nm to 2400 nm, which can be used to study cloud/aerosol radiative effects and
 retrieve cloud/aerosol optical properties.
 
@@ -11,7 +11,7 @@ and corrections. Due to different deployment conditions of the instrument, the d
 significantly for different missions. Please contact `SSFR science team <https://lasp.colorado.edu/airs/group>`_
 for more information if you have any questions regarding SSFR data processing for a specific mission.
 
-So far, the SSFR has participated in the following airborne missions:
+So far, SSFR has participated in the following airborne missions:
 
 * `NASA CAMP²Ex <https://espo.nasa.gov/camp2ex/content/CAMP2Ex>`_ (on P-3 in 2019);
 
