@@ -30,11 +30,11 @@ def cal_cos_resp(
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
     if which_ssfr == 'nasa':
-        from ssfr.nasa_ssfr import read_ssfr
+        import ssfr.nasa_ssfr as ssfr_toolbox
     elif which_ssfr == 'lasp':
-        from ssfr.lasp_ssfr import read_ssfr
+        import ssfr.lasp_ssfr as ssfr_toolbox
     else:
-        msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
+        msg = '\nError [cal_ang_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
         raise ValueError(msg)
     #\----------------------------------------------------------------------------/#
 
@@ -49,7 +49,7 @@ def cal_cos_resp(
         index_si = 2
         index_in = 3
     else:
-        msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith\'> or <\'nadir\'>).' % which_lc
+        msg = '\nError [cal_ang_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith\'> or <\'nadir\'>).' % which_lc
         raise ValueError(msg)
     #\----------------------------------------------------------------------------/#
 
@@ -59,7 +59,7 @@ def cal_cos_resp(
     counts_in   = np.zeros((Nfile, Nchan), dtype=np.float64)
     for i, fname in enumerate(fnames.keys()):
 
-        ssfr0 = read_ssfr([fname])
+        ssfr0 = ssfr_toolbox.read_ssfr([fname])
 
         logic_si = (np.abs(ssfr0.int_time[:, index_si]-int_time['si'])<0.00001)
         logic_in = (np.abs(ssfr0.int_time[:, index_in]-int_time['in'])<0.00001)
@@ -97,11 +97,11 @@ def cdata_cos_resp(
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
     if which_ssfr == 'nasa':
-        from ssfr.nasa_ssfr import get_ssfr_wavelength
+        import ssfr.nasa_ssfr as ssfr_toolbox
     elif which_ssfr == 'lasp':
-        from ssfr.lasp_ssfr import get_ssfr_wavelength
+        import ssfr.lasp_ssfr as ssfr_toolbox
     else:
-        msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
+        msg = '\nError [cdata_cos_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
         raise ValueError(msg)
     #\----------------------------------------------------------------------------/#
 
@@ -116,7 +116,7 @@ def cdata_cos_resp(
         index_si = 2
         index_in = 3
     else:
-        msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith\'> or <\'nadir\'>).' % which_lc
+        msg = '\nError [cdata_cos_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith\'> or <\'nadir\'>).' % which_lc
         raise ValueError(msg)
     #\----------------------------------------------------------------------------/#
 
@@ -156,7 +156,7 @@ def cdata_cos_resp(
         f = interpolate.interp1d(cos_mu0, cos_resp_std0['in'][:, i], fill_value='extrapolate')
         cos_resp_std_all['in'][:, i] = f(cos_mu_all)
 
-    wvls = get_ssfr_wavelength()
+    wvls = ssfr_toolbox.get_ssfr_wavelength()
 
     wvl_start = wvl_range[0]
     wvl_end   = wvl_range[-1]

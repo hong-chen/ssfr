@@ -1,6 +1,7 @@
 import os
 import sys
 import datetime
+import warnings
 import h5py
 import numpy as np
 from scipy import interpolate
@@ -28,9 +29,9 @@ def cal_rad_resp(
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
     if which_ssfr == 'nasa':
-        from ssfr.nasa_ssfr import get_ssfr_wavelength, read_ssfr
+        import ssfr.nasa_ssfr as ssfr_toolbox
     elif which_ssfr == 'lasp':
-        from ssfr.lasp_ssfr import get_ssfr_wavelength, read_ssfr
+        import ssfr.lasp_ssfr as ssfr_toolbox
     else:
         msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
         raise ValueError(msg)
@@ -61,7 +62,7 @@ def cal_rad_resp(
         #/--------------------------------------------------------------\#
         fnameLamp = '%s/%s.dat' % (ssfr.common.fdir_data, pri_lamp_tag)
         if not os.path.exists(fnameLamp):
-            msg = '\nError [cal_rad_resp]: Cannot locate lamp file for <%s>.' % pri_lamp_tag.title()
+            msg = '\nError [cal_rad_resp]: Cannot locate calibration file for lamp <%s>.' % pri_lamp_tag.title()
             raise OSError(msg)
 
         data      = np.loadtxt(fnameLamp)
@@ -71,7 +72,7 @@ def cal_rad_resp(
         else:
             data_flux = data[:, 1]*10000.0
 
-        wvls   = get_ssfr_wavelength()
+        wvls = ssfr_toolbox.get_ssfr_wavelength()
         wvl_si = wvls['%s_si' % which_lc]
         wvl_in = wvls['%s_in' % which_lc]
 
@@ -92,8 +93,8 @@ def cal_rad_resp(
 
     # read raw data
     #/----------------------------------------------------------------------------\#
-    ssfr_l = read_ssfr([fnames['cal']])
-    ssfr_d = read_ssfr([fnames['dark']])
+    ssfr_l = ssfr_toolbox.read_ssfr([fnames['cal']])
+    ssfr_d = ssfr_toolbox.read_ssfr([fnames['dark']])
     #\----------------------------------------------------------------------------/#
 
 
@@ -150,25 +151,72 @@ def cdata_rad_resp(
         int_time={'si':60, 'in':300}
         ):
 
+    # check SSFR spectrometer
+    #/----------------------------------------------------------------------------\#
+    which_ssfr = which_ssfr.lower()
+    if which_ssfr == 'nasa':
+        import ssfr.nasa_ssfr as ssfr_toolbox
+    elif which_ssfr == 'lasp':
+        import ssfr.lasp_ssfr as ssfr_toolbox
+    else:
+        msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
+
+
+    # check light collector
+    #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
+    #\----------------------------------------------------------------------------/#
 
     if fnames_pri is not None:
-        pri_resp = cal_rad_resp(fnames_pri, resp=None, which_ssfr=which_ssfr, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
+        pri_resp = cal_rad_resp(
+                fnames_pri,
+                resp=None,
+                which_ssfr=which_ssfr,
+                which_lc=which_lc,
+                int_time=int_time,
+                pri_lamp_tag=pri_lamp_tag
+                )
     else:
-        sys.exit('Error [cdata_rad_resp]: Cannot proceed without primary calibration files.')
+        msg = '\nError [cdata_rad_resp]: Cannot proceed without primary calibration files.'
+        raise OSError(msg)
 
     if fnames_tra is not None:
-        transfer = cal_rad_resp(fnames_tra, resp=pri_resp, which_ssfr=which_ssfr, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
+        transfer = cal_rad_resp(
+                fnames_tra,
+                resp=pri_resp,
+                which_ssfr=which_ssfr,
+                which_lc=which_lc,
+                int_time=int_time,
+                pri_lamp_tag=pri_lamp_tag
+                )
     else:
-        sys.exit('Error [cdata_rad_resp]: Cannot proceed without transfer calibration files.')
+        msg = '\nError [cdata_rad_resp]: Cannot proceed without transfer calibration files.'
+        raise OSError(msg)
 
     if fnames_sec is not None:
-        sec_resp = cal_rad_resp(fnames_sec, resp=transfer, which_ssfr=which_ssfr, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
+        sec_resp = cal_rad_resp(
+                fnames_sec,
+                resp=transfer,
+                which_ssfr=which_ssfr,
+                which_lc=which_lc,
+                int_time=int_time,
+                pri_lamp_tag=pri_lamp_tag
+                )
     else:
-        print('Warning [cdata_rad_resp]: Secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...')
-        sec_resp = cal_rad_resp(fnames_tra, transfer, which_ssfr=which_ssfr, which_lc=which_lc, int_time=int_time, pri_lamp_tag=pri_lamp_tag)
+        msg = '\nWarning [cdata_rad_resp]: Secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...'
+        warnings.warn(msg)
+        sec_resp = cal_rad_resp(
+                fnames_tra,
+                resp=transfer,
+                which_ssfr=which_ssfr,
+                which_lc=which_lc,
+                int_time=int_time,
+                pri_lamp_tag=pri_lamp_tag
+                )
 
-    wvls = ssfr.util.get_nasa_ssfr_wavelength()
+    wvls = ssfr_toolbox.get_ssfr_wavelength()
 
     wvl_start = wvl_range[0]
     wvl_end   = wvl_range[-1]
