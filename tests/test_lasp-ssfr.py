@@ -22,7 +22,13 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import ssfr
 
 
-def test():
+def test_process_lasp_ssfr():
+
+    fdir = 'data/20221208_ssfr-lasp_pri-cal'
+
+    fnames = ssfr.util.get_all_files(fdir)
+    print(fnames)
+    sys.exit()
 
     fnames0 = {
             'dark':'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_75_150/20221208_spc00001.SKS',\
@@ -48,4 +54,4 @@ def test():
 
 if __name__ == '__main__':
 
-    test()
+    test_process_lasp_ssfr()

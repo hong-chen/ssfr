@@ -2,6 +2,7 @@ import os
 import glob
 import h5py
 import struct
+import fnmatch
 import pysolar
 from collections import OrderedDict
 import xml.etree.ElementTree as ET
@@ -14,6 +15,7 @@ import ssfr
 
 
 __all__ = [
+        'get_all_files',
         'if_file_exists',
         'cal_julian_day',
         'cal_solar_angles',
@@ -31,6 +33,14 @@ __all__ = [
 
 
 
+def get_all_files(fdir, pattern='*'):
+
+    fnames = []
+    for fdir_root, fdir_sub, fnames_tmp in os.walk(fdir):
+        for fname_tmp in fnames_tmp:
+            if fnmatch.fnmatch(fname_tmp, pattern):
+                fnames.append(os.path.join(fdir_root, fname_tmp))
+    return fnames
 
 def if_file_exists(fname, exitTag=True):
 
