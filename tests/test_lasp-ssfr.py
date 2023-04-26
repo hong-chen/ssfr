@@ -28,23 +28,21 @@ def test():
             'dark':'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_75_150/20221208_spc00001.SKS',\
             'cal' :'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_75_150/20221208_spc00002.SKS',
             }
-    int_time0 = {'si':75, 'in':150}
 
     fnames1 = {
             'dark':'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_250_500/20221208_spc00001.SKS',\
             'cal' :'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_250_500/20221208_spc00002.SKS',
             }
-    int_time1 = {'si':250, 'in':500}
 
     ssfr.vis.quicklook_ssfr_raw(fnames0['dark'], extra_tag='INT-TIME-075-150_')
-    ssfr.vis.quicklook_ssfr_raw(fnames0['cal'], extra_tag='INT-TIME-075-150_')
+    ssfr.vis.quicklook_ssfr_raw(fnames0['cal'] , extra_tag='INT-TIME-075-150_')
     ssfr.vis.quicklook_ssfr_raw(fnames1['dark'], extra_tag='INT-TIME-250-500_')
-    ssfr.vis.quicklook_ssfr_raw(fnames1['cal'], extra_tag='INT-TIME-250-500_')
+    ssfr.vis.quicklook_ssfr_raw(fnames1['cal'] , extra_tag='INT-TIME-250-500_')
 
-    data0_cal  = ssfr.lasp_ssfr.read_ssfr_raw(fnames0['cal'], verbose=False)
+    data0_cal  = ssfr.lasp_ssfr.read_ssfr_raw(fnames0['cal'] , verbose=False)
     data0_dark = ssfr.lasp_ssfr.read_ssfr_raw(fnames0['dark'], verbose=False)
 
-    data1_cal  = ssfr.lasp_ssfr.read_ssfr_raw(fnames1['cal'], verbose=False)
+    data1_cal  = ssfr.lasp_ssfr.read_ssfr_raw(fnames1['cal'] , verbose=False)
     data1_dark = ssfr.lasp_ssfr.read_ssfr_raw(fnames1['dark'], verbose=False)
 
 
