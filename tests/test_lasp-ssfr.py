@@ -34,10 +34,10 @@ def test():
             'cal' :'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_250_500/20221208_spc00002.SKS',
             }
 
-    ssfr.vis.quicklook_ssfr_raw(fnames0['dark'], extra_tag='INT-TIME-075-150_')
-    ssfr.vis.quicklook_ssfr_raw(fnames0['cal'] , extra_tag='INT-TIME-075-150_')
-    ssfr.vis.quicklook_ssfr_raw(fnames1['dark'], extra_tag='INT-TIME-250-500_')
-    ssfr.vis.quicklook_ssfr_raw(fnames1['cal'] , extra_tag='INT-TIME-250-500_')
+    ssfr.vis.quicklook_ssfr_raw(fnames0['dark'], extra_tag='Skywatch-test_075-150_')
+    ssfr.vis.quicklook_ssfr_raw(fnames0['cal'] , extra_tag='Skywatch-test_075-150_')
+    ssfr.vis.quicklook_ssfr_raw(fnames1['dark'], extra_tag='Skywatch-test_250-500_')
+    ssfr.vis.quicklook_ssfr_raw(fnames1['cal'] , extra_tag='Skywatch-test_250-500_')
 
     data0_cal  = ssfr.lasp_ssfr.read_ssfr_raw(fnames0['cal'] , verbose=False)
     data0_dark = ssfr.lasp_ssfr.read_ssfr_raw(fnames0['dark'], verbose=False)
