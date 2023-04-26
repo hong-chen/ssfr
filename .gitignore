@@ -16,6 +16,7 @@ build
 
 # tests
 *test*
+!tests/*.py
 
 # data files
 *old*
