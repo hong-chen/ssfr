@@ -22,11 +22,11 @@ import ssfr
 
 
 
-__all__ = ['quicklook_bokeh_ssfr', 'quicklook_bokeh_ssfr_and_spns']
+__all__ = ['quicklook_ssfr_raw', 'quicklook_bokeh_ssfr', 'quicklook_bokeh_ssfr_and_spns']
 
 
 
-def plot_ssfr_raw(
+def quicklook_ssfr_raw(
         fname,
         ichan=100,
         extra_tag='',
