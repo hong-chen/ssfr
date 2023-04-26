@@ -35,23 +35,26 @@ def plot_ssfr_raw(fname, ichan=100):
         ssfr_tag = 'NASA Ames SSFR'
         data0 = ssfr.nasa_ssfr.read_ssfr_raw(fname)
         wvls  = ssfr.nasa_ssfr.get_ssfr_wavelength()
+        y_range = [0, 2**6]
     elif file_ext.lower() in ['sks', 'sks2']:
         ssfr_tag = 'CU LASP SSFR'
         data0 = ssfr.lasp_ssfr.read_ssfr_raw(fname)
         wvls  = ssfr.lasp_ssfr.get_ssfr_wavelength()
+        y_range  = [-2**5, 2**5]
     else:
         msg = '\nError [plot_ssfr_raw]: Cannot recognize SSFR system from given file extension <.%s>.' % file_ext
         raise OSError(msg)
 
-    data0['spectra'] /= 1000.0
+    data0['spectra'] /= 2**10
     Nchan = data0['spectra'].shape[1]
     xx = np.arange(Nchan)
 
     # figure
     #/----------------------------------------------------------------------------\#
-    dtime_s = ssfr.util.jday_to_dtime(data0['jday'][0]).strftime('%Y-%m-%d %H:%M:%S')
-    dtime_e = ssfr.util.jday_to_dtime(data0['jday'][-1]).strftime('%Y-%m-%d %H:%M:%S')
-    info = 'Quicklook Plot for <%s>\n%s - %s from %s' % (filename, dtime_s, dtime_e, ssfr_tag)
+    dtime_s = ssfr.util.jday_to_dtime(data0['jday'][0])
+    dtime_e = ssfr.util.jday_to_dtime(data0['jday'][-1])
+    dtime_s_ = dtime_s.strftime('%Y-%m-%d')
+    info = 'Quicklook Plot for <%s> from %s on %s' % (filename, ssfr_tag, dtime_s_)
 
     logic_light = (data0['shutter'] == 0)
     logic_dark  = (data0['shutter'] == 1)
@@ -74,18 +77,22 @@ def plot_ssfr_raw(fname, ichan=100):
             yy  = np.nanmean(data0['spectra'][logic_light, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
             ax1.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
-            ax1.plot(xx, yy, color='r', lw=2.0)
+            ax1.plot(xx, yy, color='r', lw=1.0)
         if Ndark > 0:
             yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
             ax1.fill_between(xx, yy-yy_, yy+yy_, color='b', lw=0.0, alpha=0.3)
-            ax1.plot(xx, yy, color='b', lw=2.0)
+            ax1.plot(xx, yy, color='b', lw=1.0)
 
         ax1.axvline(ichan, color='k', ls=':')
         ax1.grid()
         ax1.set_title('Zenith Silicon', color='red')
         ax1.set_xlabel('Channel Number')
-        ax1.set_ylabel('Counts [$\\times 1000$]')
+        ax1.set_ylabel('Counts [$\\times 2^{10}$]')
+        ax1.set_xlim((-10, Nchan+10))
+        ax1.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
+        ax1.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         #\--------------------------------------------------------------/#
 
 
@@ -98,17 +105,21 @@ def plot_ssfr_raw(fname, ichan=100):
             yy  = np.nanmean(data0['spectra'][logic_light, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
             ax2.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
-            ax2.plot(xx, yy, color='r', lw=2.0)
+            ax2.plot(xx, yy, color='r', lw=1.0)
         if Ndark > 0:
             yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
             ax2.fill_between(xx, yy-yy_, yy+yy_, color='b', lw=0.0, alpha=0.3)
-            ax2.plot(xx, yy, color='b', lw=2.0)
+            ax2.plot(xx, yy, color='b', lw=1.0)
 
         ax2.axvline(ichan, color='k', ls=':')
         ax2.grid()
         ax2.set_title('Zenith InGaAs', color='blue')
         ax2.set_xlabel('Channel Number')
+        ax2.set_xlim((-10, Nchan+10))
+        ax2.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax2.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
+        ax2.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         #\--------------------------------------------------------------/#
 
         # Nadir Silicon
@@ -120,19 +131,22 @@ def plot_ssfr_raw(fname, ichan=100):
             yy  = np.nanmean(data0['spectra'][logic_light, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
             ax3.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
-            ax3.plot(xx, yy, color='r', lw=2.0)
+            ax3.plot(xx, yy, color='r', lw=1.0)
         if Ndark > 0:
             yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
             ax3.fill_between(xx, yy-yy_, yy+yy_, color='b', lw=0.0, alpha=0.3)
-            ax3.plot(xx, yy, color='b', lw=2.0)
+            ax3.plot(xx, yy, color='b', lw=1.0)
 
         ax3.axvline(ichan, color='k', ls=':')
         ax3.grid()
         ax3.set_title('Nadir Silicon', color='magenta')
         ax3.set_xlabel('Channel Number')
+        ax3.set_xlim((-10, Nchan+10))
+        ax3.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax3.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
+        ax3.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         #\--------------------------------------------------------------/#
-
 
 
         # Nadir InGaAs
@@ -144,18 +158,23 @@ def plot_ssfr_raw(fname, ichan=100):
             yy  = np.nanmean(data0['spectra'][logic_light, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
             ax4.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
-            ax4.plot(xx, yy, color='r', lw=2.0)
+            ax4.plot(xx, yy, color='r', lw=1.0)
         if Ndark > 0:
             yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
             ax4.fill_between(xx, yy-yy_, yy+yy_, color='b', lw=0.0, alpha=0.3)
-            ax4.plot(xx, yy, color='b', lw=2.0)
+            ax4.plot(xx, yy, color='b', lw=1.0)
 
         ax4.axvline(ichan, color='k', ls=':')
         ax4.grid()
         ax4.set_title('Nadir InGaAs', color='cyan')
         ax4.set_xlabel('Channel Number')
+        ax4.set_xlim((-10, Nchan+10))
+        ax4.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax4.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
+        ax4.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         #\--------------------------------------------------------------/#
+
 
         # time series
         #/--------------------------------------------------------------\#
@@ -165,18 +184,34 @@ def plot_ssfr_raw(fname, ichan=100):
         ax5.plot(data0['jday'], data0['spectra'][:, ichan, 2], color='magenta')
         ax5.plot(data0['jday'], data0['spectra'][:, ichan, 3], color='cyan')
 
-        ax5.set_ylabel('Counts [$\\times 1000$]')
+        xticks = data0['jday'][::10]
+        xticklabels = [ssfr.util.jday_to_dtime(jday0).strftime('%H:%M:%S') for jday0 in xticks]
+        ax5.set_xticks(xticks)
+        ax5.set_xticklabels(xticklabels, ha='right', rotation=30)
+        ax5.set_title('Time Series at Channel #%d' % ichan)
+        ax5.set_xlabel('UTC Time')
+        ax5.set_ylabel('Counts [$\\times 2^{10}$]')
+        ax5.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax5.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        ax5.grid()
+
+        patches_legend = [
+                         mpatches.Patch(color='red'    , label='Zenith Silicon'), \
+                         mpatches.Patch(color='blue'   , label='Zenith InGaAs'), \
+                         mpatches.Patch(color='magenta', label='Nadir Silicon'), \
+                         mpatches.Patch(color='cyan'   , label='Nadir InGaAs'), \
+                         ]
+        ax5.legend(handles=patches_legend, loc='best', fontsize=12)
         #\--------------------------------------------------------------/#
+
 
         #\--------------------------------------------------------------/#
         # save figure
         #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        fig.subplots_adjust(hspace=0.4, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig(filename.replace(file_ext, 'png'), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
     #\----------------------------------------------------------------------------/#
 
 
