@@ -212,7 +212,7 @@ def plot_ssfr_raw(
                          mpatches.Patch(color='magenta', label='Nadir Silicon'), \
                          mpatches.Patch(color='cyan'   , label='Nadir InGaAs'), \
                          ]
-        ax5.legend(handles=patches_legend, loc='best', fontsize=12)
+        ax5.legend(handles=patches_legend, loc='upper left', fontsize=12)
         #\--------------------------------------------------------------/#
 
 
