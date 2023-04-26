@@ -90,7 +90,7 @@ def quicklook_ssfr_raw(
 
         ax1.axvline(ichan, color='k', ls=':')
         ax1.grid()
-        ax1.set_title('Zenith Silicon', color='red')
+        ax1.set_title('Zenith Silicon (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='red')
         ax1.set_xlabel('Channel Number')
         ax1.set_ylabel('Counts [$\\times 2^{10}$]')
         ax1.set_xlim((-10, Nchan+10))
@@ -118,7 +118,7 @@ def quicklook_ssfr_raw(
 
         ax2.axvline(ichan, color='k', ls=':')
         ax2.grid()
-        ax2.set_title('Zenith InGaAs', color='blue')
+        ax2.set_title('Zenith InGaAs (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='blue')
         ax2.set_xlabel('Channel Number')
         ax2.set_xlim((-10, Nchan+10))
         ax2.set_ylim((y_range[0]-2, y_range[-1]+2))
@@ -144,7 +144,7 @@ def quicklook_ssfr_raw(
 
         ax3.axvline(ichan, color='k', ls=':')
         ax3.grid()
-        ax3.set_title('Nadir Silicon', color='magenta')
+        ax3.set_title('Nadir Silicon (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='magenta')
         ax3.set_xlabel('Channel Number')
         ax3.set_xlim((-10, Nchan+10))
         ax3.set_ylim((y_range[0]-2, y_range[-1]+2))
@@ -171,7 +171,7 @@ def quicklook_ssfr_raw(
 
         ax4.axvline(ichan, color='k', ls=':')
         ax4.grid()
-        ax4.set_title('Nadir InGaAs', color='cyan')
+        ax4.set_title('Nadir InGaAs (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='cyan')
         ax4.set_xlabel('Channel Number')
         ax4.set_xlim((-10, Nchan+10))
         ax4.set_ylim((y_range[0]-2, y_range[-1]+2))
@@ -223,6 +223,9 @@ def quicklook_ssfr_raw(
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         fig.savefig('%s%s' % (extra_tag, filename.replace(file_ext, 'png')), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
+
+        plt.show()
+        sys.exit()
     #\----------------------------------------------------------------------------/#
 
 
