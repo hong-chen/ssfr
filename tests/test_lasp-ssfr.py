@@ -75,54 +75,28 @@ def cdata_rad_resp(
 
 def test():
 
-    fnames = {
+    fnames0 = {
             'dark':'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_75_150/20221208_spc00001.SKS',\
             'cal' :'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_75_150/20221208_spc00002.SKS',
             }
-    int_time = {'si':75, 'in':150}
-    # ssfr.vis.plot_ssfr_raw(fnames['dark'])
-    # ssfr.vis.plot_ssfr_raw(fnames['cal'])
+    int_time0 = {'si':75, 'in':150}
 
-    # fnames = {
-    #         'dark':'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_250_500/20221208_spc00001.SKS',\
-    #         'cal' :'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_250_500/20221208_spc00002.SKS',
-    #         }
-    # int_time = {'si':250, 'in':500}
+    fnames1 = {
+            'dark':'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_250_500/20221208_spc00001.SKS',\
+            'cal' :'data/20221208_ssfr-lasp_pri-cal/20221208_CALIBRATION_250_500/20221208_spc00002.SKS',
+            }
+    int_time1 = {'si':250, 'in':500}
 
-    ssfr.vis.plot_ssfr_raw(fnames['dark'])
-    ssfr.vis.plot_ssfr_raw(fnames['cal'])
-    sys.exit()
+    ssfr.vis.plot_ssfr_raw(fnames0['dark'])
+    ssfr.vis.plot_ssfr_raw(fnames0['cal'])
+    ssfr.vis.plot_ssfr_raw(fnames1['dark'])
+    ssfr.vis.plot_ssfr_raw(fnames1['cal'])
 
+    data0_cal  = ssfr.lasp_ssfr.read_ssfr_raw(fnames0['cal'], verbose=False)
+    data0_dark = ssfr.lasp_ssfr.read_ssfr_raw(fnames0['dark'], verbose=False)
 
-    # resp = ssfr.cal.cdata_rad_resp(
-    #         fnames,
-    #         which_ssfr='lasp',
-    #         which_lc='zenith',
-    #         int_time=int_time
-    #         )
-
-    data0 = ssfr.lasp_ssfr.read_ssfr_raw(fnames['cal'], verbose=False)
-
-    data1 = ssfr.lasp_ssfr.read_ssfr_raw(fnames['dark'], verbose=False)
-
-    # print(data0['shutter'])
-    # print(data1['shutter'])
-    # print(data0['jday_cRIO'])
-    # print(data1['jday_cRIO'])
-    print(ssfr.util.jday_to_dtime(data0['jday_cRIO'][-1]))
-    print(ssfr.util.jday_to_dtime(data0['jday_ARINC'][-1]))
-    # print(data1['jday_cRIO'])
-    # print(np.unique(data0['int_time'][:, 0]))
-    # print(np.unique(data0['int_time'][:, 1]))
-    # print(np.unique(data0['int_time'][:, 2]))
-    # print(np.unique(data0['int_time'][:, 3]))
-
-    # print(np.unique(data1['int_time'][:, 0]))
-    # print(np.unique(data1['int_time'][:, 1]))
-    # print(np.unique(data1['int_time'][:, 2]))
-    # print(np.unique(data1['int_time'][:, 3]))
-
-    pass
+    data1_cal  = ssfr.lasp_ssfr.read_ssfr_raw(fnames1['cal'], verbose=False)
+    data1_dark = ssfr.lasp_ssfr.read_ssfr_raw(fnames1['dark'], verbose=False)
 
 
 if __name__ == '__main__':

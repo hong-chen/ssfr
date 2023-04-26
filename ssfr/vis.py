@@ -26,7 +26,11 @@ __all__ = ['quicklook_bokeh_ssfr', 'quicklook_bokeh_ssfr_and_spns']
 
 
 
-def plot_ssfr_raw(fname, ichan=100):
+def plot_ssfr_raw(
+        fname,
+        ichan=100,
+        extra_tag='',
+        ):
 
     filename = os.path.basename(fname)
     file_ext = filename.split('.')[-1]
@@ -217,7 +221,7 @@ def plot_ssfr_raw(fname, ichan=100):
         #/--------------------------------------------------------------\#
         fig.subplots_adjust(hspace=0.4, wspace=0.3)
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig(filename.replace(file_ext, 'png'), bbox_inches='tight', metadata=_metadata)
+        fig.savefig('%s%s' % (extra_tag, filename.replace(file_ext, 'png')), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
