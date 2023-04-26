@@ -13,8 +13,21 @@ import ssfr
 
 
 
-__all__ = ['if_file_exists', 'cal_julian_day', 'cal_solar_angles', 'prh2za', 'muslope', 'dtime_to_jday', 'jday_to_dtime', \
-           'load_h5', 'save_h5', 'cal_time_offset', 'cal_weighted_flux', 'read_ict', 'write_ict', 'read_iwg']
+__all__ = [
+        'if_file_exists',
+        'cal_julian_day',
+        'cal_solar_angles',
+        'prh2za',
+        'muslope',
+        'dtime_to_jday',
+        'jday_to_dtime',
+        'load_h5',
+        'save_h5',
+        'cal_weighted_flux',
+        'read_ict',
+        'write_ict',
+        'read_iwg'
+        ]
 
 
 
@@ -157,10 +170,6 @@ def save_h5(fname, data):
     f.close()
 
     print('Message [save_h5]: Data has been successfully saved into \'%s\'.' % fname)
-
-def cal_time_offset(time, data, time_ref, data_ref):
-
-    pass
 
 def cal_weighted_flux(wvl, data_wvl, data_flux, slit_func_file=None, wvl_join=950.0):
 
