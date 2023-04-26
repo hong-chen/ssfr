@@ -59,8 +59,9 @@ def read_ssfr_raw(fname, headLen=0, dataLen=2124, verbose=False):
 
     How to use:
     fname = '/some/path/2015022000001.OSA2'
-    spectra, shutter, int_time, temp, jday, qual_flag, iterN = read_ssfr_raw(fname, verbose=False)
+    data0 = read_ssfr_raw(fname, verbose=False)
 
+    data0 contains the following variables:
     spectra  (numpy array)[N/A]    : counts of Silicon and InGaAs for both zenith and nadir
     shutter  (numpy array)[N/A]    : shutter status (1:closed(dark), 0:open(light))
     int_time (numpy array)[ms]     : integration time of Silicon and InGaAs for both zenith and nadir
