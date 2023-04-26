@@ -21,57 +21,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import ssfr
 
-def cdata_rad_resp(
-        fdir_lab,
-        fdir_field=None,
-        plot=True,
-        intTime={'si':60, 'in':300},
-        field_lamp_tag='150',
-        ):
-
-    dirs = get_sub_dir(fdir_lab, full=False)
-
-    if len(dirs) != 2:
-        sys.exit('Error [cdata_rad_resp_camp2ex]: Incomplete lab radiometric calibration dataset.')
-
-    if field_lamp_tag in dirs[0]:
-        index_tra = 0
-        index_pri = 1
-    elif field_lamp_tag in dirs[1]:
-        index_tra = 1
-        index_pri = 0
-    else:
-        sys.exit('Error [cdata_rad_resp_camp2ex]: Cannot locate lab radiometric calibration for field lamp.')
-
-    fdir_tra = '%s/%s' % (fdir_lab, dirs[index_tra])
-    fdir_pri = '%s/%s' % (fdir_lab, dirs[index_pri])
-
-    if fdir_field is None:
-        fdir_field = fdir_tra
-    else:
-        fdir_field = get_sub_dir(fdir_field, full=True, contains=[field_lamp_tag])[0]
-
-    filename_tag0 = '%s/%s_%s' % (os.path.dirname(fdir_lab), os.path.basename(fdir_lab).replace('_', '-'), os.path.basename(os.path.dirname(fdir_field)).replace('_', '-'))
-
-    lc_all = get_sub_dir(fdir_field, full=False, contains=['zenith', 'nadir'])
-
-    for lc in lc_all:
-
-        fnames_pri = {'dark':'%s/%s/s%di%d/dark/spc00000.OSA2' % (fdir_pri, lc, intTime['si'], intTime['in']),\
-                      'cal' :'%s/%s/s%di%d/cal/spc00000.OSA2'  % (fdir_pri, lc, intTime['si'], intTime['in'])}
-        fnames_tra = {'dark':'%s/%s/s%di%d/dark/spc00000.OSA2' % (fdir_tra, lc, intTime['si'], intTime['in']),\
-                      'cal' :'%s/%s/s%di%d/cal/spc00000.OSA2'  % (fdir_tra, lc, intTime['si'], intTime['in'])}
-        fnames_sec = {'dark':'%s/%s/s%di%d/dark/spc00000.OSA2' % (fdir_field, lc, intTime['si'], intTime['in']),\
-                      'cal' :'%s/%s/s%di%d/cal/spc00000.OSA2'  % (fdir_field, lc, intTime['si'], intTime['in'])}
-
-        which = lc.split('_')[0]
-        filename_tag = '%s_%s' % (filename_tag0, lc.replace('_', '-'))
-        pri_lamp_tag = 'f-%s' % (os.path.basename(fdir_pri)).lower()
-        fname_cal = cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, filename_tag=filename_tag, which=which, wvl_join=950.0, wvl_start=350.0, wvl_end=2200.0, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
-
-        if plot:
-            plot_rad_resp_camp2ex(fname_cal)
-
 
 def test():
 
