@@ -195,6 +195,13 @@ def plot_ssfr_raw(fname, ichan=100):
         ax5.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         ax5.grid()
 
+        if Ndark > 0:
+            yy_min = np.repeat(y_range[0]-2.0, data0['jday'].size)
+            yy_min[logic_light] = np.nan
+            yy_max = np.repeat(y_range[-1]+2.0, data0['jday'].size)
+            yy_max[logic_light] = np.nan
+            ax5.fill_between(data0['jday'], yy_min, yy_max, color='k', lw=0.0, alpha=0.2, zorder=0)
+
         patches_legend = [
                          mpatches.Patch(color='red'    , label='Zenith Silicon'), \
                          mpatches.Patch(color='blue'   , label='Zenith InGaAs'), \
