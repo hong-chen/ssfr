@@ -2,6 +2,7 @@ import os
 import glob
 import h5py
 import struct
+import warnings
 import pysolar
 from collections import OrderedDict
 import xml.etree.ElementTree as ET
@@ -71,21 +72,24 @@ def read_ssfr_raw(fname, headLen=0, dataLen=2124, verbose=False):
     by Hong Chen (hong.chen@lasp.colorado.edu), Sebastian Schmidt (sebastian.schmidt@lasp.colorado.edu)
     '''
 
-    if_file_exists(fname, exitTag=True)
+    ssfr.util.if_file_exists(fname, exitTag=True)
 
     filename = os.path.basename(fname)
     filetype = filename.split('.')[-1].lower()
     if filetype != 'osa2':
-        exit('Error   [read_ssfr_raw]: Do not support \'%s\'.' % filetype)
+        msg = '\nError [read_ssfr_raw]: Do not support <%s>.' % filetype
+        raise OSError(msg)
 
     fileSize = os.path.getsize(fname)
     if fileSize > headLen:
         iterN   = (fileSize-headLen) // dataLen
         residual = (fileSize-headLen) %  dataLen
         if residual != 0:
-            print('Warning [read_ssfr_raw]: %s contains unreadable data, omit the last data record...' % fname)
+            msg = '\nWarning [read_ssfr_raw]: <%s> contains unreadable data, omit the last data record...' % fname
+            warnings.warn(msg)
     else:
-        exit('Error [read_ssfr_raw]: %s has invalid file size.' % fname)
+        msg = '\nError [read_ssfr_raw]: <%s> has invalid file size.' % fname
+        raise OSError(msg)
 
     spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
     shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
@@ -145,6 +149,7 @@ def read_ssfr_raw(fname, headLen=0, dataLen=2124, verbose=False):
         'qual_flag' : qual_flag,
             'iterN' : iterN,
             }
+
     return data_
 
 class read_ssfr:
