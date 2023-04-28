@@ -1,5 +1,5 @@
 import sys
-from collections import OrderedDict
+import warnings
 import numpy as np
 from scipy import stats
 
@@ -18,20 +18,20 @@ def dark_corr(
         darkThr=5,
         shutterMode={'open':0, 'close':1},
         fillValue=np.nan,
-        verbose=False):
+        verbose=False
+        ):
 
     if x0.size != shutter0.size:
-        sys.exit('Error   [dark_corr]: \'shutter0.size\' does not match \'x0.size\'.')
-
+        msg = '\nError [dark_corr]: <shuttr0.size> does not match <x0.size>.'
+        raise OSError(msg)
 
     if data0.ndim == 1:
-
         Nx = data0.size
         if Nx != x0.size:
-            sys.exit('Error   [dark_corr]: \'data0.size\' does not match \'x0.size\'.')
+            msg = '\nError [dark_corr]: <data0.size> does not match <x0.size>.'
+            raise OSError(msg)
 
     elif data0.ndim == 2:
-
         swapAxis = False
         Nx, Ny = data0.shape
         if Nx != x0.size:
@@ -40,7 +40,8 @@ def dark_corr(
                 swapAxis = True
                 Nx, Ny = data0.shape
             else:
-                sys.exit('Error   [dark_corr]: None of the axis in \'data0.shape\' match the \'x0.size\'.')
+                msg = '\nError [dark_corr]: None of the axis in <data0.size> match <x0.size>.'
+                raise OSError(msg)
 
     x       = x0.copy()
     shutter = shutter0.copy()
@@ -75,7 +76,8 @@ def dark_corr(
         shutter0_uni = np.unique(shutter0)
 
         if shutter0_uni.size != 1:
-            sys.exit('Error   [dark_corr]: The break indices are wrong.')
+            msg = '\nError [dark_corr]: The break indices are wrong.'
+            raise ValueError(msg)
 
         if shutter0_uni[0] == shutterMode['open']:
             index_l = max([0, index_l0+lightExtend])
@@ -101,8 +103,8 @@ def dark_corr(
     mode          = mode.lower()
     shutter_modes = np.unique(shutter)
     if (shutter_modes.size == 1) and (mode != 'mean'):
-        print('Warning [dark_corr]: Only one light/dark cycle is detected, change \'mode="%s"\' to \'mode="mean"\'.' % mode)
-        mode = 'mean'
+        msg = '\nWarning [dark_corr]: Only one light/dark cycle is detected, change <mode=%s> to <mode=mean>.' % mode
+        warnings.warn(msg)
 
     if mode == 'mean':
 
@@ -139,7 +141,8 @@ def dark_corr(
                         data_corr[crange[0]:crange[1], iChan] = data[crange[0]:crange[1], iChan] - dark_offset
 
     else:
-        sys.exit('Error   [dark_corr]: \'%s\' has not been implemented yet.' % mode)
+        msg = '\nError [dark_corr]: <mode=%s> has not been implemented yet.' % mode
+        raise OSError(msg)
 
     shutter[logic_bad] = -1
     if swapAxis:

@@ -1,4 +1,5 @@
 import os
+import sys
 import glob
 import struct
 import warnings
@@ -187,8 +188,10 @@ class read_ssfr:
             fnames,
             Ndata=600,
             whichTime='arinc',
-            timeOffset=0.0,
-            dark_corr_mode='interp'
+            time_offset=0.0,
+            process=True,
+            dark_corr_mode='interp',
+            verbose=False,
             ):
 
         '''
@@ -196,17 +199,42 @@ class read_ssfr:
         fnames    : list of SSFR files to read
         Ndata     : pre-defined number of data records, any number larger than the "number of data records per file" will work
         whichTime : "ARINC" or "cRIO"
-        timeOffset: time offset in [seconds]
+        time_offset: time offset in [seconds]
         '''
 
+        # input check
+        #/----------------------------------------------------------------------------\#
         if not isinstance(fnames, list):
-            exit("Error [read_ssfr]: input variable 'fnames' should be a Python list.")
+            msg = '\nError [read_ssfr]: Input variable <fnames> should be a Python list.'
+            raise OSError(msg)
 
         if len(fnames) == 0:
-            exit("Error [read_ssfr]: input variable 'fnames' is empty.")
+            msg = 'Error [read_ssfr]: input variable <fnames> is empty.'
+            raise OSError(msg)
+        #\----------------------------------------------------------------------------/#
 
-        # +
+
         # read in all the data
+        # after the following process, the object will contain
+        #   self.data_raw['ssfr_tag']
+        #   self.data_raw['fnames']
+        #   self.data_raw['comment']
+        #   self.data_raw['spectra']
+        #   self.data_raw['shutter']
+        #   self.data_raw['int_time']
+        #   self.data_raw['temp']
+        #   self.data_raw['jday_ARINC']
+        #   self.data_raw['jday_cRIO']
+        #   self.data_raw['qual_flag']
+        #   self.data_raw['jday']
+        #   self.data_raw['tmhr']
+        #   self.data_raw['jday_corr']
+        #   self.data_raw['tmhr_corr']
+        #/----------------------------------------------------------------------------\#
+        self.data_raw = {}
+        self.data_raw['ssfr_tag'] = 'CU LASP SSFR'
+        self.data_raw['fnames']   = fnames
+
         Nx         = Ndata * len(fnames)
         comment    = []
         spectra    = np.zeros((Nx, 256, 4), dtype=np.float64)
@@ -220,7 +248,7 @@ class read_ssfr:
         Nstart = 0
         for fname in fnames:
 
-            data0 = read_ssfr_raw(fname, verbose=False)
+            data0 = read_ssfr_raw(fname, verbose=verbose)
 
             Nend = data0['iterN'] + Nstart
 
@@ -235,47 +263,97 @@ class read_ssfr:
 
             Nstart = Nend
 
-        self.comment    = comment
-        self.spectra    = spectra[:Nend, ...]
-        self.shutter    = shutter[:Nend, ...]
-        self.int_time   = int_time[:Nend, ...]
-        self.temp       = temp[:Nend, ...]
-        self.jday_ARINC = jday_ARINC[:Nend, ...]
-        self.jday_cRIO  = jday_cRIO[:Nend, ...]
-        self.qual_flag  = qual_flag[:Nend, ...]
+        self.data_raw['comment']    = comment
+        self.data_raw['spectra']    = spectra[:Nend, ...]
+        self.data_raw['shutter']    = shutter[:Nend, ...]
+        self.data_raw['int_time']   = int_time[:Nend, ...]
+        self.data_raw['temp']       = temp[:Nend, ...]
+        self.data_raw['jday_a'] = jday_ARINC[:Nend, ...]
+        self.data_raw['jday_c']  = jday_cRIO[:Nend, ...]
+        self.data_raw['qual_flag']  = qual_flag[:Nend, ...]
 
         if whichTime.lower() == 'arinc':
-            self.jday = self.jday_ARINC.copy()
+            self.data_raw['jday'] = self.data_raw['jday_a'].copy()
         elif whichTime.lower() == 'crio':
-            self.jday = self.jday_cRIO.copy()
-        self.tmhr = (self.jday - int(self.jday[0])) * 24.0
+            self.data_raw['jday'] = self.data_raw['jday_c'].copy()
+        self.data_raw['tmhr'] = (self.data_raw['jday'] - int(self.data_raw['jday'][0])) * 24.0
 
-        self.jday_corr = self.jday.copy() + float(timeOffset)/86400.0
-        self.tmhr_corr = self.tmhr.copy() + float(timeOffset)/3600.0
-        # -
+        self.data_raw['jday_corr'] = self.data_raw['jday'] + float(time_offset)/86400.0
+        self.data_raw['tmhr_corr'] = self.data_raw['tmhr'] + float(time_offset)/3600.0
+        #\----------------------------------------------------------------------------/#
 
-        self.port_info     = {0:'Zenith Silicon', 1:'Zenith InGaAs', 2:'Nadir Silicon', 3:'Nadir InGaAs'}
-        self.int_time_info = {}
-        # +
-        # dark correction (light-dark)
-        # variable name: self.spectra_dark_corr
-        fillValue = np.nan
-        self.fillValue = fillValue
-        self.spectra_dark_corr      = self.spectra.copy()
-        self.spectra_dark_corr[...] = fillValue
-        for iSen in range(4):
-            intTimes = np.unique(self.int_time[:, iSen])
-            self.int_time_info[self.port_info[iSen]] = intTimes
-            for intTime in intTimes:
-                indices = np.where(self.int_time[:, iSen]==intTime)[0]
-                self.spectra_dark_corr[indices, :, iSen] = ssfr.corr.dark_corr(self.tmhr[indices], self.shutter[indices], self.spectra[indices, :, iSen], mode=dark_corr_mode, fillValue=fillValue)
-        # -
+
+        # process data
+        #/----------------------------------------------------------------------------\#
+        if process:
+            self.process_data(dark_corr_mode=dark_corr_mode)
+        #\----------------------------------------------------------------------------/#
+
+    def process_data(
+            self,
+            dark_corr_mode='interp',
+            fill_value=np.nan,
+            ):
+
+        int_time_ = np.unique(self.data_raw['int_time'], axis=0)
+        Nt, Np = int_time_.shape
+        self.Ndata = Nt
+
+        # split data for different pairs of integration times
+        # after the following process, the object will contain
+        #   self.data0, self.data1 ...
+        #
+        #   with the same data variables contained in self.data_raw but with additions of
+        #   self.data0['int_time_info']
+        #   self.data0['shutter_dark_corr'], where -1 is data excluded during dark correction
+        #   self.data0['spectra_dark_corr']
+        #/----------------------------------------------------------------------------\#
+        for it in range(Nt):
+
+            data = {}
+            data_name = 'data%d' % it
+
+            int_time_info = {
+                    'Zenith Silicon': int_time_[it, 0],
+                     'Zenith InGaAs': int_time_[it, 1],
+                     'Nadir Silicon': int_time_[it, 2],
+                      'Nadir InGaAs': int_time_[it, 3],
+                    }
+
+            # split data by integration times
+            #/----------------------------------------------------------------------------\#
+            logic = self.data_raw['int_time'][:, 0] == int_time_[it, 0]
+            for vname in self.data_raw.keys():
+                if vname in ['ssfr_tag', 'fnames', 'comment']:
+                    data[vname] = self.data_raw[vname]
+                else:
+                    data[vname] = self.data_raw[vname][logic, ...]
+            data['int_time_info'] = int_time_info
+            #\----------------------------------------------------------------------------/#
+
+            # dark correction (light-dark)
+            # variable name: self.spectra_dark_corr
+            #/----------------------------------------------------------------------------\#
+            spectra_dark_corr = data['spectra'].copy()
+            spectra_dark_corr[...] = fill_value
+            for ip in range(Np):
+                shutter_dark_corr, spectra_dark_corr[:, :, ip] = ssfr.corr.dark_corr(data['tmhr'], data['shutter'], data['spectra'][:, :, ip], mode=dark_corr_mode, fillValue=fill_value)
+
+            data['shutter_dark_corr'] = shutter_dark_corr
+            data['spectra_dark_corr'] = spectra_dark_corr
+            #\----------------------------------------------------------------------------/#
+
+            setattr(self, data_name, data)
+        #\----------------------------------------------------------------------------/#
 
     def count_to_radiation(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0, whichRadiation={'zenith':'radiance', 'nadir':'irradiance'}, wvlRange=[350, 2100]):
 
         """
         Convert digital count to radiation (radiance or irradiance)
         """
+
+        msg = 'Error [read_ssfr]: Under development ...'
+        raise OSError(msg)
 
         self.whichRadiation = whichRadiation
 

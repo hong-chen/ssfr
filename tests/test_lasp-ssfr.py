@@ -27,8 +27,13 @@ def test_process_lasp_ssfr():
     fnames = ssfr.util.get_all_files(fdir)
 
     for fname in fnames:
-        data0 = ssfr.lasp_ssfr.read_ssfr_raw(fname, verbose=False)
-        ssfr.vis.quicklook_ssfr_raw(fname, extra_tag='%s_' % fname.split('/')[-2])
+        ssfr0 = ssfr.lasp_ssfr.read_ssfr([fname], dark_corr_mode='interp')
+
+        for i in range(ssfr0.Ndata):
+            dset = 'data%d' % i
+            extra_tag = '%s_dset-%d_' % (fname.split('/')[-2], i)
+            data0 = getattr(ssfr0, dset)
+            ssfr.vis.quicklook_ssfr_raw(data0, extra_tag=extra_tag)
 
 
 if __name__ == '__main__':

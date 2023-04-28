@@ -27,22 +27,20 @@ __all__ = ['quicklook_ssfr_raw', 'quicklook_bokeh_ssfr', 'quicklook_bokeh_ssfr_a
 
 
 def quicklook_ssfr_raw(
-        fname,
+        data0,
         ichan=100,
         extra_tag='',
+        plot_corr=False,
         ):
 
-    filename = os.path.basename(fname)
+    filename = os.path.basename(data0['fnames'][0])
     file_ext = filename.split('.')[-1]
+    ssfr_tag = data0['ssfr_tag']
 
-    if file_ext.lower() in ['osa2', 'osa']:
-        ssfr_tag = 'NASA Ames SSFR'
-        data0 = ssfr.nasa_ssfr.read_ssfr_raw(fname)
+    if ssfr_tag == 'NASA Ames SSFR':
         wvls  = ssfr.nasa_ssfr.get_ssfr_wavelength()
-        y_range = [0, 2**6]
-    elif file_ext.lower() in ['sks', 'sks2']:
-        ssfr_tag = 'CU LASP SSFR'
-        data0 = ssfr.lasp_ssfr.read_ssfr_raw(fname)
+        y_range = [0, 2**5]
+    elif ssfr_tag == 'CU LASP SSFR':
         wvls  = ssfr.lasp_ssfr.get_ssfr_wavelength()
         y_range  = [-2**5, 2**5]
     else:
@@ -58,7 +56,7 @@ def quicklook_ssfr_raw(
     dtime_s = ssfr.util.jday_to_dtime(data0['jday'][0])
     dtime_e = ssfr.util.jday_to_dtime(data0['jday'][-1])
     dtime_s_ = dtime_s.strftime('%Y-%m-%d')
-    info = 'Quicklook Plot for <%s> from %s on %s' % (filename, ssfr_tag, dtime_s_)
+    info = 'Quicklook Plot for <%s...> from %s on %s' % (filename, data0['ssfr_tag'], dtime_s_)
 
     logic_light = (data0['shutter'] == 0)
     logic_dark  = (data0['shutter'] == 1)
@@ -82,6 +80,15 @@ def quicklook_ssfr_raw(
             yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
             ax1.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
             ax1.plot(xx, yy, color='r', lw=1.0)
+
+            vname = 'spectra_dark_corr'
+            if vname in data0.keys() and plot_corr:
+                logic_light_ = data0['shutter_dark_corr'] == 0
+                yy  = np.nanmean(data0[vname][logic_light_, :, index], axis=0)
+                yy_ = np.nanstd(data0[vname][logic_light_, :, index], axis=0)
+                ax1.fill_between(xx, yy-yy_, yy+yy_, color='g', lw=0.0, alpha=0.3)
+                ax1.plot(xx, yy, color='g', lw=1.0)
+
         if Ndark > 0:
             yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
@@ -110,6 +117,15 @@ def quicklook_ssfr_raw(
             yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
             ax2.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
             ax2.plot(xx, yy, color='r', lw=1.0)
+
+            vname = 'spectra_dark_corr'
+            if vname in data0.keys() and plot_corr:
+                logic_light_ = data0['shutter_dark_corr'] == 0
+                yy  = np.nanmean(data0[vname][logic_light_, :, index], axis=0)
+                yy_ = np.nanstd(data0[vname][logic_light_, :, index], axis=0)
+                ax2.fill_between(xx, yy-yy_, yy+yy_, color='g', lw=0.0, alpha=0.3)
+                ax2.plot(xx, yy, color='g', lw=1.0)
+
         if Ndark > 0:
             yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
@@ -136,6 +152,15 @@ def quicklook_ssfr_raw(
             yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
             ax3.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
             ax3.plot(xx, yy, color='r', lw=1.0)
+
+            vname = 'spectra_dark_corr'
+            if vname in data0.keys() and plot_corr:
+                logic_light_ = data0['shutter_dark_corr'] == 0
+                yy  = np.nanmean(data0[vname][logic_light_, :, index], axis=0)
+                yy_ = np.nanstd(data0[vname][logic_light_, :, index], axis=0)
+                ax3.fill_between(xx, yy-yy_, yy+yy_, color='g', lw=0.0, alpha=0.3)
+                ax3.plot(xx, yy, color='g', lw=1.0)
+
         if Ndark > 0:
             yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
@@ -163,6 +188,15 @@ def quicklook_ssfr_raw(
             yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
             ax4.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
             ax4.plot(xx, yy, color='r', lw=1.0)
+
+            vname = 'spectra_dark_corr'
+            if vname in data0.keys() and plot_corr:
+                logic_light_ = data0['shutter_dark_corr'] == 0
+                yy  = np.nanmean(data0[vname][logic_light_, :, index], axis=0)
+                yy_ = np.nanstd(data0[vname][logic_light_, :, index], axis=0)
+                ax4.fill_between(xx, yy-yy_, yy+yy_, color='g', lw=0.0, alpha=0.3)
+                ax4.plot(xx, yy, color='g', lw=1.0)
+
         if Ndark > 0:
             yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
             yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
