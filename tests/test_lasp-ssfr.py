@@ -29,6 +29,11 @@ def test_process_lasp_ssfr():
     for fname in fnames:
         ssfr0 = ssfr.lasp_ssfr.read_ssfr([fname], dark_corr_mode='interp')
 
+        dset = 'data_raw'
+        extra_tag = '%s_dset-raw_' % (fname.split('/')[-2])
+        data0 = getattr(ssfr0, dset)
+        ssfr.vis.quicklook_ssfr_raw(data0, extra_tag=extra_tag)
+
         for i in range(ssfr0.Ndata):
             dset = 'data%d' % i
             extra_tag = '%s_dset-%d_' % (fname.split('/')[-2], i)
