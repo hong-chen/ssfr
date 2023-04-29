@@ -33,9 +33,9 @@ def quicklook_ssfr_raw(
         plot_corr=False,
         ):
 
-    filename = os.path.basename(data0['fnames'][0])
+    filename = os.path.basename(data0['general_info']['fnames'][0])
     file_ext = filename.split('.')[-1]
-    ssfr_tag = data0['ssfr_tag']
+    ssfr_tag = data0['general_info']['ssfr_tag']
 
     if ssfr_tag == 'NASA Ames SSFR':
         wvls  = ssfr.nasa_ssfr.get_ssfr_wavelength()
@@ -56,7 +56,7 @@ def quicklook_ssfr_raw(
     dtime_s = ssfr.util.jday_to_dtime(data0['jday'][0])
     dtime_e = ssfr.util.jday_to_dtime(data0['jday'][-1])
     dtime_s_ = dtime_s.strftime('%Y-%m-%d')
-    info = 'Quicklook Plot for <%s...> from %s on %s' % (filename, data0['ssfr_tag'], dtime_s_)
+    info = 'Quicklook Plot for <%s...> from %s on %s' % (filename, ssfr_tag, dtime_s_)
 
     logic_light = (data0['shutter'] == 0)
     logic_dark  = (data0['shutter'] == 1)

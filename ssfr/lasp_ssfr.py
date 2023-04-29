@@ -45,6 +45,9 @@ def get_ssfr_wavelength(chanNum=256):
 
     return wvl_dict
 
+
+
+
 def read_ssfr_raw(
         fname,
         headLen=148,
@@ -181,6 +184,9 @@ def read_ssfr_raw(
 
     return data_
 
+
+
+
 class read_ssfr:
 
     def __init__(
@@ -232,8 +238,10 @@ class read_ssfr:
         #   self.data_raw['tmhr_corr']
         #/----------------------------------------------------------------------------\#
         self.data_raw = {}
-        self.data_raw['ssfr_tag'] = 'CU LASP SSFR'
-        self.data_raw['fnames']   = fnames
+
+        self.data_raw['general_info']  = {}
+        self.data_raw['general_info']['ssfr_tag'] = 'CU LASP SSFR'
+        self.data_raw['general_info']['fnames']   = fnames
 
         Nx         = Ndata * len(fnames)
         comment    = []
@@ -263,7 +271,7 @@ class read_ssfr:
 
             Nstart = Nend
 
-        self.data_raw['comment']    = comment
+        self.data_raw['general_info']['comment'] = comment
         self.data_raw['spectra']    = spectra[:Nend, ...]
         self.data_raw['shutter']    = shutter[:Nend, ...]
         self.data_raw['int_time']   = int_time[:Nend, ...]
@@ -324,11 +332,11 @@ class read_ssfr:
             #/----------------------------------------------------------------------------\#
             logic = self.data_raw['int_time'][:, 0] == int_time_[it, 0]
             for vname in self.data_raw.keys():
-                if vname in ['ssfr_tag', 'fnames', 'comment']:
+                if vname in ['general_info']:
                     data[vname] = self.data_raw[vname]
                 else:
                     data[vname] = self.data_raw[vname][logic, ...]
-            data['int_time_info'] = int_time_info
+            data['general_info']['int_time'] = int_time_info
             #\----------------------------------------------------------------------------/#
 
             # dark correction (light-dark)
