@@ -202,10 +202,13 @@ class read_ssfr:
 
         '''
         Description:
-        fnames    : list of SSFR files to read
-        Ndata     : pre-defined number of data records, any number larger than the "number of data records per file" will work
-        whichTime : "ARINC" or "cRIO"
-        time_offset: time offset in [seconds]
+        fnames      : list of SSFR files to read
+        Ndata=      : pre-defined number of data records (any number larger than the "number of data records per file" will work); default=600
+        whichTime=  : "ARINC" or "cRIO"; default='arinc'
+        time_offset=: time offset in [seconds]; default=0.0
+        process=    : whether or not process data, e.g., dark correction; default=True
+        dark_corr_mode=: dark correction mode, can be 'interp' or 'mean'; default='interp'
+        verbose=    : verbose tag; default=False
         '''
 
         # input check
@@ -222,9 +225,10 @@ class read_ssfr:
 
         # read in all the data
         # after the following process, the object will contain
-        #   self.data_raw['ssfr_tag']
-        #   self.data_raw['fnames']
-        #   self.data_raw['comment']
+        #   self.data_raw['general_info']['ssfr_tag']
+        #   self.data_raw['general_info']['fnames']
+        #   self.data_raw['general_info']['comment']
+        #   self.data_raw['general_info']['Ndata']
         #   self.data_raw['spectra']
         #   self.data_raw['shutter']
         #   self.data_raw['int_time']
@@ -271,7 +275,6 @@ class read_ssfr:
 
             Nstart = Nend
 
-        self.data_raw['general_info']['comment'] = comment
         self.data_raw['spectra']    = spectra[:Nend, ...]
         self.data_raw['shutter']    = shutter[:Nend, ...]
         self.data_raw['int_time']   = int_time[:Nend, ...]
@@ -279,6 +282,8 @@ class read_ssfr:
         self.data_raw['jday_a'] = jday_ARINC[:Nend, ...]
         self.data_raw['jday_c']  = jday_cRIO[:Nend, ...]
         self.data_raw['qual_flag']  = qual_flag[:Nend, ...]
+        self.data_raw['general_info']['comment'] = comment
+        self.data_raw['general_info']['Ndata'] = self.data_raw['shutter'].size
 
         if whichTime.lower() == 'arinc':
             self.data_raw['jday'] = self.data_raw['jday_a'].copy()
@@ -305,7 +310,6 @@ class read_ssfr:
 
         int_time_ = np.unique(self.data_raw['int_time'], axis=0)
         Nt, Np = int_time_.shape
-        self.Ndata = Nt
 
         # split data for different pairs of integration times
         # after the following process, the object will contain

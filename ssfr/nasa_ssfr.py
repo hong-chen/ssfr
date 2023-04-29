@@ -270,7 +270,7 @@ class read_ssfr:
             self.qual_flag  = qual_flag[logic, ...]
             # ------------------------------------------------------------------------------------------
 
-    def pre_process(self, wvl_join=950.0, wvl_start=350.0, wvl_end=2200.0, intTime={'si':60, 'in':300}):
+    def process_data(self, wvl_join=950.0, wvl_start=350.0, wvl_end=2200.0, intTime={'si':60, 'in':300}):
 
         wvls = get_ssfr_wavelength()
 
