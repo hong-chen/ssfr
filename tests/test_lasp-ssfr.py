@@ -41,6 +41,12 @@ def test_process_lasp_ssfr():
             ssfr.vis.quicklook_ssfr_raw(data0, extra_tag=extra_tag)
 
 
+def figure_wavelength():
+
+    wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
+    print(wvls)
+
 if __name__ == '__main__':
 
-    test_process_lasp_ssfr()
+    # test_process_lasp_ssfr()
+    figure_wavelength()

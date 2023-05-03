@@ -43,10 +43,10 @@ def get_ssfr_wavelength(chanNum=256):
     wvl_nad_in = coef_nad_in[0] + coef_nad_in[1]*xChan + coef_nad_in[2]*xChan**2 + coef_nad_in[3]*xChan**3 + coef_nad_in[4]*xChan**4
 
     wvl_dict = {
-            'zenith_si': wvl_zen_si,
-            'zenith_in': wvl_zen_in,
-            'nadir_si' : wvl_nad_si,
-            'nadir_in' : wvl_nad_in
+            'zen_si': wvl_zen_si,
+            'zen_in': wvl_zen_in,
+            'nad_si': wvl_nad_si,
+            'nad_in': wvl_nad_in
             }
 
     return wvl_dict
