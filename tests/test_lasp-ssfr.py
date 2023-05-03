@@ -110,30 +110,44 @@ def figure_ssfr_slit():
 
     si_slit = ssfr.util.get_slit_func(500.0)
     in_slit = ssfr.util.get_slit_func(2000.0)
+    data_sol = ssfr.util.get_solar_kurudz()
 
     # figure
     #/----------------------------------------------------------------------------\#
     if True:
         plt.close('all')
-        fig = plt.figure(figsize=(15, 7))
-        # fig.suptitle('Figure')
+        fig = plt.figure(figsize=(10, 6))
 
         # plot
         #/--------------------------------------------------------------\#
         wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
         ax1 = fig.add_subplot(111)
+
+        ax1_ = ax1.twinx()
+        ax1_.fill_between(data_sol[:, 0], 0, data_sol[:, 1], color='gray', lw=0.0, alpha=0.6, zorder=0)
+        ax1_.set_ylabel('Irradiance [$W m^{-2} nm^{-1}$]', rotation=270, labelpad=24.0)
+        ax1_.set_xlim((920, 980))
+        ax1_.set_ylim((0, 2.0))
+
         ax1.plot(si_slit[:, 0]+940.0, si_slit[:, 1], color='r', lw=2.0)
         ax1.plot(in_slit[:, 0]+960.0, in_slit[:, 1], color='b', lw=2.0)
-        ax1.axvline(950.0, color='k', ls='--', lw=2.0)
+
+        ax1.axvline(940.0, color='r', ls=':', lw=2.0, zorder=1)
+        ax1.axvline(960.0, color='b', ls=':', lw=2.0, zorder=1)
+        ax1.axvline(950.0, color='k', ls='--', lw=2.0, zorder=1)
+
+        ax1.set_xlim((920, 980))
+        ax1.set_ylim((0, 1.2))
         ax1.set_ylabel('Probability Density Function (Weight)')
         ax1.set_xlabel('Wavelength [nm]')
         ax1.set_title('SSFR Line Shape')
 
         patches_legend = [
-                         mpatches.Patch(color='red'   , label='Silicon'), \
-                         mpatches.Patch(color='blue'  , label='InGaAs'), \
+                         mpatches.Patch(color='red'   , label='SSFR Silicon'), \
+                         mpatches.Patch(color='blue'  , label='SSFR InGaAs'), \
+                         mpatches.Patch(color='gray'  , label='Solar Spectra'), \
                          ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+        ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
 
         ax1.grid()
         #\--------------------------------------------------------------/#

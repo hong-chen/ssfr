@@ -25,6 +25,8 @@ __all__ = [
         'jday_to_dtime',
         'load_h5',
         'save_h5',
+        'get_solar_kurudz',
+        'get_slit_func',
         'cal_weighted_flux',
         'read_ict',
         'write_ict',
@@ -192,6 +194,16 @@ def get_slit_func(wvl, slit_func_file=None, wvl_joint=950.0):
     data_slt = np.loadtxt(slit_func_file)
 
     return data_slt
+
+def get_solar_kurudz(kurudz_file=None):
+
+    if kurudz_file is None:
+        kurudz_file = '%s/kurudz_0.1nm.dat' % ssfr.common.fdir_data
+
+    data_sol = np.loadtxt(kurudz_file)
+    data_sol[:, 1] /= 1000.0
+
+    return data_sol
 
 def cal_weighted_flux(wvl, data_wvl, data_flux, slit_func_file=None, wvl_joint=950.0):
 
