@@ -50,9 +50,9 @@ References
   clouds on shortwave irradiance: evaluation of estimates from spaceborne passive imagery with
   aircraft observations, Atmos. Meas. Tech., 14, 2673–2697, doi:10.5194/amt-14-2673-2021, 2021.
 
-  * Instrument highlight: azimuthal response and correction;
+  * Instrument Highlight: azimuthal response and bias correction;
 
-  * Science highlight: 1) spectral surface albedo parameterization in the Arctic, and 2) satellite-aircraft spectral irradiance
+  * Science Highlight: 1) spectral surface albedo parameterization in the Arctic, and 2) satellite-aircraft spectral irradiance
     intercomparison for evaluating satellite-product-derived shortwave cloud radiative effects in the Arctic.
 
 
@@ -63,8 +63,16 @@ References
   Light Scattering and Remote Sensing of Atmosphere and Surface, edited by: Kokhanovsky, A. A.,
   Springer, Berlin Heidelberg, 239–288, doi:10.1007/978-3-642-15531-4_6, 2012. 
 
+  * Instrument Highlight: detailed instrument characterization;
+
+  * Science Highlight: science introduction.
+
 * `Pilewskie et al., 2003 <https://doi.org/10.1029/2002JD002411>`_
 
   Pilewskie, P., Pommier, J., Bergstrom, R., Gore, W., Howard, S., Rabbette, M., Schmid, B., Hobbs, P. V.,
   and Tsay, S. C.: Solar spectral radiative forcing during the Southern African Regional Science Initiative,
   J. Geophys. Res., 108, 8486, doi:10.1029/2002JD002411, 2003. 
+
+  * Instrument Highlight: instrument characterization;
+
+  * Science Highlight: measurement-derived flux divergence, fractional absorption, instantaneous heating rate, and absorption efficiency.
