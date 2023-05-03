@@ -65,7 +65,7 @@ References
 
   * Instrument Highlight: detailed instrument characterization;
 
-  * Science Highlight: science introduction.
+  * Science Highlight: science development and outlook.
 
 * `Pilewskie et al., 2003 <https://doi.org/10.1029/2002JD002411>`_
 
