@@ -43,7 +43,6 @@ def test_process_lasp_ssfr():
 
 def figure_ssfr_wavelength():
 
-
     # figure
     #/----------------------------------------------------------------------------\#
     if True:
@@ -107,7 +106,52 @@ def figure_ssfr_wavelength():
     #\----------------------------------------------------------------------------/#
 
 
+def figure_ssfr_slit():
+
+    si_slit = ssfr.util.get_slit_func(500.0)
+    in_slit = ssfr.util.get_slit_func(2000.0)
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(15, 7))
+        # fig.suptitle('Figure')
+
+        # plot
+        #/--------------------------------------------------------------\#
+        wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
+        ax1 = fig.add_subplot(111)
+        ax1.plot(si_slit[:, 0]+940.0, si_slit[:, 1], color='r', lw=2.0)
+        ax1.plot(in_slit[:, 0]+960.0, in_slit[:, 1], color='b', lw=2.0)
+        ax1.axvline(950.0, color='k', ls='--', lw=2.0)
+        ax1.set_ylabel('Probability Density Function (Weight)')
+        ax1.set_xlabel('Wavelength [nm]')
+        ax1.set_title('SSFR Line Shape')
+
+        patches_legend = [
+                         mpatches.Patch(color='red'   , label='Silicon'), \
+                         mpatches.Patch(color='blue'  , label='InGaAs'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+
+        ax1.grid()
+        #\--------------------------------------------------------------/#
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+    #\----------------------------------------------------------------------------/#
+
+
+
 if __name__ == '__main__':
 
     # test_process_lasp_ssfr()
-    figure_ssfr_wavelength()
+
+    # figure_ssfr_wavelength()
+    figure_ssfr_slit()

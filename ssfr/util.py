@@ -181,13 +181,21 @@ def save_h5(fname, data):
 
     print('Message [save_h5]: Data has been successfully saved into \'%s\'.' % fname)
 
-def cal_weighted_flux(wvl, data_wvl, data_flux, slit_func_file=None, wvl_join=950.0):
+def get_slit_func(wvl, slit_func_file=None, wvl_joint=950.0):
 
     if slit_func_file is None:
-        if wvl <= wvl_join:
+        if wvl <= wvl_joint:
             slit_func_file = '%s/vis_0.1nm_s.dat' % ssfr.common.fdir_data
         else:
             slit_func_file = '%s/nir_0.1nm_s.dat' % ssfr.common.fdir_data
+
+    data_slt = np.loadtxt(slit_func_file)
+
+    return data_slt
+
+def cal_weighted_flux(wvl, data_wvl, data_flux, slit_func_file=None, wvl_joint=950.0):
+
+    data_slt = get_slit_func(wvl, slit_func_file=slit_func_file, wvl_joint=wvl_joint)
 
     data_slt = np.loadtxt(slit_func_file)
     weights  = data_slt[:, 1]
