@@ -50,6 +50,12 @@ References
   clouds on shortwave irradiance: evaluation of estimates from spaceborne passive imagery with
   aircraft observations, Atmos. Meas. Tech., 14, 2673–2697, doi:10.5194/amt-14-2673-2021, 2021.
 
+  * Instrument highlight: azimuthal response and correction;
+
+  * Science highlight: 1) spectral surface albedo parameterization in the Arctic, and 2) satellite-aircraft spectral irradiance
+    intercomparison for evaluating satellite-product-derived shortwave cloud radiative effects in the Arctic.
+
+
 * `Schmidt and Pilewskie, 2012 <https://doi.org/10.1007/978-3-642-15531-4_6>`_
 
   Schmidt, S. and Pilewskie, P.: Airborne measurements of spectral shortwave radiation in cloud
