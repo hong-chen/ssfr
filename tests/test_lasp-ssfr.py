@@ -41,12 +41,73 @@ def test_process_lasp_ssfr():
             ssfr.vis.quicklook_ssfr_raw(data0, extra_tag=extra_tag)
 
 
-def figure_wavelength():
+def figure_ssfr_wavelength():
 
-    wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
-    print(wvls)
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(15, 7))
+        # fig.suptitle('Figure')
+
+        # plot
+        #/--------------------------------------------------------------\#
+        wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
+        ax1 = fig.add_subplot(121)
+        ax1.plot(np.arange(256), wvls['zen_si'], lw=8.0, color='red', alpha=0.8)
+        ax1.plot(np.arange(256), wvls['zen_in'], lw=8.0, color='blue', alpha=0.8)
+        ax1.plot(np.arange(256), wvls['nad_si'], lw=3.0, color='green')
+        ax1.plot(np.arange(256), wvls['nad_in'], lw=3.0, color='orange')
+        ax1.set_xlabel('Channel Number')
+        ax1.set_ylabel('Wavelength [nm]')
+        ax1.set_title('CU LASP SSFR')
+
+        patches_legend = [
+                         mpatches.Patch(color='red'   , label='Zenith Silicon'), \
+                         mpatches.Patch(color='blue'  , label='Zenith InGaAs'), \
+                         mpatches.Patch(color='green' , label='Nadir Silicon'), \
+                         mpatches.Patch(color='orange', label='Nadir InGaAs'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+
+        ax1.grid()
+        #\--------------------------------------------------------------/#
+
+        # plot
+        #/--------------------------------------------------------------\#
+        wvls = ssfr.nasa_ssfr.get_ssfr_wavelength()
+        ax1 = fig.add_subplot(122)
+        ax1.plot(np.arange(256), wvls['zen_si'], lw=8.0, color='red', alpha=0.8)
+        ax1.plot(np.arange(256), wvls['zen_in'], lw=8.0, color='blue', alpha=0.8)
+        ax1.plot(np.arange(256), wvls['nad_si'], lw=3.0, color='green')
+        ax1.plot(np.arange(256), wvls['nad_in'], lw=3.0, color='orange')
+        ax1.set_xlabel('Channel Number')
+        ax1.set_ylabel('Wavelength [nm]')
+        ax1.set_title('NASA Ames SSFR')
+
+        patches_legend = [
+                         mpatches.Patch(color='red'   , label='Zenith Silicon'), \
+                         mpatches.Patch(color='blue'  , label='Zenith InGaAs'), \
+                         mpatches.Patch(color='green' , label='Nadir Silicon'), \
+                         mpatches.Patch(color='orange', label='Nadir InGaAs'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+
+        ax1.grid()
+        #\--------------------------------------------------------------/#
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+    #\----------------------------------------------------------------------------/#
+
 
 if __name__ == '__main__':
 
     # test_process_lasp_ssfr()
-    figure_wavelength()
+    figure_ssfr_wavelength()
