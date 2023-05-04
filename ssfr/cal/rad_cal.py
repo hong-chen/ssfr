@@ -11,7 +11,7 @@ import ssfr
 
 
 
-__all__ = ['cal_rad_resp', 'cdata_rad_resp', 'load_rad_resp_h5']
+__all__ = ['cal_rad_resp', 'cdata_rad_resp']
 
 
 
@@ -42,9 +42,11 @@ def cal_rad_resp(
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
     if which_lc == 'zenith':
+        which_lc = 'zen'
         index_si = 0
         index_in = 1
     elif which_lc == 'nadir':
+        which_lc = 'nad'
         index_si = 2
         index_in = 3
     else:
@@ -247,18 +249,6 @@ def cdata_rad_resp(
     f.close()
 
     return fname_out
-
-
-
-def load_rad_resp_h5(fname):
-
-    resp = {}
-    f = h5py.File(fname, 'r')
-    for key in f.keys():
-        resp[key] = f[key][...]
-    f.close()
-
-    return resp
 
 
 
