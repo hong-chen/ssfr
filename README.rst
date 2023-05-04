@@ -70,8 +70,8 @@ References
 * `Pilewskie et al., 2003 <https://doi.org/10.1029/2002JD002411>`_
 
   Pilewskie, P., Pommier, J., Bergstrom, R., Gore, W., Howard, S., Rabbette, M., Schmid, B., Hobbs, P. V.,
-  and Tsay, S. C.: Solar spectral radiative forcing during the Southern African Regional Science Initiative,
-  J. Geophys. Res., 108, 8486, doi:10.1029/2002JD002411, 2003. 
+  and Tsay, S. C.: Solar spectral radiative forcing during the Southern African Regional Science
+  Initiative, J. Geophys. Res., 108, 8486, doi:10.1029/2002JD002411, 2003. 
 
   * Instrument Highlight: instrument characterization;
 
