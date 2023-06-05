@@ -189,6 +189,8 @@ def read_ssfr_raw(
 
 class read_ssfr:
 
+    ID = 'CU LASP SSFR'
+
     def __init__(
             self,
             fnames,
