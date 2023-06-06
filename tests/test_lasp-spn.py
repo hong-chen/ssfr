@@ -40,7 +40,7 @@ def test_process_lasp_spns():
     #/----------------------------------------------------------------------------\#
     if True:
         plt.close('all')
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(12, 10))
         fig.suptitle('SPN-S Test on %s' % os.path.basename(fdir))
 
         # plot
@@ -50,7 +50,7 @@ def test_process_lasp_spns():
         ax1.scatter(data0_tot.data['tmhr'], data0_tot.data['flux'][:, iwvl0_tot], s=3, c='black', lw=0.0)
         ax1.set_xlabel('UTC Time [Hour]')
         ax1.set_ylabel('Irradiance [$W m^{-2} nm^{-1}$]')
-        ax1.set_title('Downwelling Irradiance at %d nm' % wvl0)
+        ax1.set_title('Time Series of Downwelling Irradiance at %d nm' % wvl0)
         ax1.set_ylim((0.0, 0.3))
 
         patches_legend = [
@@ -59,18 +59,36 @@ def test_process_lasp_spns():
                          ]
         ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
 
-        selected_tmhr = []
-        # ax1.axvline()
+        percentiles = np.array([10, 50, 90])
+        colors = ['red', 'blue', 'green']
+        selected_tmhr = np.percentile(data0_tot.data['tmhr'], percentiles)
+        for i in range(percentiles.size):
+            ax1.axvline(selected_tmhr[i], color=colors[i], lw=1.5, ls='--')
         #\--------------------------------------------------------------/#
 
         #
         #/--------------------------------------------------------------\#
         ax2 = fig.add_subplot(212)
+        for i in range(percentiles.size):
+            itmhr_dif = np.argmin(np.abs(data0_dif.data['tmhr']-selected_tmhr[i]))
+            itmhr_tot = np.argmin(np.abs(data0_tot.data['tmhr']-selected_tmhr[i]))
+            ax2.plot(data0_tot.data['wavelength'], data0_tot.data['flux'][itmhr_tot, :], ls='-' , color=colors[i])
+            ax2.plot(data0_dif.data['wavelength'], data0_dif.data['flux'][itmhr_dif, :], ls='--', color=colors[i])
+        ax2.axvline(wvl0, color='k', lw=1.5, ls='--')
+        ax2.set_xlabel('Wavelength [nm]')
+        ax2.set_ylabel('Irradiance [$W m^{-2} nm^{-1}$]')
+        ax2.set_title('Spectral Downwelling Irradiance')
+
+        patches_legend = [
+                          mpatches.Patch(edgecolor='black', ls='-' , facecolor='None', label='Total'), \
+                          mpatches.Patch(edgecolor='black', ls='--', facecolor='None', label='Diffuse'), \
+                         ]
+        ax2.legend(handles=patches_legend, loc='upper right', fontsize=16)
         #\--------------------------------------------------------------/#
 
         # save figure
         #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        fig.subplots_adjust(hspace=0.4, wspace=0.3)
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
