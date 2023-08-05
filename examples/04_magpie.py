@@ -48,6 +48,7 @@ def preview_magpie(fdir):
         ax1.set_xlabel('UTC Time [Hour]')
         ax1.set_ylabel('Irradiance [$W m^{-2} nm^{-1}$]')
         ax1.set_title('Time Series of Downwelling Irradiance at %d nm' % wvl0)
+        ax1.set_ylim(0.0)
 
         patches_legend = [
                           mpatches.Patch(color='black' , label='Total'), \
