@@ -209,7 +209,6 @@ def cal_weighted_flux(wvl, data_wvl, data_flux, slit_func_file=None, wvl_joint=9
 
     data_slt = get_slit_func(wvl, slit_func_file=slit_func_file, wvl_joint=wvl_joint)
 
-    data_slt = np.loadtxt(slit_func_file)
     weights  = data_slt[:, 1]
     wvl_x    = data_slt[:, 0] + wvl
     flux     = np.average(np.interp(wvl_x, data_wvl, data_flux), weights=weights)
