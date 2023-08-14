@@ -169,7 +169,7 @@ def cdata_magpie_spns_v0(date):
     f.close()
     #\----------------------------------------------------------------------------/#
 
-def cdata_solar():
+def cdata_magpie_solar_toa():
 
     fname_ssfr = 'data/SSFR_20190803_V0.h5'
     data_ssfr = load_h5(fname_ssfr)
