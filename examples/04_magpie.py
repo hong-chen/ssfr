@@ -247,6 +247,7 @@ def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
     f['lon']  = lon
     f['lat']  = lat
     f['alt']  = alt
+    f['sza']  = sza
 
     g1 = f.create_group('dif')
     g1['wvl']   = wvl_dif
