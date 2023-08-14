@@ -169,6 +169,22 @@ def cdata_magpie_spns_v0(date):
     f.close()
     #\----------------------------------------------------------------------------/#
 
+def cdata_solar():
+
+    fname_ssfr = 'data/SSFR_20190803_V0.h5'
+    data_ssfr = load_h5(fname_ssfr)
+    wvl = data_ssfr['zen_wvl']
+
+    solar = np.zeros_like(wvl)
+    for i, wvl0 in enumerate(wvl):
+        solar[i] = cal_solar_flux(wvl0)
+
+    fname = 'data/cal/solar.h5'
+    f = h5py.File(fname, 'w')
+    f['solar']      = solar
+    f['wvl']        =  wvl
+    f.close()
+
 def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
 
     """
