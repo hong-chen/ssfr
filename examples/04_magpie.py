@@ -98,6 +98,10 @@ def preview_magpie(fdir):
 
 def cdata_magpie_hsk_v0(date, tmhr_range=[10.0, 24.0]):
 
+    """
+    process raw aircraft nav data
+    """
+
     # read aircraft nav data (housekeeping file)
     #/----------------------------------------------------------------------------\#
     fname = sorted(glob.glob('data/magpie/2023/hsk/raw/CABIN_1hz*%s*SPN-S.txt' % date.strftime('%m_%d')))[0]
@@ -131,6 +135,10 @@ def cdata_magpie_hsk_v0(date, tmhr_range=[10.0, 24.0]):
 
 def cdata_magpie_spns_v0(date):
 
+    """
+    process raw SPN-S data
+    """
+
     # read spn-s raw data
     #/----------------------------------------------------------------------------\#
     fdir = 'data/magpie/2023/spn-s/raw/%s' % date.strftime('%Y-%m-%d')
@@ -161,6 +169,83 @@ def cdata_magpie_spns_v0(date):
     f.close()
     #\----------------------------------------------------------------------------/#
 
+def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
+
+    """
+    check for time offset and merge SPN-S data with aircraft data
+    """
+
+    # read spn-s v0
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
+    f = h5py.File(fname_h5, 'r')
+    f_dn_tot_ = f['tot/flux'][...]
+    wvl      = f['tot/wvl'][...]
+    tmhr     = f['tot/tmhr'][...]
+    f.close()
+
+    index = np.argmin(np.abs(wvl0-wvl))
+    f_dn_tot = f_dn_tot_[:, index]
+    #/----------------------------------------------------------------------------\#
+
+    # toa flux
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
+    #\----------------------------------------------------------------------------/#
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+        ax1.scatter(tmhr, f_dn_tot, s=6, c='k', lw=0.0)
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+
+
+
+    # save processed data
+    #/----------------------------------------------------------------------------\#
+    # fname_h5 = 'MAGPIE_SPN-S_%s_v1.h5' % date.strftime('%Y-%m-%d')
+
+    # f = h5py.File(fname_h5, 'w')
+
+    # g1 = f.create_group('dif')
+    # g1['tmhr']  = data0_dif.data['tmhr']
+    # g1['wvl']   = data0_dif.data['wavelength']
+    # g1['flux']  = data0_dif.data['flux']
+
+    # g2 = f.create_group('tot')
+    # g2['tmhr']  = data0_tot.data['tmhr']
+    # g2['wvl']   = data0_tot.data['wavelength']
+    # g2['flux']  = data0_tot.data['flux']
+
+    # f.close()
+    #\----------------------------------------------------------------------------/#
+
 
 
 if __name__ == '__main__':
@@ -177,6 +262,16 @@ if __name__ == '__main__':
     # fdir = 'data/magpie/2023/spn-s/raw/2023-08-13'
     # preview_magpie(fdir)
 
-    date = datetime.datetime(2023, 8, 13)
-    # cdata_magpie_hsk_v0(date)
-    cdata_magpie_spns_v0(date)
+    dates = [
+            datetime.datetime(2023, 8, 2),  \
+            datetime.datetime(2023, 8, 3),  \
+            datetime.datetime(2023, 8, 5),  \
+            datetime.datetime(2023, 8, 13), \
+        ]
+
+    # for date in dates:
+    for date in [dates[-1]]:
+        # cdata_magpie_hsk_v0(date)
+        # cdata_magpie_spns_v0(date)
+        cdata_magpie_spns_v1(date)
+
