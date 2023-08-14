@@ -177,13 +177,14 @@ def cdata_solar():
 
     solar = np.zeros_like(wvl)
     for i, wvl0 in enumerate(wvl):
-        solar[i] = cal_solar_flux(wvl0)
+        solar[i] = ssfr.util.cal_weighted_flux(wvl0)
 
     fname = 'data/cal/solar.h5'
     f = h5py.File(fname, 'w')
     f['solar']      = solar
     f['wvl']        =  wvl
     f.close()
+
 
 def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
 
