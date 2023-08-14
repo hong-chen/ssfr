@@ -106,6 +106,7 @@ def cdata_magpie_hsk_v0(date, tmhr_range=[10.0, 24.0]):
     #/----------------------------------------------------------------------------\#
     fname = sorted(glob.glob('data/magpie/2023/hsk/raw/CABIN_1hz*%s*SPN-S.txt' % date.strftime('%m_%d')))[0]
     data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range)
+    data_hsk['long']['data'] = -data_hsk['long']['data']
     #\----------------------------------------------------------------------------/#
 
     # solar geometries
@@ -150,6 +151,21 @@ def cdata_magpie_spns_v0(date):
     data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
     #/----------------------------------------------------------------------------\#
 
+    # read wavelengths and calculate toa downwelling solar flux
+    #/----------------------------------------------------------------------------\#
+    flux_toa = ssfr.util.get_solar_kurudz()
+
+    wvl_dif = data0_dif.data['wavelength']
+    f_dn_sol_dif = np.zeros_like(wvl_dif)
+    for i, wvl0 in enumerate(wvl_dif):
+        f_dn_sol_dif[i] = ssfr.util.cal_solar_flux_toa(wvl0, flux_toa[:, 0], flux_toa[:, 1])
+
+    wvl_tot = data0_tot.data['wavelength']
+    f_dn_sol_tot = np.zeros_like(wvl_tot)
+    for i, wvl0 in enumerate(wvl_tot):
+        f_dn_sol_tot[i] = ssfr.util.cal_solar_flux_toa(wvl0, flux_toa[:, 0], flux_toa[:, 1])
+    #\----------------------------------------------------------------------------/#
+
     # save processed data
     #/----------------------------------------------------------------------------\#
     fname_h5 = 'MAGPIE_SPN-S_%s_v0.h5' % date.strftime('%Y-%m-%d')
@@ -160,31 +176,16 @@ def cdata_magpie_spns_v0(date):
     g1['tmhr']  = data0_dif.data['tmhr']
     g1['wvl']   = data0_dif.data['wavelength']
     g1['flux']  = data0_dif.data['flux']
+    g1['toa0']  = f_dn_sol_dif
 
     g2 = f.create_group('tot')
     g2['tmhr']  = data0_tot.data['tmhr']
     g2['wvl']   = data0_tot.data['wavelength']
     g2['flux']  = data0_tot.data['flux']
+    g2['toa0']  = f_dn_sol_tot
 
     f.close()
     #\----------------------------------------------------------------------------/#
-
-def cdata_magpie_solar_toa():
-
-    fname_ssfr = 'data/SSFR_20190803_V0.h5'
-    data_ssfr = load_h5(fname_ssfr)
-    wvl = data_ssfr['zen_wvl']
-
-    solar = np.zeros_like(wvl)
-    for i, wvl0 in enumerate(wvl):
-        solar[i] = ssfr.util.cal_weighted_flux(wvl0)
-
-    fname = 'data/cal/solar.h5'
-    f = h5py.File(fname, 'w')
-    f['solar']      = solar
-    f['wvl']        =  wvl
-    f.close()
-
 
 def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
 
@@ -192,23 +193,33 @@ def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
     check for time offset and merge SPN-S data with aircraft data
     """
 
+    # read hsk v0
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = '%s/MAGPIE_HSK_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
+    f = h5py.File(fname_h5, 'r')
+    sza = f['sza'][...]
+    tmhr = f['tmhr'][...]
+    lon  = f['lon'][...]
+    lat  = f['lat'][...]
+    alt  = f['alt'][...]
+    f.close()
+    #\----------------------------------------------------------------------------/#
+
     # read spn-s v0
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
     f = h5py.File(fname_h5, 'r')
     f_dn_tot_ = f['tot/flux'][...]
-    wvl      = f['tot/wvl'][...]
-    tmhr     = f['tot/tmhr'][...]
+    wvl_tot   = f['tot/wvl'][...]
+    tmhr_tot  = f['tot/tmhr'][...]
+    f_dn_toa0 = f['tot/toa0'][...]
     f.close()
 
-    index = np.argmin(np.abs(wvl0-wvl))
-    f_dn_tot = f_dn_tot_[:, index]
-    #/----------------------------------------------------------------------------\#
+    iwvl = np.argmin(np.abs(wvl0-wvl_tot))
+    f_dn_tot = f_dn_tot_[:, iwvl]
 
-    # toa flux
+    f_dn_toa = f_dn_toa0[iwvl] * np.cos(np.deg2rad(sza))
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
-    #\----------------------------------------------------------------------------/#
 
     # figure
     #/----------------------------------------------------------------------------\#
@@ -220,7 +231,10 @@ def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
         # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-        ax1.scatter(tmhr, f_dn_tot, s=6, c='k', lw=0.0)
+        ax1.scatter(lon, lat)
+        # ax1.scatter(tmhr_tot, f_dn_tot, s=6, c='r', lw=0.0)
+        # ax1.scatter(tmhr, f_dn_toa, s=6, c='k', lw=0.0)
+        # ax1.scatter(tmhr, sza, s=6, c='k', lw=0.0)
         # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
         # ax1.plot([0, 1], [0, 1], color='k', ls='--')
         # ax1.set_xlim(())
@@ -287,8 +301,7 @@ if __name__ == '__main__':
         ]
 
     # for date in dates:
-    for date in [dates[-1]]:
-        # cdata_magpie_hsk_v0(date)
+    for date in [dates[3]]:
+        cdata_magpie_hsk_v0(date)
         # cdata_magpie_spns_v0(date)
-        cdata_magpie_spns_v1(date)
-
+        # cdata_magpie_spns_v1(date)
