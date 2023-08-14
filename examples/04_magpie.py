@@ -148,12 +148,12 @@ def cdata_magpie_spns_v0(date):
 
     f = h5py.File(fname_h5, 'w')
 
-    g1 = f.create_group('diffuse')
+    g1 = f.create_group('dif')
     g1['tmhr']  = data0_dif.data['tmhr']
     g1['wvl']   = data0_dif.data['wavelength']
     g1['flux']  = data0_dif.data['flux']
 
-    g2 = f.create_group('total')
+    g2 = f.create_group('tot')
     g2['tmhr']  = data0_tot.data['tmhr']
     g2['wvl']   = data0_tot.data['wavelength']
     g2['flux']  = data0_tot.data['flux']
@@ -178,5 +178,5 @@ if __name__ == '__main__':
     # preview_magpie(fdir)
 
     date = datetime.datetime(2023, 8, 13)
-    cdata_magpie_hsk_v0(date)
+    # cdata_magpie_hsk_v0(date)
     cdata_magpie_spns_v0(date)
