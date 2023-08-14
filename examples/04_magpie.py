@@ -227,11 +227,10 @@ def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
     # interpolate spn-s data to hsk time frame
     #/----------------------------------------------------------------------------\#
     flux_dif = np.zeros((tmhr.size, wvl_dif.size), dtype=np.float64)
-    flux_tot = np.zeros((tmhr.size, wvl_tot.size), dtype=np.float64)
-
     for i in range(wvl_dif.size):
         flux_dif[:, i] = ssfr.util.interp(tmhr, tmhr_dif, f_dn_dif[:, i])
 
+    flux_tot = np.zeros((tmhr.size, wvl_tot.size), dtype=np.float64)
     for i in range(wvl_tot.size):
         flux_tot[:, i] = ssfr.util.interp(tmhr, tmhr_tot, f_dn_tot[:, i])
     #\----------------------------------------------------------------------------/#
