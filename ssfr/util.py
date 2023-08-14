@@ -5,6 +5,7 @@ import h5py
 import struct
 import fnmatch
 import pysolar
+from scipy import interpolate
 from collections import OrderedDict
 import xml.etree.ElementTree as ET
 import numpy as np
@@ -24,6 +25,7 @@ __all__ = [
         'muslope',
         'dtime_to_jday',
         'jday_to_dtime',
+        'interp',
         'load_h5',
         'save_h5',
         'get_solar_kurudz',
@@ -228,6 +230,12 @@ def jday_to_dtime(jday):
     dtime = datetime.datetime(1, 1, 1) + datetime.timedelta(seconds=np.round(((jday-1)*86400.0), decimals=0))
 
     return dtime
+
+def interp(x, x0, y0):
+
+    f = interpolate.interp1d(x0, y0, bounds_error=False)
+
+    return f(x)
 
 
 

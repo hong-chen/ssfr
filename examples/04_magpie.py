@@ -197,7 +197,8 @@ def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/MAGPIE_HSK_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
     f = h5py.File(fname_h5, 'r')
-    sza = f['sza'][...]
+    jday = f['jday'][...]
+    sza  = f['sza'][...]
     tmhr = f['tmhr'][...]
     lon  = f['lon'][...]
     lat  = f['lat'][...]
@@ -205,78 +206,61 @@ def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
     f.close()
     #\----------------------------------------------------------------------------/#
 
+
     # read spn-s v0
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
     f = h5py.File(fname_h5, 'r')
-    f_dn_tot_ = f['tot/flux'][...]
+    f_dn_dif  = f['dif/flux'][...]
+    wvl_dif   = f['dif/wvl'][...]
+    tmhr_dif  = f['dif/tmhr'][...]
+    f_dn_dif_toa0 = f['dif/toa0'][...]
+
+    f_dn_tot  = f['tot/flux'][...]
     wvl_tot   = f['tot/wvl'][...]
     tmhr_tot  = f['tot/tmhr'][...]
-    f_dn_toa0 = f['tot/toa0'][...]
+    f_dn_tot_toa0 = f['tot/toa0'][...]
     f.close()
-
-    iwvl = np.argmin(np.abs(wvl0-wvl_tot))
-    f_dn_tot = f_dn_tot_[:, iwvl]
-
-    f_dn_toa = f_dn_toa0[iwvl] * np.cos(np.deg2rad(sza))
     #/----------------------------------------------------------------------------\#
 
-    # figure
+
+    # interpolate spn-s data to hsk time frame
     #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(8, 6))
-        # fig.suptitle('Figure')
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-        ax1.scatter(lon, lat)
-        # ax1.scatter(tmhr_tot, f_dn_tot, s=6, c='r', lw=0.0)
-        # ax1.scatter(tmhr, f_dn_toa, s=6, c='k', lw=0.0)
-        # ax1.scatter(tmhr, sza, s=6, c='k', lw=0.0)
-        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        #\--------------------------------------------------------------/#
-        # save figure
-        #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
+    flux_dif = np.zeros((tmhr.size, wvl_dif.size), dtype=np.float64)
+    flux_tot = np.zeros((tmhr.size, wvl_tot.size), dtype=np.float64)
+
+    for i in range(wvl_dif.size):
+        flux_dif[:, i] = ssfr.util.interp(tmhr, tmhr_dif, f_dn_dif[:, i])
+
+    for i in range(wvl_tot.size):
+        flux_tot[:, i] = ssfr.util.interp(tmhr, tmhr_tot, f_dn_tot[:, i])
     #\----------------------------------------------------------------------------/#
-
-
 
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    # fname_h5 = 'MAGPIE_SPN-S_%s_v1.h5' % date.strftime('%Y-%m-%d')
+    fname_h5 = 'MAGPIE_SPN-S_%s_v1.h5' % date.strftime('%Y-%m-%d')
 
-    # f = h5py.File(fname_h5, 'w')
+    f = h5py.File(fname_h5, 'w')
 
-    # g1 = f.create_group('dif')
-    # g1['tmhr']  = data0_dif.data['tmhr']
-    # g1['wvl']   = data0_dif.data['wavelength']
-    # g1['flux']  = data0_dif.data['flux']
+    f['jday'] = jday
+    f['tmhr'] = tmhr
+    f['lon']  = lon
+    f['lat']  = lat
+    f['alt']  = alt
 
-    # g2 = f.create_group('tot')
-    # g2['tmhr']  = data0_tot.data['tmhr']
-    # g2['wvl']   = data0_tot.data['wavelength']
-    # g2['flux']  = data0_tot.data['flux']
+    g1 = f.create_group('dif')
+    g1['wvl']   = wvl_dif
+    g1['flux']  = flux_dif
+    g1['toa0']  = f_dn_dif_toa0
 
-    # f.close()
+    g2 = f.create_group('tot')
+    g2['wvl']   = wvl_tot
+    g2['flux']  = flux_tot
+    g2['toa0']  = f_dn_tot_toa0
+
+    f.close()
     #\----------------------------------------------------------------------------/#
-
 
 
 if __name__ == '__main__':
@@ -300,8 +284,8 @@ if __name__ == '__main__':
             datetime.datetime(2023, 8, 13), \
         ]
 
-    # for date in dates:
-    for date in [dates[3]]:
-        cdata_magpie_hsk_v0(date)
+    for date in dates:
+    # for date in [dates[-1]]:
+        # cdata_magpie_hsk_v0(date)
         # cdata_magpie_spns_v0(date)
-        # cdata_magpie_spns_v1(date)
+        cdata_magpie_spns_v1(date)
