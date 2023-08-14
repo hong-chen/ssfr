@@ -1,4 +1,5 @@
 import os
+import sys
 import glob
 import h5py
 import struct
@@ -30,7 +31,8 @@ __all__ = [
         'cal_weighted_flux',
         'read_ict',
         'write_ict',
-        'read_iwg'
+        'read_iwg',
+        'read_cabin',
         ]
 
 
@@ -231,7 +233,7 @@ def jday_to_dtime(jday):
 
 
 
-def var_info(line):
+def var_info_ict(line):
 
     words = line.strip().split(',')
     vname = words[0].strip()
@@ -239,7 +241,6 @@ def var_info(line):
     return vname, unit
 
 def read_ict(fname, tmhr_range=None, Nskip=7, lower=True):
-
 
     f = open(fname, 'r')
 
@@ -251,7 +252,7 @@ def read_ict(fname, tmhr_range=None, Nskip=7, lower=True):
     units  = []
     for i in range(Nskip):
         f.readline()
-    vname0, unit0 = var_info(f.readline())
+    vname0, unit0 = var_info_ict(f.readline())
     vnames.append(vname0); units.append(unit0)
 
     Nvar = int(f.readline())
@@ -259,7 +260,7 @@ def read_ict(fname, tmhr_range=None, Nskip=7, lower=True):
     fill_values = np.array([float(word) for word in f.readline().strip().split(',')], dtype=np.float64)
 
     for i in range(Nvar):
-        vname0, unit0 = var_info(f.readline())
+        vname0, unit0 = var_info_ict(f.readline())
         vnames.append(vname0); units.append(unit0)
     f.close()
 
@@ -405,6 +406,66 @@ def read_iwg(fname, date_ref=None, tmhr_range=None):
 
     return data
 
+
+
+
+
+def read_cabin(fname, tmhr_range=None, Nskip=1, lower=True):
+
+    """
+    Reader for Cabin file from Twin Otter aircraft (data shared by Dr. Anthony Bucholtz)
+
+    Please note this reader might not be universally applicable and only work for the MAGPIE mission only.
+    """
+
+    # variable parsing
+    #/----------------------------------------------------------------------------\#
+    f = open(fname, 'r')
+
+    vnames = []
+    units  = []
+
+    line = f.readline()
+    vnames_ = line.strip().split('\t')
+    for vname_ in vnames_:
+        words = vname_.replace(')', '').split('(')
+        if len(words) > 1:
+            vnames.append(words[0].strip())
+            units.append(words[-1].strip())
+        else:
+            vnames.append(words[0].strip())
+            units.append('N/A')
+
+    Nvar = len(vnames)
+    f.close()
+    #\----------------------------------------------------------------------------/#
+
+    data_all = np.genfromtxt(fname, skip_header=Nskip, delimiter='\t', invalid_raise=False)
+
+    data = OrderedDict()
+    data['tmhr'] = dict(data=data_all[:, 1]/3600.0, units='Hour')
+
+    if tmhr_range != None:
+        logic = (data['tmhr']['data']>=tmhr_range[0]) & (data['tmhr']['data']<=tmhr_range[1])
+        for i, vname in enumerate(vnames):
+            data0 = data_all[:, i][logic]
+            # if i > 0:
+            #     data0[data0==fill_values[i-1]] = np.nan
+            if lower:
+                vname = vname.lower()
+            data[vname] = dict(data=data0, units=units[i])
+        data['tmhr']['data'] = data['tmhr']['data'][logic]
+    else:
+        for i, vname in enumerate(vnames):
+            data0 = data_all[:, i]
+            # if i > 0:
+            #     data0[data0==fill_values[i-1]] = np.nan
+            if lower:
+                vname = vname.lower()
+            data[vname] = dict(data=data0, units=units[i])
+
+
+    return data
 
 
 

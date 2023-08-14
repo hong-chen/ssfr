@@ -96,8 +96,74 @@ def preview_magpie(fdir):
     #\----------------------------------------------------------------------------/#
 
 
-if __name__ == '__main__':
+def cdata_magpie_hsk_v0(date, tmhr_range=[10.0, 24.0]):
 
+    # read aircraft nav data (housekeeping file)
+    #/----------------------------------------------------------------------------\#
+    fname = sorted(glob.glob('data/magpie/2023/hsk/raw/CABIN_1hz*%s*SPN-S.txt' % date.strftime('%m_%d')))[0]
+    data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range)
+    #\----------------------------------------------------------------------------/#
+
+    # solar geometries
+    #/----------------------------------------------------------------------------\#
+    jday0 = ssfr.util.dtime_to_jday(date)
+    jday = jday0 + data_hsk['tmhr']['data']/24.0
+    sza, saa = ssfr.util.cal_solar_angles(jday, data_hsk['long']['data'], data_hsk['lat']['data'], data_hsk['palt']['data'])
+    #\----------------------------------------------------------------------------/#
+
+    # save processed data
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = 'MAGPIE_HSK_%s_v0.h5' % date.strftime('%Y-%m-%d')
+
+    f = h5py.File(fname_h5, 'w')
+    f['tmhr'] = data_hsk['tmhr']['data']
+    f['lon']  = data_hsk['long']['data']
+    f['lat']  = data_hsk['lat']['data']
+    f['alt']  = data_hsk['palt']['data']
+    f['pit']  = data_hsk['pitch']['data']
+    f['rol']  = data_hsk['roll']['data']
+    f['hed']  = data_hsk['heading']['data']
+    f['jday'] = jday
+    f['sza']  = sza
+    f['saa']  = saa
+    f.close()
+    #\----------------------------------------------------------------------------/#
+
+def cdata_magpie_spns_v0(date):
+
+    # read spn-s raw data
+    #/----------------------------------------------------------------------------\#
+    fdir = 'data/magpie/2023/spn-s/raw/%s' % date.strftime('%Y-%m-%d')
+
+    fname_dif = sorted(glob.glob('%s/Diffuse.txt' % fdir))[0]
+    data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
+
+    fname_tot = sorted(glob.glob('%s/Total.txt' % fdir))[0]
+    data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
+    #/----------------------------------------------------------------------------\#
+
+    # save processed data
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = 'MAGPIE_SPN-S_%s_v0.h5' % date.strftime('%Y-%m-%d')
+
+    f = h5py.File(fname_h5, 'w')
+
+    g1 = f.create_group('diffuse')
+    g1['tmhr']  = data0_dif.data['tmhr']
+    g1['wvl']   = data0_dif.data['wavelength']
+    g1['flux']  = data0_dif.data['flux']
+
+    g2 = f.create_group('total')
+    g2['tmhr']  = data0_tot.data['tmhr']
+    g2['wvl']   = data0_tot.data['wavelength']
+    g2['flux']  = data0_tot.data['flux']
+
+    f.close()
+    #\----------------------------------------------------------------------------/#
+
+
+
+if __name__ == '__main__':
 
     # fdir = 'data/magpie/2023/spn-s/raw/2023-08-02'
     # preview_magpie(fdir)
@@ -108,5 +174,9 @@ if __name__ == '__main__':
     # fdir = 'data/magpie/2023/spn-s/raw/2023-08-05'
     # preview_magpie(fdir)
 
-    fdir = 'data/magpie/2023/spn-s/raw/2023-08-13'
-    preview_magpie(fdir)
+    # fdir = 'data/magpie/2023/spn-s/raw/2023-08-13'
+    # preview_magpie(fdir)
+
+    date = datetime.datetime(2023, 8, 13)
+    cdata_magpie_hsk_v0(date)
+    cdata_magpie_spns_v0(date)
