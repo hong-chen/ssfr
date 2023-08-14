@@ -102,5 +102,11 @@ if __name__ == '__main__':
     # fdir = 'data/magpie/2023/spn-s/raw/2023-08-02'
     # preview_magpie(fdir)
 
-    fdir = 'data/magpie/2023/spn-s/raw/2023-08-03'
+    # fdir = 'data/magpie/2023/spn-s/raw/2023-08-03'
+    # preview_magpie(fdir)
+
+    # fdir = 'data/magpie/2023/spn-s/raw/2023-08-05'
+    # preview_magpie(fdir)
+
+    fdir = 'data/magpie/2023/spn-s/raw/2023-08-13'
     preview_magpie(fdir)
