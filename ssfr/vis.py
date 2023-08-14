@@ -1248,7 +1248,7 @@ span_t.location = slider_t.value;
 
 
 
-def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=1, wvl_step=1, wvl_step_spns=4):
+def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=1, wvl_step=1, wvl_step_spns=2):
 
     f0 = h5py.File(fname, 'r')
 
@@ -1273,7 +1273,7 @@ def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=1, w
     data['sza']      = f0['sza'][...][logic_tmhr][::tmhr_step]
 
     data['mu']       = np.cos(np.deg2rad(data['sza']))
-    data['solar']    = f0['tot/toa0'][...][::wvl_step]
+    data['solar']    = f0['tot/toa0'][...][::wvl_step_spns]
 
     data['spns_wvl'] = f0['tot/wvl'][...][::wvl_step_spns]
     data['dif_flux'] = f0['dif/flux'][...][logic_tmhr, ...][::tmhr_step, ::wvl_step_spns]
@@ -1316,7 +1316,7 @@ def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=1, w
     data_spns['wvl']  = data['spns_wvl']
     data_spns['dif_plot'] = data['dif_flux'][index_tmhr, :]
     data_spns['tot_plot'] = data['tot_flux'][index_tmhr, :]
-    for i in range(tmhr.size):
+    for i in range(data['tmhr'].size):
         data_spns['dif%d' % i] = data['dif_flux'][i, :]
         data_spns['tot%d' % i] = data['tot_flux'][i, :]
 
@@ -1329,10 +1329,10 @@ def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=1, w
     #/----------------------------------------------------------------------------\#
     data_geo = {}
 
-    data_geo['lon']  = f0['lon'][...]
-    data_geo['lat']  = f0['lat'][...]
-    data_geo['alt']  = f0['alt'][...]
-    data_geo['sza']  = f0['sza'][...]
+    data_geo['lon']  = data['lon']
+    data_geo['lat']  = data['lat']
+    data_geo['alt']  = data['alt']
+    data_geo['sza']  = data['sza']
 
     x, y = lonlat_to_xy(data['lon'], data['lat'])
     data_geo['x'] = x
@@ -1356,14 +1356,14 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
 
     # prepare data
     #/----------------------------------------------------------------------------\#
-    data_time_dict, data_spns_dict, data_geo_dict = pre_bokeh_spns(fname_ssfr, fname_spns=fname_spns, tmhr_range=tmhr_range, tmhr_step=tmhr_step, wvl_step=wvl_step, tmhr0=tmhr0, wvl0=wvl0)
+    data_time_dict, data_spns_dict, data_geo_dict = pre_bokeh_spns(fname, tmhr_range=tmhr_range, tmhr_step=tmhr_step, wvl_step=wvl_step, tmhr0=tmhr0, wvl0=wvl0)
 
     if wvl0 is None:
         wvl0 = 500.0
     index_wvl = np.argmin(np.abs(data_spns_dict['wvl']-wvl0))
 
     if tmhr0 is None:
-        index_tmhr = np.where(np.logical_not(np.isnan(data_time_dict['zen%d' % np.argmin(np.abs(data_spec_dict['zen_wvl']-wvl0))])))[0][0]
+        index_tmhr = np.where(np.logical_not(np.isnan(data_time_dict['tot%d' % np.argmin(np.abs(data_spns_dict['wvl']-wvl0))])))[0][0]
     else:
         index_tmhr = np.argmin(np.abs(data_time_dict['tmhr']-tmhr0))
 
@@ -1379,13 +1379,16 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     data_spns  = ColumnDataSource(data=data_spns_dict)
     #\----------------------------------------------------------------------------/#
 
+
+    # bokeh plot settings
+    #/----------------------------------------------------------------------------\#
     if description is not None:
         title = 'SPN-S Quicklook Plot (%s)' % description
     else:
         title = 'SPN-S Quicklook Plot'
 
     if fname_html is None:
-        fname_html = 'spns-bokeh-plot_%s.html' % datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+        fname_html = 'spns-bokeh-plot_%s.html' % datetime.datetime.now().strftime('%Y%m%d')
 
     output_file(fname_html, title=title, mode='inline')
 
@@ -1395,6 +1398,8 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     width_spec  = 650
     height_time = 320
     width_time  = 10 + width_geo + width_spec
+    #\----------------------------------------------------------------------------/#
+
 
     # map plot
     #/----------------------------------------------------------------------------\#
@@ -1413,7 +1418,7 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     htool    = HoverTool(tooltips = [('Longitude', '@lon{0.0000}'), ('Latitude', '@lat{0.0000}'), ('Altitude', '@alt{0.0000}km'), ('Solar Zenith', '@sza{0.00}')], mode='mouse', line_policy='nearest')
     plt_geo.add_tools(htool)
 
-    mapper = linear_cmap(field_name='alt', palette=Spectral6, low=0.0, high=6.0)
+    mapper = linear_cmap(field_name='alt', palette=Spectral6, low=0.0, high=np.round(np.nanmax(data_time_dict['alt']), decimals=0))
 
     plt_geo.circle('x', 'y', source=data_geo , color=mapper, size=6, fill_alpha=0.1, line_width=0.0)
     plt_geo.circle('x', 'y', source=data_geo0, color=mapper, line_color=mapper, size=15, fill_alpha=0.5, line_width=2.0)
@@ -1436,20 +1441,20 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     # spectra plot
     #/----------------------------------------------------------------------------\#
     plt_spec = figure(plot_height=height_spec, plot_width=width_spec,
-                  title='Spectra at %s UTC' % ((datetime.datetime(1970, 1, 1)+datetime.timedelta(days=data_time.data['jday'][index_tmhr]-1.0)).strftime('%Y-%m-%d %H:%M:%S')),
+                  title='Spectra at %s UTC (Downwelling)' % ((datetime.datetime(1970, 1, 1)+datetime.timedelta(days=data_time.data['jday'][index_tmhr]-1.0)).strftime('%Y-%m-%d %H:%M:%S')),
                   tools='reset,save,box_zoom,wheel_zoom,pan',
                   active_scroll='wheel_zoom', active_drag='pan', x_axis_label='Wavelength [nm]', y_axis_label='Flux Density',
-                  x_range=[300, 2200], y_range=[0.0, np.nanmax(data_spec.data['zen_plot'])*1.1], output_backend='webgl')
+                  x_range=wvl_range, y_range=[0.0, np.nanmax(data_spns.data['tot_plot'])*1.1], output_backend='webgl')
 
     htool    = HoverTool(tooltips = [('Wavelength', '$x{0.00}nm'), ('Flux', '$y{0.0000}')], mode='mouse', line_policy='nearest')
     plt_spec.add_tools(htool)
 
-    plt_spec.circle('wvl', 'sol_plot', source=data_spns, color='black'     , size=3, legend='Kurudz', fill_alpha=0.4, line_alpha=0.4)
-    plt_spec.circle('wvl', 'dif_plot', source=data_spns, color='lightgreen', size=3, legend='Diffuse')
-    plt_spec.circle('wvl', 'tot_plot', source=data_spns, color='green'     , size=3, legend='Total')
+    plt_spec.circle('wvl', 'sol_plot', source=data_spns, color='black'     , size=3, legend_label='Kurudz', fill_alpha=0.4, line_alpha=0.4)
+    plt_spec.circle('wvl', 'dif_plot', source=data_spns, color='lightgreen', size=3, legend_label='Diffuse')
+    plt_spec.circle('wvl', 'tot_plot', source=data_spns, color='green'     , size=3, legend_label='Total')
 
 
-    slider_spec = Slider(start=300, end=2200, value=wvl0, step=0.01, width=width_spec, title='Wavelength [nm]', format='0[.]00')
+    slider_spec = Slider(start=wvl_range[0], end=wvl_range[-1], value=wvl0, step=0.01, width=width_spec, height=20, title='Wavelength [nm]', format='0[.]00')
     vline_spec  = Span(location=slider_spec.value, dimension='height', line_color='black', line_dash='dashed', line_width=1)
     plt_spec.add_layout(vline_spec)
 
@@ -1467,13 +1472,13 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
 
 
     # time series plot
-    # ========================================================================================================
+    #/----------------------------------------------------------------------------\#
     xrange_s = np.nanmin(data_time.data['tmhr'])-0.1
     xrange_e = np.nanmax(data_time.data['tmhr'])+0.1
-    yrange_e = np.nanmax(data_time.data['zen_plot'])*1.1
+    yrange_e = np.nanmax(data_time.data['tot_plot'])*1.1
 
     plt_time = figure(height=height_time, width=width_time,
-                  title='Time Series at %.2f nm (Zenith) and %.2f nm (Nadir)' % (data_spec.data['zen_wvl'][index_zen_wvl], data_spec.data['nad_wvl'][index_nad_wvl]),
+                  title='Time Series at %.2f nm (Downwelling)' % (data_spns.data['wvl'][index_wvl]),
                   tools='reset,save,box_zoom,wheel_zoom,pan',
                   active_scroll='wheel_zoom', active_drag='pan', x_axis_label='Time [Hour]', y_axis_label='Flux Density',
                   x_range=[xrange_s, xrange_e],
@@ -1482,14 +1487,12 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     htool = HoverTool(tooltips = [('Time', '$x{0.0000}'), ('Flux', '$y{0.0000}')], mode='mouse', line_policy='nearest')
     plt_time.add_tools(htool)
 
-    plt_time.circle('tmhr', 'sol_plot', source=data_time, color='black'     , size=3, legend='Kurudz', fill_alpha=0.4, line_alpha=0.4)
-    plt_time.circle('tmhr', 'zen_plot', source=data_time, color='dodgerblue', size=3, legend='Zenith')
-    plt_time.circle('tmhr', 'nad_plot', source=data_time, color='lightcoral', size=3, legend='Nadir')
-    plt_time.circle('tmhr', 'dif_plot', source=data_time, color='lightgreen', size=3, legend='Diffuse')
-    plt_time.circle('tmhr', 'tot_plot', source=data_time, color='green'     , size=3, legend='Total')
+    plt_time.circle('tmhr', 'sol_plot', source=data_time, color='black'     , size=3, legend_label='Kurudz', fill_alpha=0.4, line_alpha=0.4)
+    plt_time.circle('tmhr', 'dif_plot', source=data_time, color='lightgreen', size=3, legend_label='Diffuse')
+    plt_time.circle('tmhr', 'tot_plot', source=data_time, color='green'     , size=3, legend_label='Total')
     plt_time.legend.location = 'top_right'
 
-    slider_time = Slider(start=xrange_s, end=xrange_e, value=data_time.data['tmhr'][index_tmhr], step=0.0001, width=width_time, title='Time [Hour]', format='0[.]0000')
+    slider_time = Slider(start=xrange_s, end=xrange_e, value=data_time.data['tmhr'][index_tmhr], step=0.0001, width=width_time, height=20, title='Time [Hour]', format='0[.]0000')
     vline_time  = Span(location=slider_time.value, dimension='height', line_color='black', line_dash='dashed', line_width=1)
     plt_time.add_layout(vline_time)
 
@@ -1502,15 +1505,15 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     plt_time.xaxis.major_label_text_font_size = '1.0em'
     plt_time.yaxis.axis_label_text_font_size  = '1.0em'
     plt_time.yaxis.major_label_text_font_size = '1.0em'
-    # ========================================================================================================
+    #\----------------------------------------------------------------------------/#
 
-
-    slider_spec.callback = CustomJS(args=dict(
+    # callback
+    #/----------------------------------------------------------------------------\#
+    slider_spec_callback = CustomJS(args=dict(
                              plt_t    = plt_time,
                              span_s   = vline_spec,
                              slider_s = slider_spec,
                              src_t    = data_time,
-                             src_s    = data_spec,
                              src_spns = data_spns), code="""
 function closest (num, arr) {
     var curr = 0;
@@ -1527,16 +1530,6 @@ function closest (num, arr) {
 
 var x  = src_t.data['tmhr'];
 
-var zen_wvl     = src_s.data['zen_wvl'];
-var zen_index   = closest(slider_s.value, zen_wvl);
-var zen_index_s = zen_index.toString();
-var v1 = 'zen' + zen_index_s;
-
-var nad_wvl     = src_s.data['nad_wvl'];
-var nad_index   = closest(slider_s.value, nad_wvl);
-var nad_index_s = nad_index.toString();
-var v2 = 'nad' + nad_index_s;
-
 var spns_wvl     = src_spns.data['wvl'];
 var spns_index   = closest(slider_s.value, spns_wvl);
 var spns_index_s = spns_index.toString();
@@ -1545,18 +1538,16 @@ var v4 = 'tot' + spns_index_s;
 
 var max0 = 0.0;
 for (i = 0; i < x.length; i++) {
-    if (src_t.data[v1][i]>max0) {
-    max0 = src_t.data[v1][i];
+    if (src_t.data[v4][i]>max0) {
+    max0 = src_t.data[v4][i];
     }
-    src_t.data['zen_plot'][i] = src_t.data[v1][i];
-    src_t.data['nad_plot'][i] = src_t.data[v2][i];
     src_t.data['dif_plot'][i] = src_t.data[v3][i];
     src_t.data['tot_plot'][i] = src_t.data[v4][i];
-    src_t.data['sol_plot'][i] = src_s.data['solar'][zen_index] * src_t.data['mu'][i];
+    src_t.data['sol_plot'][i] = src_spns.data['solar'][spns_index] * src_t.data['mu'][i];
 }
 src_t.change.emit();
 
-var title = 'Time Series at ' + zen_wvl[zen_index].toFixed(2).toString() + ' nm (Zenith) and ' + nad_wvl[nad_index].toFixed(2).toString() + ' nm (Nadir)' ;
+var title = 'Time Series at ' + spns_wvl[spns_index].toFixed(2).toString() + ' nm (Downwelling)';
 plt_t.title.text = title;
 
 if (max0 > 0.0) {
@@ -1565,15 +1556,16 @@ plt_t.y_range.end = max0*1.1;
 
 span_s.location = slider_s.value;
     """)
+    #\----------------------------------------------------------------------------/#
 
-
-    slider_time.callback = CustomJS(args=dict(
+    # callback
+    #/----------------------------------------------------------------------------\#
+    slider_time_callback = CustomJS(args=dict(
                              plt_s    = plt_spec,
                              plt_g    = plt_geo,
                              span_t   = vline_time,
                              slider_t = slider_time,
                              src_t  = data_time,
-                             src_s  = data_spec,
                              src_spns = data_spns,
                              src_g  = data_geo,
                              src_g0 = data_geo0,
@@ -1596,25 +1588,17 @@ var x  = src_t.data['tmhr'];
 
 var index = closest(slider_t.value, x);
 var index_s = index.toString();
-var v1 = 'zen' + index_s;
-var v2 = 'nad' + index_s;
 var v3 = 'dif' + index_s;
 var v4 = 'tot' + index_s;
 
 var max0 = 0.0;
-for (i = 0; i < src_s.data['zen_wvl'].length; i++) {
-    if (src_s.data[v1][i]>max0) {
-    max0 = src_s.data[v1][i];
-    }
-    src_s.data['zen_plot'][i] = src_s.data[v1][i];
-    src_s.data['nad_plot'][i] = src_s.data[v2][i];
-    src_s.data['sol_plot'][i] = src_s.data['solar'][i] * src_t.data['mu'][index];
-}
-src_s.change.emit();
-
 for (i = 0; i < src_spns.data['wvl'].length; i++) {
+    if (src_spns.data[v4][i]>max0) {
+    max0 = src_spns.data[v4][i];
+    }
     src_spns.data['dif_plot'][i] = src_spns.data[v3][i];
     src_spns.data['tot_plot'][i] = src_spns.data[v4][i];
+    src_spns.data['sol_plot'][i] = src_spns.data['solar'][i] * src_t.data['mu'][index];
 }
 src_spns.change.emit();
 
@@ -1629,7 +1613,7 @@ date_s = date0.getUTCFullYear() + '-'
         + ('0' + date0.getUTCMinutes()).slice(-2) + ':'
         + ('0' + date0.getUTCSeconds()).slice(-2);
 
-var title1 = 'Spectra at ' + date_s + ' UTC';
+var title1 = 'Spectra at ' + date_s + ' UTC (Downwelling)';
 plt_s.title.text = title1;
 
 if (max0 > 0.0) {
@@ -1662,12 +1646,19 @@ src_g1.change.emit();
 
 span_t.location = slider_t.value;
     """)
+    #\----------------------------------------------------------------------------/#
+
+    slider_spec.js_on_change('value', slider_spec_callback)
+    slider_time.js_on_change('value', slider_time_callback)
 
     layout0 = layout(
-              [[plt_spec, plt_geo],
-               [slider_spec],
-               [plt_time],
-               [slider_time]], sizing_mode='fixed')
+                     children=[[plt_spec, plt_geo],
+                               [slider_spec],
+                               [plt_time],
+                               [slider_time]
+                               ],
+                     sizing_mode='fixed'
+                     )
 
     save(layout0)
 
@@ -1675,6 +1666,6 @@ span_t.location = slider_t.value;
 if __name__ == '__main__':
 
     fname = '/data/hong/mygit/ssfr/examples/MAGPIE_SPN-S_2023-08-13_v1.h5'
-    data_time, data_spns, data_geo = pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=1, wvl_step=1, wvl_step_spns=4)
+    quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=2, description='MAGPIE', fname_html=None)
 
     pass
