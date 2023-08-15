@@ -214,8 +214,9 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
 
     # past flight track
     data_geo_dict_ = copy.deepcopy(data_geo_dict)
-    data_geo_dict_['x'][1:] = np.nan
-    data_geo_dict_['y'][1:] = np.nan
+    logic_good = (data_time_dict['tmhr']>(data_time_dict['tmhr'][index_tmhr]-0.25)) & (data_time_dict['tmhr']<=data_time_dict['tmhr'][index_tmhr])
+    data_geo_dict_['x'][~logic_good] = np.nan
+    data_geo_dict_['y'][~logic_good] = np.nan
     data_geo1  = ColumnDataSource(data=data_geo_dict_)
     #\--------------------------------------------------------------/#
 
@@ -271,8 +272,8 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
                   y_axis_label='Latitude',
                   x_axis_type="mercator",
                   y_axis_type="mercator",
-                  x_range=[data_geo0.data['x'][0]-25000.0, data_geo0.data['x'][0]+25000.0],
-                  y_range=[data_geo0.data['y'][0]-25000.0, data_geo0.data['y'][0]+25000.0],
+                  x_range=[data_geo0.data['x'][0]-20000.0, data_geo0.data['x'][0]+20000.0],
+                  y_range=[data_geo0.data['y'][0]-20000.0, data_geo0.data['y'][0]+20000.0],
                   output_backend='webgl',
                   )
 
@@ -530,13 +531,15 @@ src_g0.data['y'][0]   = src_g.data['y'][index];
 src_g0.data['alt'][0] = src_g.data['alt'][index];
 src_g0.change.emit();
 
-plt_g.x_range.start = src_g0.data['x'][0]-25000.0;
-plt_g.x_range.end   = src_g0.data['x'][0]+25000.0;
-plt_g.y_range.start = src_g0.data['y'][0]-25000.0;
-plt_g.y_range.end   = src_g0.data['y'][0]+25000.0;
+plt_g.x_range.start = src_g0.data['x'][0]-20000.0;
+plt_g.x_range.end   = src_g0.data['x'][0]+20000.0;
+plt_g.y_range.start = src_g0.data['y'][0]-20000.0;
+plt_g.y_range.end   = src_g0.data['y'][0]+20000.0;
+
+var index_past = closest(slider_t.value-0.25, x);
 
 for (i = 0; i < src_g.data['x'].length; i++) {
-    if (i<=index) {
+    if (i>index_past && i<=index) {
     src_g1.data['x'][i] = src_g.data['x'][i];
     src_g1.data['y'][i] = src_g.data['y'][i];
     } else {
