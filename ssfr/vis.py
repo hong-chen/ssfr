@@ -1248,7 +1248,7 @@ span_t.location = slider_t.value;
 
 
 
-def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=1, wvl_step=1, wvl_step_spns=2):
+def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=2, wvl_step=2):
 
     f0 = h5py.File(fname, 'r')
 
@@ -1273,11 +1273,11 @@ def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=1, w
     data['sza']      = f0['sza'][...][logic_tmhr][::tmhr_step]
 
     data['mu']       = np.cos(np.deg2rad(data['sza']))
-    data['solar']    = f0['tot/toa0'][...][::wvl_step_spns]
+    data['solar']    = f0['tot/toa0'][...][::wvl_step]
 
-    data['spns_wvl'] = f0['tot/wvl'][...][::wvl_step_spns]
-    data['dif_flux'] = f0['dif/flux'][...][logic_tmhr, ...][::tmhr_step, ::wvl_step_spns]
-    data['tot_flux'] = f0['tot/flux'][...][logic_tmhr, ...][::tmhr_step, ::wvl_step_spns]
+    data['spns_wvl'] = f0['tot/wvl'][...][::wvl_step]
+    data['dif_flux'] = f0['dif/flux'][...][logic_tmhr, ...][::tmhr_step, ::wvl_step]
+    data['tot_flux'] = f0['tot/flux'][...][logic_tmhr, ...][::tmhr_step, ::wvl_step]
     #\----------------------------------------------------------------------------/#
 
 
@@ -1529,6 +1529,7 @@ function closest (num, arr) {
 }
 
 var x  = src_t.data['tmhr'];
+console.log('haha');
 
 var spns_wvl     = src_spns.data['wvl'];
 var spns_index   = closest(slider_s.value, spns_wvl);
@@ -1665,7 +1666,9 @@ span_t.location = slider_t.value;
 
 if __name__ == '__main__':
 
-    fname = '/data/hong/mygit/ssfr/examples/MAGPIE_SPN-S_2023-08-13_v1.h5'
-    quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=2, description='MAGPIE', fname_html=None)
+    date_s = '2023-08-05'
+    # date_s = '2023-08-13'
+    fname = '/data/hong/mygit/ssfr/examples/MAGPIE_SPN-S_%s_v1.h5' % date_s
+    quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=2, description='MAGPIE', fname_html='spns-ql_magpie_%s.html' % date_s)
 
     pass
