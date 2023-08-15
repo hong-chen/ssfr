@@ -19,6 +19,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import ssfr
 
+_fdir_data_ = '/argus/field'
+_fdir_v0_  = '/argus/field/magpie/2023/dhc6/processed'
+_fdir_v1_  = '/argus/field/magpie/2023/dhc6/processed'
 
 def preview_magpie(fdir):
 
@@ -96,7 +99,12 @@ def preview_magpie(fdir):
     #\----------------------------------------------------------------------------/#
 
 
-def cdata_magpie_hsk_v0(date, tmhr_range=[10.0, 24.0]):
+def cdata_magpie_hsk_v0(
+        date,
+        tmhr_range=[10.0, 24.0],
+        fdir_data=_fdir_data_,
+        fdir_out=_fdir_v0_,
+        ):
 
     """
     process raw aircraft nav data
@@ -104,7 +112,7 @@ def cdata_magpie_hsk_v0(date, tmhr_range=[10.0, 24.0]):
 
     # read aircraft nav data (housekeeping file)
     #/----------------------------------------------------------------------------\#
-    fname = sorted(glob.glob('data/magpie/2023/hsk/raw/CABIN_1hz*%s*SPN-S.txt' % date.strftime('%m_%d')))[0]
+    fname = sorted(glob.glob('%s/magpie/2023/dhc6/hsk/raw/CABIN_1hz*%s*' % (fdir_data, date.strftime('%m_%d'))))[0]
     data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range)
     data_hsk['long']['data'] = -data_hsk['long']['data']
     #\----------------------------------------------------------------------------/#
@@ -118,7 +126,7 @@ def cdata_magpie_hsk_v0(date, tmhr_range=[10.0, 24.0]):
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = 'MAGPIE_HSK_%s_v0.h5' % date.strftime('%Y-%m-%d')
+    fname_h5 = '%s/MAGPIE_HSK_%s_v0.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
 
     f = h5py.File(fname_h5, 'w')
     f['tmhr'] = data_hsk['tmhr']['data']
@@ -134,7 +142,11 @@ def cdata_magpie_hsk_v0(date, tmhr_range=[10.0, 24.0]):
     f.close()
     #\----------------------------------------------------------------------------/#
 
-def cdata_magpie_spns_v0(date):
+def cdata_magpie_spns_v0(
+        date,
+        fdir_data=_fdir_data_,
+        fdir_out=_fdir_v0_,
+        ):
 
     """
     process raw SPN-S data
@@ -142,7 +154,7 @@ def cdata_magpie_spns_v0(date):
 
     # read spn-s raw data
     #/----------------------------------------------------------------------------\#
-    fdir = 'data/magpie/2023/spn-s/raw/%s' % date.strftime('%Y-%m-%d')
+    fdir = '%s/magpie/2023/dhc6/spn-s/raw/%s' % (fdir_data, date.strftime('%Y-%m-%d'))
 
     fname_dif = sorted(glob.glob('%s/Diffuse.txt' % fdir))[0]
     data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
@@ -168,7 +180,7 @@ def cdata_magpie_spns_v0(date):
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = 'MAGPIE_SPN-S_%s_v0.h5' % date.strftime('%Y-%m-%d')
+    fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
 
     f = h5py.File(fname_h5, 'w')
 
@@ -187,7 +199,12 @@ def cdata_magpie_spns_v0(date):
     f.close()
     #\----------------------------------------------------------------------------/#
 
-def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
+def cdata_magpie_spns_v1(
+        date,
+        time_offset=0.0,
+        fdir_data=_fdir_v0_,
+        fdir_out=_fdir_v1_,
+        ):
 
     """
     check for time offset and merge SPN-S data with aircraft data
@@ -238,7 +255,7 @@ def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = 'MAGPIE_SPN-S_%s_v1.h5' % date.strftime('%Y-%m-%d')
+    fname_h5 = '%s/MAGPIE_SPN-S_%s_v1.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
 
     f = h5py.File(fname_h5, 'w')
 
@@ -279,5 +296,5 @@ if __name__ == '__main__':
 
     for date in dates:
         date_s = date.strftime('%Y-%m-%d')
-        fname = 'MAGPIE_SPN-S_%s_v1.h5' % date_s
+        fname = '%s/MAGPIE_SPN-S_%s_v1.h5' % (_fdir_v1_, date_s)
         ssfr.vis.quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description='MAGPIE', fname_html='spns-ql_magpie_%s.html' % date_s)
