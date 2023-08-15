@@ -272,13 +272,12 @@ if __name__ == '__main__':
             datetime.datetime(2023, 8, 13), \
         ]
 
-    # for date in dates:
-    #     cdata_magpie_hsk_v0(date)
-    #     cdata_magpie_spns_v0(date)
-    #     cdata_magpie_spns_v1(date)
+    for date in dates:
+        cdata_magpie_hsk_v0(date)
+        cdata_magpie_spns_v0(date)
+        cdata_magpie_spns_v1(date)
 
-    # for date in dates:
-    for date in [dates[-1]]:
+    for date in dates:
         date_s = date.strftime('%Y-%m-%d')
         fname = 'MAGPIE_SPN-S_%s_v1.h5' % date_s
         ssfr.vis.quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description='MAGPIE', fname_html='spns-ql_magpie_%s.html' % date_s)
