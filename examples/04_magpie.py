@@ -167,11 +167,6 @@ def cdata_magpie_spns_v0(
     #/----------------------------------------------------------------------------\#
     flux_toa = ssfr.util.get_solar_kurudz()
 
-    wvl_dif = data0_dif.data['wavelength']
-    f_dn_sol_dif = np.zeros_like(wvl_dif)
-    for i, wvl0 in enumerate(wvl_dif):
-        f_dn_sol_dif[i] = ssfr.util.cal_solar_flux_toa(wvl0, flux_toa[:, 0], flux_toa[:, 1])
-
     wvl_tot = data0_tot.data['wavelength']
     f_dn_sol_tot = np.zeros_like(wvl_tot)
     for i, wvl0 in enumerate(wvl_tot):
@@ -188,7 +183,6 @@ def cdata_magpie_spns_v0(
     g1['tmhr']  = data0_dif.data['tmhr']
     g1['wvl']   = data0_dif.data['wavelength']
     g1['flux']  = data0_dif.data['flux']
-    g1['toa0']  = f_dn_sol_dif
 
     g2 = f.create_group('tot')
     g2['tmhr']  = data0_tot.data['tmhr']
@@ -231,7 +225,6 @@ def cdata_magpie_spns_v1(
     f_dn_dif  = f['dif/flux'][...]
     wvl_dif   = f['dif/wvl'][...]
     tmhr_dif  = f['dif/tmhr'][...]
-    f_dn_dif_toa0 = f['dif/toa0'][...]
 
     f_dn_tot  = f['tot/flux'][...]
     wvl_tot   = f['tot/wvl'][...]
@@ -269,7 +262,6 @@ def cdata_magpie_spns_v1(
     g1 = f.create_group('dif')
     g1['wvl']   = wvl_dif
     g1['flux']  = flux_dif
-    g1['toa0']  = f_dn_dif_toa0
 
     g2 = f.create_group('tot')
     g2['wvl']   = wvl_tot
