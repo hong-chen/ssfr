@@ -289,3 +289,9 @@ if __name__ == '__main__':
         # cdata_magpie_hsk_v0(date)
         # cdata_magpie_spns_v0(date)
         cdata_magpie_spns_v1(date)
+
+    date_s = '2023-08-02'
+    # date_s = '2023-08-05'
+    # date_s = '2023-08-13'
+    fname = '/data/hong/mygit/ssfr/examples/MAGPIE_SPN-S_%s_v1.h5' % date_s
+    quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=2, description='MAGPIE', fname_html='spns-ql_magpie_%s.html' % date_s)

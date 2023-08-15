@@ -1409,8 +1409,8 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
                   active_scroll='wheel_zoom', active_drag='pan',
                   x_axis_label='Longitude', y_axis_label='Latitude',
                   x_axis_type="mercator", y_axis_type="mercator",
-                  x_range=[data_geo.data['x'][index_tmhr]-50000.0, data_geo.data['x'][index_tmhr]+50000.0],
-                  y_range=[data_geo.data['y'][index_tmhr]-50000.0, data_geo.data['y'][index_tmhr]+50000.0], output_backend='webgl')
+                  x_range=[data_geo.data['x'][index_tmhr]-25000.0, data_geo.data['x'][index_tmhr]+25000.0],
+                  y_range=[data_geo.data['y'][index_tmhr]-25000.0, data_geo.data['y'][index_tmhr]+25000.0], output_backend='webgl')
 
     tile_provider = get_provider(Vendors.CARTODBPOSITRON)
     plt_geo.add_tile(tile_provider)
@@ -1454,7 +1454,7 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     plt_spec.circle('wvl', 'tot_plot', source=data_spns, color='green'     , size=3, legend_label='Total')
 
 
-    slider_spec = Slider(start=wvl_range[0], end=wvl_range[-1], value=wvl0, step=0.01, width=width_spec, height=20, title='Wavelength [nm]', format='0[.]00')
+    slider_spec = Slider(start=wvl_range[0], end=wvl_range[-1], value=wvl0, step=0.01, width=width_spec, height=40, title='Wavelength [nm]', format='0[.]00')
     vline_spec  = Span(location=slider_spec.value, dimension='height', line_color='black', line_dash='dashed', line_width=1)
     plt_spec.add_layout(vline_spec)
 
@@ -1492,7 +1492,7 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     plt_time.circle('tmhr', 'tot_plot', source=data_time, color='green'     , size=3, legend_label='Total')
     plt_time.legend.location = 'top_right'
 
-    slider_time = Slider(start=xrange_s, end=xrange_e, value=data_time.data['tmhr'][index_tmhr], step=0.0001, width=width_time, height=20, title='Time [Hour]', format='0[.]0000')
+    slider_time = Slider(start=xrange_s, end=xrange_e, value=data_time.data['tmhr'][index_tmhr], step=0.0001, width=width_time, height=40, title='Time [Hour]', format='0[.]0000')
     vline_time  = Span(location=slider_time.value, dimension='height', line_color='black', line_dash='dashed', line_width=1)
     plt_time.add_layout(vline_time)
 
@@ -1529,13 +1529,13 @@ function closest (num, arr) {
 }
 
 var x  = src_t.data['tmhr'];
-console.log('haha');
 
 var spns_wvl     = src_spns.data['wvl'];
 var spns_index   = closest(slider_s.value, spns_wvl);
 var spns_index_s = spns_index.toString();
 var v3 = 'dif' + spns_index_s;
 var v4 = 'tot' + spns_index_s;
+var i = 0;
 
 var max0 = 0.0;
 for (i = 0; i < x.length; i++) {
@@ -1591,6 +1591,7 @@ var index = closest(slider_t.value, x);
 var index_s = index.toString();
 var v3 = 'dif' + index_s;
 var v4 = 'tot' + index_s;
+var i = 0;
 
 var max0 = 0.0;
 for (i = 0; i < src_spns.data['wvl'].length; i++) {
@@ -1606,7 +1607,10 @@ src_spns.change.emit();
 var msec0 = (src_t.data['jday'][index]-1.0)*86400000.0;
 var date0 = new Date(msec0);
 
-var month0 = date0.getUTCMonth() + 1
+var month0 = date0.getUTCMonth() + 1;
+
+var date_s = '';
+
 date_s = date0.getUTCFullYear() + '-'
         + ('0' + month0).slice(-2) + '-'
         + ('0' + date0.getUTCDate()).slice(-2) + ' '
@@ -1624,10 +1628,10 @@ plt_s.y_range.end = max0*1.1;
 var title2 = 'Aircraft at ' + src_g.data['alt'][index].toFixed(4).toString() + ' km';
 plt_g.title.text = title2;
 
-plt_g.x_range.start = src_g.data['x'][index]-50000.0;
-plt_g.x_range.end   = src_g.data['x'][index]+50000.0;
-plt_g.y_range.start = src_g.data['y'][index]-50000.0;
-plt_g.y_range.end   = src_g.data['y'][index]+50000.0;
+plt_g.x_range.start = src_g.data['x'][index]-25000.0;
+plt_g.x_range.end   = src_g.data['x'][index]+25000.0;
+plt_g.y_range.start = src_g.data['y'][index]-25000.0;
+plt_g.y_range.end   = src_g.data['y'][index]+25000.0;
 
 src_g0.data['x'][0]   = src_g.data['x'][index];
 src_g0.data['y'][0]   = src_g.data['y'][index];
@@ -1666,9 +1670,5 @@ span_t.location = slider_t.value;
 
 if __name__ == '__main__':
 
-    date_s = '2023-08-05'
-    # date_s = '2023-08-13'
-    fname = '/data/hong/mygit/ssfr/examples/MAGPIE_SPN-S_%s_v1.h5' % date_s
-    quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=2, description='MAGPIE', fname_html='spns-ql_magpie_%s.html' % date_s)
 
     pass
