@@ -1,5 +1,6 @@
 import os
 import sys
+import copy
 import glob
 import datetime
 import h5py
@@ -1367,13 +1368,19 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     else:
         index_tmhr = np.argmin(np.abs(data_time_dict['tmhr']-tmhr0))
 
+
+    data_geo   = ColumnDataSource(data=data_geo_dict)
+
     data_geo0  = ColumnDataSource(data={'x':[data_geo_dict['x'][index_tmhr]],
                                         'y':[data_geo_dict['y'][index_tmhr]],
                                         'lon':[data_geo_dict['lon'][index_tmhr]],
                                         'lat':[data_geo_dict['lat'][index_tmhr]],
                                         'alt':[data_geo_dict['alt'][index_tmhr]]})
-    data_geo1  = ColumnDataSource(data=data_geo_dict)
-    data_geo   = ColumnDataSource(data=data_geo_dict)
+
+    data_geo_dict_ = copy.deepcopy(data_geo_dict)
+    data_geo_dict_['x'][1:] = np.nan
+    data_geo_dict_['y'][1:] = np.nan
+    data_geo1  = ColumnDataSource(data=data_geo_dict_)
 
     data_time  = ColumnDataSource(data=data_time_dict)
     data_spns  = ColumnDataSource(data=data_spns_dict)
@@ -1669,6 +1676,5 @@ span_t.location = slider_t.value;
 
 
 if __name__ == '__main__':
-
 
     pass
