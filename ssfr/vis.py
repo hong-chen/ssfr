@@ -5,22 +5,9 @@ import glob
 import datetime
 import h5py
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import matplotlib.path as mpl_path
-import matplotlib.image as mpl_img
-import matplotlib.patches as mpatches
-import matplotlib.gridspec as gridspec
-from matplotlib import rcParams, ticker
-from matplotlib.ticker import FixedLocator
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-# import cartopy.crs as ccrs
-# mpl.use('Agg')
-
 
 
 import ssfr
-
 
 
 __all__ = [
@@ -42,25 +29,32 @@ def lonlat_to_xy(lon, lat):
 
     return x, y
 
-def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=2, wvl_step=2):
+def pre_bokeh_spns(
+        fname,
+        tmhr0=None,
+        wvl0=None,
+        tmhr_range=None,
+        tmhr_step=10,
+        wvl_step=2,
+        ):
 
     """
     In the original file (specified by <fname>),
 
-    'jday': julian day (first day is 0001-01-01)
-    'tmhr': time in hour
-    'lon': longitude
-    'lat': latitude
-    'alt': altitude
-    'sza': solar zenith angle
+        'jday': julian day (first day is 0001-01-01)
+        'tmhr': time in hour
+        'lon': longitude
+        'lat': latitude
+        'alt': altitude
+        'sza': solar zenith angle
 
-    'tot/toa0': TOA downwelling irradiance from Kurudz solar file
+        'tot/toa0': TOA downwelling irradiance from Kurudz solar file
 
-    'tot/wvl': wavelength for total spectral irradiance
-    'tot/flux': total spectral irradiance
+        'tot/wvl': wavelength for total spectral irradiance
+        'tot/flux': total spectral irradiance
 
-    'dif/wvl': wavelength for diffuse spectral irradiance
-    'dif/flux': diffuse spectral irradiance
+        'dif/wvl': wavelength for diffuse spectral irradiance
+        'dif/flux': diffuse spectral irradiance
     """
 
     f0 = h5py.File(fname, 'r')
@@ -172,7 +166,17 @@ def pre_bokeh_spns(fname, tmhr0=None, wvl0=None, tmhr_range=None, tmhr_step=2, w
 
     return data_time, data_spec, data_geo
 
-def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=2, description=None, fname_html=None):
+def quicklook_bokeh_spns(
+        fname,
+        wvl0=None,
+        tmhr0=None,
+        tmhr_range=None,
+        wvl_range=[350.0, 800.0],
+        tmhr_step=10,
+        wvl_step=2,
+        description=None,
+        fname_html=None
+        ):
 
     from bokeh.layouts import layout, gridplot
     from bokeh.models import ColumnDataSource, ColorBar
@@ -182,7 +186,6 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     from bokeh.transform import linear_cmap
     from bokeh.palettes import RdYlBu6, Spectral6
     from bokeh.tile_providers import get_provider, Vendors
-
 
     # prepare data
     #/----------------------------------------------------------------------------\#
@@ -241,7 +244,7 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
         title = 'SPN-S Quicklook Plot'
 
     if fname_html is None:
-        fname_html = 'spns-bokeh-plot_created-on-%s.html' % datetime.datetime.now().strftime('%Y%m%d')
+        fname_html = 'spns-bokeh-plot_created-at-%s.html' % datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
     output_file(fname_html, title=title, mode='inline')
 
@@ -566,7 +569,6 @@ span_t.location = slider_t.value;
                      )
 
     save(layout0)
-
 
 if __name__ == '__main__':
 
