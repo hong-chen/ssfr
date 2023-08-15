@@ -1632,7 +1632,12 @@ if (max0 > 0.0) {
 plt_s.y_range.end = max0*1.1;
 }
 
+if (src_g.data['alt'][index] < 1.0){
+var alt_m  = src_g.data['alt'][index]*1000.0;
+var title2 = 'Aircraft at ' + alt_m.toFixed(1).toString() + ' m';
+} else {
 var title2 = 'Aircraft at ' + src_g.data['alt'][index].toFixed(4).toString() + ' km';
+}
 plt_g.title.text = title2;
 
 plt_g.x_range.start = src_g.data['x'][index]-25000.0;
