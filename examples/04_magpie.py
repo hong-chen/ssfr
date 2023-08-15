@@ -265,18 +265,6 @@ def cdata_magpie_spns_v1(date, wvl0=555.0, time_offset=0.0, fdir_data='.'):
 
 if __name__ == '__main__':
 
-    # fdir = 'data/magpie/2023/spn-s/raw/2023-08-02'
-    # preview_magpie(fdir)
-
-    # fdir = 'data/magpie/2023/spn-s/raw/2023-08-03'
-    # preview_magpie(fdir)
-
-    # fdir = 'data/magpie/2023/spn-s/raw/2023-08-05'
-    # preview_magpie(fdir)
-
-    # fdir = 'data/magpie/2023/spn-s/raw/2023-08-13'
-    # preview_magpie(fdir)
-
     dates = [
             datetime.datetime(2023, 8, 2),  \
             datetime.datetime(2023, 8, 3),  \
@@ -284,10 +272,10 @@ if __name__ == '__main__':
             datetime.datetime(2023, 8, 13), \
         ]
 
-    # for date in dates:
-    #     cdata_magpie_hsk_v0(date)
-    #     cdata_magpie_spns_v0(date)
-    #     cdata_magpie_spns_v1(date)
+    for date in dates:
+        cdata_magpie_hsk_v0(date)
+        cdata_magpie_spns_v0(date)
+        cdata_magpie_spns_v1(date)
 
     for date in dates:
         date_s = date.strftime('%Y-%m-%d')
