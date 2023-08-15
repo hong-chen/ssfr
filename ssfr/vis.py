@@ -1410,8 +1410,13 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
 
     # map plot
     #/----------------------------------------------------------------------------\#
+    if data_geo.data['alt'][index_tmhr] < 1.0:
+        title_ = 'Aircraft at %.1f m' % data_geo.data['alt'][index_tmhr]
+    else:
+        title_ = 'Aircraft at %.4f km' % data_geo.data['alt'][index_tmhr]
+
     plt_geo  = figure(plot_height=height_geo, plot_width=width_geo,
-                  title='Aircraft at %.4f km' % data_geo.data['alt'][index_tmhr],
+                  title=title_,
                   tools='reset,save,box_zoom,wheel_zoom,pan',
                   active_scroll='wheel_zoom', active_drag='pan',
                   x_axis_label='Longitude', y_axis_label='Latitude',
