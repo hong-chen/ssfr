@@ -279,7 +279,7 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     tile_provider = get_provider(Vendors.CARTODBPOSITRON)
     plt_geo.add_tile(tile_provider)
 
-    htool = HoverTool(tooltips=[('Longitude', '@lon{0.0000}'), ('Latitude', '@lat{0.0000}'), ('Altitude', '@alt{0.0000}km'), ('Solar Zenith', '@sza{0.00}')], mode='mouse', line_policy='nearest')
+    htool = HoverTool(tooltips=[('Longitude', '@lon{0.0000}º'), ('Latitude', '@lat{0.0000}º'), ('Altitude', '@alt{0.0000}km'), ('Solar Zenith', '@sza{0.00}º')], mode='mouse', line_policy='nearest')
     plt_geo.add_tools(htool)
 
     mapper = linear_cmap(field_name='alt', palette=Spectral6, low=0.0, high=np.round(np.nanmax(data_geo_dict['alt']), decimals=0))
