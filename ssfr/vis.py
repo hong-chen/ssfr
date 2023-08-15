@@ -321,9 +321,9 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     htool = HoverTool(tooltips = [('Wavelength', '$x{0.00}nm'), ('Flux', '$y{0.0000}')], mode='mouse', line_policy='nearest')
     plt_spec.add_tools(htool)
 
-    plt_spec.circle('wvl0', 'toa_plot'  , source=data_spec, color='gray'      , size=3, legend_label='TOA↓', fill_alpha=0.4, line_alpha=0.4)
-    plt_spec.circle('wvl0', 'flux0_plot', source=data_spec, color='green'     , size=3, legend_label='Total↓')
-    plt_spec.circle('wvl1', 'flux1_plot', source=data_spec, color='lightgreen', size=3, legend_label='Diffuse↓')
+    plt_spec.circle('wvl0', 'toa_plot'  , source=data_spec, color='gray'      , size=3, legend_label='TOA↓ (Kurudz)', fill_alpha=0.4, line_alpha=0.4)
+    plt_spec.circle('wvl0', 'flux0_plot', source=data_spec, color='green'     , size=3, legend_label='Total↓ (SPN-S)')
+    plt_spec.circle('wvl1', 'flux1_plot', source=data_spec, color='lightgreen', size=3, legend_label='Diffuse↓ (SPN-S)')
 
 
     slider_spec = Slider(start=wvl_range[0], end=wvl_range[-1], value=wvl0, step=0.01, width=width_spec, height=40, title='Wavelength [nm]', format='0[.]00')
@@ -331,9 +331,10 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     plt_spec.add_layout(vline_spec)
 
     plt_spec.legend.click_policy  = 'hide'
+    plt_spec.legend.location = 'top_right'
+    plt_spec.legend.background_fill_alpha = 0.8
     plt_spec.title.text_font_size = '1.3em'
     plt_spec.title.align     = 'center'
-    plt_spec.legend.location = 'top_right'
     plt_spec.xaxis.axis_label_text_font_style = 'normal'
     plt_spec.yaxis.axis_label_text_font_style = 'normal'
     plt_spec.xaxis.axis_label_text_font_size  = '1.0em'
@@ -367,16 +368,17 @@ def quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_rang
     plt_time.add_tools(htool)
 
     plt_time.varea(x=data_time.data['tmhr'], y2=data_time.data['alt'], fill_alpha=0.2, fill_color='purple')
-    plt_time.circle('tmhr', 'toa_plot'  , source=data_time, color='gray'      , size=3, legend_label='TOA↓', fill_alpha=0.4, line_alpha=0.4)
-    plt_time.circle('tmhr', 'flux0_plot', source=data_time, color='green'     , size=3, legend_label='Total↓')
-    plt_time.circle('tmhr', 'flux1_plot', source=data_time, color='lightgreen', size=3, legend_label='Diffuse↓')
-    plt_time.legend.location = 'top_right'
+    plt_time.circle('tmhr', 'toa_plot'  , source=data_time, color='gray'      , size=3, legend_label='TOA↓ (Kurudz)', fill_alpha=0.4, line_alpha=0.4)
+    plt_time.circle('tmhr', 'flux0_plot', source=data_time, color='green'     , size=3, legend_label='Total↓ (SPN-S)')
+    plt_time.circle('tmhr', 'flux1_plot', source=data_time, color='lightgreen', size=3, legend_label='Diffuse↓ (SPN-S)')
 
     slider_time = Slider(start=xrange_s, end=xrange_e, value=data_time.data['tmhr'][index_tmhr], step=0.0001, width=width_time, height=40, title='Time [Hour]', format='0[.]0000')
     vline_time  = Span(location=slider_time.value, dimension='height', line_color='black', line_dash='dashed', line_width=1)
     plt_time.add_layout(vline_time)
 
     plt_time.legend.click_policy  = 'hide'
+    plt_time.legend.location = 'top_right'
+    plt_time.legend.background_fill_alpha = 0.8
     plt_time.title.text_font_size = '1.3em'
     plt_time.title.align          = 'center'
     plt_time.xaxis.axis_label_text_font_style = 'normal'
