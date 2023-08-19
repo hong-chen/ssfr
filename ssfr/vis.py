@@ -371,7 +371,7 @@ def quicklook_bokeh_spns(
     htool = HoverTool(tooltips = [('Time', '$x{0.0000}'), ('Flux', '$y{0.0000}')], mode='mouse', line_policy='nearest')
     plt_time.add_tools(htool)
 
-    plt_time.varea(x=data_time.data['tmhr'], y2=data_time.data['alt'], fill_alpha=0.2, fill_color='purple')
+    plt_time.varea(x=data_time.data['tmhr'], y1=np.zeros_like(data_time.data['tmhr']), y2=data_time.data['alt'], fill_alpha=0.2, fill_color='purple')
     plt_time.circle('tmhr', 'toa_plot'  , source=data_time, color='gray'      , size=3, legend_label='TOA↓ (Kurudz)', fill_alpha=0.4, line_alpha=0.4)
     plt_time.circle('tmhr', 'flux0_plot', source=data_time, color='green'     , size=3, legend_label='Total↓ (SPN-S)')
     plt_time.circle('tmhr', 'flux1_plot', source=data_time, color='lightgreen', size=3, legend_label='Diffuse↓ (SPN-S)')
