@@ -510,21 +510,21 @@ def cal_pit_offset(
 if __name__ == '__main__':
 
     dates = [
-            datetime.datetime(2023, 8, 2),  \
-            datetime.datetime(2023, 8, 3),  \
-            datetime.datetime(2023, 8, 5),  \
-            datetime.datetime(2023, 8, 13), \
-            datetime.datetime(2023, 8, 14), \
-            datetime.datetime(2023, 8, 15), \
-            datetime.datetime(2023, 8, 16), \
-            datetime.datetime(2023, 8, 18), \
+            datetime.datetime(2023, 8, 2),
+            datetime.datetime(2023, 8, 3),
+            datetime.datetime(2023, 8, 5),
+            datetime.datetime(2023, 8, 13),
+            datetime.datetime(2023, 8, 14),
+            datetime.datetime(2023, 8, 15), # heavy aerosol condition
+            datetime.datetime(2023, 8, 16), # data of this flight looks abnormal
+            datetime.datetime(2023, 8, 18),
         ]
 
     for date in dates:
-        cdata_magpie_hsk_v0(date)
-        cdata_magpie_spns_v0(date)
-        cdata_magpie_spns_v1(date)
-        cdata_magpie_spns_v2(date)
+        cdata_magpie_hsk_v0(date)  # read aircraft raw data and calculate solar angles
+        cdata_magpie_spns_v0(date) # read SPN-S raw data
+        cdata_magpie_spns_v1(date) # interpolate SPN-S data to aircraft time coordinate
+        cdata_magpie_spns_v2(date) # apply attitude correction (pitch, roll, and heading) to SPN-S data
 
     for date in dates:
         date_s = date.strftime('%Y-%m-%d')
