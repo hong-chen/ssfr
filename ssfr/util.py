@@ -418,7 +418,7 @@ def read_iwg(fname, date_ref=None, tmhr_range=None):
 
 
 
-def read_cabin(fname, tmhr_range=None, Nskip=1, lower=True):
+def read_cabin(fname, tmhr_range=None, Nskip=1, lower=True, time_units='sec'):
 
     """
     Reader for Cabin file from Twin Otter aircraft (data shared by Dr. Anthony Bucholtz)
@@ -451,7 +451,10 @@ def read_cabin(fname, tmhr_range=None, Nskip=1, lower=True):
     data_all = np.genfromtxt(fname, skip_header=Nskip, delimiter='\t', invalid_raise=False)
 
     data = OrderedDict()
-    data['tmhr'] = dict(data=data_all[:, 1]/3600.0, units='Hour')
+    if time_units.lower() == 'sec':
+        data['tmhr'] = dict(data=data_all[:, 1]/3600.0, units='Hour')
+    elif time_units.lower() == 'hour':
+        data['tmhr'] = dict(data=data_all[:, 1], units='Hour')
 
     if tmhr_range != None:
         logic = (data['tmhr']['data']>=tmhr_range[0]) & (data['tmhr']['data']<=tmhr_range[1])

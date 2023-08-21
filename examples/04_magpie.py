@@ -40,7 +40,10 @@ def cdata_magpie_hsk_v0(
     # read aircraft nav data (housekeeping file)
     #/----------------------------------------------------------------------------\#
     fname = sorted(glob.glob('%s/magpie/2023/dhc6/hsk/raw/CABIN_1hz*%s*' % (fdir_data, date.strftime('%m_%d'))))[0]
-    data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range)
+    if date == datetime.datetime(2023, 8, 21):
+        data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='hour')
+    else:
+        data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='sec')
     data_hsk['long']['data'] = -data_hsk['long']['data']
     #\----------------------------------------------------------------------------/#
 
@@ -485,7 +488,8 @@ if __name__ == '__main__':
             # datetime.datetime(2023, 8, 15), # heavy aerosol condition
             # datetime.datetime(2023, 8, 16), # data of this flight looks abnormal
             # datetime.datetime(2023, 8, 18),
-            datetime.datetime(2023, 8, 20),
+            # datetime.datetime(2023, 8, 20),
+            datetime.datetime(2023, 8, 21),
         ]
 
     for date in dates:
