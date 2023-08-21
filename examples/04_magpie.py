@@ -100,37 +100,6 @@ def cdata_magpie_spns_v0(
         f_dn_sol_tot[i] = ssfr.util.cal_solar_flux_toa(wvl0, flux_toa[:, 0], flux_toa[:, 1])
     #\----------------------------------------------------------------------------/#
 
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(8, 6))
-        # fig.suptitle('Figure')
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-        ax1.scatter(data0_tot.data['tmhr'], data0_tot.data['flux'][..., 200], s=6, c='k', lw=0.0)
-        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        #\--------------------------------------------------------------/#
-        # save figure
-        #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
-    #\----------------------------------------------------------------------------/#
-
     # save processed data
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
@@ -237,8 +206,6 @@ def cdata_magpie_spns_v1(
     f.close()
     #\----------------------------------------------------------------------------/#
 
-
-
 def cdata_magpie_spns_v2(
         date,
         time_offset=0.0,
@@ -326,7 +293,7 @@ def cdata_magpie_spns_v2(
     #\----------------------------------------------------------------------------/#
 
 
-    if True:
+    if False:
         wvl0 = 532.0
         index_wvl = np.argmin(np.abs(wvl_tot-wvl0))
 
@@ -510,14 +477,15 @@ def cal_pit_offset(
 if __name__ == '__main__':
 
     dates = [
-            datetime.datetime(2023, 8, 2),
-            datetime.datetime(2023, 8, 3),
-            datetime.datetime(2023, 8, 5),
-            datetime.datetime(2023, 8, 13),
-            datetime.datetime(2023, 8, 14),
-            datetime.datetime(2023, 8, 15), # heavy aerosol condition
-            datetime.datetime(2023, 8, 16), # data of this flight looks abnormal
-            datetime.datetime(2023, 8, 18),
+            # datetime.datetime(2023, 8, 2),
+            # datetime.datetime(2023, 8, 3),
+            # datetime.datetime(2023, 8, 5),
+            # datetime.datetime(2023, 8, 13),
+            # datetime.datetime(2023, 8, 14),
+            # datetime.datetime(2023, 8, 15), # heavy aerosol condition
+            # datetime.datetime(2023, 8, 16), # data of this flight looks abnormal
+            # datetime.datetime(2023, 8, 18),
+            datetime.datetime(2023, 8, 20),
         ]
 
     for date in dates:
