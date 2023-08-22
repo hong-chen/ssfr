@@ -42,6 +42,7 @@ def cdata_magpie_hsk_v0(
     fname = sorted(glob.glob('%s/magpie/2023/dhc6/hsk/raw/CABIN_1hz*%s*' % (fdir_data, date.strftime('%m_%d'))))[0]
     if date == datetime.datetime(2023, 8, 21):
         data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='hour')
+        data_hsk['tmhr']['data'] = 13.6 + (-99 + np.arange(data_hsk['tmhr']['data'].size))/3600.0
     else:
         data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='sec')
     data_hsk['long']['data'] = -data_hsk['long']['data']
