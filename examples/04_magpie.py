@@ -40,18 +40,19 @@ def cdata_magpie_hsk_v0(
     # read aircraft nav data (housekeeping file)
     #/----------------------------------------------------------------------------\#
     fname = sorted(glob.glob('%s/magpie/2023/dhc6/hsk/raw/CABIN_1hz*%s*' % (fdir_data, date.strftime('%m_%d'))))[0]
-    if date == datetime.datetime(2023, 8, 21):
-        data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='hour')
+    # if date == datetime.datetime(2023, 8, 21):
+    #     data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='hour')
 
-        tmhr_ = data_hsk['tmhr']['data'].copy()
-        tmhr0_ = tmhr_[0]
-        Ntmhr0_ = (tmhr_==tmhr0_).sum()
-        tmhr0 = tmhr0_ + 0.1 - Ntmhr0_/3600.0
-        tmhr = tmhr0 + np.arange(data_hsk['tmhr']['data'].size)/3600.0
-        data_hsk['tmhr']['data'] = tmhr
+    #     tmhr_ = data_hsk['tmhr']['data'].copy()
+    #     tmhr0_ = tmhr_[0]
+    #     Ntmhr0_ = (tmhr_==tmhr0_).sum()
+    #     tmhr0 = tmhr0_ + 0.1 - Ntmhr0_/3600.0
+    #     tmhr = tmhr0 + np.arange(data_hsk['tmhr']['data'].size)/3600.0
+    #     data_hsk['tmhr']['data'] = tmhr
 
-    else:
-        data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='sec')
+    # else:
+    #     data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='sec')
+    data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='sec')
     data_hsk['long']['data'] = -data_hsk['long']['data']
     #\----------------------------------------------------------------------------/#
 
@@ -497,7 +498,8 @@ if __name__ == '__main__':
             # datetime.datetime(2023, 8, 16), # data of this flight looks abnormal
             # datetime.datetime(2023, 8, 18),
             # datetime.datetime(2023, 8, 20),
-            datetime.datetime(2023, 8, 21),
+            # datetime.datetime(2023, 8, 21),
+            datetime.datetime(2023, 8, 22),
         ]
 
     for date in dates:
