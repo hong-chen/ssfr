@@ -19,11 +19,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import ssfr
 
+
 _fdir_data_ = '/argus/field'
 _fdir_v0_  = '/argus/field/magpie/2023/dhc6/processed'
 _fdir_v1_  = '/argus/field/magpie/2023/dhc6/processed'
 _fdir_v2_  = '/argus/field/magpie/2023/dhc6/processed'
-
 
 
 def cdata_magpie_hsk_v0(
@@ -489,21 +489,22 @@ def cal_pit_offset(
 if __name__ == '__main__':
 
     dates = [
-            # datetime.datetime(2023, 8, 2),
-            # datetime.datetime(2023, 8, 3),
-            # datetime.datetime(2023, 8, 5),
-            # datetime.datetime(2023, 8, 13),
-            # datetime.datetime(2023, 8, 14),
-            # datetime.datetime(2023, 8, 15), # heavy aerosol condition
-            # datetime.datetime(2023, 8, 16), # data of this flight looks abnormal
-            # datetime.datetime(2023, 8, 18),
-            # datetime.datetime(2023, 8, 20),
-            # datetime.datetime(2023, 8, 21),
-            # datetime.datetime(2023, 8, 22),
-            # datetime.datetime(2023, 8, 23),
-            # datetime.datetime(2023, 8, 25),
-            # datetime.datetime(2023, 8, 26),
+            datetime.datetime(2023, 8, 2),
+            datetime.datetime(2023, 8, 3),
+            datetime.datetime(2023, 8, 5),
+            datetime.datetime(2023, 8, 13),
+            datetime.datetime(2023, 8, 14), # heavy aerosol condition
+            datetime.datetime(2023, 8, 15), # heaviest aerosol condition
+            datetime.datetime(2023, 8, 16),
+            datetime.datetime(2023, 8, 18),
+            datetime.datetime(2023, 8, 20),
+            datetime.datetime(2023, 8, 21),
+            datetime.datetime(2023, 8, 22),
+            datetime.datetime(2023, 8, 23),
+            datetime.datetime(2023, 8, 25),
+            datetime.datetime(2023, 8, 26),
             datetime.datetime(2023, 8, 27),
+            datetime.datetime(2023, 8, 28), # bad dewpoint temperature (thus RH) data at the end of the flight
         ]
 
     for date in dates:
