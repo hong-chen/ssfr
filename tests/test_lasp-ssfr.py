@@ -22,9 +22,11 @@ import ssfr
 
 def test_process_lasp_ssfr():
 
-    fdir = 'data/SSFR'
+    fdir = 'data/SSFR/2023-10-02'
 
-    for fdir0  in sorted(glob.glob('%s/*' % fdir)):
+    # for fdir0  in sorted(glob.glob('%s/*' % fdir)):
+    for fdir0  in [fdir]:
+
         fnames = ssfr.util.get_all_files(fdir0)
 
         ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
@@ -32,13 +34,13 @@ def test_process_lasp_ssfr():
         dset = 'data_raw'
         extra_tag = '%s_dset-raw_' % os.path.basename(fdir0)
         data0 = getattr(ssfr0, dset)
-        ssfr.vis.quicklook_ssfr_raw(data0, extra_tag=extra_tag)
+        ssfr.vis.quicklook_mpl_ssfr_raw(data0, extra_tag=extra_tag)
 
-        for i in range(ssfr0.Ndata):
-            dset = 'data%d' % i
-            extra_tag = '%s_dset-%d_' % (os.path.basename(fdir0), i)
-            data0 = getattr(ssfr0, dset)
-            ssfr.vis.quicklook_ssfr_raw(data0, extra_tag=extra_tag)
+        # for i in range(ssfr0.Ndata):
+        #     dset = 'data%d' % i
+        #     extra_tag = '%s_dset-%d_' % (os.path.basename(fdir0), i)
+        #     data0 = getattr(ssfr0, dset)
+        #     ssfr.vis.quicklook_mpl_ssfr_raw(data0, extra_tag=extra_tag)
 
 
 if __name__ == '__main__':

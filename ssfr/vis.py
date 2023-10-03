@@ -13,6 +13,7 @@ import ssfr
 __all__ = [
         'quicklook_bokeh_ssfr_and_spns',
         'quicklook_bokeh_spns',
+        'quicklook_bokeh_ssfr_raw',
         ]
 
 
@@ -569,6 +570,255 @@ span_t.location = slider_t.value;
                      )
 
     save(layout0)
+
+
+
+def quicklook_mpl_ssfr_raw(
+        data0,
+        ichan=100,
+        extra_tag='',
+        plot_corr=False,
+        ):
+
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    import matplotlib.path as mpl_path
+    import matplotlib.image as mpl_img
+    import matplotlib.patches as mpatches
+    import matplotlib.gridspec as gridspec
+    from matplotlib import rcParams, ticker
+    from matplotlib.ticker import FixedLocator
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    # import cartopy.crs as ccrs
+    # mpl.use('Agg')
+
+
+    filename = os.path.basename(data0['general_info']['fnames'][0])
+    file_ext = filename.split('.')[-1]
+    ssfr_tag = data0['general_info']['ssfr_tag']
+
+    if ssfr_tag == 'NASA Ames SSFR':
+        wvls  = ssfr.nasa_ssfr.get_ssfr_wavelength()
+        y_range = [0, 2**5]
+    elif ssfr_tag == 'CU LASP SSFR':
+        wvls  = ssfr.lasp_ssfr.get_ssfr_wavelength()
+        y_range  = [-2**5, 2**5]
+    else:
+        msg = '\nError [plot_ssfr_raw]: Cannot recognize SSFR system from given file extension <.%s>.' % file_ext
+        raise OSError(msg)
+
+    data0['spectra'] /= 2**10
+    Nchan = data0['spectra'].shape[1]
+    xx = np.arange(Nchan)
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    dtime_s = ssfr.util.jday_to_dtime(data0['jday'][0])
+    dtime_e = ssfr.util.jday_to_dtime(data0['jday'][-1])
+    dtime_s_ = dtime_s.strftime('%Y-%m-%d')
+    info = 'Quicklook Plot for <%s...> from %s on %s' % (filename, ssfr_tag, dtime_s_)
+
+    logic_light = (data0['shutter'] == 0)
+    logic_dark  = (data0['shutter'] == 1)
+    Nlight = logic_light.sum()
+    Ndark  = logic_dark.sum()
+
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(20, 8))
+        fig.suptitle(info)
+        # plot
+        #/--------------------------------------------------------------\#
+
+        # Zenith Silicon
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(241)
+
+        index = 0
+        if Nlight > 0:
+            yy  = np.nanmean(data0['spectra'][logic_light, :, index], axis=0)
+            yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
+            ax1.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
+            ax1.plot(xx, yy, color='r', lw=1.0)
+
+            vname = 'spectra_dark_corr'
+            if vname in data0.keys() and plot_corr:
+                logic_light_ = data0['shutter_dark_corr'] == 0
+                yy  = np.nanmean(data0[vname][logic_light_, :, index], axis=0)
+                yy_ = np.nanstd(data0[vname][logic_light_, :, index], axis=0)
+                ax1.fill_between(xx, yy-yy_, yy+yy_, color='g', lw=0.0, alpha=0.3)
+                ax1.plot(xx, yy, color='g', lw=1.0)
+
+        if Ndark > 0:
+            yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
+            yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
+            ax1.fill_between(xx, yy-yy_, yy+yy_, color='b', lw=0.0, alpha=0.3)
+            ax1.plot(xx, yy, color='b', lw=1.0)
+
+        ax1.axvline(ichan, color='k', ls=':')
+        ax1.grid()
+        ax1.set_title('Zenith Silicon (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='red')
+        ax1.set_xlabel('Channel Number')
+        ax1.set_ylabel('Counts [$\\times 2^{10}$]')
+        ax1.set_xlim((-10, Nchan+10))
+        ax1.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
+        ax1.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        #\--------------------------------------------------------------/#
+
+
+        # Zenith InGaAs
+        #/--------------------------------------------------------------\#
+        ax2 = fig.add_subplot(242)
+
+        index = 1
+        if Nlight > 0:
+            yy  = np.nanmean(data0['spectra'][logic_light, :, index], axis=0)
+            yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
+            ax2.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
+            ax2.plot(xx, yy, color='r', lw=1.0)
+
+            vname = 'spectra_dark_corr'
+            if vname in data0.keys() and plot_corr:
+                logic_light_ = data0['shutter_dark_corr'] == 0
+                yy  = np.nanmean(data0[vname][logic_light_, :, index], axis=0)
+                yy_ = np.nanstd(data0[vname][logic_light_, :, index], axis=0)
+                ax2.fill_between(xx, yy-yy_, yy+yy_, color='g', lw=0.0, alpha=0.3)
+                ax2.plot(xx, yy, color='g', lw=1.0)
+
+        if Ndark > 0:
+            yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
+            yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
+            ax2.fill_between(xx, yy-yy_, yy+yy_, color='b', lw=0.0, alpha=0.3)
+            ax2.plot(xx, yy, color='b', lw=1.0)
+
+        ax2.axvline(ichan, color='k', ls=':')
+        ax2.grid()
+        ax2.set_title('Zenith InGaAs (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='blue')
+        ax2.set_xlabel('Channel Number')
+        ax2.set_xlim((-10, Nchan+10))
+        ax2.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax2.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
+        ax2.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        #\--------------------------------------------------------------/#
+
+        # Nadir Silicon
+        #/--------------------------------------------------------------\#
+        ax3 = fig.add_subplot(243)
+
+        index = 2
+        if Nlight > 0:
+            yy  = np.nanmean(data0['spectra'][logic_light, :, index], axis=0)
+            yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
+            ax3.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
+            ax3.plot(xx, yy, color='r', lw=1.0)
+
+            vname = 'spectra_dark_corr'
+            if vname in data0.keys() and plot_corr:
+                logic_light_ = data0['shutter_dark_corr'] == 0
+                yy  = np.nanmean(data0[vname][logic_light_, :, index], axis=0)
+                yy_ = np.nanstd(data0[vname][logic_light_, :, index], axis=0)
+                ax3.fill_between(xx, yy-yy_, yy+yy_, color='g', lw=0.0, alpha=0.3)
+                ax3.plot(xx, yy, color='g', lw=1.0)
+
+        if Ndark > 0:
+            yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
+            yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
+            ax3.fill_between(xx, yy-yy_, yy+yy_, color='b', lw=0.0, alpha=0.3)
+            ax3.plot(xx, yy, color='b', lw=1.0)
+
+        ax3.axvline(ichan, color='k', ls=':')
+        ax3.grid()
+        ax3.set_title('Nadir Silicon (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='magenta')
+        ax3.set_xlabel('Channel Number')
+        ax3.set_xlim((-10, Nchan+10))
+        ax3.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax3.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
+        ax3.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        #\--------------------------------------------------------------/#
+
+
+        # Nadir InGaAs
+        #/--------------------------------------------------------------\#
+        ax4 = fig.add_subplot(244)
+
+        index = 3
+        if Nlight > 0:
+            yy  = np.nanmean(data0['spectra'][logic_light, :, index], axis=0)
+            yy_ = np.nanstd(data0['spectra'][logic_light, :, index], axis=0)
+            ax4.fill_between(xx, yy-yy_, yy+yy_, color='r', lw=0.0, alpha=0.3)
+            ax4.plot(xx, yy, color='r', lw=1.0)
+
+            vname = 'spectra_dark_corr'
+            if vname in data0.keys() and plot_corr:
+                logic_light_ = data0['shutter_dark_corr'] == 0
+                yy  = np.nanmean(data0[vname][logic_light_, :, index], axis=0)
+                yy_ = np.nanstd(data0[vname][logic_light_, :, index], axis=0)
+                ax4.fill_between(xx, yy-yy_, yy+yy_, color='g', lw=0.0, alpha=0.3)
+                ax4.plot(xx, yy, color='g', lw=1.0)
+
+        if Ndark > 0:
+            yy  = np.nanmean(data0['spectra'][logic_dark, :, index], axis=0)
+            yy_ = np.nanstd(data0['spectra'][logic_dark, :, index], axis=0)
+            ax4.fill_between(xx, yy-yy_, yy+yy_, color='b', lw=0.0, alpha=0.3)
+            ax4.plot(xx, yy, color='b', lw=1.0)
+
+        ax4.axvline(ichan, color='k', ls=':')
+        ax4.grid()
+        ax4.set_title('Nadir InGaAs (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='cyan')
+        ax4.set_xlabel('Channel Number')
+        ax4.set_xlim((-10, Nchan+10))
+        ax4.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax4.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
+        ax4.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        #\--------------------------------------------------------------/#
+
+
+        # time series
+        #/--------------------------------------------------------------\#
+        ax5 = fig.add_subplot(212)
+        ax5.plot(data0['jday'], data0['spectra'][:, ichan, 0], color='red')
+        ax5.plot(data0['jday'], data0['spectra'][:, ichan, 1], color='blue')
+        ax5.plot(data0['jday'], data0['spectra'][:, ichan, 2], color='magenta')
+        ax5.plot(data0['jday'], data0['spectra'][:, ichan, 3], color='cyan')
+
+        xticks = data0['jday'][::10]
+        xticklabels = [ssfr.util.jday_to_dtime(jday0).strftime('%H:%M:%S') for jday0 in xticks]
+        ax5.set_xticks(xticks)
+        ax5.set_xticklabels(xticklabels, ha='right', rotation=30)
+        ax5.set_title('Time Series at Channel #%d' % ichan)
+        ax5.set_xlabel('UTC Time')
+        ax5.set_ylabel('Counts [$\\times 2^{10}$]')
+        ax5.set_ylim((y_range[0]-2, y_range[-1]+2))
+        ax5.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        ax5.grid()
+
+        if Ndark > 0:
+            yy_min = np.repeat(y_range[0]-2.0, data0['jday'].size)
+            yy_min[logic_light] = np.nan
+            yy_max = np.repeat(y_range[-1]+2.0, data0['jday'].size)
+            yy_max[logic_light] = np.nan
+            ax5.fill_between(data0['jday'], yy_min, yy_max, color='k', lw=0.0, alpha=0.2, zorder=0)
+
+        patches_legend = [
+                         mpatches.Patch(color='red'    , label='Zenith Silicon'), \
+                         mpatches.Patch(color='blue'   , label='Zenith InGaAs'), \
+                         mpatches.Patch(color='magenta', label='Nadir Silicon'), \
+                         mpatches.Patch(color='cyan'   , label='Nadir InGaAs'), \
+                         ]
+        ax5.legend(handles=patches_legend, loc='upper left', fontsize=12)
+        #\--------------------------------------------------------------/#
+
+
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.4, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s%s' % (extra_tag, filename.replace(file_ext, 'png')), bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
+
 
 if __name__ == '__main__':
 
