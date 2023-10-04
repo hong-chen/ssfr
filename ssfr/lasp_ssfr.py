@@ -313,6 +313,8 @@ class read_ssfr:
         int_time_ = np.unique(self.data_raw['int_time'], axis=0)
         Nt, Np = int_time_.shape
 
+        self.Ndset = Nt
+
         # split data for different pairs of integration times
         # after the following process, the object will contain
         #   self.data0, self.data1 ...
