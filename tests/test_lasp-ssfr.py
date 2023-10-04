@@ -32,8 +32,8 @@ def test_process_lasp_ssfr():
         ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
 
         dset = 'data_raw'
-        extra_tag = '%s_dset-raw_' % os.path.basename(fdir0)
         data0 = getattr(ssfr0, dset)
+        extra_tag = '%s_dset-raw_' % os.path.basename(fdir0)
         ssfr.vis.quicklook_mpl_ssfr_raw(data0, extra_tag=extra_tag)
 
         # for i in range(ssfr0.Ndata):

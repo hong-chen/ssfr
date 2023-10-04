@@ -607,7 +607,7 @@ def quicklook_mpl_ssfr_raw(
         msg = '\nError [plot_ssfr_raw]: Cannot recognize SSFR system from given file extension <.%s>.' % file_ext
         raise OSError(msg)
 
-    data0['spectra'] /= 2**10
+    # data0['spectra'] /= 2**10
     Nchan = data0['spectra'].shape[1]
     xx = np.arange(Nchan)
 
@@ -659,11 +659,11 @@ def quicklook_mpl_ssfr_raw(
         ax1.grid()
         ax1.set_title('Zenith Silicon (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='red')
         ax1.set_xlabel('Channel Number')
-        ax1.set_ylabel('Counts [$\\times 2^{10}$]')
         ax1.set_xlim((-10, Nchan+10))
-        ax1.set_ylim((y_range[0]-2, y_range[-1]+2))
         ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
-        ax1.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        # ax1.set_ylabel('Counts [$\\times 2^{10}$]')
+        # ax1.set_ylim((y_range[0]-2, y_range[-1]+2))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         #\--------------------------------------------------------------/#
 
 
@@ -697,9 +697,9 @@ def quicklook_mpl_ssfr_raw(
         ax2.set_title('Zenith InGaAs (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='blue')
         ax2.set_xlabel('Channel Number')
         ax2.set_xlim((-10, Nchan+10))
-        ax2.set_ylim((y_range[0]-2, y_range[-1]+2))
         ax2.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
-        ax2.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        # ax2.set_ylim((y_range[0]-2, y_range[-1]+2))
+        # ax2.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         #\--------------------------------------------------------------/#
 
         # Nadir Silicon
@@ -732,9 +732,9 @@ def quicklook_mpl_ssfr_raw(
         ax3.set_title('Nadir Silicon (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='magenta')
         ax3.set_xlabel('Channel Number')
         ax3.set_xlim((-10, Nchan+10))
-        ax3.set_ylim((y_range[0]-2, y_range[-1]+2))
         ax3.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
-        ax3.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        # ax3.set_ylim((y_range[0]-2, y_range[-1]+2))
+        # ax3.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         #\--------------------------------------------------------------/#
 
 
@@ -768,9 +768,9 @@ def quicklook_mpl_ssfr_raw(
         ax4.set_title('Nadir InGaAs (%s)' % ','.join(['%dms' % t for t in np.unique(data0['int_time'][:, index])]), color='cyan')
         ax4.set_xlabel('Channel Number')
         ax4.set_xlim((-10, Nchan+10))
-        ax4.set_ylim((y_range[0]-2, y_range[-1]+2))
         ax4.xaxis.set_major_locator(FixedLocator(np.arange(0, Nchan+1, 64)))
-        ax4.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        # ax4.set_ylim((y_range[0]-2, y_range[-1]+2))
+        # ax4.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         #\--------------------------------------------------------------/#
 
 
@@ -788,9 +788,9 @@ def quicklook_mpl_ssfr_raw(
         ax5.set_xticklabels(xticklabels, ha='right', rotation=30)
         ax5.set_title('Time Series at Channel #%d' % ichan)
         ax5.set_xlabel('UTC Time')
-        ax5.set_ylabel('Counts [$\\times 2^{10}$]')
-        ax5.set_ylim((y_range[0]-2, y_range[-1]+2))
-        ax5.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
+        # ax5.set_ylabel('Counts [$\\times 2^{10}$]')
+        # ax5.set_ylim((y_range[0]-2, y_range[-1]+2))
+        # ax5.yaxis.set_major_locator(FixedLocator(np.arange(y_range[0], y_range[-1]+1, 16)))
         ax5.grid()
 
         if Ndark > 0:
@@ -817,6 +817,7 @@ def quicklook_mpl_ssfr_raw(
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         fig.savefig('%s%s' % (extra_tag, filename.replace(file_ext, 'png')), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
+        plt.show()
     #\----------------------------------------------------------------------------/#
 
 
