@@ -39,8 +39,8 @@ def get_ssfr_wavelength(chanNum=256):
     wvl_dict = {
             'zen_si': wvl_zen_si,
             'zen_in': wvl_zen_in,
-            'nad_si' : wvl_nad_si,
-            'nad_in' : wvl_nad_in
+            'nad_si': wvl_nad_si,
+            'nad_in': wvl_nad_in
             }
 
     return wvl_dict
@@ -227,10 +227,10 @@ class read_ssfr:
 
         # read in all the data
         # after the following process, the object will contain
-        #   self.data_raw['general_info']['ssfr_tag']
-        #   self.data_raw['general_info']['fnames']
-        #   self.data_raw['general_info']['comment']
-        #   self.data_raw['general_info']['Ndata']
+        #   self.data_raw['info']['ssfr_tag']
+        #   self.data_raw['info']['fnames']
+        #   self.data_raw['info']['comment']
+        #   self.data_raw['info']['Ndata']
         #   self.data_raw['spectra']
         #   self.data_raw['shutter']
         #   self.data_raw['int_time']
@@ -245,9 +245,9 @@ class read_ssfr:
         #/----------------------------------------------------------------------------\#
         self.data_raw = {}
 
-        self.data_raw['general_info']  = {}
-        self.data_raw['general_info']['ssfr_tag'] = 'CU LASP SSFR'
-        self.data_raw['general_info']['fnames']   = fnames
+        self.data_raw['info']  = {}
+        self.data_raw['info']['ssfr_tag'] = 'CU LASP SSFR'
+        self.data_raw['info']['fnames']   = fnames
 
         Nx         = Ndata * len(fnames)
         comment    = []
@@ -284,8 +284,8 @@ class read_ssfr:
         self.data_raw['jday_a'] = jday_ARINC[:Nend, ...]
         self.data_raw['jday_c']  = jday_cRIO[:Nend, ...]
         self.data_raw['qual_flag']  = qual_flag[:Nend, ...]
-        self.data_raw['general_info']['comment'] = comment
-        self.data_raw['general_info']['Ndata'] = self.data_raw['shutter'].size
+        self.data_raw['info']['comment'] = comment
+        self.data_raw['info']['Ndata'] = self.data_raw['shutter'].size
 
         if whichTime.lower() == 'arinc':
             self.data_raw['jday'] = self.data_raw['jday_a'].copy()
@@ -338,11 +338,11 @@ class read_ssfr:
             #/----------------------------------------------------------------------------\#
             logic = self.data_raw['int_time'][:, 0] == int_time_[it, 0]
             for vname in self.data_raw.keys():
-                if vname in ['general_info']:
+                if vname in ['info']:
                     data[vname] = self.data_raw[vname]
                 else:
                     data[vname] = self.data_raw[vname][logic, ...]
-            data['general_info']['int_time'] = int_time_info
+            data['info']['int_time'] = int_time_info
             #\----------------------------------------------------------------------------/#
 
             # dark correction (light-dark)

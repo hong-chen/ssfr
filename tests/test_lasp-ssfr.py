@@ -35,6 +35,7 @@ def test_process_lasp_ssfr():
         data0 = getattr(ssfr0, dset)
         extra_tag = '%s_dset-raw_' % os.path.basename(fdir0)
         ssfr.vis.quicklook_mpl_ssfr_raw(data0, extra_tag=extra_tag)
+        print(ssfr0.data_raw['info'])
 
         # for i in range(ssfr0.Ndata):
         #     dset = 'data%d' % i

@@ -593,9 +593,9 @@ def quicklook_mpl_ssfr_raw(
     # mpl.use('Agg')
 
 
-    filename = os.path.basename(data0['general_info']['fnames'][0])
+    filename = os.path.basename(data0['info']['fnames'][0])
     file_ext = filename.split('.')[-1]
-    ssfr_tag = data0['general_info']['ssfr_tag']
+    ssfr_tag = data0['info']['ssfr_tag']
 
     if ssfr_tag == 'NASA Ames SSFR':
         wvls  = ssfr.nasa_ssfr.get_ssfr_wavelength()
