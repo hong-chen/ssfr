@@ -245,7 +245,7 @@ class read_ssfr:
         #/----------------------------------------------------------------------------\#
         self.data_raw = {}
 
-        self.data_raw['info']  = {}
+        self.data_raw['info'] = {}
         self.data_raw['info']['ssfr_tag'] = 'CU LASP SSFR'
         self.data_raw['info']['fnames']   = fnames
 
