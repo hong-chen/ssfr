@@ -320,7 +320,7 @@ class read_ssfr:
         #   self.data0, self.data1 ...
         #
         #   with the same data variables contained in self.data_raw but with additions of
-        #   self.data0['int_time_info']
+        #   self.data0['int_time']
         #   self.data0['shutter_dark_corr'], where -1 is data excluded during dark correction
         #   self.data0['spectra_dark_corr']
         #/----------------------------------------------------------------------------\#
@@ -329,22 +329,21 @@ class read_ssfr:
             data = {}
             data_name = 'data%d' % it
 
-            int_time_info = {
-                    'Zenith Silicon': int_time_[it, 0],
-                     'Zenith InGaAs': int_time_[it, 1],
-                     'Nadir Silicon': int_time_[it, 2],
-                      'Nadir InGaAs': int_time_[it, 3],
-                    }
-
             # split data by integration times
             #/----------------------------------------------------------------------------\#
             logic = self.data_raw['int_time'][:, 0] == int_time_[it, 0]
             for vname in self.data_raw.keys():
                 if vname in ['info']:
-                    data[vname] = self.data_raw[vname]
+                    data[vname] = self.data_raw[vname].copy()
                 else:
                     data[vname] = self.data_raw[vname][logic, ...]
-            data['info']['int_time'] = int_time_info
+
+            data['info']['int_time'] = {
+                    'Zenith Silicon': int_time_[it, 0],
+                     'Zenith InGaAs': int_time_[it, 1],
+                     'Nadir Silicon': int_time_[it, 2],
+                      'Nadir InGaAs': int_time_[it, 3],
+                    }
             #\----------------------------------------------------------------------------/#
 
             # dark correction (light-dark)
