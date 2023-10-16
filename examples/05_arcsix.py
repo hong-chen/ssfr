@@ -236,6 +236,8 @@ def cdata_arcsix_spns_v1(
     f.close()
     #\----------------------------------------------------------------------------/#
 
+    return
+
 def cdata_arcsix_spns_v2(
         date,
         time_offset=0.0,
@@ -324,39 +326,7 @@ def cdata_arcsix_spns_v2(
 
     ssfr.vis.quicklook_bokeh_spns(fname_h5, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date.strftime('%Y-%m-%d')))
 
-    if False:
-        wvl0 = 532.0
-        index_wvl = np.argmin(np.abs(wvl_tot-wvl0))
-
-        plt.close('all')
-        fig = plt.figure(figsize=(18, 6))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(tmhr, mu*f_dn_toa0[index_wvl], s=1, c='k', lw=0.0)
-        ax1.scatter(tmhr, f_dn_tot[..., index_wvl], s=1, c='r', lw=0.0)
-        ax1.scatter(tmhr, f_dn_tot_corr[..., index_wvl], s=1, c='g', lw=0.0)
-        ax1.set_title('%s %s (%d nm)' % (_mission_.upper(), date.strftime('%Y-%m-%d'), wvl0))
-        #\--------------------------------------------------------------/#
-
-        patches_legend = [
-                          mpatches.Patch(color='black' , label='TOA (Kurudz)'), \
-                          mpatches.Patch(color='red'   , label='Original (Direct)'), \
-                          mpatches.Patch(color='green' , label='Attitude Corrected (Direct)'), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
-
-        ax1.set_ylim((0.0, 2.2))
-        ax1.set_xlabel('UTC Time [Hour]')
-        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_%s.png' % (_metadata['Function'], date.strftime('%Y-%m-%d')), bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
+    return
 
 
 
@@ -371,8 +341,11 @@ def process_spns(date):
 
 if __name__ == '__main__':
 
-    date = datetime.datetime(2023, 10, 10)
-    date = datetime.datetime(2023, 10, 12)
-    date = datetime.datetime(2023, 10, 13)
+    dates = [
+             datetime.datetime(2023, 10, 10),
+             datetime.datetime(2023, 10, 12),
+             datetime.datetime(2023, 10, 13),
+            ]
 
-    process_spns(date)
+    for date in dates:
+        process_spns(date)
