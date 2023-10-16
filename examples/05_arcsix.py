@@ -20,11 +20,16 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # mpl.use('Agg')
 
 
+import ssfr
+
+
 _mission_   = 'arcsix'
+_spns_      = 'spns-b'
+_ssfr_      = 'ssfr-b'
 _fdir_data_ = '/argus/pre-mission/%s' % _mission_
 _fdir_hsk_  = '%s/raw/hsk'
-_fdir_ssfr_ = '%s/raw/ssfr-b' % _fdir_data_
-_fdir_spns_ = '%s/raw/spns-b' % _fdir_data_
+_fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
+_fdir_spns_ = '%s/raw/%s' % (_fdir_data_, _spns_)
 _fdir_v0_   = '%s/processed'  % _fdir_data_
 _fdir_v1_   = '%s/processed'  % _fdir_data_
 _fdir_v2_   = '%s/processed'  % _fdir_data_
@@ -79,7 +84,7 @@ def cdata_arcsix_hsk_v0_placeholder(
 
 def cdata_arcsix_hsk_v0(
         date,
-        tmhr_range=[0.0, 24.0],
+        tmhr_range=[14.0, 24.0],
         fdir_data=_fdir_hsk_,
         fdir_out=_fdir_v0_,
         ):
@@ -120,7 +125,7 @@ def cdata_arcsix_hsk_v0(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_out_, _mission_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_out, _mission_.upper(), date.strftime('%Y-%m-%d'))
 
     f = h5py.File(fname_h5, 'w')
     f['tmhr'] = data_hsk['tmhr']['data']
@@ -136,9 +141,11 @@ def cdata_arcsix_hsk_v0(
     f.close()
     #\----------------------------------------------------------------------------/#
 
+    return
+
 def cdata_arcsix_spns_v0(
         date,
-        fdir_data=_fdir_data_,
+        fdir_data=_fdir_spns_,
         fdir_out=_fdir_v0_,
         ):
 
@@ -148,7 +155,7 @@ def cdata_arcsix_spns_v0(
 
     # read spn-s raw data
     #/----------------------------------------------------------------------------\#
-    fdir = '%s/magpie/2023/dhc6/spn-s/raw/%s' % (fdir_data, date.strftime('%Y-%m-%d'))
+    fdir = '%s/%s' % (fdir_data, date.strftime('%Y-%m-%d'))
 
     fname_dif = sorted(glob.glob('%s/Diffuse.txt' % fdir))[0]
     data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
@@ -169,7 +176,7 @@ def cdata_arcsix_spns_v0(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
 
     f = h5py.File(fname_h5, 'w')
 
@@ -186,6 +193,8 @@ def cdata_arcsix_spns_v0(
 
     f.close()
     #\----------------------------------------------------------------------------/#
+
+    return
 
 def cdata_arcsix_spns_v1(
         date,
@@ -401,6 +410,7 @@ def cdata_arcsix_spns_v2(
 def test(date):
 
     cdata_arcsix_hsk_v0(date)
+    cdata_arcsix_spns_v0(date)
 
     pass
 
