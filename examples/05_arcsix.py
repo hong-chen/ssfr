@@ -360,18 +360,19 @@ def cdata_arcsix_spns_v2(
 
 
 
-def test(date):
+def process_spns(date):
 
-    # cdata_arcsix_hsk_v0(date)
-    # cdata_arcsix_spns_v0(date)
-    # cdata_arcsix_spns_v1(date)
+    cdata_arcsix_hsk_v0(date)
+    cdata_arcsix_spns_v0(date)
+    cdata_arcsix_spns_v1(date)
     cdata_arcsix_spns_v2(date)
 
-    pass
 
 
 if __name__ == '__main__':
 
+    date = datetime.datetime(2023, 10, 10)
+    date = datetime.datetime(2023, 10, 12)
     date = datetime.datetime(2023, 10, 13)
 
-    test(date)
+    process_spns(date)
