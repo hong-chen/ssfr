@@ -35,52 +35,6 @@ _fdir_v1_   = '%s/processed'  % _fdir_data_
 _fdir_v2_   = '%s/processed'  % _fdir_data_
 
 
-def cdata_arcsix_hsk_v0_placeholder(
-        date,
-        tmhr_range=[0.0, 24.0],
-        fdir_data=_fdir_hsk_,
-        fdir_out=_fdir_v0_,
-        ):
-
-    """
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !! placeholder for in-field operation !!
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    process raw aircraft nav data
-    """
-
-    # read aircraft nav data (housekeeping file)
-    #/----------------------------------------------------------------------------\#
-    # fname = sorted(glob.glob('%s/*' % (fdir_data, date.strftime('%m_%d'))))[0]
-    # data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='sec')
-    #\----------------------------------------------------------------------------/#
-
-    # solar geometries
-    #/----------------------------------------------------------------------------\#
-    # jday0 = ssfr.util.dtime_to_jday(date)
-    # jday = jday0 + data_hsk['tmhr']['data']/24.0
-    # sza, saa = ssfr.util.cal_solar_angles(jday, data_hsk['long']['data'], data_hsk['lat']['data'], data_hsk['palt']['data'])
-    #\----------------------------------------------------------------------------/#
-
-    # save processed data
-    #/----------------------------------------------------------------------------\#
-    # fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_out_, _mission_.upper(), date.strftime('%Y-%m-%d'))
-
-    # f = h5py.File(fname_h5, 'w')
-    # f['tmhr'] = data_hsk['tmhr']['data']
-    # f['lon']  = data_hsk['long']['data']
-    # f['lat']  = data_hsk['lat']['data']
-    # f['alt']  = data_hsk['palt']['data']
-    # f['pit']  = data_hsk['pitch']['data']
-    # f['rol']  = data_hsk['roll']['data']
-    # f['hed']  = data_hsk['heading']['data']
-    # f['jday'] = jday
-    # f['sza']  = sza
-    # f['saa']  = saa
-    # f.close()
-    #\----------------------------------------------------------------------------/#
-
-    return
 
 def cdata_arcsix_hsk_v0(
         date,
@@ -97,7 +51,7 @@ def cdata_arcsix_hsk_v0(
 
     # create data_hsk for skywatch
     #/----------------------------------------------------------------------------\#
-    tmhr = np.arange(86400.0)/3600.0
+    tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
     lon0 = -105.24227862207863 # skywatch longitude
     lat0 =  40.01097849056196  # skywatch latitude
     alt0 =  4.0                # skywatch altitude
@@ -150,7 +104,7 @@ def cdata_arcsix_spns_v0(
         ):
 
     """
-    process raw SPN-S data
+    Process raw SPN-S data
     """
 
     # read spn-s raw data
@@ -204,12 +158,12 @@ def cdata_arcsix_spns_v1(
         ):
 
     """
-    check for time offset and merge SPN-S data with aircraft data
+    Check for time offset and merge SPN-S data with aircraft data
     """
 
     # read hsk v0
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_HSK_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_data, _mission_.upper(), date.strftime('%Y-%m-%d'))
     f = h5py.File(fname_h5, 'r')
     jday = f['jday'][...]
     sza  = f['sza'][...]
@@ -227,7 +181,7 @@ def cdata_arcsix_spns_v1(
 
     # read spn-s v0
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
     f = h5py.File(fname_h5, 'r')
     f_dn_dif  = f['dif/flux'][...]
     wvl_dif   = f['dif/wvl'][...]
@@ -255,7 +209,7 @@ def cdata_arcsix_spns_v1(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v1.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
 
     f = h5py.File(fname_h5, 'w')
 
@@ -290,12 +244,12 @@ def cdata_arcsix_spns_v2(
         ):
 
     """
-    apply attitude correction to account for pitch and roll
+    Apply attitude correction to account for pitch and roll
     """
 
     # read spn-s v1
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v1.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
     f = h5py.File(fname_h5, 'r')
     f_dn_dif  = f['dif/flux'][...]
     wvl_dif   = f['dif/wvl'][...]
@@ -344,7 +298,7 @@ def cdata_arcsix_spns_v2(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v2.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
 
     f = h5py.File(fname_h5, 'w')
 
@@ -368,6 +322,7 @@ def cdata_arcsix_spns_v2(
     f.close()
     #\----------------------------------------------------------------------------/#
 
+    ssfr.vis.quicklook_bokeh_spns(fname_h5, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date.strftime('%Y-%m-%d')))
 
     if False:
         wvl0 = 532.0
@@ -381,7 +336,7 @@ def cdata_arcsix_spns_v2(
         ax1.scatter(tmhr, mu*f_dn_toa0[index_wvl], s=1, c='k', lw=0.0)
         ax1.scatter(tmhr, f_dn_tot[..., index_wvl], s=1, c='r', lw=0.0)
         ax1.scatter(tmhr, f_dn_tot_corr[..., index_wvl], s=1, c='g', lw=0.0)
-        ax1.set_title('MAGPIE %s (%d nm)' % (date.strftime('%Y-%m-%d'), wvl0))
+        ax1.set_title('%s %s (%d nm)' % (_mission_.upper(), date.strftime('%Y-%m-%d'), wvl0))
         #\--------------------------------------------------------------/#
 
         patches_legend = [
@@ -402,15 +357,15 @@ def cdata_arcsix_spns_v2(
         fig.savefig('%s_%s.png' % (_metadata['Function'], date.strftime('%Y-%m-%d')), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
         plt.show()
-        sys.exit()
-
 
 
 
 def test(date):
 
-    cdata_arcsix_hsk_v0(date)
-    cdata_arcsix_spns_v0(date)
+    # cdata_arcsix_hsk_v0(date)
+    # cdata_arcsix_spns_v0(date)
+    # cdata_arcsix_spns_v1(date)
+    cdata_arcsix_spns_v2(date)
 
     pass
 
