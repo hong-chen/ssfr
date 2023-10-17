@@ -136,7 +136,7 @@ def read_ssfr_raw(
         # d9l: frac_second[d] , second[l] , minute[l] , hour[l] , day[l] , month[l] , year[l] , dow[l] , doy[l] , DST[l]
         # d9l: frac_second0[d], second0[l], minute0[l], hour0[l], day0[l], month0[l], year0[l], dow0[l], doy0[l], DST0[l]
         # l11d: null[l], temp(11)[11d]
-        # --------------------------          below repeat for sz, sn, iz, in          ----------------------------------
+        # ----------------          below repeat for zen_si, nad_si, zen_in, nad_in          ----------------------------
         # l2Bl: int_time[l], shutter[B], EOS[B], null[l]
         # 257h: spectra(257)
         # ---------------------------------------------------------------------------------------------------------------
@@ -144,7 +144,7 @@ def read_ssfr_raw(
 
         dataHead = data[:32]
         dataSpec = np.transpose(np.array(data[32:]).reshape((4, 261)))[:, [0, 2, 1, 3]]
-        # [0, 2, 1, 3]: change order from 'sz, sn, iz, in' to 'sz, iz, sn, in'
+        # [0, 2, 1, 3]: change order from 'zen_si, nad_si, zen_in, nad_in' to 'zen_si, zen_in, nad_si, nad_in'
         # transpose: change shape from (4, 261) to (261, 4)
 
         shutter_logic = (np.unique(dataSpec[1, :]).size != 1)

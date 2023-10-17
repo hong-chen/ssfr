@@ -799,6 +799,9 @@ def process_spns(date):
     cdata_arcsix_spns_v2(date)
 #\----------------------------------------------------------------------------/#
 
+
+
+
 def test_lasp_ssfr_skywatch_zenith():
 
     fdir = 'data/SSFR/2023-10-06'
@@ -908,29 +911,27 @@ def cdata_arcsix_ssfr_v0(
 
     ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
 
-    # ssfr0.pre_process(wvl_join=950.0, wvl_start=350.0, wvl_end=2200.0, intTime={'si':60, 'in':300})
+    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
+    f = h5py.File(fname_h5, 'w')
 
-    # fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
+    for i in range(ssfr0.Ndset):
+        dset_s = 'dset%d' % i
+        data = getattr(ssfr0, dset_s)
+        vname = 'zen_si-%3.3d_zen_in-%3.3d_nad_si-%3.3d_nad_in-%3.3d' % (data['info']['int_time']['zen_si'], data['info']['int_time']['zen_in'], data['info']['int_time']['nad_si'], data['info']['int_time']['nad_in'])
 
-    # f = h5py.File(fname_h5, 'w')
-    # f['tmhr']    = ssfr0.tmhr
-    # f['jday']    = ssfr0.jday
-    # f['shutter'] = ssfr0.shutter
-    # f['zen_wvl'] = ssfr0.zen_wvl
-    # f['nad_wvl'] = ssfr0.nad_wvl
-    # f['zen_cnt'] = ssfr0.zen_cnt
-    # f['nad_cnt'] = ssfr0.nad_cnt
-    # f['zen_int_time'] = ssfr0.zen_int_time
-    # f['nad_int_time'] = ssfr0.nad_int_time
-    # f.close()
+        g = f.create_group(vname)
+        for key in data.keys():
+            if key != 'info':
+                g[key] = data[key]
+
+    f.close()
 
     return
 
 
-if __name__ == '__main__':
 
-    # test_lasp_ssfr_skywatch_zenith()
-    # test_lasp_ssfr_skywatch_nadir()
+
+if __name__ == '__main__':
 
     dates = [
              datetime.datetime(2023, 10, 10),
@@ -939,5 +940,3 @@ if __name__ == '__main__':
             ]
 
     cdata_arcsix_ssfr_v0(dates[-1])
-    # for date in dates:
-    #     process_spns(date)
