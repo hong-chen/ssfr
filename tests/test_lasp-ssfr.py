@@ -917,9 +917,7 @@ def cdata_arcsix_ssfr_v0(
     for i in range(ssfr0.Ndset):
         dset_s = 'dset%d' % i
         data = getattr(ssfr0, dset_s)
-        vname = 'zen_si-%3.3d_zen_in-%3.3d_nad_si-%3.3d_nad_in-%3.3d' % (data['info']['int_time']['zen_si'], data['info']['int_time']['zen_in'], data['info']['int_time']['nad_si'], data['info']['int_time']['nad_in'])
-
-        g = f.create_group(vname)
+        g = f.create_group(dset_s)
         for key in data.keys():
             if key != 'info':
                 g[key] = data[key]
@@ -934,9 +932,10 @@ def cdata_arcsix_ssfr_v0(
 if __name__ == '__main__':
 
     dates = [
-             datetime.datetime(2023, 10, 10),
+             # datetime.datetime(2023, 10, 10),
              datetime.datetime(2023, 10, 12),
              datetime.datetime(2023, 10, 13),
             ]
 
-    cdata_arcsix_ssfr_v0(dates[-1])
+    for date in dates:
+        cdata_arcsix_ssfr_v0(date)
