@@ -195,10 +195,11 @@ class read_ssfr:
             self,
             fnames,
             Ndata=600,
-            whichTime='arinc',
+            which_time='arinc',
             time_offset=0.0,
             process=True,
             dark_corr_mode='interp',
+            which_ssfr='Alvin',
             verbose=False,
             ):
 
@@ -206,7 +207,7 @@ class read_ssfr:
         Description:
         fnames      : list of SSFR files to read
         Ndata=      : pre-defined number of data records (any number larger than the "number of data records per file" will work); default=600
-        whichTime=  : "ARINC" or "cRIO"; default='arinc'
+        which_time=  : "ARINC" or "cRIO"; default='arinc'
         time_offset=: time offset in [seconds]; default=0.0
         process=    : whether or not process data, e.g., dark correction; default=True
         dark_corr_mode=: dark correction mode, can be 'interp' or 'mean'; default='interp'
@@ -246,7 +247,7 @@ class read_ssfr:
         self.data_raw = {}
 
         self.data_raw['info'] = {}
-        self.data_raw['info']['ssfr_tag'] = 'CU LASP SSFR'
+        self.data_raw['info']['ssfr_tag'] = '%s (%s)' % (self.ID, which_ssfr)
         self.data_raw['info']['fnames']   = fnames
 
         Nx         = Ndata * len(fnames)
@@ -287,9 +288,9 @@ class read_ssfr:
         self.data_raw['info']['comment'] = comment
         self.data_raw['info']['Ndata'] = self.data_raw['shutter'].size
 
-        if whichTime.lower() == 'arinc':
+        if which_time.lower() == 'arinc':
             self.data_raw['jday'] = self.data_raw['jday_a'].copy()
-        elif whichTime.lower() == 'crio':
+        elif which_time.lower() == 'crio':
             self.data_raw['jday'] = self.data_raw['jday_c'].copy()
         self.data_raw['tmhr'] = (self.data_raw['jday'] - int(self.data_raw['jday'][0])) * 24.0
 
@@ -326,39 +327,39 @@ class read_ssfr:
         #/----------------------------------------------------------------------------\#
         for it in range(Nt):
 
-            data = {}
-            data_name = 'data%d' % it
+            dset = {}
 
             # split data by integration times
             #/----------------------------------------------------------------------------\#
             logic = self.data_raw['int_time'][:, 0] == int_time_[it, 0]
             for vname in self.data_raw.keys():
                 if vname in ['info']:
-                    data[vname] = self.data_raw[vname].copy()
+                    dset[vname] = self.data_raw[vname].copy()
                 else:
-                    data[vname] = self.data_raw[vname][logic, ...]
+                    dset[vname] = self.data_raw[vname][logic, ...]
 
-            data['info']['int_time'] = {
-                    'Zenith Silicon': int_time_[it, 0],
-                     'Zenith InGaAs': int_time_[it, 1],
-                     'Nadir Silicon': int_time_[it, 2],
-                      'Nadir InGaAs': int_time_[it, 3],
+            dset['info']['int_time'] = {
+                    'zen_si': int_time_[it, 0],
+                    'zen_in': int_time_[it, 1],
+                    'nad_si': int_time_[it, 2],
+                    'nad_in': int_time_[it, 3],
                     }
             #\----------------------------------------------------------------------------/#
 
             # dark correction (light-dark)
             # variable name: self.spectra_dark_corr
             #/----------------------------------------------------------------------------\#
-            spectra_dark_corr = data['spectra'].copy()
+            spectra_dark_corr = dset['spectra'].copy()
             spectra_dark_corr[...] = fill_value
             for ip in range(Np):
-                shutter_dark_corr, spectra_dark_corr[:, :, ip] = ssfr.corr.dark_corr(data['tmhr'], data['shutter'], data['spectra'][:, :, ip], mode=dark_corr_mode, fillValue=fill_value)
+                shutter_dark_corr, spectra_dark_corr[:, :, ip] = ssfr.corr.dark_corr(dset['tmhr'], dset['shutter'], dset['spectra'][:, :, ip], mode=dark_corr_mode, fillValue=fill_value)
 
-            data['shutter_dark_corr'] = shutter_dark_corr
-            data['spectra_dark_corr'] = spectra_dark_corr
+            dset['shutter_dark-corr'] = shutter_dark_corr
+            dset['spectra_dark-corr'] = spectra_dark_corr
             #\----------------------------------------------------------------------------/#
 
-            setattr(self, data_name, data)
+            dset_name = 'dset%d' % it
+            setattr(self, dset_name, dset)
         #\----------------------------------------------------------------------------/#
 
     def count_to_radiation(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0, whichRadiation={'zenith':'radiance', 'nadir':'irradiance'}, wvlRange=[350, 2100]):
