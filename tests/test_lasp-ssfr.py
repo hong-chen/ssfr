@@ -917,6 +917,12 @@ def cdata_arcsix_ssfr_v0(
 
     ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
 
+    # data that are useful
+    #   wvl_zen
+    #   cnt_zen
+    #   wvl_nad
+    #   cnt_nad
+    #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'w')
 
@@ -929,6 +935,7 @@ def cdata_arcsix_ssfr_v0(
                 g[key] = data[key]
 
     f.close()
+    #\----------------------------------------------------------------------------/#
 
     return
 
@@ -943,7 +950,7 @@ if __name__ == '__main__':
 
     dates = [
              # datetime.datetime(2023, 10, 11), # ssfr-a, lab diagnose
-             datetime.datetime(2023, 10, 12), # ssfr-b, skywatch test
+             # datetime.datetime(2023, 10, 12), # ssfr-b, skywatch test
              datetime.datetime(2023, 10, 13), # ssfr-b, skywatch test
             ]
 
