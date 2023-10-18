@@ -932,9 +932,9 @@ def cdata_arcsix_ssfr_v0(
 if __name__ == '__main__':
 
     dates = [
-             # datetime.datetime(2023, 10, 10),
-             datetime.datetime(2023, 10, 12),
-             datetime.datetime(2023, 10, 13),
+             # datetime.datetime(2023, 10, 11), # ssfr-a, lab diagnose
+             # datetime.datetime(2023, 10, 12), # ssfr-b, skywatch test
+             datetime.datetime(2023, 10, 13), # ssfr-b, skywatch test
             ]
 
     for date in dates:
