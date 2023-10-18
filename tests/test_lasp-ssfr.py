@@ -896,9 +896,15 @@ def test_lasp_ssfr_skywatch_nadir():
         plt.show()
     #\----------------------------------------------------------------------------/#
 
+
+
+
+
+# functions for processing SSFR
+#/----------------------------------------------------------------------------\#
 def cdata_arcsix_ssfr_v0(
         date,
-        fdir_data=_fdir_v0_,
+        fdir_data=_fdir_ssfr_,
         fdir_out=_fdir_v0_
         ):
 
@@ -907,11 +913,11 @@ def cdata_arcsix_ssfr_v0(
     """
 
     date_s = date.strftime('%Y-%m-%d')
-    fnames = sorted(glob.glob('%s/%s/*.SKS' % (_fdir_ssfr_, date_s)))
+    fnames = sorted(glob.glob('%s/%s/*.SKS' % (fdir_data, date_s)))
 
     ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
 
-    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
+    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'w')
 
     for i in range(ssfr0.Ndset):
@@ -926,6 +932,10 @@ def cdata_arcsix_ssfr_v0(
 
     return
 
+def process_ssfr(date):
+
+    cdata_arcsix_ssfr_v0(date)
+#\----------------------------------------------------------------------------/#
 
 
 
@@ -933,9 +943,9 @@ if __name__ == '__main__':
 
     dates = [
              # datetime.datetime(2023, 10, 11), # ssfr-a, lab diagnose
-             # datetime.datetime(2023, 10, 12), # ssfr-b, skywatch test
+             datetime.datetime(2023, 10, 12), # ssfr-b, skywatch test
              datetime.datetime(2023, 10, 13), # ssfr-b, skywatch test
             ]
 
     for date in dates:
-        cdata_arcsix_ssfr_v0(date)
+        process_ssfr(date)

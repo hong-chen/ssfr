@@ -190,6 +190,9 @@ def read_ssfr_raw(
 class read_ssfr:
 
     ID = 'CU LASP SSFR'
+    Nchan = 256
+    Ntemp = 11
+    Nspec = 4
 
     def __init__(
             self,
@@ -200,6 +203,9 @@ class read_ssfr:
             process=True,
             dark_corr_mode='interp',
             which_ssfr='Alvin',
+            wvl_s=350.0,
+            wvl_e=2100.0,
+            wvl_j=950.0,
             verbose=False,
             ):
 
@@ -252,13 +258,13 @@ class read_ssfr:
 
         Nx         = Ndata * len(fnames)
         comment    = []
-        spectra    = np.zeros((Nx, 256, 4), dtype=np.float64)
-        shutter    = np.zeros(Nx          , dtype=np.int32  )
-        int_time   = np.zeros((Nx, 4)     , dtype=np.float64)
-        temp       = np.zeros((Nx, 11)    , dtype=np.float64)
-        qual_flag  = np.zeros(Nx          , dtype=np.int32)
-        jday_ARINC = np.zeros(Nx          , dtype=np.float64)
-        jday_cRIO  = np.zeros(Nx          , dtype=np.float64)
+        spectra    = np.zeros((Nx, self.Nchan, self.Nspec), dtype=np.float64)
+        shutter    = np.zeros(Nx                          , dtype=np.int32  )
+        int_time   = np.zeros((Nx, self.Nspec)            , dtype=np.float64)
+        temp       = np.zeros((Nx, self.Ntemp)            , dtype=np.float64)
+        qual_flag  = np.zeros(Nx                          , dtype=np.int32)
+        jday_ARINC = np.zeros(Nx                          , dtype=np.float64)
+        jday_cRIO  = np.zeros(Nx                          , dtype=np.float64)
 
         Nstart = 0
         for fname in fnames:
@@ -302,30 +308,26 @@ class read_ssfr:
         # process data
         #/----------------------------------------------------------------------------\#
         if process:
-            self.process_data(dark_corr_mode=dark_corr_mode)
+            self.dset_split()
+            self.dark_corr(dark_corr_mode=dark_corr_mode)
+            self.wvl_join(wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
         #\----------------------------------------------------------------------------/#
 
-    def process_data(
+    def dset_split(
             self,
-            dark_corr_mode='interp',
-            fill_value=np.nan,
             ):
 
         int_time_ = np.unique(self.data_raw['int_time'], axis=0)
-        Nt, Np = int_time_.shape
-
-        self.Ndset = Nt
+        self.Ndset, _ = int_time_.shape
 
         # split data for different pairs of integration times
         # after the following process, the object will contain
-        #   self.data0, self.data1 ...
+        #   self.dset0, self.dset1 ...
         #
         #   with the same data variables contained in self.data_raw but with additions of
-        #   self.data0['int_time']
-        #   self.data0['shutter_dark_corr'], where -1 is data excluded during dark correction
-        #   self.data0['spectra_dark_corr']
+        #   self.dset0['info']['int_time']
         #/----------------------------------------------------------------------------\#
-        for it in range(Nt):
+        for it in range(self.Ndset):
 
             dset = {}
 
@@ -346,21 +348,103 @@ class read_ssfr:
                     }
             #\----------------------------------------------------------------------------/#
 
+            dset_name = 'dset%d' % it
+            setattr(self, dset_name, dset)
+        #\----------------------------------------------------------------------------/#
+
+    def dark_corr(
+            self,
+            dark_corr_mode='interp',
+            fill_value=np.nan,
+            ):
+
+        # self.dset0['shutter_dark-corr'], where -1 is data excluded during dark correction
+        # self.dset0['spectra_dark-corr']
+        #/----------------------------------------------------------------------------\#
+        for it in range(self.Ndset):
+
+            dset = getattr(self, 'dset%d' %it)
+
             # dark correction (light-dark)
             # variable name: self.spectra_dark_corr
             #/----------------------------------------------------------------------------\#
             spectra_dark_corr = dset['spectra'].copy()
             spectra_dark_corr[...] = fill_value
-            for ip in range(Np):
+            for ip in range(self.Nspec):
                 shutter_dark_corr, spectra_dark_corr[:, :, ip] = ssfr.corr.dark_corr(dset['tmhr'], dset['shutter'], dset['spectra'][:, :, ip], mode=dark_corr_mode, fillValue=fill_value)
 
             dset['shutter_dark-corr'] = shutter_dark_corr
             dset['spectra_dark-corr'] = spectra_dark_corr
             #\----------------------------------------------------------------------------/#
-
-            dset_name = 'dset%d' % it
-            setattr(self, dset_name, dset)
         #\----------------------------------------------------------------------------/#
+
+    def wvl_join(
+            self,
+            wvl_start=350.0,
+            wvl_end=2100.0,
+            wvl_join=950.0,
+            ):
+
+        wvls = get_ssfr_wavelength()
+
+        # zenith wavelength
+        #/----------------------------------------------------------------------------\#
+        logic_zen_si = (wvls['zen_si'] >= wvl_start) & (wvls['zen_si'] <= wvl_join)
+        logic_zen_in = (wvls['zen_in'] >  wvl_join)  & (wvls['zen_in'] <= wvl_end)
+
+        wvl_zen = np.concatenate((wvls['zen_si'][logic_zen_si], wvls['zen_in'][logic_zen_in]))
+
+        indices_sort_zen = np.argsort(wvl_zen)
+        wvl_zen = wvl_zen[indices_sort_zen]
+        #\----------------------------------------------------------------------------/#
+
+        # nadir wavelength
+        #/----------------------------------------------------------------------------\#
+        logic_nad_si = (wvls['nad_si'] >= wvl_start) & (wvls['nad_si'] <= wvl_join)
+        logic_nad_in = (wvls['nad_in'] >  wvl_join)  & (wvls['nad_in'] <= wvl_end)
+
+        wvl_nad = np.concatenate((wvls['nad_si'][logic_nad_si], wvls['nad_in'][logic_nad_in]))
+
+        indices_sort_nad = np.argsort(wvl_nad)
+        wvl_nad = wvl_nad[indices_sort_nad]
+        #\----------------------------------------------------------------------------/#
+
+        # processing data (unit counts: [counts/ms])
+        #/----------------------------------------------------------------------------\#
+        for it in range(self.Ndset):
+
+            dset = getattr(self, 'dset%d' % it)
+
+            counts_zen = np.hstack((dset['spectra_dark-corr'][:, logic_zen_si, 0]/dset['info']['int_time']['zen_si'], dset['spectra_dark-corr'][:, logic_zen_in, 1]/dset['info']['int_time']['zen_in']))
+            counts_nad = np.hstack((dset['spectra_dark-corr'][:, logic_nad_si, 2]/dset['info']['int_time']['nad_si'], dset['spectra_dark-corr'][:, logic_nad_in, 3]/dset['info']['int_time']['nad_in']))
+
+            counts_zen = counts_zen[:, indices_sort_zen]
+            counts_nad = counts_nad[:, indices_sort_nad]
+
+            dset['wvl_zen'] = wvl_zen
+            dset['cnt_zen'] = counts_zen
+            dset['wvl_nad'] = wvl_nad
+            dset['cnt_nad'] = counts_nad
+        #\----------------------------------------------------------------------------/#
+
+    def cal_flux(self, fnames, wvl0=550.0):
+
+        resp_zen = ssfr.cal.load_rad_resp_h5(fnames['zenith'])
+        self.zen_flux = np.zeros_like(self.zen_cnt)
+
+        resp_nad = ssfr.cal.load_rad_resp_h5(fnames['nadir'])
+        self.nad_flux = np.zeros_like(self.nad_cnt)
+
+        for i in range(self.tmhr.size):
+
+            self.zen_flux[i, :] = self.zen_cnt[i, :] / self.zen_int_time / resp_zen['sec_resp']
+            self.nad_flux[i, :] = self.nad_cnt[i, :] / self.nad_int_time / resp_nad['sec_resp']
+
+        index_zen = np.argmin(np.abs(self.zen_wvl-wvl0))
+        index_nad = np.argmin(np.abs(self.nad_wvl-wvl0))
+        logic_bad = (self.shutter==1) | (self.zen_flux[:, index_zen]<=0.0) | (self.nad_flux[:, index_nad]<=0.0)
+        self.zen_flux[logic_bad, :] = np.nan
+        self.nad_flux[logic_bad, :] = np.nan
 
     def count_to_radiation(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0, whichRadiation={'zenith':'radiance', 'nadir':'irradiance'}, wvlRange=[350, 2100]):
 
@@ -432,7 +516,6 @@ class read_ssfr:
             elif whichRadiation['nadir'] == 'irradiance':
                 self.spectra_nad[i, :n_nad_si] =  (self.spectra_dark_corr[i, logic_nad_si, 2]/intTime_si)/(cal.secondary_response_nad_si[intTime_si_tag][logic_nad_si])
                 self.spectra_nad[i, n_nad_si:] = ((self.spectra_dark_corr[i, logic_nad_in, 3]/intTime_in)/(cal.secondary_response_nad_in[intTime_in_tag][logic_nad_in]))[::-1]
-
 
 
 
