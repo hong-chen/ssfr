@@ -951,7 +951,8 @@ if __name__ == '__main__':
     dates = [
              # datetime.datetime(2023, 10, 11), # ssfr-a, lab diagnose
              # datetime.datetime(2023, 10, 12), # ssfr-b, skywatch test
-             datetime.datetime(2023, 10, 13), # ssfr-b, skywatch test
+             # datetime.datetime(2023, 10, 13), # ssfr-b, skywatch test
+             datetime.datetime(2023, 10, 18), # ssfr-b, skywatch test
             ]
 
     for date in dates:

@@ -427,7 +427,11 @@ class read_ssfr:
             dset['cnt_nad'] = counts_nad
         #\----------------------------------------------------------------------------/#
 
-    def cal_flux(self, fnames, wvl0=550.0):
+    def cal_flux(
+            self,
+            fnames,
+            wvl0=550.0
+            ):
 
         resp_zen = ssfr.cal.load_rad_resp_h5(fnames['zenith'])
         self.zen_flux = np.zeros_like(self.zen_cnt)
@@ -446,76 +450,6 @@ class read_ssfr:
         self.zen_flux[logic_bad, :] = np.nan
         self.nad_flux[logic_bad, :] = np.nan
 
-    def count_to_radiation(self, cal, wvl_zen_join=900.0, wvl_nad_join=900.0, whichRadiation={'zenith':'radiance', 'nadir':'irradiance'}, wvlRange=[350, 2100]):
-
-        """
-        Convert digital count to radiation (radiance or irradiance)
-        """
-
-        msg = 'Error [read_ssfr]: Under development ...'
-        raise OSError(msg)
-
-        self.whichRadiation = whichRadiation
-
-        logic_zen_si = (cal.wvl_zen_si >= wvlRange[0])  & (cal.wvl_zen_si <= wvl_zen_join)
-        logic_zen_in = (cal.wvl_zen_in >= wvl_zen_join) & (cal.wvl_zen_in <= wvlRange[1])
-        n_zen_si = logic_zen_si.sum()
-        n_zen_in = logic_zen_in.sum()
-        n_zen    = n_zen_si + n_zen_in
-        self.wvl_zen = np.append(cal.wvl_zen_si[logic_zen_si], cal.wvl_zen_in[logic_zen_in][::-1])
-
-        logic_nad_si = (cal.wvl_nad_si >= wvlRange[0])  & (cal.wvl_nad_si <= wvl_nad_join)
-        logic_nad_in = (cal.wvl_nad_in >= wvl_nad_join) & (cal.wvl_nad_in <= wvlRange[1])
-        n_nad_si = logic_nad_si.sum()
-        n_nad_in = logic_nad_in.sum()
-        n_nad    = n_nad_si + n_nad_in
-        self.wvl_nad = np.append(cal.wvl_nad_si[logic_nad_si], cal.wvl_nad_in[logic_nad_in][::-1])
-
-        self.spectra_zen = np.zeros((self.tmhr.size, n_zen), dtype=np.float64)
-        self.spectra_nad = np.zeros((self.tmhr.size, n_nad), dtype=np.float64)
-
-        for i in range(self.tmhr.size):
-            # for zenith
-            intTime_si = self.int_time[i, 0]
-            if intTime_si not in cal.primary_response_zen_si.keys():
-                intTime_si_tag = -1
-            else:
-                intTime_si_tag = intTime_si
-
-            intTime_in = self.int_time[i, 1]
-            if intTime_in not in cal.primary_response_zen_in.keys():
-                # intTime_in_tag = -1
-                intTime_in_tag = 250
-            else:
-                intTime_in_tag = intTime_in
-
-            if whichRadiation['zenith'] == 'radiance':
-                self.spectra_zen[i, :n_zen_si] =  (self.spectra_dark_corr[i, logic_zen_si, 0]/intTime_si)/(np.pi * cal.primary_response_zen_si[intTime_si_tag][logic_zen_si])
-                self.spectra_zen[i, n_zen_si:] = ((self.spectra_dark_corr[i, logic_zen_in, 1]/intTime_in)/(np.pi * cal.primary_response_zen_in[intTime_in_tag][logic_zen_in]))[::-1]
-            elif whichRadiation['zenith'] == 'irradiance':
-                self.spectra_zen[i, :n_zen_si] =  (self.spectra_dark_corr[i, logic_zen_si, 0]/intTime_si)/(cal.secondary_response_zen_si[intTime_si_tag][logic_zen_si])
-                self.spectra_zen[i, n_zen_si:] = ((self.spectra_dark_corr[i, logic_zen_in, 1]/intTime_in)/(cal.secondary_response_zen_in[intTime_in_tag][logic_zen_in]))[::-1]
-
-            # for nadir
-            intTime_si = self.int_time[i, 2]
-            if intTime_si not in cal.primary_response_nad_si.keys():
-                intTime_si_tag = -1
-            else:
-                intTime_si_tag = intTime_si
-
-            intTime_in = self.int_time[i, 3]
-            if intTime_in not in cal.primary_response_nad_in.keys():
-                # intTime_in_tag = -1
-                intTime_in_tag = 250
-            else:
-                intTime_in_tag = intTime_in
-
-            if whichRadiation['nadir'] == 'radiance':
-                self.spectra_nad[i, :n_nad_si] =  (self.spectra_dark_corr[i, logic_nad_si, 2]/intTime_si)/(np.pi * cal.primary_response_nad_si[intTime_si_tag][logic_nad_si])
-                self.spectra_nad[i, n_nad_si:] = ((self.spectra_dark_corr[i, logic_nad_in, 3]/intTime_in)/(np.pi * cal.primary_response_nad_in[intTime_in_tag][logic_nad_in]))[::-1]
-            elif whichRadiation['nadir'] == 'irradiance':
-                self.spectra_nad[i, :n_nad_si] =  (self.spectra_dark_corr[i, logic_nad_si, 2]/intTime_si)/(cal.secondary_response_nad_si[intTime_si_tag][logic_nad_si])
-                self.spectra_nad[i, n_nad_si:] = ((self.spectra_dark_corr[i, logic_nad_in, 3]/intTime_in)/(cal.secondary_response_nad_in[intTime_in_tag][logic_nad_in]))[::-1]
 
 
 
