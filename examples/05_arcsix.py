@@ -342,9 +342,10 @@ def process_spns(date):
 if __name__ == '__main__':
 
     dates = [
-             datetime.datetime(2023, 10, 10),
-             datetime.datetime(2023, 10, 12),
-             datetime.datetime(2023, 10, 13),
+             # datetime.datetime(2023, 10, 10),
+             # datetime.datetime(2023, 10, 12),
+             # datetime.datetime(2023, 10, 13),
+             datetime.datetime(2023, 10, 18),
             ]
 
     for date in dates:
