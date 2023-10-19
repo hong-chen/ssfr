@@ -918,10 +918,10 @@ def cdata_arcsix_ssfr_v0(
     ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
 
     # data that are useful
-    #   wvl_zen
-    #   cnt_zen
-    #   wvl_nad
-    #   cnt_nad
+    #   wvl_zen [nm]
+    #   cnt_zen [counts/ms]
+    #   wvl_nad [nm]
+    #   cnt_nad [counts/ms]
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'w')
@@ -939,9 +939,102 @@ def cdata_arcsix_ssfr_v0(
 
     return
 
+def cdata_arcsix_ssfr_v1(
+        date,
+        time_offset=0.0,
+        fdir_data=_fdir_v0_,
+        fdir_out=_fdir_v1_,
+        ):
+
+    """
+    Check for time offset and merge SSFR data with aircraft data
+    """
+
+    # read hsk v0
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_data, _mission_.upper(), date.strftime('%Y-%m-%d'))
+    f = h5py.File(fname_h5, 'r')
+    jday = f['jday'][...]
+    sza  = f['sza'][...]
+    saa  = f['saa'][...]
+    tmhr = f['tmhr'][...]
+    lon  = f['lon'][...]
+    lat  = f['lat'][...]
+    alt  = f['alt'][...]
+    pit  = f['pit'][...]
+    rol  = f['rol'][...]
+    hed  = f['hed'][...]
+    f.close()
+    #\----------------------------------------------------------------------------/#
+
+
+    # read ssfr v0
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+    f = h5py.File(fname_h5, 'r')
+    for dset_s in f.keys():
+        cnt_zen = f['%s/cnt_zen' % dset_s][...]
+        wvl_zen = f['%s/wvl_zen' % dset_s][...]
+        tmhr_zen = f['%s/tmhr' % dset_s][...]
+        print(tmhr_zen[:100]*3600.0)
+
+        cnt_nad = f['%s/cnt_nad' % dset_s][...]
+        wvl_nad = f['%s/wvl_nad' % dset_s][...]
+        tmhr_nad = f['%s/tmhr' % dset_s][...]
+        print(tmhr_nad[:100]*3600.0)
+    f.close()
+    #/----------------------------------------------------------------------------\#
+
+    sys.exit()
+
+
+    # interpolate spn-s data to hsk time frame
+    #/----------------------------------------------------------------------------\#
+    flux_dif = np.zeros((tmhr.size, wvl_dif.size), dtype=np.float64)
+    for i in range(wvl_dif.size):
+        flux_dif[:, i] = ssfr.util.interp(tmhr, tmhr_dif, f_dn_dif[:, i])
+
+    flux_tot = np.zeros((tmhr.size, wvl_tot.size), dtype=np.float64)
+    for i in range(wvl_tot.size):
+        flux_tot[:, i] = ssfr.util.interp(tmhr, tmhr_tot, f_dn_tot[:, i])
+    #\----------------------------------------------------------------------------/#
+
+
+    # save processed data
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+
+    f = h5py.File(fname_h5, 'w')
+
+    f['jday'] = jday
+    f['tmhr'] = tmhr
+    f['lon']  = lon
+    f['lat']  = lat
+    f['alt']  = alt
+    f['sza']  = sza
+    f['saa']  = saa
+    f['pit']  = pit
+    f['rol']  = rol
+    f['hed']  = hed
+
+    g1 = f.create_group('dif')
+    g1['wvl']   = wvl_dif
+    g1['flux']  = flux_dif
+
+    g2 = f.create_group('tot')
+    g2['wvl']   = wvl_tot
+    g2['flux']  = flux_tot
+    g2['toa0']  = f_dn_tot_toa0
+
+    f.close()
+    #\----------------------------------------------------------------------------/#
+
+    return
+
 def process_ssfr(date):
 
-    cdata_arcsix_ssfr_v0(date)
+    # cdata_arcsix_ssfr_v0(date)
+    cdata_arcsix_ssfr_v1(date)
 #\----------------------------------------------------------------------------/#
 
 
