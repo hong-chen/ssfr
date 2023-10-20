@@ -1051,25 +1051,46 @@ def cdata_arcsix_ssfr_v2(
     #/----------------------------------------------------------------------------\#
     fname_resp_zen = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_zenith-LC1_rad-resp_s060i300.h5'
     f = h5py.File(fname_resp_zen, 'r')
-    wvl_resp_zen = f['wvl'][...]
-    pri_resp_zen = f['pri_resp'][...]
-    sec_resp_zen = f['sec_resp'][...]
-    transfer_zen = f['transfer'][...]
+    wvl_resp_zen_ = f['wvl'][...]
+    pri_resp_zen_ = f['pri_resp'][...]
+    sec_resp_zen_ = f['sec_resp'][...]
+    transfer_zen_ = f['transfer'][...]
     f.close()
 
     fname_resp_nad = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_nadir-LC2_rad-resp_s060i300.h5'
     f = h5py.File(fname_resp_nad, 'r')
-    wvl_resp_nad = f['wvl'][...]
-    pri_resp_nad = f['pri_resp'][...]
-    sec_resp_nad = f['sec_resp'][...]
-    transfer_nad = f['transfer'][...]
+    wvl_resp_nad_ = f['wvl'][...]
+    pri_resp_nad_ = f['pri_resp'][...]
+    sec_resp_nad_ = f['sec_resp'][...]
+    transfer_nad_ = f['transfer'][...]
     f.close()
     #\----------------------------------------------------------------------------/#
 
     fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
     f_ = h5py.File(fname_h5, 'r')
     for dset_s in f_.keys():
-        print(dset_s)
+
+        if 'dset' in dset_s:
+
+            # zenith
+            #/--------------------------------------------------------------\#
+            cnt_zen = f_['%s/cnt_zen' % dset_s][...]
+            wvl_zen = f_['%s/wvl_zen' % dset_s][...]
+
+            pri_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, pri_resp_zen_)
+            sec_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, sec_resp_zen_)
+            transfer_zen = np.interp(wvl_zen, wvl_resp_zen_, transfer_zen_)
+            #\--------------------------------------------------------------/#
+
+            # nadir
+            #/--------------------------------------------------------------\#
+            cnt_nad = f_['%s/cnt_nad' % dset_s][...]
+            wvl_nad = f_['%s/wvl_nad' % dset_s][...]
+
+            pri_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, pri_resp_nad_)
+            sec_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, sec_resp_nad_)
+            transfer_nad = np.interp(wvl_nad, wvl_resp_nad_, transfer_nad_)
+            #\--------------------------------------------------------------/#
 
     f_.close()
 
