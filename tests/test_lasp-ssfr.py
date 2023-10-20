@@ -479,6 +479,63 @@ def process_ssfr_data(date):
 
 
 
+def plot(date, wvl0=700.0):
+
+    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SPNS-B_2023-10-18_v2.h5', 'r')
+    tmhr = f['tmhr'][...]
+    wvl_ = f['tot/wvl'][...]
+    flux_spns_tot = f['tot/flux'][...][:, np.argmin(wvl_-wvl0)]
+    f.close()
+
+    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SSFR-B_2023-10-18_v2.h5', 'r')
+    wvl_ = f['dset0/wvl_zen'][...]
+    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(wvl_-wvl0)]
+    wvl_ = f['dset0/wvl_nad'][...]
+    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(wvl_-wvl0)]
+
+    wvl_ = f['dset1/wvl_zen'][...]
+    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(wvl_-wvl0)]
+    wvl_ = f['dset1/wvl_nad'][...]
+    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(wvl_-wvl0)]
+    f.close()
+
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(tmhr, flux_spns_tot, s=6, c='k', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_zen0, s=3, c='r', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_nad0, s=3, c='b', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+
 if __name__ == '__main__':
 
     dates = [
@@ -488,5 +545,7 @@ if __name__ == '__main__':
              datetime.datetime(2023, 10, 18), # ssfr-b, skywatch test
             ]
 
+
     for date in dates:
-        process_ssfr_data(date)
+        plot(date)
+        # process_ssfr_data(date)

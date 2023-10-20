@@ -427,29 +427,6 @@ class read_ssfr:
             dset['cnt_nad'] = counts_nad
         #\----------------------------------------------------------------------------/#
 
-    def cal_flux(
-            self,
-            fnames,
-            wvl0=550.0
-            ):
-
-        resp_zen = ssfr.cal.load_rad_resp_h5(fnames['zenith'])
-        self.zen_flux = np.zeros_like(self.zen_cnt)
-
-        resp_nad = ssfr.cal.load_rad_resp_h5(fnames['nadir'])
-        self.nad_flux = np.zeros_like(self.nad_cnt)
-
-        for i in range(self.tmhr.size):
-
-            self.zen_flux[i, :] = self.zen_cnt[i, :] / self.zen_int_time / resp_zen['sec_resp']
-            self.nad_flux[i, :] = self.nad_cnt[i, :] / self.nad_int_time / resp_nad['sec_resp']
-
-        index_zen = np.argmin(np.abs(self.zen_wvl-wvl0))
-        index_nad = np.argmin(np.abs(self.nad_wvl-wvl0))
-        logic_bad = (self.shutter==1) | (self.zen_flux[:, index_zen]<=0.0) | (self.nad_flux[:, index_nad]<=0.0)
-        self.zen_flux[logic_bad, :] = np.nan
-        self.nad_flux[logic_bad, :] = np.nan
-
 
 
 
