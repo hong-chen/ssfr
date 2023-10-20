@@ -1061,28 +1061,34 @@ def cdata_arcsix_ssfr_v2(
     f = h5py.File(fname_resp_nad, 'r')
     wvl_resp_nad_ = f['wvl'][...]
     pri_resp_nad_ = f['pri_resp'][...]
-    sec_resp_nad_ = f['sec_resp'][...]
     transfer_nad_ = f['transfer'][...]
+    sec_resp_nad_ = f['sec_resp'][...]
     f.close()
     #\----------------------------------------------------------------------------/#
 
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+    f = h5py.File(fname_h5, 'w')
+
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
     f_ = h5py.File(fname_h5, 'r')
+    tmhr = f_['tmhr'][...]
     for dset_s in f_.keys():
 
         if 'dset' in dset_s:
 
             # zenith
             #/--------------------------------------------------------------\#
-            tmhr_zen= f_['%s/tmhr' % dset_s][...]
             cnt_zen = f_['%s/cnt_zen' % dset_s][...]
             wvl_zen = f_['%s/wvl_zen' % dset_s][...]
 
             pri_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, pri_resp_zen_)
-            sec_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, sec_resp_zen_)
             transfer_zen = np.interp(wvl_zen, wvl_resp_zen_, transfer_zen_)
+            sec_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, sec_resp_zen_)
 
-            flux_zen = np.zeros_like(cnt_zen)
+            flux_zen = cnt_zen.copy()
+            for i in range(tmhr.size):
+                if np.isnan(cnt_zen[i, :]).sum() == 0:
+                    flux_zen[i, :] = cnt_zen[i, :] / sec_resp_zen
             #\--------------------------------------------------------------/#
 
             # nadir
@@ -1091,15 +1097,28 @@ def cdata_arcsix_ssfr_v2(
             wvl_nad = f_['%s/wvl_nad' % dset_s][...]
 
             pri_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, pri_resp_nad_)
-            sec_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, sec_resp_nad_)
             transfer_nad = np.interp(wvl_nad, wvl_resp_nad_, transfer_nad_)
+            sec_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, sec_resp_nad_)
 
-            nad_flux = np.zeros_like(cnt_nad)
+            flux_nad = cnt_nad.copy()
+            for i in range(tmhr.size):
+                if np.isnan(cnt_nad[i, :]).sum() == 0:
+                    flux_nad[i, :] = cnt_nad[i, :] / sec_resp_nad
             #\--------------------------------------------------------------/#
+
+            g = f.create_group(dset_s)
+            g['flux_zen'] = flux_zen
+            g['flux_nad'] = flux_nad
+            g['wvl_zen']  = wvl_zen
+            g['wvl_nad']  = wvl_nad
+
+        else:
+
+            f[dset_s] = f_[dset_s][...]
 
     f_.close()
 
-    sys.exit()
+    f.close()
 
     # calculate cosine correction factors
     #/----------------------------------------------------------------------------\#
@@ -1136,29 +1155,24 @@ def cdata_arcsix_ssfr_v2(
     # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
     #\----------------------------------------------------------------------------/#
 
-
-
     # primary transfer calibration
     #/----------------------------------------------------------------------------\#
-    comments_list = []
-    comments_list.append('Bandwidth of Silicon channels (wavelength < 950nm) as defined by the FWHM: 6 nm')
-    comments_list.append('Bandwidth of InGaAs channels (wavelength > 950nm) as defined by the FWHM: 12 nm')
-    comments_list.append('Pitch angle offset: %.1f degree' % pitch_angle)
-    comments_list.append('Roll angle offset: %.1f degree' % roll_angle)
+    # comments_list = []
+    # comments_list.append('Bandwidth of Silicon channels (wavelength < 950nm) as defined by the FWHM: 6 nm')
+    # comments_list.append('Bandwidth of InGaAs channels (wavelength > 950nm) as defined by the FWHM: 12 nm')
+    # comments_list.append('Pitch angle offset: %.1f degree' % pitch_angle)
+    # comments_list.append('Roll angle offset: %.1f degree' % roll_angle)
 
-    for key in fnames_rad_cal.keys():
-        comments_list.append('Radiometric calibration file (%s): %s' % (key, os.path.basename(fnames_rad_cal[key])))
-    for key in fnames_ang_cal.keys():
-        comments_list.append('Angular calibration file (%s): %s' % (key, os.path.basename(fnames_ang_cal[key])))
-    comments = '\n'.join(comments_list)
+    # for key in fnames_rad_cal.keys():
+    #     comments_list.append('Radiometric calibration file (%s): %s' % (key, os.path.basename(fnames_rad_cal[key])))
+    # for key in fnames_ang_cal.keys():
+    #     comments_list.append('Angular calibration file (%s): %s' % (key, os.path.basename(fnames_ang_cal[key])))
+    # comments = '\n'.join(comments_list)
 
-    print(date_s)
-    print(comments)
-    print()
+    # print(date_s)
+    # print(comments)
+    # print()
     #\----------------------------------------------------------------------------/#
-
-
-
 
     # create hsk file for ssfr (nasa data archive)
     #/----------------------------------------------------------------------------\#
