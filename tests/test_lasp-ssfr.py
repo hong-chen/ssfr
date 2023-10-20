@@ -791,7 +791,7 @@ def cdata_arcsix_spns_v2(
 
     return
 
-def process_spns(date):
+def process_spns_data(date):
 
     cdata_arcsix_hsk_v0(date)
     cdata_arcsix_spns_v0(date)
@@ -800,6 +800,116 @@ def process_spns(date):
 #\----------------------------------------------------------------------------/#
 
 
+
+# calibrations (placeholders, copy-pasted from CAMP2Ex code, need to work on them)
+#/----------------------------------------------------------------------------\#
+def cdata_arcsix_cal_cos_resp(
+        fdir,
+        angles = np.array([ 0.0,  5.0,  10.0,  15.0,  20.0,  25.0,  30.0,  40.0,  50.0,  60.0,  70.0,  80.0,  90.0, \
+                            0.0, -5.0, -10.0, -15.0, -20.0, -25.0, -30.0, -40.0, -50.0, -60.0, -70.0, -80.0, -90.0, 0.0]),
+        plot=True,
+        intTime={'si':60, 'in':300}
+        ):
+
+    date_s = os.path.basename(fdir).split('_')[0]
+
+    lc_all = [dir0 for dir0 in os.listdir(fdir) if os.path.isdir(os.path.join(fdir, dir0)) and ('nadir' in dir0.lower() or 'zenith' in dir0.lower())]
+
+    for lc in lc_all:
+
+        fnames = sorted(glob.glob('%s/%s/s%di%d/pos/*.OSA2' % (fdir, lc, intTime['si'], intTime['in']))) + \
+                 sorted(glob.glob('%s/%s/s%di%d/neg/*.OSA2' % (fdir, lc, intTime['si'], intTime['in'])))
+
+        fnames_cal = OrderedDict()
+        for i, fname in enumerate(fnames):
+            fnames_cal[fname] = angles[i]
+
+        if 'nadir' in lc.lower():
+            which = 'nadir'
+        elif 'zenith' in lc.lower():
+            which = 'zenith'
+
+        filename_tag = '%s_%s' % (fdir, lc.replace('_', '-'))
+
+        fname_cal = cdata_cos_resp(fnames_cal, filename_tag=filename_tag, which=which, Nchan=256, wvl_join=950.0, wvl_start=350.0, wvl_end=2200.0, intTime=intTime)
+
+        if plot:
+            plot_cos_resp_camp2ex(fname_cal)
+
+def cdata_arcsix_cal_rad_resp(
+        fdir_lab,
+        fdir_field=None,
+        plot=True,
+        intTime={'si':60, 'in':300},
+        field_lamp_tag='150',
+        ):
+
+    dirs = get_sub_dir(fdir_lab, full=False)
+
+    if len(dirs) != 2:
+        sys.exit('Error [cdata_arcsix_cal_rad_resp]: Incomplete lab radiometric calibration dataset.')
+
+    if field_lamp_tag in dirs[0]:
+        index_tra = 0
+        index_pri = 1
+    elif field_lamp_tag in dirs[1]:
+        index_tra = 1
+        index_pri = 0
+    else:
+        sys.exit('Error [cdata_arcsix_cal_rad_resp]: Cannot locate lab radiometric calibration for field lamp.')
+
+    fdir_tra = '%s/%s' % (fdir_lab, dirs[index_tra])
+    fdir_pri = '%s/%s' % (fdir_lab, dirs[index_pri])
+
+    if fdir_field is None:
+        fdir_field = fdir_tra
+    else:
+        fdir_field = get_sub_dir(fdir_field, full=True, contains=[field_lamp_tag])[0]
+
+    filename_tag0 = '%s/%s_%s' % (os.path.dirname(fdir_lab), os.path.basename(fdir_lab).replace('_', '-'), os.path.basename(os.path.dirname(fdir_field)).replace('_', '-'))
+
+    lc_all = get_sub_dir(fdir_field, full=False, contains=['zenith', 'nadir'])
+
+    for lc in lc_all:
+
+        fnames_pri = {'dark':'%s/%s/s%di%d/dark/spc00000.OSA2' % (fdir_pri, lc, intTime['si'], intTime['in']),\
+                      'cal' :'%s/%s/s%di%d/cal/spc00000.OSA2'  % (fdir_pri, lc, intTime['si'], intTime['in'])}
+        fnames_tra = {'dark':'%s/%s/s%di%d/dark/spc00000.OSA2' % (fdir_tra, lc, intTime['si'], intTime['in']),\
+                      'cal' :'%s/%s/s%di%d/cal/spc00000.OSA2'  % (fdir_tra, lc, intTime['si'], intTime['in'])}
+        fnames_sec = {'dark':'%s/%s/s%di%d/dark/spc00000.OSA2' % (fdir_field, lc, intTime['si'], intTime['in']),\
+                      'cal' :'%s/%s/s%di%d/cal/spc00000.OSA2'  % (fdir_field, lc, intTime['si'], intTime['in'])}
+
+        which = lc.split('_')[0]
+        filename_tag = '%s_%s' % (filename_tag0, lc.replace('_', '-'))
+        pri_lamp_tag = 'f-%s' % (os.path.basename(fdir_pri)).lower()
+        fname_cal = cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, filename_tag=filename_tag, which=which, wvl_join=950.0, wvl_start=350.0, wvl_end=2200.0, intTime=intTime, pri_lamp_tag=pri_lamp_tag)
+
+def process_ssfr_cal(fdir_data=_fdir_data_, platform='p3', run=True):
+
+    """
+    ARCSIX 2024
+    """
+
+    # angular calibrations (cosine response)
+    #/----------------------------------------------------------------------------\#
+    if run:
+        fdir0 = '%s/%s/calibration/ang-cal' % (fdir_data, platform)
+        fdirs = ['%s/%s' % (fdir0, dir0) for dir0 in os.listdir(fdir0) if os.path.isdir(os.path.join(fdir0, dir0))]
+        for fdir in fdirs:
+            cdata_arcsix_cal_cos_resp(fdir)
+    #\----------------------------------------------------------------------------/#
+
+    # radiometric calibrations (primary and secondary response)
+    #/----------------------------------------------------------------------------\#
+    if run:
+        fdir0 = '%s/%s/calibration/rad-cal' % (fdir_data, platform)
+        fdirs_lab   = get_sub_dir(fdir0, full=True, contains=['pre', 'post'])
+        fdirs_field = get_sub_dir(fdir0, full=True, contains=['field'])
+        for fdir_lab in fdirs_lab:
+            for fdir_field in fdirs_field:
+                cdata_arcsix_cal_rad_resp(fdir_lab, fdir_field=fdir_field)
+    #\----------------------------------------------------------------------------/#
+#\----------------------------------------------------------------------------/#
 
 
 
@@ -895,11 +1005,11 @@ def cdata_arcsix_ssfr_v1(
 
         cnt_zen_ = f_['%s/cnt_zen' % dset_s][...]
         wvl_zen  = f_['%s/wvl_zen' % dset_s][...]
-        tmhr_zen = f_['%s/tmhr'    % dset_s][...]
+        tmhr_zen = f_['%s/tmhr'    % dset_s][...] + time_offset/3600.0
 
         cnt_nad_ = f_['%s/cnt_nad' % dset_s][...]
         wvl_nad  = f_['%s/wvl_nad' % dset_s][...]
-        tmhr_nad = f_['%s/tmhr'    % dset_s][...]
+        tmhr_nad = f_['%s/tmhr'    % dset_s][...] + time_offset/3600.0
 
         # interpolate ssfr data to hsk time frame
         #/----------------------------------------------------------------------------\#
@@ -927,15 +1037,164 @@ def cdata_arcsix_ssfr_v1(
 
     return
 
-def cdata_arcsix_ssfr_v2():
+def cdata_arcsix_ssfr_v2(
+        date,
+        fdir_data=_fdir_v1_,
+        fdir_out=_fdir_v2_,
+        pitch_angle=0.0,
+        roll_angle=0.0,
+        ):
 
-    pass
+    date_s = date.strftime('%Y%m%d')
 
-def process_ssfr(date):
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+    f_ = h5py.File(fname_h5, 'r')
+
+    f_.close()
+
+    sys.exit()
+
+    # calculate cosine correction factors
+    #/----------------------------------------------------------------------------\#
+    # angles = {}
+    # angles['solar_zenith']  = ssfr_aux['sza']
+    # angles['solar_azimuth'] = ssfr_aux['saa']
+    # if date < datetime.datetime(2019, 8, 24):
+    #     fname_alp = get_file(fdir_processed, full=True, contains=['alp_%s_v0' % date_s])
+    #     data_alp = load_h5(fname_alp)
+    #     angles['pitch']        = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_pit_s'])
+    #     angles['roll']         = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_rol_s'])
+    #     angles['heading']      = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['true_heading'])
+    #     angles['pitch_motor']  = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_pit_m'])
+    #     angles['roll_motor']   = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_rol_m'])
+    #     angles['pitch_motor'][np.isnan(angles['pitch_motor'])] = 0.0
+    #     angles['roll_motor'][np.isnan(angles['roll_motor'])]   = 0.0
+    #     angles['pitch_offset']  = pitch_angle
+    #     angles['roll_offset']   = roll_angle
+    # else:
+    #     angles['pitch']         = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['pitch_angle'])
+    #     angles['roll']          = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['roll_angle'])
+    #     angles['heading']       = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['true_heading'])
+    #     angles['pitch_motor']   = np.repeat(0.0, ssfr_v0.tmhr.size)
+    #     angles['roll_motor']    = np.repeat(0.0, ssfr_v0.tmhr.size)
+    #     angles['pitch_offset']  = pitch_angle
+    #     angles['roll_offset']   = roll_angle
+
+    # fdir_ang_cal = '%s/ang-cal' % fdir_cal
+    # fnames_ang_cal = get_ang_cal_camp2ex(date, fdir_ang_cal)
+    # factors = cos_corr(fnames_ang_cal, angles, diff_ratio=ssfr_aux['diff_ratio'])
+
+    # # apply cosine correction
+    # ssfr_v0.zen_cnt = ssfr_v0.zen_cnt*factors['zenith']
+    # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
+    #\----------------------------------------------------------------------------/#
+
+    # primary transfer calibration
+    #/----------------------------------------------------------------------------\#
+    fdir_rad_cal = '%s/rad-cal' % fdir_cal
+    fnames_rad_cal = get_rad_cal_camp2ex(date, fdir_rad_cal)
+    ssfr_v0.cal_flux(fnames_rad_cal)
+    #\----------------------------------------------------------------------------/#
+
+    zen_flux = np.zeros((data_hsk['tmhr'].size, ssfr_v0.zen_wvl.size), dtype=np.float64)
+    for i in range(ssfr_v0.zen_wvl.size):
+        zen_flux[:, i] = interp(data_hsk['tmhr'], ssfr_v0.tmhr, ssfr_v0.zen_flux[:, i])
+
+    nad_flux = np.zeros((data_hsk['tmhr'].size, ssfr_v0.nad_wvl.size), dtype=np.float64)
+    for i in range(ssfr_v0.nad_wvl.size):
+        nad_flux[:, i] = interp(data_hsk['tmhr'], ssfr_v0.tmhr, ssfr_v0.nad_flux[:, i])
+
+    # primary transfer calibration
+    #/----------------------------------------------------------------------------\#
+    comments_list = []
+    comments_list.append('Bandwidth of Silicon channels (wavelength < 950nm) as defined by the FWHM: 6 nm')
+    comments_list.append('Bandwidth of InGaAs channels (wavelength > 950nm) as defined by the FWHM: 12 nm')
+    comments_list.append('Pitch angle offset: %.1f degree' % pitch_angle)
+    comments_list.append('Roll angle offset: %.1f degree' % roll_angle)
+
+    for key in fnames_rad_cal.keys():
+        comments_list.append('Radiometric calibration file (%s): %s' % (key, os.path.basename(fnames_rad_cal[key])))
+    for key in fnames_ang_cal.keys():
+        comments_list.append('Angular calibration file (%s): %s' % (key, os.path.basename(fnames_ang_cal[key])))
+    comments = '\n'.join(comments_list)
+
+    print(date_s)
+    print(comments)
+    print()
+    #\----------------------------------------------------------------------------/#
+
+
+
+
+    # create hsk file for ssfr (nasa data archive)
+    #/----------------------------------------------------------------------------\#
+    # fname_ssfr = '%s/ssfr_%s_hsk.h5' % (fdir_processed, date_s)
+    # f = h5py.File(fname_ssfr, 'w')
+
+    # dset = f.create_dataset('comments', data=comments)
+    # dset.attrs['description'] = 'comments on the data'
+
+    # dset = f.create_dataset('info', data=version_info)
+    # dset.attrs['description'] = 'information on the version'
+
+    # dset = f.create_dataset('utc', data=data_hsk['tmhr'])
+    # dset.attrs['description'] = 'universal time (numbers above 24 are for the next day)'
+    # dset.attrs['unit'] = 'decimal hour'
+
+    # dset = f.create_dataset('altitude', data=data_hsk['gps_altitude'])
+    # dset.attrs['description'] = 'altitude above sea level (GPS altitude)'
+    # dset.attrs['unit'] = 'meter'
+
+    # dset = f.create_dataset('longitude', data=data_hsk['longitude'])
+    # dset.attrs['description'] = 'longitude'
+    # dset.attrs['unit'] = 'degree'
+
+    # dset = f.create_dataset('latitude', data=data_hsk['latitude'])
+    # dset.attrs['description'] = 'latitude'
+    # dset.attrs['unit'] = 'degree'
+
+    # dset = f.create_dataset('zen_wvl', data=ssfr_v0.zen_wvl)
+    # dset.attrs['description'] = 'center wavelengths of zenith channels (bandwidth see info)'
+    # dset.attrs['unit'] = 'nm'
+
+    # dset = f.create_dataset('nad_wvl', data=ssfr_v0.nad_wvl)
+    # dset.attrs['description'] = 'center wavelengths of nadir channels (bandwidth see info)'
+    # dset.attrs['unit'] = 'nm'
+
+    # dset = f.create_dataset('zen_flux', data=zen_flux)
+    # dset.attrs['description'] = 'downwelling shortwave spectral irradiance'
+    # dset.attrs['unit'] = 'W / m2 / nm'
+
+    # dset = f.create_dataset('nad_flux', data=nad_flux)
+    # dset.attrs['description'] = 'upwelling shortwave spectral irradiance'
+    # dset.attrs['unit'] = 'W / m2 / nm'
+
+    # dset = f.create_dataset('pitch', data=pitch)
+    # dset.attrs['description'] = 'aircraft pitch angle (positive values indicate nose up)'
+    # dset.attrs['unit'] = 'degree'
+
+    # dset = f.create_dataset('roll', data=roll)
+    # dset.attrs['description'] = 'aircraft roll angle (positive values indicate right wing down)'
+    # dset.attrs['unit'] = 'degree'
+
+    # dset = f.create_dataset('heading', data=heading)
+    # dset.attrs['description'] = 'aircraft heading angle (positive values clockwise, w.r.t north)'
+    # dset.attrs['unit'] = 'degree'
+
+    # dset = f.create_dataset('sza', data=sza)
+    # dset.attrs['description'] = 'solar zenith angle'
+    # dset.attrs['unit'] = 'degree'
+
+    # f.close()
+    #\----------------------------------------------------------------------------/#
+
+    return
+
+def process_ssfr_data(date):
 
     # cdata_arcsix_ssfr_v0(date)
-    # cdata_arcsix_ssfr_v1(date)
-    cdata_arcsix_ssfr_v2()
+    # cdata_arcsix_ssfr_v1(date, time_offset=0.0)
+    cdata_arcsix_ssfr_v2(date)
 #\----------------------------------------------------------------------------/#
 
 
@@ -950,4 +1209,4 @@ if __name__ == '__main__':
             ]
 
     for date in dates:
-        process_ssfr(date)
+        process_ssfr_data(date)
