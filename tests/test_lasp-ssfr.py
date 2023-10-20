@@ -967,43 +967,9 @@ def cdata_arcsix_ssfr_v1(
     f.close()
     #\----------------------------------------------------------------------------/#
 
-
-    # read ssfr v0
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
-    f = h5py.File(fname_h5, 'r')
-    for dset_s in f.keys():
-        cnt_zen = f['%s/cnt_zen' % dset_s][...]
-        wvl_zen = f['%s/wvl_zen' % dset_s][...]
-        tmhr_zen = f['%s/tmhr' % dset_s][...]
-        print(tmhr_zen[:100]*3600.0)
-
-        cnt_nad = f['%s/cnt_nad' % dset_s][...]
-        wvl_nad = f['%s/wvl_nad' % dset_s][...]
-        tmhr_nad = f['%s/tmhr' % dset_s][...]
-        print(tmhr_nad[:100]*3600.0)
-    f.close()
-    #/----------------------------------------------------------------------------\#
-
-    sys.exit()
-
-
-    # interpolate spn-s data to hsk time frame
-    #/----------------------------------------------------------------------------\#
-    flux_dif = np.zeros((tmhr.size, wvl_dif.size), dtype=np.float64)
-    for i in range(wvl_dif.size):
-        flux_dif[:, i] = ssfr.util.interp(tmhr, tmhr_dif, f_dn_dif[:, i])
-
-    flux_tot = np.zeros((tmhr.size, wvl_tot.size), dtype=np.float64)
-    for i in range(wvl_tot.size):
-        flux_tot[:, i] = ssfr.util.interp(tmhr, tmhr_tot, f_dn_tot[:, i])
-    #\----------------------------------------------------------------------------/#
-
-
     # save processed data
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
-
     f = h5py.File(fname_h5, 'w')
 
     f['jday'] = jday
@@ -1017,14 +983,41 @@ def cdata_arcsix_ssfr_v1(
     f['rol']  = rol
     f['hed']  = hed
 
-    g1 = f.create_group('dif')
-    g1['wvl']   = wvl_dif
-    g1['flux']  = flux_dif
+    # read ssfr v0
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+    f_ = h5py.File(fname_h5, 'r')
 
-    g2 = f.create_group('tot')
-    g2['wvl']   = wvl_tot
-    g2['flux']  = flux_tot
-    g2['toa0']  = f_dn_tot_toa0
+    for dset_s in f_.keys():
+
+        cnt_zen_ = f_['%s/cnt_zen' % dset_s][...]
+        wvl_zen  = f_['%s/wvl_zen' % dset_s][...]
+        tmhr_zen = f_['%s/tmhr'    % dset_s][...]
+
+        cnt_nad_ = f_['%s/cnt_nad' % dset_s][...]
+        wvl_nad  = f_['%s/wvl_nad' % dset_s][...]
+        tmhr_nad = f_['%s/tmhr'    % dset_s][...]
+
+        # interpolate ssfr data to hsk time frame
+        #/----------------------------------------------------------------------------\#
+        cnt_zen = np.zeros((tmhr.size, wvl_zen.size), dtype=np.float64)
+        for i in range(wvl_zen.size):
+            cnt_zen[:, i] = ssfr.util.interp(tmhr, tmhr_zen, cnt_zen_[:, i])
+
+        cnt_nad = np.zeros((tmhr.size, wvl_nad.size), dtype=np.float64)
+        for i in range(wvl_nad.size):
+            cnt_nad[:, i] = ssfr.util.interp(tmhr, tmhr_nad, cnt_nad_[:, i])
+        #\----------------------------------------------------------------------------/#
+
+        g = f.create_group(dset_s)
+
+        g['wvl_zen'] = wvl_zen
+        g['cnt_zen'] = cnt_zen
+        g['wvl_nad'] = wvl_nad
+        g['cnt_nad'] = cnt_nad
+
+    f_.close()
+    #/----------------------------------------------------------------------------\#
 
     f.close()
     #\----------------------------------------------------------------------------/#
