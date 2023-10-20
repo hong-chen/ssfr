@@ -802,103 +802,6 @@ def process_spns(date):
 
 
 
-def test_lasp_ssfr_skywatch_zenith():
-
-    fdir = 'data/SSFR/2023-10-06'
-
-    fnames = ssfr.util.get_all_files(fdir)
-
-    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
-
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(ssfr0.dset0['tmhr'], ssfr0.dset0['spectra'][:, 100, 0], s=6, c='black', lw=0.0)
-        ax1.scatter(ssfr0.dset1['tmhr'], ssfr0.dset1['spectra'][:, 100, 0], s=6, c='gray' , lw=0.0)
-
-        ax1.scatter(ssfr0.dset0['tmhr'], ssfr0.dset0['spectra'][:, 100, 1], s=6, c='red'    , lw=0.0)
-        ax1.scatter(ssfr0.dset1['tmhr'], ssfr0.dset1['spectra'][:, 100, 1], s=6, c='magenta', lw=0.0)
-
-        ax1.set_ylim((-35000, 35000))
-
-        ax1.set_xlabel('Time [Hour]')
-        ax1.set_ylabel('Counts')
-        ax1.set_title('Zenith (LC6 + CAMP2Ex Zenith Cable)')
-        #\--------------------------------------------------------------/#
-
-        patches_legend = [
-                         mpatches.Patch(color='black'   , label='Zenith Silicon (%d ms)' % ssfr0.dset0['info']['int_time']['zen_si']), \
-                         mpatches.Patch(color='gray'    , label='Zenith Silicon (%d ms)' % ssfr0.dset1['info']['int_time']['zen_si']), \
-                         mpatches.Patch(color='red'     , label='Zenith InGaAs (%d ms)' % ssfr0.dset0['info']['int_time']['zen_in']), \
-                         mpatches.Patch(color='magenta' , label='Zenith InGaAs (%d ms)' % ssfr0.dset1['info']['int_time']['zen_in']), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s.png' % (_metadata['Function']), bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-    #\----------------------------------------------------------------------------/#
-
-def test_lasp_ssfr_skywatch_nadir():
-
-    fdir = 'data/SSFR/2023-10-06'
-
-    fnames = ssfr.util.get_all_files(fdir)
-
-    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
-
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(ssfr0.dset0['tmhr'], ssfr0.dset0['spectra'][:, 100, 2], s=6, c='black', lw=0.0)
-        ax1.scatter(ssfr0.dset1['tmhr'], ssfr0.dset1['spectra'][:, 100, 2], s=6, c='gray', lw=0.0)
-
-        ax1.scatter(ssfr0.dset0['tmhr'], ssfr0.dset0['spectra'][:, 100, 3], s=6, c='red'    , lw=0.0)
-        ax1.scatter(ssfr0.dset1['tmhr'], ssfr0.dset1['spectra'][:, 100, 3], s=6, c='magenta', lw=0.0)
-
-        ax1.set_ylim((-35000, 35000))
-
-        ax1.set_xlabel('Time [Hour]')
-        ax1.set_ylabel('Counts')
-        ax1.set_title('Nadir (LC4 + Stainless Steel Cable)')
-        #\--------------------------------------------------------------/#
-
-        patches_legend = [
-                         mpatches.Patch(color='black', label='Nadir Silicon (%d ms)' % ssfr0.dset0['info']['int_time']['Nadir Silicon']), \
-                         mpatches.Patch(color='gray' , label='Nadir Silicon (%d ms)' % ssfr0.dset1['info']['int_time']['Nadir Silicon']), \
-                         mpatches.Patch(color='red'     , label='Nadir InGaAs (%d ms)' % ssfr0.dset0['info']['int_time']['Nadir InGaAs']), \
-                         mpatches.Patch(color='magenta' , label='Nadir InGaAs (%d ms)' % ssfr0.dset1['info']['int_time']['Nadir InGaAs']), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s.png' % (_metadata['Function']), bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-    #\----------------------------------------------------------------------------/#
-
-
-
-
 
 # functions for processing SSFR
 #/----------------------------------------------------------------------------\#
@@ -1024,10 +927,15 @@ def cdata_arcsix_ssfr_v1(
 
     return
 
+def cdata_arcsix_ssfr_v2():
+
+    pass
+
 def process_ssfr(date):
 
     # cdata_arcsix_ssfr_v0(date)
-    cdata_arcsix_ssfr_v1(date)
+    # cdata_arcsix_ssfr_v1(date)
+    cdata_arcsix_ssfr_v2()
 #\----------------------------------------------------------------------------/#
 
 
