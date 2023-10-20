@@ -1047,8 +1047,29 @@ def cdata_arcsix_ssfr_v2(
 
     date_s = date.strftime('%Y%m%d')
 
+    # primary transfer calibration
+    #/----------------------------------------------------------------------------\#
+    fname_resp_zen = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_zenith-LC1_rad-resp_s060i300.h5'
+    f = h5py.File(fname_resp_zen, 'r')
+    wvl_resp_zen = f['wvl'][...]
+    pri_resp_zen = f['pri_resp'][...]
+    sec_resp_zen = f['sec_resp'][...]
+    transfer_zen = f['transfer'][...]
+    f.close()
+
+    fname_resp_nad = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_nadir-LC2_rad-resp_s060i300.h5'
+    f = h5py.File(fname_resp_nad, 'r')
+    wvl_resp_nad = f['wvl'][...]
+    pri_resp_nad = f['pri_resp'][...]
+    sec_resp_nad = f['sec_resp'][...]
+    transfer_nad = f['transfer'][...]
+    f.close()
+    #\----------------------------------------------------------------------------/#
+
     fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
     f_ = h5py.File(fname_h5, 'r')
+    for dset_s in f_.keys():
+        print(dset_s)
 
     f_.close()
 
@@ -1089,12 +1110,6 @@ def cdata_arcsix_ssfr_v2(
     # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
     #\----------------------------------------------------------------------------/#
 
-    # primary transfer calibration
-    #/----------------------------------------------------------------------------\#
-    fdir_rad_cal = '%s/rad-cal' % fdir_cal
-    fnames_rad_cal = get_rad_cal_camp2ex(date, fdir_rad_cal)
-    ssfr_v0.cal_flux(fnames_rad_cal)
-    #\----------------------------------------------------------------------------/#
 
     zen_flux = np.zeros((data_hsk['tmhr'].size, ssfr_v0.zen_wvl.size), dtype=np.float64)
     for i in range(ssfr_v0.zen_wvl.size):
