@@ -1074,12 +1074,15 @@ def cdata_arcsix_ssfr_v2(
 
             # zenith
             #/--------------------------------------------------------------\#
+            tmhr_zen= f_['%s/tmhr' % dset_s][...]
             cnt_zen = f_['%s/cnt_zen' % dset_s][...]
             wvl_zen = f_['%s/wvl_zen' % dset_s][...]
 
             pri_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, pri_resp_zen_)
             sec_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, sec_resp_zen_)
             transfer_zen = np.interp(wvl_zen, wvl_resp_zen_, transfer_zen_)
+
+            flux_zen = np.zeros_like(cnt_zen)
             #\--------------------------------------------------------------/#
 
             # nadir
@@ -1090,6 +1093,8 @@ def cdata_arcsix_ssfr_v2(
             pri_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, pri_resp_nad_)
             sec_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, sec_resp_nad_)
             transfer_nad = np.interp(wvl_nad, wvl_resp_nad_, transfer_nad_)
+
+            nad_flux = np.zeros_like(cnt_nad)
             #\--------------------------------------------------------------/#
 
     f_.close()
@@ -1132,13 +1137,6 @@ def cdata_arcsix_ssfr_v2(
     #\----------------------------------------------------------------------------/#
 
 
-    zen_flux = np.zeros((data_hsk['tmhr'].size, ssfr_v0.zen_wvl.size), dtype=np.float64)
-    for i in range(ssfr_v0.zen_wvl.size):
-        zen_flux[:, i] = interp(data_hsk['tmhr'], ssfr_v0.tmhr, ssfr_v0.zen_flux[:, i])
-
-    nad_flux = np.zeros((data_hsk['tmhr'].size, ssfr_v0.nad_wvl.size), dtype=np.float64)
-    for i in range(ssfr_v0.nad_wvl.size):
-        nad_flux[:, i] = interp(data_hsk['tmhr'], ssfr_v0.tmhr, ssfr_v0.nad_flux[:, i])
 
     # primary transfer calibration
     #/----------------------------------------------------------------------------\#
