@@ -237,11 +237,11 @@ def cdata_arcsix_ssfr_v1(
 
         cnt_zen_ = f_['%s/cnt_zen' % dset_s][...]
         wvl_zen  = f_['%s/wvl_zen' % dset_s][...]
-        tmhr_zen = f_['%s/tmhr'    % dset_s][...] + tmhr_offset/3600.0
+        tmhr_zen = f_['%s/tmhr'    % dset_s][...] + tmhr_offset
 
         cnt_nad_ = f_['%s/cnt_nad' % dset_s][...]
         wvl_nad  = f_['%s/wvl_nad' % dset_s][...]
-        tmhr_nad = f_['%s/tmhr'    % dset_s][...] + tmhr_offset/3600.0
+        tmhr_nad = f_['%s/tmhr'    % dset_s][...] + tmhr_offset
 
         # interpolate ssfr data to hsk time frame
         #/----------------------------------------------------------------------------\#
@@ -511,10 +511,10 @@ def plot(date, wvl0=700.0):
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
         ax1.scatter(tmhr, flux_spns_tot, s=6, c='k', lw=0.0)
-        ax1.scatter(tmhr+4.3470, flux_ssfr_zen0, s=3, c='r', lw=0.0)
-        ax1.scatter(tmhr+4.3470, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
-        ax1.scatter(tmhr+4.3470, flux_ssfr_nad0, s=3, c='b', lw=0.0)
-        ax1.scatter(tmhr+4.3470, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_zen0, s=3, c='r', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_nad0, s=3, c='b', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
         ax1.set_xlabel('Time [Hour]')
         ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
         ax1.set_title('Skywatch Test (Belana, 2023-10-18, %d nm)' % wvl0)
@@ -550,5 +550,5 @@ if __name__ == '__main__':
 
 
     for date in dates:
-        # plot(date)
         process_ssfr_data(date)
+        plot(date)
