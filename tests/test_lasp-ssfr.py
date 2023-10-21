@@ -479,7 +479,7 @@ def process_ssfr_data(date):
 
 
 
-def plot(date, wvl0=700.0):
+def plot_time_series(date, wvl0=700.0):
 
     date_s = date.strftime('%Y-%m-%d')
 
@@ -501,14 +501,11 @@ def plot(date, wvl0=700.0):
     flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     f.close()
 
-
-
     # figure
     #/----------------------------------------------------------------------------\#
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(12, 6))
-        # fig.suptitle('Figure')
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
@@ -524,10 +521,66 @@ def plot(date, wvl0=700.0):
 
         patches_legend = [
                           mpatches.Patch(color='black' , label='SPNS-B Total'), \
-                          mpatches.Patch(color='red'    , label='SSFR-B Zenith 01'), \
-                          mpatches.Patch(color='magenta', label='SSFR-B Zenith 02'), \
-                          mpatches.Patch(color='blue'   , label='SSFR-B Nadir 01'), \
-                          mpatches.Patch(color='cyan'   , label='SSFR-B Nadir 02'), \
+                          mpatches.Patch(color='red'    , label='SSFR-B Zenith Si080In250'), \
+                          mpatches.Patch(color='magenta', label='SSFR-B Zenith Si120In350'), \
+                          mpatches.Patch(color='blue'   , label='SSFR-B Nadir Si080In250'), \
+                          mpatches.Patch(color='cyan'   , label='SSFR-B Nadir Si120In350'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+    #\----------------------------------------------------------------------------/#
+
+def plot_spectra(date, tmhr0=20.830):
+
+    date_s = date.strftime('%Y-%m-%d')
+
+    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SPNS-B_%s_v2.h5' % date_s, 'r')
+    tmhr = f['tmhr'][...]
+    wvl_spns_tot  = f['tot/wvl'][...]
+    flux_spns_tot = f['tot/flux'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    f.close()
+
+    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SSFR-B_%s_v2.h5' % date_s, 'r')
+    flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+
+    wvl_ssfr_zen = f['dset1/wvl_zen'][...]
+    flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    wvl_ssfr_nad = f['dset1/wvl_nad'][...]
+    flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    f.close()
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(wvl_spns_tot, flux_spns_tot, s=6, c='k', lw=0.0)
+        ax1.scatter(wvl_ssfr_zen, flux_ssfr_zen0, s=3, c='r', lw=0.0)
+        ax1.scatter(wvl_ssfr_zen, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
+        ax1.scatter(wvl_ssfr_nad, flux_ssfr_nad0, s=3, c='b', lw=0.0)
+        ax1.scatter(wvl_ssfr_nad, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
+        ax1.set_xlabel('Wavelength [nm]')
+        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+        ax1.set_title('Skywatch Test (Belana, %s, %.4f Hour)' % (date_s, tmhr0))
+        #\--------------------------------------------------------------/#
+
+        patches_legend = [
+                          mpatches.Patch(color='black' , label='SPNS-B Total'), \
+                          mpatches.Patch(color='red'    , label='SSFR-B Zenith Si080In250'), \
+                          mpatches.Patch(color='magenta', label='SSFR-B Zenith Si120In350'), \
+                          mpatches.Patch(color='blue'   , label='SSFR-B Nadir Si080In250'), \
+                          mpatches.Patch(color='cyan'   , label='SSFR-B Nadir Si120In350'), \
                          ]
         ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
 
@@ -547,10 +600,11 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 11), # ssfr-a, lab diagnose
              # datetime.datetime(2023, 10, 12), # ssfr-b, skywatch test
              # datetime.datetime(2023, 10, 13), # ssfr-b, skywatch test
-             # datetime.datetime(2023, 10, 18), # ssfr-b, skywatch test
-             datetime.datetime(2023, 10, 19), # ssfr-b, skywatch test
+             datetime.datetime(2023, 10, 18), # ssfr-b, skywatch test
+             # datetime.datetime(2023, 10, 19), # ssfr-b, skywatch test
             ]
 
     for date in dates:
         # process_ssfr_data(date)
-        plot(date)
+        # plot_time_series(date)
+        plot_spectra(date)
