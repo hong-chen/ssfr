@@ -186,7 +186,7 @@ def cdata_arcsix_ssfr_v0(
 
 def cdata_arcsix_ssfr_v1(
         date,
-        time_offset=0.0,
+        tmhr_offset=4.3470,
         fdir_data=_fdir_v0_,
         fdir_out=_fdir_v1_,
         ):
@@ -237,11 +237,11 @@ def cdata_arcsix_ssfr_v1(
 
         cnt_zen_ = f_['%s/cnt_zen' % dset_s][...]
         wvl_zen  = f_['%s/wvl_zen' % dset_s][...]
-        tmhr_zen = f_['%s/tmhr'    % dset_s][...] + time_offset/3600.0
+        tmhr_zen = f_['%s/tmhr'    % dset_s][...] + tmhr_offset/3600.0
 
         cnt_nad_ = f_['%s/cnt_nad' % dset_s][...]
         wvl_nad  = f_['%s/wvl_nad' % dset_s][...]
-        tmhr_nad = f_['%s/tmhr'    % dset_s][...] + time_offset/3600.0
+        tmhr_nad = f_['%s/tmhr'    % dset_s][...] + tmhr_offset/3600.0
 
         # interpolate ssfr data to hsk time frame
         #/----------------------------------------------------------------------------\#
@@ -472,8 +472,8 @@ def cdata_arcsix_ssfr_v2(
 
 def process_ssfr_data(date):
 
-    # cdata_arcsix_ssfr_v0(date)
-    # cdata_arcsix_ssfr_v1(date, time_offset=0.0)
+    cdata_arcsix_ssfr_v0(date)
+    cdata_arcsix_ssfr_v1(date)
     cdata_arcsix_ssfr_v2(date)
 #\----------------------------------------------------------------------------/#
 
@@ -484,19 +484,19 @@ def plot(date, wvl0=700.0):
     f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SPNS-B_2023-10-18_v2.h5', 'r')
     tmhr = f['tmhr'][...]
     wvl_ = f['tot/wvl'][...]
-    flux_spns_tot = f['tot/flux'][...][:, np.argmin(wvl_-wvl0)]
+    flux_spns_tot = f['tot/flux'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     f.close()
 
     f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SSFR-B_2023-10-18_v2.h5', 'r')
     wvl_ = f['dset0/wvl_zen'][...]
-    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(wvl_-wvl0)]
+    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     wvl_ = f['dset0/wvl_nad'][...]
-    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(wvl_-wvl0)]
+    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
 
     wvl_ = f['dset1/wvl_zen'][...]
-    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(wvl_-wvl0)]
+    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     wvl_ = f['dset1/wvl_nad'][...]
-    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(wvl_-wvl0)]
+    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     f.close()
 
 
@@ -511,28 +511,31 @@ def plot(date, wvl0=700.0):
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
         ax1.scatter(tmhr, flux_spns_tot, s=6, c='k', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_zen0, s=3, c='r', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_nad0, s=3, c='b', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
-        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        ax1.scatter(tmhr+4.3470, flux_ssfr_zen0, s=3, c='r', lw=0.0)
+        ax1.scatter(tmhr+4.3470, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
+        ax1.scatter(tmhr+4.3470, flux_ssfr_nad0, s=3, c='b', lw=0.0)
+        ax1.scatter(tmhr+4.3470, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
+        ax1.set_xlabel('Time [Hour]')
+        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+        ax1.set_title('Skywatch Test (Belana, 2023-10-18, %d nm)' % wvl0)
         #\--------------------------------------------------------------/#
+
+        patches_legend = [
+                          mpatches.Patch(color='black' , label='SPNS-B Total'), \
+                          mpatches.Patch(color='red'    , label='SSFR-B Zenith 01'), \
+                          mpatches.Patch(color='magenta', label='SSFR-B Zenith 02'), \
+                          mpatches.Patch(color='blue'   , label='SSFR-B Nadir 01'), \
+                          mpatches.Patch(color='cyan'   , label='SSFR-B Nadir 02'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
+
         # save figure
         #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
         plt.show()
-        sys.exit()
     #\----------------------------------------------------------------------------/#
 
 
@@ -547,5 +550,5 @@ if __name__ == '__main__':
 
 
     for date in dates:
-        plot(date)
-        # process_ssfr_data(date)
+        # plot(date)
+        process_ssfr_data(date)
