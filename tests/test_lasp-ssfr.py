@@ -481,13 +481,15 @@ def process_ssfr_data(date):
 
 def plot(date, wvl0=700.0):
 
-    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SPNS-B_2023-10-18_v2.h5', 'r')
+    date_s = date.strftime('%Y-%m-%d')
+
+    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SPNS-B_%s_v2.h5' % date_s, 'r')
     tmhr = f['tmhr'][...]
     wvl_ = f['tot/wvl'][...]
     flux_spns_tot = f['tot/flux'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     f.close()
 
-    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SSFR-B_2023-10-18_v2.h5', 'r')
+    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SSFR-B_%s_v2.h5' % date_s, 'r')
     wvl_ = f['dset0/wvl_zen'][...]
     flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     wvl_ = f['dset0/wvl_nad'][...]
@@ -517,7 +519,7 @@ def plot(date, wvl0=700.0):
         ax1.scatter(tmhr, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
         ax1.set_xlabel('Time [Hour]')
         ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
-        ax1.set_title('Skywatch Test (Belana, 2023-10-18, %d nm)' % wvl0)
+        ax1.set_title('Skywatch Test (Belana, %s, %d nm)' % (date_s, wvl0))
         #\--------------------------------------------------------------/#
 
         patches_legend = [
@@ -545,10 +547,10 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 11), # ssfr-a, lab diagnose
              # datetime.datetime(2023, 10, 12), # ssfr-b, skywatch test
              # datetime.datetime(2023, 10, 13), # ssfr-b, skywatch test
-             datetime.datetime(2023, 10, 18), # ssfr-b, skywatch test
+             # datetime.datetime(2023, 10, 18), # ssfr-b, skywatch test
+             datetime.datetime(2023, 10, 19), # ssfr-b, skywatch test
             ]
 
-
     for date in dates:
-        process_ssfr_data(date)
+        # process_ssfr_data(date)
         plot(date)
