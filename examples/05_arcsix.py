@@ -328,9 +328,7 @@ def cdata_arcsix_spns_v2(
 
     return
 
-
-
-def process_spns(date):
+def process_spns_data(date):
 
     cdata_arcsix_hsk_v0(date)
     cdata_arcsix_spns_v0(date)
@@ -345,8 +343,9 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 10),
              # datetime.datetime(2023, 10, 12),
              # datetime.datetime(2023, 10, 13),
-             datetime.datetime(2023, 10, 18),
+             # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
+             datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
             ]
 
     for date in dates:
-        process_spns(date)
+        process_spns_data(date)
