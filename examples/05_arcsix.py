@@ -49,6 +49,8 @@ def cdata_arcsix_hsk_v0(
     Now for skywatch testing, we will use a fixed longitude and latitude
     """
 
+    date_s = date.strftime('%Y-%m-%d')
+
     # create data_hsk for skywatch
     #/----------------------------------------------------------------------------\#
     tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
@@ -79,7 +81,7 @@ def cdata_arcsix_hsk_v0(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_out, _mission_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_out, _mission_.upper(), date_s)
 
     f = h5py.File(fname_h5, 'w')
     f['tmhr'] = data_hsk['tmhr']['data']
@@ -107,9 +109,11 @@ def cdata_arcsix_spns_v0(
     Process raw SPN-S data
     """
 
+    date_s = date.strftime('%Y-%m-%d')
+
     # read spn-s raw data
     #/----------------------------------------------------------------------------\#
-    fdir = '%s/%s' % (fdir_data, date.strftime('%Y-%m-%d'))
+    fdir = '%s/%s' % (fdir_data, date_s)
 
     fname_dif = sorted(glob.glob('%s/Diffuse.txt' % fdir))[0]
     data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
@@ -130,7 +134,7 @@ def cdata_arcsix_spns_v0(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
 
     f = h5py.File(fname_h5, 'w')
 
@@ -161,9 +165,11 @@ def cdata_arcsix_spns_v1(
     Check for time offset and merge SPN-S data with aircraft data
     """
 
+    date_s = date.strftime('%Y-%m-%d')
+
     # read hsk v0
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_data, _mission_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_data, _mission_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
     jday = f['jday'][...]
     sza  = f['sza'][...]
@@ -181,7 +187,7 @@ def cdata_arcsix_spns_v1(
 
     # read spn-s v0
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _spns_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
     f_dn_dif  = f['dif/flux'][...]
     wvl_dif   = f['dif/wvl'][...]
@@ -209,7 +215,7 @@ def cdata_arcsix_spns_v1(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
 
     f = h5py.File(fname_h5, 'w')
 
@@ -249,9 +255,11 @@ def cdata_arcsix_spns_v2(
     Apply attitude correction to account for pitch and roll
     """
 
+    date_s = date.strftime('%Y-%m-%d')
+
     # read spn-s v1
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
     f_dn_dif  = f['dif/flux'][...]
     wvl_dif   = f['dif/wvl'][...]
@@ -300,7 +308,7 @@ def cdata_arcsix_spns_v2(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
 
     f = h5py.File(fname_h5, 'w')
 
@@ -324,7 +332,7 @@ def cdata_arcsix_spns_v2(
     f.close()
     #\----------------------------------------------------------------------------/#
 
-    ssfr.vis.quicklook_bokeh_spns(fname_h5, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date.strftime('%Y-%m-%d')))
+    ssfr.vis.quicklook_bokeh_spns(fname_h5, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 
     return
 
@@ -388,9 +396,11 @@ def cdata_arcsix_ssfr_v1(
     Check for time offset and merge SSFR data with aircraft data
     """
 
+    date_s = date.strftime('%Y-%m-%d')
+
     # read hsk v0
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_data, _mission_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_data, _mission_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
     jday = f['jday'][...]
     sza  = f['sza'][...]
@@ -407,7 +417,7 @@ def cdata_arcsix_ssfr_v1(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'w')
 
     f['jday'] = jday
@@ -423,7 +433,7 @@ def cdata_arcsix_ssfr_v1(
 
     # read ssfr v0
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
     f_ = h5py.File(fname_h5, 'r')
 
     for dset_s in f_.keys():
@@ -491,10 +501,10 @@ def cdata_arcsix_ssfr_v2(
     f.close()
     #\----------------------------------------------------------------------------/#
 
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'w')
 
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date.strftime('%Y-%m-%d'))
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
     f_ = h5py.File(fname_h5, 'r')
     tmhr = f_['tmhr'][...]
     for dset_s in f_.keys():
