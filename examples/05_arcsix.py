@@ -393,7 +393,8 @@ def cdata_arcsix_ssfr_v1(
         ):
 
     """
-    Check for time offset and merge SSFR data with aircraft data
+    version 1: 1) check for time offset and merge SSFR data with aircraft housekeeping data
+               2) interpolate raw SSFR data into the time frame of the housekeeping data
     """
 
     date_s = date.strftime('%Y-%m-%d')
@@ -480,6 +481,11 @@ def cdata_arcsix_ssfr_v2(
         roll_angle=0.0,
         ):
 
+    """
+    version 1: 1) apply radiometric response to convert counts to irradiance [secondary response]
+               2) apply cosine correction to correct for non-linear angular resposne (incomplete)
+    """
+
     date_s = date.strftime('%Y-%m-%d')
 
     # primary transfer calibration
@@ -488,8 +494,8 @@ def cdata_arcsix_ssfr_v2(
     f = h5py.File(fname_resp_zen, 'r')
     wvl_resp_zen_ = f['wvl'][...]
     pri_resp_zen_ = f['pri_resp'][...]
-    sec_resp_zen_ = f['sec_resp'][...]
     transfer_zen_ = f['transfer'][...]
+    sec_resp_zen_ = f['sec_resp'][...]
     f.close()
 
     fname_resp_nad = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_nadir-LC2_rad-resp_s060i300.h5'
