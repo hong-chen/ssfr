@@ -480,7 +480,7 @@ def cdata_arcsix_ssfr_v2(
         roll_angle=0.0,
         ):
 
-    date_s = date.strftime('%Y%m%d')
+    date_s = date.strftime('%Y-%m-%d')
 
     # primary transfer calibration
     #/----------------------------------------------------------------------------\#
@@ -804,12 +804,13 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 10),
              # datetime.datetime(2023, 10, 12),
              # datetime.datetime(2023, 10, 13),
-             datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
+             # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
+             datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
             ]
 
     for date in dates:
-        process_spns_data(date)
+        # process_spns_data(date)
         process_ssfr_data(date)
         plot_time_series(date)
         plot_spectra(date)
