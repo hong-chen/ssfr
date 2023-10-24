@@ -22,6 +22,6 @@ dependencies:
   - plotly=5.14.*
   - holoviews=1.17.*
   - vim=8.2.*
-  - powerline-status=2.7.*
   - mscorefonts
   - font-ttf-source-code-pro
+  #- powerline-status=2.7.*
