@@ -28,9 +28,9 @@ _fdir_data_ = '/argus/pre-mission/%s' % _mission_
 _fdir_hsk_  = '%s/raw/hsk'
 _fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
 _fdir_spns_ = '%s/raw/%s' % (_fdir_data_, _spns_)
-_fdir_v0_   = '%s/processed'  % _fdir_data_
-_fdir_v1_   = '%s/processed'  % _fdir_data_
-_fdir_v2_   = '%s/processed'  % _fdir_data_
+_fdir_v0_   = 'data/processed'
+_fdir_v1_   = 'data/processed'
+_fdir_v2_   = 'data/processed'
 
 
 
