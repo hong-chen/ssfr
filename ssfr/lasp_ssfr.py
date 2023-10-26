@@ -105,13 +105,13 @@ def read_ssfr_raw(
         msg = '\nError [read_ssfr_raw]: <%s> has invalid file size.' % fname
         raise OSError(msg)
 
-    spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra
+    spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra (Ntime, Nchan, Nspec)
     shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
     int_time   = np.zeros((iterN, 4)     , dtype=np.float64) # integration time [ms]
     temp       = np.zeros((iterN, 11)    , dtype=np.float64) # temperature
     qual_flag  = np.ones(iterN           , dtype=np.int32)   # quality flag (1:good, 0:bad)
-    jday_ARINC = np.zeros(iterN          , dtype=np.float64)
-    jday_cRIO  = np.zeros(iterN          , dtype=np.float64)
+    jday_ARINC = np.zeros(iterN          , dtype=np.float64) # ARINC time (aircraft time, e.g., from P-3)
+    jday_cRIO  = np.zeros(iterN          , dtype=np.float64) # cRIO time (SSFR computer time)
 
     f           = open(fname, 'rb')
 
@@ -333,7 +333,11 @@ class read_ssfr:
 
             # split data by integration times
             #/----------------------------------------------------------------------------\#
-            logic = self.data_raw['int_time'][:, 0] == int_time_[it, 0]
+            logic = (self.data_raw['int_time'][:, 0] == int_time_[it, 0]) & \
+                    (self.data_raw['int_time'][:, 1] == int_time_[it, 1]) & \
+                    (self.data_raw['int_time'][:, 2] == int_time_[it, 2]) & \
+                    (self.data_raw['int_time'][:, 3] == int_time_[it, 3])
+
             for vname in self.data_raw.keys():
                 if vname in ['info']:
                     dset[vname] = self.data_raw[vname].copy()
