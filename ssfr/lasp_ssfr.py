@@ -327,16 +327,16 @@ class read_ssfr:
         #   with the same data variables contained in self.data_raw but with additions of
         #   self.dset0['info']['int_time']
         #/----------------------------------------------------------------------------\#
-        for it in range(self.Ndset):
+        for idset in range(self.Ndset):
 
             dset = {}
 
             # split data by integration times
             #/----------------------------------------------------------------------------\#
-            logic = (self.data_raw['int_time'][:, 0] == int_time_[it, 0]) & \
-                    (self.data_raw['int_time'][:, 1] == int_time_[it, 1]) & \
-                    (self.data_raw['int_time'][:, 2] == int_time_[it, 2]) & \
-                    (self.data_raw['int_time'][:, 3] == int_time_[it, 3])
+            logic = (self.data_raw['int_time'][:, 0] == int_time_[idset, 0]) & \
+                    (self.data_raw['int_time'][:, 1] == int_time_[idset, 1]) & \
+                    (self.data_raw['int_time'][:, 2] == int_time_[idset, 2]) & \
+                    (self.data_raw['int_time'][:, 3] == int_time_[idset, 3])
 
             for vname in self.data_raw.keys():
                 if vname in ['info']:
@@ -345,14 +345,14 @@ class read_ssfr:
                     dset[vname] = self.data_raw[vname][logic, ...]
 
             dset['info']['int_time'] = {
-                    'zen_si': int_time_[it, 0],
-                    'zen_in': int_time_[it, 1],
-                    'nad_si': int_time_[it, 2],
-                    'nad_in': int_time_[it, 3],
+                    'zen_si': int_time_[idset, 0],
+                    'zen_in': int_time_[idset, 1],
+                    'nad_si': int_time_[idset, 2],
+                    'nad_in': int_time_[idset, 3],
                     }
             #\----------------------------------------------------------------------------/#
 
-            dset_name = 'dset%d' % it
+            dset_name = 'dset%d' % idset
             setattr(self, dset_name, dset)
         #\----------------------------------------------------------------------------/#
 
@@ -365,11 +365,11 @@ class read_ssfr:
         # self.dset0['shutter_dark-corr'], where -1 is data excluded during dark correction
         # self.dset0['spectra_dark-corr']
         #/----------------------------------------------------------------------------\#
-        for it in range(self.Ndset):
+        for idset in range(self.Ndset):
 
-            dset = getattr(self, 'dset%d' %it)
+            dset = getattr(self, 'dset%d' %idset)
 
-            # dark correction (light-dark)
+            # dark correction (light minus dark)
             # variable name: self.spectra_dark_corr
             #/----------------------------------------------------------------------------\#
             spectra_dark_corr = dset['spectra'].copy()
