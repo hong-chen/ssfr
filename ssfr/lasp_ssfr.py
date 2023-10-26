@@ -20,15 +20,15 @@ __all__ = [
 
 
 
-def get_ssfr_wavelength(chanNum=256):
+def get_ssfr_wavelength(
+        chanNum=256,
+        coef_zen_si = np.array([301.946,  3.31877,  0.00037585,  -1.76779e-6, 0]),
+        coef_zen_in = np.array([2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8]),
+        coef_nad_si = np.array([302.818,  3.31912,  0.000343831, -1.81135e-6, 0]),
+        coef_nad_in = np.array([2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8]),
+        ):
 
     xChan = np.arange(chanNum)
-
-    coef_zen_si = np.array([301.946,  3.31877,  0.00037585,  -1.76779e-6, 0])
-    coef_zen_in = np.array([2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8])
-
-    coef_nad_si = np.array([302.818,  3.31912,  0.000343831, -1.81135e-6, 0])
-    coef_nad_in = np.array([2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8])
 
     wvl_zen_si = coef_zen_si[0] + coef_zen_si[1]*xChan + coef_zen_si[2]*xChan**2 + coef_zen_si[3]*xChan**3 + coef_zen_si[4]*xChan**4
     wvl_zen_in = coef_zen_in[0] + coef_zen_in[1]*xChan + coef_zen_in[2]*xChan**2 + coef_zen_in[3]*xChan**3 + coef_zen_in[4]*xChan**4
@@ -36,14 +36,14 @@ def get_ssfr_wavelength(chanNum=256):
     wvl_nad_si = coef_nad_si[0] + coef_nad_si[1]*xChan + coef_nad_si[2]*xChan**2 + coef_nad_si[3]*xChan**3 + coef_nad_si[4]*xChan**4
     wvl_nad_in = coef_nad_in[0] + coef_nad_in[1]*xChan + coef_nad_in[2]*xChan**2 + coef_nad_in[3]*xChan**3 + coef_nad_in[4]*xChan**4
 
-    wvl_dict = {
+    wvls = {
             'zen_si': wvl_zen_si,
             'zen_in': wvl_zen_in,
             'nad_si': wvl_nad_si,
             'nad_in': wvl_nad_in
             }
 
-    return wvl_dict
+    return wvls
 
 
 
