@@ -308,19 +308,19 @@ class read_ssfr:
         # process data
         #/----------------------------------------------------------------------------\#
         if process:
-            self.dset_split()
+            self.dset_sep()
             self.dark_corr(dark_corr_mode=dark_corr_mode)
             self.wvl_join(wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
         #\----------------------------------------------------------------------------/#
 
-    def dset_split(
+    def dset_sep(
             self,
             ):
 
         int_time_ = np.unique(self.data_raw['int_time'], axis=0)
         self.Ndset, _ = int_time_.shape
 
-        # split data for different pairs of integration times
+        # seperate data for different pairs of integration times
         # after the following process, the object will contain
         #   self.dset0, self.dset1 ...
         #
@@ -331,7 +331,7 @@ class read_ssfr:
 
             dset = {}
 
-            # split data by integration times
+            # seperate data by integration times
             #/----------------------------------------------------------------------------\#
             logic = (self.data_raw['int_time'][:, 0] == int_time_[idset, 0]) & \
                     (self.data_raw['int_time'][:, 1] == int_time_[idset, 1]) & \
