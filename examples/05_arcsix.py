@@ -596,7 +596,11 @@ def cdata_arcsix_ssfr_v2(
     # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
     #\----------------------------------------------------------------------------/#
 
-    # primary transfer calibration
+    return
+
+def cdata_arcsix_ssfr_hsk():
+
+    # header
     #/----------------------------------------------------------------------------\#
     # comments_list = []
     # comments_list.append('Bandwidth of Silicon channels (wavelength < 950nm) as defined by the FWHM: 6 nm')
