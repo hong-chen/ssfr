@@ -5,6 +5,7 @@ import datetime
 import h5py
 import numpy as np
 from scipy import interpolate
+from scipy.io import readsav
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.path as mpl_path
@@ -488,23 +489,48 @@ def cdata_arcsix_ssfr_v2(
 
     date_s = date.strftime('%Y-%m-%d')
 
-    # primary transfer calibration
+    # primary transfer calibration (from camp2ex)
     #/----------------------------------------------------------------------------\#
     fname_resp_zen = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_zenith-LC1_rad-resp_s060i300.h5'
     f = h5py.File(fname_resp_zen, 'r')
     wvl_resp_zen_ = f['wvl'][...]
-    pri_resp_zen_ = f['pri_resp'][...]
-    transfer_zen_ = f['transfer'][...]
+    # pri_resp_zen_ = f['pri_resp'][...]
+    # transfer_zen_ = f['transfer'][...]
     sec_resp_zen_ = f['sec_resp'][...]
     f.close()
 
     fname_resp_nad = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_nadir-LC2_rad-resp_s060i300.h5'
     f = h5py.File(fname_resp_nad, 'r')
     wvl_resp_nad_ = f['wvl'][...]
-    pri_resp_nad_ = f['pri_resp'][...]
-    transfer_nad_ = f['transfer'][...]
+    # pri_resp_nad_ = f['pri_resp'][...]
+    # transfer_nad_ = f['transfer'][...]
     sec_resp_nad_ = f['sec_resp'][...]
     f.close()
+    #\----------------------------------------------------------------------------/#
+
+    # primary transfer calibration (from arise)
+    #/----------------------------------------------------------------------------\#
+    # f_zs = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_s300.sav')
+    # f_zi = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_i300.sav')
+    # f_ns = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_s300.sav')
+    # f_ni = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_i300.sav')
+
+    # logic_nsi1 = (f_zs.wl_si1 <= f_ni.join)
+    # logic_nin1 = (f_zi.wl_in1 >= f_ni.join)
+    # nsi1 = logic_nsi1.sum()
+    # nin1 = logic_nin1.sum()
+    # n1 = nsi1 + nin1
+
+    # logic_nsi2 = (f_ns.wl_si2 <= f_ni.join)
+    # logic_nin2 = (f_ni.wl_in2 >= f_ni.join)
+    # nsi2 = logic_nsi2.sum()
+    # nin2 = logic_nin2.sum()
+    # n2 = nsi2 + nin2
+
+    # wvl_resp_zen_ = np.append(f_zs.wl_si1[logic_nsi1], f_zi.wl_in1[logic_nin1][::-1])
+    # wvl_resp_nad_ = np.append(f_ns.wl_si2[logic_nsi2], f_ni.wl_in2[logic_nin2][::-1])
+    # sec_resp_zen_ = np.append(f_zs.resp2_si1[logic_nsi1], f_zi.resp2_in1[logic_nin1][::-1])
+    # sec_resp_nad_ = np.append(f_ns.resp2_si2[logic_nsi2], f_ni.resp2_in2[logic_nin2][::-1])
     #\----------------------------------------------------------------------------/#
 
     fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
@@ -522,8 +548,6 @@ def cdata_arcsix_ssfr_v2(
             cnt_zen = f_['%s/cnt_zen' % dset_s][...]
             wvl_zen = f_['%s/wvl_zen' % dset_s][...]
 
-            pri_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, pri_resp_zen_)
-            transfer_zen = np.interp(wvl_zen, wvl_resp_zen_, transfer_zen_)
             sec_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, sec_resp_zen_)
 
             flux_zen = cnt_zen.copy()
@@ -537,8 +561,6 @@ def cdata_arcsix_ssfr_v2(
             cnt_nad = f_['%s/cnt_nad' % dset_s][...]
             wvl_nad = f_['%s/wvl_nad' % dset_s][...]
 
-            pri_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, pri_resp_nad_)
-            transfer_nad = np.interp(wvl_nad, wvl_resp_nad_, transfer_nad_)
             sec_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, sec_resp_nad_)
 
             flux_nad = cnt_nad.copy()
@@ -820,7 +842,7 @@ if __name__ == '__main__':
             ]
 
     for date in dates:
-        # process_spns_data(date)
+        process_spns_data(date)
         process_ssfr_data(date)
         plot_time_series(date)
         plot_spectra(date)
