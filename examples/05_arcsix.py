@@ -388,7 +388,6 @@ def cdata_arcsix_ssfr_v0(
 
 def cdata_arcsix_ssfr_v1(
         date,
-        tmhr_offset=4.3470,
         fdir_data=_fdir_v0_,
         fdir_out=_fdir_v1_,
         ):
@@ -399,6 +398,11 @@ def cdata_arcsix_ssfr_v1(
     """
 
     date_s = date.strftime('%Y-%m-%d')
+
+    tmhr_offsets = {
+            'ssfr-a': 3.3364,
+            'ssfr-b': 4.3470,
+            }
 
     # read hsk v0
     #/----------------------------------------------------------------------------\#
@@ -545,11 +549,11 @@ def cdata_arcsix_ssfr_v1(
 
         cnt_zen_ = f_['%s/cnt_zen' % dset_s][...]
         wvl_zen  = f_['%s/wvl_zen' % dset_s][...]
-        tmhr_zen = f_['%s/tmhr'    % dset_s][...] + tmhr_offset
+        tmhr_zen = f_['%s/tmhr'    % dset_s][...] + tmhr_offsets[_ssfr_]
 
         cnt_nad_ = f_['%s/cnt_nad' % dset_s][...]
         wvl_nad  = f_['%s/wvl_nad' % dset_s][...]
-        tmhr_nad = f_['%s/tmhr'    % dset_s][...] + tmhr_offset
+        tmhr_nad = f_['%s/tmhr'    % dset_s][...] + tmhr_offsets[_ssfr_]
 
         # interpolate ssfr data to hsk time frame
         #/----------------------------------------------------------------------------\#
@@ -594,46 +598,46 @@ def cdata_arcsix_ssfr_v2(
 
     # primary transfer calibration (from camp2ex)
     #/----------------------------------------------------------------------------\#
-    fname_resp_zen = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_zenith-LC1_rad-resp_s060i300.h5'
-    f = h5py.File(fname_resp_zen, 'r')
-    wvl_resp_zen_ = f['wvl'][...]
-    # pri_resp_zen_ = f['pri_resp'][...]
-    # transfer_zen_ = f['transfer'][...]
-    sec_resp_zen_ = f['sec_resp'][...]
-    f.close()
+    # fname_resp_zen = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_zenith-LC1_rad-resp_s060i300.h5'
+    # f = h5py.File(fname_resp_zen, 'r')
+    # wvl_resp_zen_ = f['wvl'][...]
+    # # pri_resp_zen_ = f['pri_resp'][...]
+    # # transfer_zen_ = f['transfer'][...]
+    # sec_resp_zen_ = f['sec_resp'][...]
+    # f.close()
 
-    fname_resp_nad = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_nadir-LC2_rad-resp_s060i300.h5'
-    f = h5py.File(fname_resp_nad, 'r')
-    wvl_resp_nad_ = f['wvl'][...]
-    # pri_resp_nad_ = f['pri_resp'][...]
-    # transfer_nad_ = f['transfer'][...]
-    sec_resp_nad_ = f['sec_resp'][...]
-    f.close()
+    # fname_resp_nad = '/argus/field/camp2ex/2019/p3/calibration/rad-cal/20191125-post_20191125-field*_nadir-LC2_rad-resp_s060i300.h5'
+    # f = h5py.File(fname_resp_nad, 'r')
+    # wvl_resp_nad_ = f['wvl'][...]
+    # # pri_resp_nad_ = f['pri_resp'][...]
+    # # transfer_nad_ = f['transfer'][...]
+    # sec_resp_nad_ = f['sec_resp'][...]
+    # f.close()
     #\----------------------------------------------------------------------------/#
 
     # primary transfer calibration (from arise)
     #/----------------------------------------------------------------------------\#
-    # f_zs = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_s300.sav')
-    # f_zi = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_i300.sav')
-    # f_ns = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_s300.sav')
-    # f_ni = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_i300.sav')
+    f_zs = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_s300.sav')
+    f_zi = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_i300.sav')
+    f_ns = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_s300.sav')
+    f_ni = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_i300.sav')
 
-    # logic_nsi1 = (f_zs.wl_si1 <= f_ni.join)
-    # logic_nin1 = (f_zi.wl_in1 >= f_ni.join)
-    # nsi1 = logic_nsi1.sum()
-    # nin1 = logic_nin1.sum()
-    # n1 = nsi1 + nin1
+    logic_nsi1 = (f_zs.wl_si1 <= f_ni.join)
+    logic_nin1 = (f_zi.wl_in1 >= f_ni.join)
+    nsi1 = logic_nsi1.sum()
+    nin1 = logic_nin1.sum()
+    n1 = nsi1 + nin1
 
-    # logic_nsi2 = (f_ns.wl_si2 <= f_ni.join)
-    # logic_nin2 = (f_ni.wl_in2 >= f_ni.join)
-    # nsi2 = logic_nsi2.sum()
-    # nin2 = logic_nin2.sum()
-    # n2 = nsi2 + nin2
+    logic_nsi2 = (f_ns.wl_si2 <= f_ni.join)
+    logic_nin2 = (f_ni.wl_in2 >= f_ni.join)
+    nsi2 = logic_nsi2.sum()
+    nin2 = logic_nin2.sum()
+    n2 = nsi2 + nin2
 
-    # wvl_resp_zen_ = np.append(f_zs.wl_si1[logic_nsi1], f_zi.wl_in1[logic_nin1][::-1])
-    # wvl_resp_nad_ = np.append(f_ns.wl_si2[logic_nsi2], f_ni.wl_in2[logic_nin2][::-1])
-    # sec_resp_zen_ = np.append(f_zs.resp2_si1[logic_nsi1], f_zi.resp2_in1[logic_nin1][::-1])
-    # sec_resp_nad_ = np.append(f_ns.resp2_si2[logic_nsi2], f_ni.resp2_in2[logic_nin2][::-1])
+    wvl_resp_zen_ = np.append(f_zs.wl_si1[logic_nsi1], f_zi.wl_in1[logic_nin1][::-1])
+    wvl_resp_nad_ = np.append(f_ns.wl_si2[logic_nsi2], f_ni.wl_in2[logic_nin2][::-1])
+    sec_resp_zen_ = np.append(f_zs.resp2_si1[logic_nsi1], f_zi.resp2_in1[logic_nin1][::-1])
+    sec_resp_nad_ = np.append(f_ns.resp2_si2[logic_nsi2], f_ni.resp2_in2[logic_nin2][::-1])
     #\----------------------------------------------------------------------------/#
 
     fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
@@ -826,22 +830,24 @@ def plot_time_series(date, wvl0=700.0):
 
     date_s = date.strftime('%Y-%m-%d')
 
-    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SPNS-B_%s_v2.h5' % date_s, 'r')
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _spns_.upper(), date_s)
+    f = h5py.File(fname_h5, 'r')
     tmhr = f['tmhr'][...]
     wvl_ = f['tot/wvl'][...]
     flux_spns_tot = f['tot/flux'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     f.close()
 
-    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SSFR-B_%s_v2.h5' % date_s, 'r')
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
+    f = h5py.File(fname_h5, 'r')
     wvl_ = f['dset0/wvl_zen'][...]
-    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
+    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
     wvl_ = f['dset0/wvl_nad'][...]
-    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
+    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
 
     wvl_ = f['dset1/wvl_zen'][...]
-    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
+    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
     wvl_ = f['dset1/wvl_nad'][...]
-    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
+    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
     f.close()
 
     # figure
@@ -859,15 +865,15 @@ def plot_time_series(date, wvl0=700.0):
         ax1.scatter(tmhr, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
         ax1.set_xlabel('Time [Hour]')
         ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
-        ax1.set_title('Skywatch Test (Belana, %s, %d nm)' % (date_s, wvl0))
+        ax1.set_title('Skywatch Test (%s, %s, %d nm)' % (_ssfr_.upper(), date_s, wvl0))
         #\--------------------------------------------------------------/#
 
         patches_legend = [
-                          mpatches.Patch(color='black' , label='SPNS-B Total'), \
-                          mpatches.Patch(color='red'    , label='SSFR-B Zenith Si080In250'), \
-                          mpatches.Patch(color='magenta', label='SSFR-B Zenith Si120In350'), \
-                          mpatches.Patch(color='blue'   , label='SSFR-B Nadir Si080In250'), \
-                          mpatches.Patch(color='cyan'   , label='SSFR-B Nadir Si120In350'), \
+                          mpatches.Patch(color='black' , label='%s Total' % _spns_.upper()), \
+                          mpatches.Patch(color='red'    , label='%s Zenith Si080In250' % _ssfr_.upper()), \
+                          mpatches.Patch(color='magenta', label='%s Zenith Si120In350' % _ssfr_.upper()), \
+                          mpatches.Patch(color='blue'   , label='%s Nadir Si080In250' % _ssfr_.upper()), \
+                          mpatches.Patch(color='cyan'   , label='%s Nadir Si120In350' % _ssfr_.upper()), \
                          ]
         ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
 
@@ -884,20 +890,22 @@ def plot_spectra(date, tmhr0=20.830):
 
     date_s = date.strftime('%Y-%m-%d')
 
-    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SPNS-B_%s_v2.h5' % date_s, 'r')
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _spns_.upper(), date_s)
+    f = h5py.File(fname_h5, 'r')
     tmhr = f['tmhr'][...]
     wvl_spns_tot  = f['tot/wvl'][...]
     flux_spns_tot = f['tot/flux'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
     f.close()
 
-    f = h5py.File('/argus/pre-mission/arcsix/processed/ARCSIX_SSFR-B_%s_v2.h5' % date_s, 'r')
-    flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-    flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
+    f = h5py.File(fname_h5, 'r')
+    flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
+    flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
 
     wvl_ssfr_zen = f['dset1/wvl_zen'][...]
-    flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
     wvl_ssfr_nad = f['dset1/wvl_nad'][...]
-    flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
     f.close()
 
     # figure
@@ -915,15 +923,15 @@ def plot_spectra(date, tmhr0=20.830):
         ax1.scatter(wvl_ssfr_nad, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
         ax1.set_xlabel('Wavelength [nm]')
         ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
-        ax1.set_title('Skywatch Test (Belana, %s, %.4f Hour)' % (date_s, tmhr0))
+        ax1.set_title('Skywatch Test (%s, %s, %.4f Hour)' % (_ssfr_.upper(), date_s, tmhr0))
         #\--------------------------------------------------------------/#
 
         patches_legend = [
-                          mpatches.Patch(color='black' , label='SPNS-B Total'), \
-                          mpatches.Patch(color='red'    , label='SSFR-B Zenith Si080In250'), \
-                          mpatches.Patch(color='magenta', label='SSFR-B Zenith Si120In350'), \
-                          mpatches.Patch(color='blue'   , label='SSFR-B Nadir Si080In250'), \
-                          mpatches.Patch(color='cyan'   , label='SSFR-B Nadir Si120In350'), \
+                          mpatches.Patch(color='black' , label='%s Total' % _spns_.upper()), \
+                          mpatches.Patch(color='red'    , label='%s Zenith Si080In250' % _ssfr_.upper()), \
+                          mpatches.Patch(color='magenta', label='%s Zenith Si120In350' % _ssfr_.upper()), \
+                          mpatches.Patch(color='blue'   , label='%s Nadir Si080In250' % _ssfr_.upper()), \
+                          mpatches.Patch(color='cyan'   , label='%s Nadir Si120In350' % _ssfr_.upper()), \
                          ]
         ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
 
@@ -951,7 +959,7 @@ if __name__ == '__main__':
             ]
 
     for date in dates:
-        process_spns_data(date)
-        process_ssfr_data(date)
+        # process_spns_data(date)
+        # process_ssfr_data(date)
         plot_time_series(date)
         plot_spectra(date)
