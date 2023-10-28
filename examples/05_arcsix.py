@@ -24,7 +24,7 @@ import ssfr
 
 _mission_   = 'arcsix'
 _spns_      = 'spns-b'
-_ssfr_      = 'ssfr-b'
+_ssfr_      = 'ssfr-a'
 _fdir_data_ = '/argus/pre-mission/%s' % _mission_
 _fdir_hsk_  = '%s/raw/hsk'
 _fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
@@ -417,6 +417,109 @@ def cdata_arcsix_ssfr_v1(
     f.close()
     #\----------------------------------------------------------------------------/#
 
+    # read in spn-s data (later for calculating diffuse-to-global ratio, `diff_ratio`)
+    #/----------------------------------------------------------------------------\#
+    # fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
+
+    # f = h5py.File(fname_h5, 'r')
+
+    # f['jday'] = jday
+    # f['tmhr'] = tmhr
+    # f['lon']  = lon
+    # f['lat']  = lat
+    # f['alt']  = alt
+    # f['sza']  = sza
+    # f['dc']   = dc
+
+    # g1 = f.create_group('dif')
+    # g1['wvl']   = wvl_dif
+    # g1['flux']  = f_dn_dif
+
+    # g2 = f.create_group('tot')
+    # g2['wvl']   = wvl_tot
+    # g2['flux']  = f_dn_tot_corr
+    # g2['toa0']  = f_dn_toa0
+
+    # dif_flux0 = data_spns['dif_flux']
+    # dif_tmhr0 = data_spns['dif_tmhr']
+    # dif_wvl0  = data_spns['dif_wvl']
+
+    # f.close()
+
+    # dif_flux1 = np.zeros((ssfr_v0.tmhr.size, dif_wvl0.size), dtype=np.float64); dif_flux1[...] = np.nan
+    # for i in range(dif_wvl0.size):
+    #     dif_flux1[:, i] = interp(ssfr_v0.tmhr, dif_tmhr0, dif_flux0[:, i])
+
+    # dif_flux = np.zeros_like(ssfr_v0.zen_cnt); dif_flux[...] = np.nan
+    # for i in range(ssfr_v0.tmhr.size):
+    #     dif_flux[i, :] = interp(ssfr_v0.zen_wvl, dif_wvl0, dif_flux1[i, :])
+
+
+    # tot_flux0 = data_spns['tot_flux']
+    # tot_tmhr0 = data_spns['tot_tmhr']
+    # tot_wvl0  = data_spns['tot_wvl']
+
+    # tot_flux1 = np.zeros((ssfr_v0.tmhr.size, tot_wvl0.size), dtype=np.float64); tot_flux1[...] = np.nan
+    # for i in range(dif_wvl0.size):
+    #     tot_flux1[:, i] = interp(ssfr_v0.tmhr, tot_tmhr0, tot_flux0[:, i])
+
+    # tot_flux = np.zeros_like(ssfr_v0.zen_cnt); tot_flux[...] = np.nan
+    # for i in range(ssfr_v0.tmhr.size):
+    #     tot_flux[i, :] = interp(ssfr_v0.zen_wvl, tot_wvl0, tot_flux1[i, :])
+
+    # diff_ratio0 = dif_flux / tot_flux
+    # diff_ratio  = np.zeros_like(ssfr_v0.zen_cnt)  ; diff_ratio[...] = np.nan
+    # coefs       = np.zeros((ssfr_v0.tmhr.size, 3)); coefs[...] = np.nan
+    # qual_flag   = np.repeat(0, ssfr_v0.tmhr.size)
+
+    # for i in tqdm(range(diff_ratio.shape[0])):
+
+    #     logic = (diff_ratio0[i, :]>=0.0) & (diff_ratio0[i, :]<=1.0) & (ssfr_v0.zen_wvl>=400.0) & (ssfr_v0.zen_wvl<=750.0)
+    #     if logic.sum() > 20:
+
+    #         x = ssfr_v0.zen_wvl[logic]
+    #         y = diff_ratio0[i, logic]
+    #         popt, pcov = fit_diff_ratio(x, y)
+
+    #         diff_ratio[i, :] = func_diff_ratio(ssfr_v0.zen_wvl, *popt)
+    #         diff_ratio[i, diff_ratio[i, :]>1.0] = 1.0
+    #         diff_ratio[i, diff_ratio[i, :]<0.0] = 0.0
+
+    #         coefs[i, :] = popt
+    #         qual_flag[i] = 1
+
+    # print(np.isnan(diff_ratio).sum())
+
+    # for i in range(diff_ratio.shape[1]):
+    #     logic_nan = np.isnan(diff_ratio[:, i])
+    #     logic     = np.logical_not(logic_nan)
+
+    #     f_interp  = interpolate.interp1d(ssfr_v0.tmhr[logic], diff_ratio[:, i][logic], bounds_error=None, fill_value='extrapolate')
+    #     diff_ratio[logic_nan, i] = f_interp(ssfr_v0.tmhr[logic_nan])
+    #     diff_ratio[diff_ratio[:, i]>1.0, i] = 1.0
+    #     diff_ratio[diff_ratio[:, i]<0.0, i] = 0.0
+
+    # print(np.isnan(diff_ratio).sum())
+
+    # if run:
+    #     fname = '%s/ssfr_%s_aux.h5' % (fdir_processed, date_s)
+    #     f = h5py.File(fname, 'w')
+    #     f['tmhr'] = ssfr_v0.tmhr
+    #     f['alt']  = alt
+    #     f['lon']  = lon
+    #     f['lat']  = lat
+    #     f['sza']  = sza
+    #     f['saa']  = saa
+    #     f['diff_ratio_x']         = ssfr_v0.zen_wvl
+    #     f['diff_ratio_coef']      = coefs
+    #     f['diff_ratio_qual_flag'] = qual_flag
+    #     f['diff_ratio']           = diff_ratio
+    #     f['diff_ratio_ori']       = diff_ratio0
+    #     f.close()
+    #\----------------------------------------------------------------------------/#
+
+
+
     # save processed data
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
@@ -585,6 +688,11 @@ def cdata_arcsix_ssfr_v2(
 
     # calculate cosine correction factors
     #/----------------------------------------------------------------------------\#
+
+    # diffuse ratio
+    #/--------------------------------------------------------------\#
+    #\--------------------------------------------------------------/#
+
     # angles = {}
     # angles['solar_zenith']  = ssfr_aux['sza']
     # angles['solar_azimuth'] = ssfr_aux['saa']
@@ -838,7 +946,8 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 13),
              # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
-             datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
+             # datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
+             datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
             ]
 
     for date in dates:
