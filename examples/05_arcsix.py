@@ -24,7 +24,7 @@ import ssfr
 
 _mission_   = 'arcsix'
 _spns_      = 'spns-b'
-_ssfr_      = 'ssfr-b'
+_ssfr_      = 'ssfr-a'
 _fdir_data_ = '/argus/pre-mission/%s' % _mission_
 _fdir_hsk_  = '%s/raw/hsk'
 _fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
@@ -954,8 +954,9 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 13),
              # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
-             datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
+             # datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
+             datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
             ]
 
     for date in dates:
