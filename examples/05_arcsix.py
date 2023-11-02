@@ -956,7 +956,8 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
-             datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
+             # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
+             datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
             ]
 
     for date in dates:
