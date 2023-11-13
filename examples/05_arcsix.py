@@ -1025,11 +1025,8 @@ def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), spec_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
     #\----------------------------------------------------------------------------/#
 
-    pass
 #\----------------------------------------------------------------------------/#
 
 
