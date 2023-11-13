@@ -16,7 +16,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-# mpl.use('Agg')
+# mpl.use('TkAgg')
 
 
 import ssfr
@@ -946,7 +946,8 @@ def plot_spectra(date, tmhr0=20.830):
 
 
 
-if __name__ == '__main__':
+
+def main_process_data():
 
     dates = [
              # datetime.datetime(2023, 10, 10),
@@ -965,3 +966,78 @@ if __name__ == '__main__':
         process_ssfr_data(date)
         plot_time_series(date)
         plot_spectra(date)
+
+
+
+# wavelength calibration
+#/----------------------------------------------------------------------------\#
+def wvl_cal():
+
+    fdir_data = '/argus/field/arcsix/cal/wvl-cal/SSFR-A_2023-11-10_lab-wvl-cal-nad-hg'
+
+    which = 'nadir'
+
+    indices_spec = {
+            'zenith': [0, 1],
+            'nadir' : [2, 3]
+            }
+
+    fnames = sorted(glob.glob('%s/*00001.SKS' % fdir_data))
+
+    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
+
+    Nchan = 256
+    xchan = np.arange(Nchan)
+
+    spectra0 = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[which]], axis=0)
+    spectra1 = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[which]], axis=0)
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        fig.suptitle('SSFR-A (illuminated by Mercury Lamp)')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(121)
+        ax1.scatter(xchan, spectra0[:, 0], s=6, c='r', lw=0.0)
+        ax1.scatter(xchan, spectra1[:, 0], s=6, c='b', lw=0.0)
+        ax1.set_xlabel('Channel #')
+        ax1.set_ylabel('Counts')
+        ax1.set_title('Nadir Silicon')
+
+        ax2 = fig.add_subplot(122)
+        ax2.scatter(xchan, spectra0[:, 1], s=6, c='r', lw=0.0)
+        ax2.scatter(xchan, spectra1[:, 1], s=6, c='b', lw=0.0)
+        ax2.set_xlabel('Channel #')
+        ax2.set_ylabel('Counts')
+        ax2.set_title('Nadir InGaAs')
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+
+    # print(ssfr0.dset0['spectra_dark-corr'].shape)
+    # print(ssfr0.dset1['spectra_dark-corr'].shape)
+
+    pass
+#\----------------------------------------------------------------------------/#
+
+
+def main_calibration():
+
+    wvl_cal()
+
+
+if __name__ == '__main__':
+
+    # main_process_data()
+    main_calibration()
