@@ -1003,6 +1003,7 @@ def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
         ax1.plot(xchan, spectra1[:, 0], lw=1, c='b')
         ax1.set_xlabel('Channel #')
         ax1.set_ylabel('Counts')
+        ax1.set_ylim(bottom=0)
         ax1.set_title('Silicon')
 
         ax2 = fig.add_subplot(122)
@@ -1010,6 +1011,7 @@ def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
         ax2.plot(xchan, spectra1[:, 1], lw=1, c='b')
         ax2.set_xlabel('Channel #')
         ax2.set_ylabel('Counts')
+        ax2.set_ylim(bottom=0)
         ax2.set_title('InGaAs')
         #\--------------------------------------------------------------/#
 
@@ -1026,7 +1028,6 @@ def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
         fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), spec_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
-
 #\----------------------------------------------------------------------------/#
 
 
