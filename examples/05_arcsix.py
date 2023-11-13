@@ -971,62 +971,63 @@ def main_process_data():
 
 # wavelength calibration
 #/----------------------------------------------------------------------------\#
-def wvl_cal():
+def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
 
-    fdir_data = '/argus/field/arcsix/cal/wvl-cal/SSFR-A_2023-11-10_lab-wvl-cal-nad-hg'
-
-    which = 'nadir'
+    fdir_data = '/argus/field/arcsix/cal/wvl-cal'
 
     indices_spec = {
-            'zenith': [0, 1],
-            'nadir' : [2, 3]
+            'zen': [0, 1],
+            'nad': [2, 3]
             }
 
-    fnames = sorted(glob.glob('%s/*00001.SKS' % fdir_data))
+    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, spec_tag, lamp_tag)))[0]
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
 
     ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
 
-    Nchan = 256
     xchan = np.arange(Nchan)
 
-    spectra0 = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[which]], axis=0)
-    spectra1 = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[which]], axis=0)
+    spectra0 = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[spec_tag]], axis=0)
+    spectra1 = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[spec_tag]], axis=0)
 
     # figure
     #/----------------------------------------------------------------------------\#
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(12, 6))
-        fig.suptitle('SSFR-A (illuminated by Mercury Lamp)')
+        fig.suptitle('%s %s (illuminated by %s Lamp)' % (ssfr_tag.upper(), spec_tag.title(), lamp_tag.upper()))
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(121)
-        ax1.scatter(xchan, spectra0[:, 0], s=6, c='r', lw=0.0)
-        ax1.scatter(xchan, spectra1[:, 0], s=6, c='b', lw=0.0)
+        ax1.plot(xchan, spectra0[:, 0], lw=1, c='r')
+        ax1.plot(xchan, spectra1[:, 0], lw=1, c='b')
         ax1.set_xlabel('Channel #')
         ax1.set_ylabel('Counts')
-        ax1.set_title('Nadir Silicon')
+        ax1.set_title('Silicon')
 
         ax2 = fig.add_subplot(122)
-        ax2.scatter(xchan, spectra0[:, 1], s=6, c='r', lw=0.0)
-        ax2.scatter(xchan, spectra1[:, 1], s=6, c='b', lw=0.0)
+        ax2.plot(xchan, spectra0[:, 1], lw=1, c='r')
+        ax2.plot(xchan, spectra1[:, 1], lw=1, c='b')
         ax2.set_xlabel('Channel #')
         ax2.set_ylabel('Counts')
-        ax2.set_title('Nadir InGaAs')
+        ax2.set_title('InGaAs')
         #\--------------------------------------------------------------/#
+
+        patches_legend = [
+                          mpatches.Patch(color='red' , label='IntTime set 1'), \
+                          mpatches.Patch(color='blue', label='IntTime set 2'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+
         # save figure
         #/--------------------------------------------------------------\#
         fig.subplots_adjust(hspace=0.3, wspace=0.3)
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), spec_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
         plt.show()
         sys.exit()
     #\----------------------------------------------------------------------------/#
-
-
-    # print(ssfr0.dset0['spectra_dark-corr'].shape)
-    # print(ssfr0.dset1['spectra_dark-corr'].shape)
 
     pass
 #\----------------------------------------------------------------------------/#
@@ -1034,7 +1035,13 @@ def wvl_cal():
 
 def main_calibration():
 
-    wvl_cal()
+    # wavelength calibration
+    #/----------------------------------------------------------------------------\#
+    for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+        for spec_tag in ['zen', 'nad']:
+            for lamp_tag in ['hg', 'kr']:
+                wvl_cal(ssfr_tag, spec_tag, lamp_tag)
+    #\----------------------------------------------------------------------------/#
 
 
 if __name__ == '__main__':
