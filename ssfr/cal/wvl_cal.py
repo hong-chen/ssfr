@@ -4,7 +4,13 @@ import glob
 import datetime
 import numpy as np
 
-import ssfr
+import ssfr.common
+
+__all__ = [
+        'load_wvl_coef',
+        'cal_wvl',
+        'cal_wvl_coef',
+        ]
 
 # adapted from IDL code
 # hg=[296.73,302.15,312.57,313.17,334.15,365.02,365.48,366.33,404.66,407.78,433.92,434.75,435.48,491.6,546.07,576.96,579.07,1014]
@@ -65,11 +71,14 @@ def cal_wvl(coef, Nchan=256):
     return wvl
 
 
-def cal_coef(spectra, coef_base, which_lamp='hg'):
+def cal_wvl_coef(spectra, which_spec='lasp|ssfr-a|zen|si', which_lamp='hg'):
+
 
     Nchan = spectra.size
     xchan = np.arange(Nchan, dtype=np.float64)
 
+    coefs = load_wvl_coef()
+    coef_base = coefs[which_spec]
     wvl_base = cal_wvl(coef_base, Nchan=Nchan)
 
     wvl_lamp = lamps[which_lamp]

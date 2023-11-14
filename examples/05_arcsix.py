@@ -990,6 +990,10 @@ def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
     spectra0 = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[spec_tag]], axis=0)
     spectra1 = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[spec_tag]], axis=0)
 
+    # ssfr.cal.cal_wvl_coef(spectra0[:, 0], which_spec='lasp|%s|%s|si' % (ssfr_tag.lower(), spec_tag.lower()), which_lamp=lamp_tag.lower())
+    ssfr.cal.cal_wvl_coef(spectra0[:, 1], which_spec='lasp|%s|%s|in' % (ssfr_tag.lower(), spec_tag.lower()), which_lamp=lamp_tag.lower())
+    sys.exit()
+
     # figure
     #/----------------------------------------------------------------------------\#
     if True:
@@ -1037,7 +1041,8 @@ def main_calibration():
     #/----------------------------------------------------------------------------\#
     for ssfr_tag in ['SSFR-A', 'SSFR-B']:
         for spec_tag in ['zen', 'nad']:
-            for lamp_tag in ['hg', 'kr']:
+            # for lamp_tag in ['hg', 'kr']:
+            for lamp_tag in ['kr', 'hg']:
                 wvl_cal(ssfr_tag, spec_tag, lamp_tag)
     #\----------------------------------------------------------------------------/#
 
