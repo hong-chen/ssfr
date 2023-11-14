@@ -1039,10 +1039,11 @@ def main_calibration():
 
     # wavelength calibration
     #/----------------------------------------------------------------------------\#
-    for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+    for ssfr_tag in ['SSFR-B']:
         for spec_tag in ['zen', 'nad']:
-            for lamp_tag in ['hg', 'kr']:
-            # for lamp_tag in ['kr', 'hg']:
+            # for lamp_tag in ['hg', 'kr']:
+            for lamp_tag in ['kr', 'hg']:
                 wvl_cal(ssfr_tag, spec_tag, lamp_tag)
     #\----------------------------------------------------------------------------/#
 
