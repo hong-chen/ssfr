@@ -1,24 +1,10 @@
 # SSFR spectrometer tag, poly coef 0, poly coef 1, poly coef 2, poly coef 3, poly coef 4
 # updated on 2023-11-14 12:15:00
 # notes: on 2023-10-19, we (Jeffery Drouet) swapped SSFR-A zenith InGaAs spectrometer
-#        with NASA Ames' due to the malfunction, thus the coefficients of lasp|ssfr-a|zen|in
-#        is replaced with nasa|ssfr-6|zen|in
-#lasp|ssfr-a|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-#lasp|ssfr-a|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
-#lasp|ssfr-a|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-#lasp|ssfr-a|nad|in, 2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8
-#lasp|ssfr-b|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-#lasp|ssfr-b|zen|in, 2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8
-#lasp|ssfr-b|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-#lasp|ssfr-b|nad|in, 2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8
-#nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
-#nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
-#nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
-#nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
-# updated on 2023-11-14 12:00:00
-# notes: legacy coef for record
+#        (due to its malfunction) with NASA Ames' (good condition), thus the
+#        coefficients of <lasp|ssfr-a|zen|in> is replaced with <nasa|ssfr-6|zen|in>
 lasp|ssfr-a|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-lasp|ssfr-a|zen|in, 2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8
+lasp|ssfr-a|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
 lasp|ssfr-a|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
 lasp|ssfr-a|nad|in, 2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8
 lasp|ssfr-b|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
@@ -29,3 +15,17 @@ nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
 nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
 nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
 nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
+# updated on 2023-11-14 12:00:00
+# notes: legacy wavelength coefficients for record
+#lasp|ssfr-a|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-a|zen|in, 2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8
+#lasp|ssfr-a|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-a|nad|in, 2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8
+#lasp|ssfr-b|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-b|zen|in, 2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8
+#lasp|ssfr-b|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-b|nad|in, 2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8
+#nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
+#nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
+#nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
+#nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
