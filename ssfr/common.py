@@ -13,16 +13,16 @@ input_list = {
         }
 
 serial_number = {
-        'lasp|ssfr-a|zenith|silicon': 'n/a',
-        'lasp|ssfr-a|zenith|ingaas' : '044832', # found broken and replaced with Zenith InGaAs spectrometer from NASA Ames's SSFR
-        'lasp|ssfr-a|nadir|silicon' : 'n/a',
-        'lasp|ssfr-a|nadir|ingaas'  : 'n/a',
-        'lasp|ssfr-b|zenith|silicon': 'n/a',
-        'lasp|ssfr-b|zenith|ingaas' : 'n/a',
-        'lasp|ssfr-b|nadir|silicon' : 'n/a',
-        'lasp|ssfr-b|nadir|ingaas'  : 'n/a',
-        'nasa|ssfr|zenith|silicon': '033161',
-        'nasa|ssfr|zenith|ingaas' : '044832',
-        'nasa|ssfr|nadir|silicon' : '045924',
-        'nasa|ssfr|nadir|ingaas'  : '044829',
+        'lasp|ssfr-a|zen|si': 'n/a',
+        'lasp|ssfr-a|zen|in': '044832', # found malfunction and was replaced with Zenith InGaAs spectrometer from NASA Ames's SSFR
+        'lasp|ssfr-a|nad|si': 'n/a',
+        'lasp|ssfr-a|nad|in': 'n/a',
+        'lasp|ssfr-b|zen|si': 'n/a',
+        'lasp|ssfr-b|zen|in': 'n/a',
+        'lasp|ssfr-b|nad|si': 'n/a',
+        'lasp|ssfr-b|nad|in': 'n/a',
+        'nasa|ssfr-6|zen|si': '033161',
+        'nasa|ssfr-6|zen|in': 'n/a',
+        'nasa|ssfr-6|nad|si': '045924',
+        'nasa|ssfr-6|nad|in': '044829',
         }
