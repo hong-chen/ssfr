@@ -37,10 +37,10 @@ def get_ssfr_wavelength(
     wvl_nad_in = coef_nad_in[0] + coef_nad_in[1]*xChan + coef_nad_in[2]*xChan**2 + coef_nad_in[3]*xChan**3 + coef_nad_in[4]*xChan**4
 
     wvls = {
-            'zen_si': wvl_zen_si,
-            'zen_in': wvl_zen_in,
-            'nad_si': wvl_nad_si,
-            'nad_in': wvl_nad_in
+            'zen|si': wvl_zen_si,
+            'zen|in': wvl_zen_in,
+            'nad|si': wvl_nad_si,
+            'nad|in': wvl_nad_in
             }
 
     return wvls

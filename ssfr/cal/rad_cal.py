@@ -18,22 +18,21 @@ __all__ = ['cal_rad_resp', 'cdata_rad_resp']
 def cal_rad_resp(
         fnames,
         resp=None,
-        which_ssfr='lasp',
-        which_lc='zenith',
-        pri_lamp_tag='f-1324',
-        int_time={'si':60, 'in':300}
+        which_ssfr='lasp|ssfr-a',
+        which_lc='zen',
+        which_lamp='f-1324',
         ):
-
 
     # check SSFR spectrometer
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
-    if which_ssfr == 'nasa':
+    which_lab  = which_ssfr.split('|')[0]
+    if which_lab == 'nasa':
         import ssfr.nasa_ssfr as ssfr_toolbox
-    elif which_ssfr == 'lasp':
+    elif which_lab == 'lasp':
         import ssfr.lasp_ssfr as ssfr_toolbox
     else:
-        msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
+        msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa|ssfr-6\'> or <\'lasp|ssfr-a\'> or <\'lasp|ssfr-b\'>).' % which_ssfr
         raise ValueError(msg)
     #\----------------------------------------------------------------------------/#
 
@@ -41,16 +40,14 @@ def cal_rad_resp(
     # check light collector
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
-    if which_lc == 'zenith':
-        which_lc = 'zen'
+    if which_lc == 'zen':
         index_si = 0
         index_in = 1
-    elif which_lc == 'nadir':
-        which_lc = 'nad'
+    elif which_lc == 'nad':
         index_si = 2
         index_in = 3
     else:
-        msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith\'> or <\'nadir\'>).' % which_lc
+        msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zen\'> or <\'nad\'>).' % which_lc
         raise ValueError(msg)
     #\----------------------------------------------------------------------------/#
 
@@ -60,38 +57,49 @@ def cal_rad_resp(
     #/----------------------------------------------------------------------------\#
     if resp is None:
 
+        # check lamp
+        #/----------------------------------------------------------------------------\#
+        which_lamp = which_lamp.lower()
+        if which_lamp[:4] == 'f-50':
+            which_lamp = 'f-506c'
+        #\----------------------------------------------------------------------------/#
+
         # read in calibrated lamp data and interpolated at SSFR wavelengths
         #/--------------------------------------------------------------\#
-        fnameLamp = '%s/%s.dat' % (ssfr.common.fdir_data, pri_lamp_tag)
-        if not os.path.exists(fnameLamp):
-            msg = '\nError [cal_rad_resp]: Cannot locate calibration file for lamp <%s>.' % pri_lamp_tag.title()
+        fname_lamp = '%s/%s.dat' % (ssfr.common.fdir_data, which_lamp)
+        if not os.path.exists(fname_lamp):
+            msg = '\nError [cal_rad_resp]: Cannot locate calibration file for lamp <%s>.' % which_lamp
             raise OSError(msg)
 
-        data      = np.loadtxt(fnameLamp)
+        data      = np.loadtxt(fname_lamp)
         data_wvl  = data[:, 0]
-        if pri_lamp_tag == 'f-506c':
+        if which_lamp == 'f-506c':
             data_flux = data[:, 1]*0.01
         else:
             data_flux = data[:, 1]*10000.0
 
+        # !!!!!!!!!! this will change !!!!!!!!!!!!!!
+        #/----------------------------------------------------------------------------\#
         wvls = ssfr_toolbox.get_ssfr_wavelength()
-        wvl_si = wvls['%s_si' % which_lc]
-        wvl_in = wvls['%s_in' % which_lc]
+        wvl_si = wvls['%s|si' % which_lc]
+        wvl_in = wvls['%s|in' % which_lc]
+        #\----------------------------------------------------------------------------/#
 
-        lampStd_si = np.zeros_like(wvl_si)
-        for i in range(lampStd_si.size):
-            lampStd_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
+        lamp_std_si = np.zeros_like(wvl_si)
+        for i in range(lamp_std_si.size):
+            lamp_std_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        lampStd_in = np.zeros_like(wvl_in)
-        for i in range(lampStd_in.size):
-            lampStd_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+        lamp_std_in = np.zeros_like(wvl_in)
+        for i in range(lamp_std_in.size):
+            lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
         # at this point we have (W m^-2 nm^-1 as a function of wavelength)
-        resp = {'si':lampStd_si,
-                'in':lampStd_in}
+        resp = {'si':lamp_std_si,
+                'in':lamp_std_in}
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
+    ####### stopped here ########
 
     # read raw data
     #/----------------------------------------------------------------------------\#
@@ -145,23 +153,23 @@ def cdata_rad_resp(
         fnames_tra=None,
         fnames_sec=None,
         filename_tag=None,
-        pri_lamp_tag='f-1324',
-        which_lc='zenith',
-        which_ssfr='lasp',
+        which_lamp='f-1324',
+        which_lc='zen',
+        which_ssfr='lasp|ssfr-a',
         wvl_joint=950.0,
         wvl_range=[350.0, 2200.0],
-        int_time={'si':60, 'in':300}
         ):
 
     # check SSFR spectrometer
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
-    if which_ssfr == 'nasa':
+    which_lab  = which_ssfr.split('|')[0]
+    if which_lab == 'nasa':
         import ssfr.nasa_ssfr as ssfr_toolbox
-    elif which_ssfr == 'lasp':
+    elif which_lab == 'lasp':
         import ssfr.lasp_ssfr as ssfr_toolbox
     else:
-        msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
+        msg = '\nError [cdata_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa|ssfr-6\'> or <\'lasp|ssfr-a\'> or <\'lasp|ssfr-b\'>).' % which_ssfr
         raise ValueError(msg)
     #\----------------------------------------------------------------------------/#
 
@@ -177,8 +185,7 @@ def cdata_rad_resp(
                 resp=None,
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
-                int_time=int_time,
-                pri_lamp_tag=pri_lamp_tag
+                which_lamp=which_lamp,
                 )
     else:
         msg = '\nError [cdata_rad_resp]: Cannot proceed without primary calibration files.'
@@ -190,8 +197,7 @@ def cdata_rad_resp(
                 resp=pri_resp,
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
-                int_time=int_time,
-                pri_lamp_tag=pri_lamp_tag
+                which_lamp=which_lamp,
                 )
     else:
         msg = '\nError [cdata_rad_resp]: Cannot proceed without transfer calibration files.'
@@ -203,8 +209,7 @@ def cdata_rad_resp(
                 resp=transfer,
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
-                int_time=int_time,
-                pri_lamp_tag=pri_lamp_tag
+                which_lamp=which_lamp,
                 )
     else:
         msg = '\nWarning [cdata_rad_resp]: Secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...'
@@ -214,8 +219,7 @@ def cdata_rad_resp(
                 resp=transfer,
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
-                int_time=int_time,
-                pri_lamp_tag=pri_lamp_tag
+                which_lamp=which_lamp,
                 )
 
     wvls = ssfr_toolbox.get_ssfr_wavelength()

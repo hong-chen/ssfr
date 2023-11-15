@@ -30,7 +30,7 @@ __all__ = [
         'save_h5',
         'get_solar_kurudz',
         'get_slit_func',
-        'cal_solar_flux_toa',
+        'cal_weighted_flux',
         'read_ict',
         'write_ict',
         'read_iwg',
@@ -209,7 +209,7 @@ def get_solar_kurudz(kurudz_file=None):
 
     return data_sol
 
-def cal_solar_flux_toa(wvl, data_wvl, data_flux, slit_func_file=None, wvl_joint=950.0):
+def cal_weighted_flux(wvl, data_wvl, data_flux, slit_func_file=None, wvl_joint=950.0):
 
     data_slt = get_slit_func(wvl, slit_func_file=slit_func_file, wvl_joint=wvl_joint)
 

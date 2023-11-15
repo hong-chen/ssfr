@@ -130,7 +130,7 @@ def cdata_arcsix_spns_v0(
     wvl_tot = data0_tot.data['wavelength']
     f_dn_sol_tot = np.zeros_like(wvl_tot)
     for i, wvl0 in enumerate(wvl_tot):
-        f_dn_sol_tot[i] = ssfr.util.cal_solar_flux_toa(wvl0, flux_toa[:, 0], flux_toa[:, 1])
+        f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])
     #\----------------------------------------------------------------------------/#
 
     # save processed data
@@ -969,9 +969,9 @@ def main_process_data():
 
 
 
-# wavelength calibration
+# calibration
 #/----------------------------------------------------------------------------\#
-def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
+def wvl_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
     fdir_data = '/argus/field/arcsix/cal/wvl-cal'
 
@@ -980,21 +980,21 @@ def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
             'nad': [2, 3]
             }
 
-    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, spec_tag, lamp_tag)))[0]
+    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
     fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
 
     ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
 
     xchan = np.arange(Nchan)
 
-    spectra0 = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[spec_tag]], axis=0)
-    spectra1 = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[spec_tag]], axis=0)
+    spectra0 = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
+    spectra1 = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
 
     # spectra_inp = {lamp_tag.lower(): spectra0[:, 0]}
-    # ssfr.cal.cal_wvl_coef(spectra_inp, which_spec='lasp|%s|%s|si' % (ssfr_tag.lower(), spec_tag.lower()))
+    # ssfr.cal.cal_wvl_coef(spectra_inp, which_spec='lasp|%s|%s|si' % (ssfr_tag.lower(), lc_tag.lower()))
 
     spectra_inp = {lamp_tag.lower(): spectra0[:, 1]}
-    ssfr.cal.cal_wvl_coef(spectra_inp, which_spec='lasp|%s|%s|in' % (ssfr_tag.lower(), spec_tag.lower()))
+    ssfr.cal.cal_wvl_coef(spectra_inp, which_spec='lasp|%s|%s|in' % (ssfr_tag.lower(), lc_tag.lower()))
     sys.exit()
 
     # figure
@@ -1002,7 +1002,7 @@ def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(12, 6))
-        fig.suptitle('%s %s (illuminated by %s Lamp)' % (ssfr_tag.upper(), spec_tag.title(), lamp_tag.upper()))
+        fig.suptitle('%s %s (illuminated by %s Lamp)' % (ssfr_tag.upper(), lc_tag.title(), lamp_tag.upper()))
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(121)
@@ -1032,7 +1032,74 @@ def wvl_cal(ssfr_tag, spec_tag, lamp_tag, Nchan=256):
         #/--------------------------------------------------------------\#
         fig.subplots_adjust(hspace=0.3, wspace=0.3)
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), spec_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
+        fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), lc_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
+
+def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
+
+    fdir_data = '/argus/field/arcsix/cal/rad-cal'
+
+    indices_spec = {
+            'zen': [0, 1],
+            'nad': [2, 3]
+            }
+
+    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+
+    ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|ssfr-b', which_lc='zen')
+    sys.exit()
+
+    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
+
+    xchan = np.arange(Nchan)
+
+    spectra0     = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
+    spectra0_std = np.nanstd(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
+    spectra1     = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
+    spectra1_std = np.nanstd(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        fig.suptitle('%s %s (illuminated by %s Lamp)' % (ssfr_tag.upper(), lc_tag.title(), lamp_tag.upper()))
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(121)
+        # ax1.fill_between(xchan, spectra0[:, 0]-spectra0_std[:, 0], spectra0[:, 0]+spectra0_std[:, 0], color='r', lw=0.0, alpha=0.3)
+        # ax1.fill_between(xchan, spectra1[:, 0]-spectra1_std[:, 0], spectra1[:, 0]+spectra1_std[:, 0], color='b', lw=0.0, alpha=0.3)
+        ax1.plot(xchan, spectra0[:, 0]/80.0, lw=1, c='r')
+        ax1.plot(xchan, spectra1[:, 0]/120.0, lw=1, c='b')
+        ax1.set_xlabel('Channel #')
+        ax1.set_ylabel('Counts')
+        ax1.set_ylim(bottom=0)
+        ax1.set_title('Silicon')
+
+        ax2 = fig.add_subplot(122)
+        # ax2.fill_between(xchan, spectra0[:, 1]-spectra0_std[:, 1], spectra0[:, 1]+spectra0_std[:, 1], color='r', lw=0.0, alpha=0.3)
+        # ax2.fill_between(xchan, spectra1[:, 1]-spectra1_std[:, 1], spectra1[:, 1]+spectra1_std[:, 1], color='b', lw=0.0, alpha=0.3)
+        ax2.plot(xchan, spectra0[:, 1]/250.0, lw=1, c='r')
+        ax2.plot(xchan, spectra1[:, 1]/350.0, lw=1, c='b')
+        ax2.set_xlabel('Channel #')
+        ax2.set_ylabel('Counts')
+        ax2.set_ylim(bottom=0)
+        ax2.set_title('InGaAs')
+        #\--------------------------------------------------------------/#
+
+        patches_legend = [
+                          mpatches.Patch(color='red' , label='IntTime set 1'), \
+                          mpatches.Patch(color='blue', label='IntTime set 2'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), lc_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 #\----------------------------------------------------------------------------/#
@@ -1042,16 +1109,23 @@ def main_calibration():
 
     # wavelength calibration
     #/----------------------------------------------------------------------------\#
-    for ssfr_tag in ['SSFR-A', 'SSFR-B']:
-    # for ssfr_tag in ['SSFR-B']:
-        for spec_tag in ['zen', 'nad']:
-            for lamp_tag in ['hg', 'kr']:
-            # for lamp_tag in ['kr', 'hg']:
-                wvl_cal(ssfr_tag, spec_tag, lamp_tag)
+    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+    #     for lc_tag in ['zen', 'nad']:
+    #         for lamp_tag in ['kr', 'hg']:
+    #             wvl_cal(ssfr_tag, lc_tag, lamp_tag)
+    #\----------------------------------------------------------------------------/#
+
+    # radiometric calibration
+    #/----------------------------------------------------------------------------\#
+    for ssfr_tag in ['SSFR-B']:
+        for lc_tag in ['nad']:
+            for lamp_tag in ['507']:
+                rad_cal(ssfr_tag, lc_tag, lamp_tag)
     #\----------------------------------------------------------------------------/#
 
 
 if __name__ == '__main__':
 
     # main_process_data()
+
     main_calibration()

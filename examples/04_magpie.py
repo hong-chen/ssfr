@@ -109,7 +109,7 @@ def cdata_magpie_spns_v0(
     wvl_tot = data0_tot.data['wavelength']
     f_dn_sol_tot = np.zeros_like(wvl_tot)
     for i, wvl0 in enumerate(wvl_tot):
-        f_dn_sol_tot[i] = ssfr.util.cal_solar_flux_toa(wvl0, flux_toa[:, 0], flux_toa[:, 1])
+        f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])
     #\----------------------------------------------------------------------------/#
 
     # save processed data
