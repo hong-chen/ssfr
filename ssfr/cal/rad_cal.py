@@ -28,6 +28,7 @@ def cal_rad_resp(
         int_time={'si':80.0, 'in':250.0},
         ):
 
+
     # check SSFR spectrometer
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
@@ -54,6 +55,19 @@ def cal_rad_resp(
     else:
         msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zen\'> or <\'nad\'>).' % which_lc
         raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
+
+
+    # si/in tag
+    #/----------------------------------------------------------------------------\#
+    si_tag = '%s|si' % which_lc
+    in_tag = '%s|in' % which_lc
+
+    if si_tag not in int_time.keys():
+        int_time[si_tag] = int_time.pop('si')
+
+    if in_tag not in int_time.keys():
+        int_time[in_tag] = int_time.pop('in')
     #\----------------------------------------------------------------------------/#
 
 
@@ -86,8 +100,8 @@ def cal_rad_resp(
         # !!!!!!!!!! this will change !!!!!!!!!!!!!!
         #/--------------------------------------------------------------\#
         wvls = ssfr_toolbox.get_ssfr_wavelength()
-        wvl_si = wvls['%s|si' % which_lc]
-        wvl_in = wvls['%s|in' % which_lc]
+        wvl_si = wvls[si_tag]
+        wvl_in = wvls[in_tag]
         #\--------------------------------------------------------------/#
 
         lamp_std_si = np.zeros_like(wvl_si)
@@ -99,8 +113,10 @@ def cal_rad_resp(
             lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
         # at this point we have (W m^-2 nm^-1 as a function of wavelength)
-        resp = {'si':lamp_std_si,
-                'in':lamp_std_in}
+        resp = {
+                si_tag: lamp_std_si,
+                in_tag: lamp_std_in
+               }
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
@@ -112,13 +128,14 @@ def cal_rad_resp(
     spectra_si = None
     spectra_in = None
     for i in range(ssfr_obj.Ndset):
+
         dset_name = 'dset%d' % i
         data = getattr(ssfr_obj, dset_name)
 
-        if abs(data['info']['int_time']['%s|si' % which_lc] - int_time['si']) < 0.00001:
+        if abs(data['info']['int_time'][si_tag] - int_time[si_tag]) < 0.00001:
             spectra_si = np.nanmean(data['spectra_dark-corr'][:, :, index_si], axis=0)
 
-        if abs(data['info']['int_time']['%s|in' % which_lc] - int_time['in']) < 0.00001:
+        if abs(data['info']['int_time'][in_tag] - int_time[in_tag]) < 0.00001:
             spectra_in = np.nanmean(data['spectra_dark-corr'][:, :, index_in], axis=0)
     #\----------------------------------------------------------------------------/#
 
@@ -127,7 +144,7 @@ def cal_rad_resp(
     #/----------------------------------------------------------------------------\#
     if spectra_si is not None:
         spectra_si[spectra_si<=0.0] = np.nan
-        rad_resp_si = spectra_si / int_time['si'] / resp['si']
+        rad_resp_si = spectra_si / int_time[si_tag] / resp[si_tag]
     else:
         rad_resp_si = None
     #\----------------------------------------------------------------------------/#
@@ -137,7 +154,7 @@ def cal_rad_resp(
     #/----------------------------------------------------------------------------\#
     if spectra_in is not None:
         spectra_in[spectra_in<=0.0] = np.nan
-        rad_resp_in = spectra_in / int_time['in'] / resp['in']
+        rad_resp_in = spectra_in / int_time[in_tag] / resp[in_tag]
     else:
         rad_resp_in = None
     #\----------------------------------------------------------------------------/#
@@ -146,8 +163,8 @@ def cal_rad_resp(
     # response output
     #/----------------------------------------------------------------------------\#
     rad_resp = {
-               'si':rad_resp_si,
-               'in':rad_resp_in
+               si_tag: rad_resp_si,
+               in_tag: rad_resp_in
                }
 
     return rad_resp
