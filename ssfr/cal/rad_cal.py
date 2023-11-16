@@ -98,6 +98,8 @@ def cal_rad_resp(
             data_flux = data[:, 1]*10000.0
 
         # !!!!!!!!!! this will change !!!!!!!!!!!!!!
+        # currently we are developing wavelength calibration,
+        # the wavelength calculation process will be modified.
         #/--------------------------------------------------------------\#
         wvls = ssfr_toolbox.get_ssfr_wavelength()
         wvl_si = wvls[si_tag]
@@ -141,6 +143,9 @@ def cal_rad_resp(
 
 
     # Silicon
+    # some placeholder ideas:
+    # if nan is detected (e.g., spectra_si smaller than 0.0), one can use
+    # interpolation to fill in the nan values
     #/----------------------------------------------------------------------------\#
     if spectra_si is not None:
         spectra_si[spectra_si<=0.0] = np.nan
