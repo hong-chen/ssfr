@@ -1048,7 +1048,7 @@ def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
     fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
     fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
 
-    ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|ssfr-b', which_lc='zen')
+    ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|ssfr-b', which_lc='nad')
     sys.exit()
 
     ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')

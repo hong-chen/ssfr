@@ -197,7 +197,7 @@ class read_ssfr:
     def __init__(
             self,
             fnames,
-            Ndata=600,
+            Ndata=2000,
             which_time='arinc',
             time_offset=0.0,
             process=True,
@@ -345,10 +345,10 @@ class read_ssfr:
                     dset[vname] = self.data_raw[vname][logic, ...]
 
             dset['info']['int_time'] = {
-                    'zen_si': int_time_[idset, 0],
-                    'zen_in': int_time_[idset, 1],
-                    'nad_si': int_time_[idset, 2],
-                    'nad_in': int_time_[idset, 3],
+                    'zen|si': int_time_[idset, 0],
+                    'zen|in': int_time_[idset, 1],
+                    'nad|si': int_time_[idset, 2],
+                    'nad|in': int_time_[idset, 3],
                     }
             #\----------------------------------------------------------------------------/#
 
@@ -393,10 +393,10 @@ class read_ssfr:
 
         # zenith wavelength
         #/----------------------------------------------------------------------------\#
-        logic_zen_si = (wvls['zen_si'] >= wvl_start) & (wvls['zen_si'] <= wvl_join)
-        logic_zen_in = (wvls['zen_in'] >  wvl_join)  & (wvls['zen_in'] <= wvl_end)
+        logic_zen_si = (wvls['zen|si'] >= wvl_start) & (wvls['zen|si'] <= wvl_join)
+        logic_zen_in = (wvls['zen|in'] >  wvl_join)  & (wvls['zen|in'] <= wvl_end)
 
-        wvl_zen = np.concatenate((wvls['zen_si'][logic_zen_si], wvls['zen_in'][logic_zen_in]))
+        wvl_zen = np.concatenate((wvls['zen|si'][logic_zen_si], wvls['zen|in'][logic_zen_in]))
 
         indices_sort_zen = np.argsort(wvl_zen)
         wvl_zen = wvl_zen[indices_sort_zen]
@@ -404,10 +404,10 @@ class read_ssfr:
 
         # nadir wavelength
         #/----------------------------------------------------------------------------\#
-        logic_nad_si = (wvls['nad_si'] >= wvl_start) & (wvls['nad_si'] <= wvl_join)
-        logic_nad_in = (wvls['nad_in'] >  wvl_join)  & (wvls['nad_in'] <= wvl_end)
+        logic_nad_si = (wvls['nad|si'] >= wvl_start) & (wvls['nad|si'] <= wvl_join)
+        logic_nad_in = (wvls['nad|in'] >  wvl_join)  & (wvls['nad|in'] <= wvl_end)
 
-        wvl_nad = np.concatenate((wvls['nad_si'][logic_nad_si], wvls['nad_in'][logic_nad_in]))
+        wvl_nad = np.concatenate((wvls['nad|si'][logic_nad_si], wvls['nad|in'][logic_nad_in]))
 
         indices_sort_nad = np.argsort(wvl_nad)
         wvl_nad = wvl_nad[indices_sort_nad]
@@ -419,8 +419,8 @@ class read_ssfr:
 
             dset = getattr(self, 'dset%d' % it)
 
-            counts_zen = np.hstack((dset['spectra_dark-corr'][:, logic_zen_si, 0]/dset['info']['int_time']['zen_si'], dset['spectra_dark-corr'][:, logic_zen_in, 1]/dset['info']['int_time']['zen_in']))
-            counts_nad = np.hstack((dset['spectra_dark-corr'][:, logic_nad_si, 2]/dset['info']['int_time']['nad_si'], dset['spectra_dark-corr'][:, logic_nad_in, 3]/dset['info']['int_time']['nad_in']))
+            counts_zen = np.hstack((dset['spectra_dark-corr'][:, logic_zen_si, 0]/dset['info']['int_time']['zen|si'], dset['spectra_dark-corr'][:, logic_zen_in, 1]/dset['info']['int_time']['zen|in']))
+            counts_nad = np.hstack((dset['spectra_dark-corr'][:, logic_nad_si, 2]/dset['info']['int_time']['nad|si'], dset['spectra_dark-corr'][:, logic_nad_in, 3]/dset['info']['int_time']['nad|in']))
 
             counts_zen = counts_zen[:, indices_sort_zen]
             counts_nad = counts_nad[:, indices_sort_nad]

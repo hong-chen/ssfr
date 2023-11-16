@@ -7,11 +7,15 @@ import numpy as np
 from scipy import interpolate
 from scipy.io import readsav
 
+
 import ssfr
 
 
 
-__all__ = ['cal_rad_resp', 'cdata_rad_resp']
+__all__ = [
+        'cal_rad_resp',
+        'cdata_rad_resp',
+        ]
 
 
 
@@ -21,6 +25,7 @@ def cal_rad_resp(
         which_ssfr='lasp|ssfr-a',
         which_lc='zen',
         which_lamp='f-1324',
+        int_time={'si':80.0, 'in':250.0},
         ):
 
     # check SSFR spectrometer
@@ -58,13 +63,13 @@ def cal_rad_resp(
     if resp is None:
 
         # check lamp
-        #/----------------------------------------------------------------------------\#
+        #/--------------------------------------------------------------\#
         which_lamp = which_lamp.lower()
         if which_lamp[:4] == 'f-50':
             which_lamp = 'f-506c'
-        #\----------------------------------------------------------------------------/#
+        #\--------------------------------------------------------------/#
 
-        # read in calibrated lamp data and interpolated at SSFR wavelengths
+        # read in calibrated lamp data and interpolated/integrated at SSFR wavelengths/slits
         #/--------------------------------------------------------------\#
         fname_lamp = '%s/%s.dat' % (ssfr.common.fdir_data, which_lamp)
         if not os.path.exists(fname_lamp):
@@ -79,11 +84,11 @@ def cal_rad_resp(
             data_flux = data[:, 1]*10000.0
 
         # !!!!!!!!!! this will change !!!!!!!!!!!!!!
-        #/----------------------------------------------------------------------------\#
+        #/--------------------------------------------------------------\#
         wvls = ssfr_toolbox.get_ssfr_wavelength()
         wvl_si = wvls['%s|si' % which_lc]
         wvl_in = wvls['%s|in' % which_lc]
-        #\----------------------------------------------------------------------------/#
+        #\--------------------------------------------------------------/#
 
         lamp_std_si = np.zeros_like(wvl_si)
         for i in range(lamp_std_si.size):
@@ -99,52 +104,54 @@ def cal_rad_resp(
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
-    ####### stopped here ########
 
     # read raw data
     #/----------------------------------------------------------------------------\#
-    ssfr_l = ssfr_toolbox.read_ssfr([fnames['cal']])
-    ssfr_d = ssfr_toolbox.read_ssfr([fnames['dark']])
+    ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp')
+
+    spectra_si = None
+    spectra_in = None
+    for i in range(ssfr_obj.Ndset):
+        dset_name = 'dset%d' % i
+        data = getattr(ssfr_obj, dset_name)
+
+        if abs(data['info']['int_time']['%s|si' % which_lc] - int_time['si']) < 0.00001:
+            spectra_si = np.nanmean(data['spectra_dark-corr'][:, :, index_si], axis=0)
+
+        if abs(data['info']['int_time']['%s|in' % which_lc] - int_time['in']) < 0.00001:
+            spectra_in = np.nanmean(data['spectra_dark-corr'][:, :, index_in], axis=0)
     #\----------------------------------------------------------------------------/#
 
 
     # Silicon
     #/----------------------------------------------------------------------------\#
-    counts_l  = ssfr_l.spectra[:, :, index_si]
-    counts_d  = ssfr_d.spectra[:, :, index_si]
-
-    logic_l   = (np.abs(ssfr_l.int_time[:, index_si]-int_time['si'])<0.00001) & (ssfr_l.shutter==0)
-    spectra_l = np.mean(counts_l[logic_l, :], axis=0)
-
-    logic_d   = (np.abs(ssfr_d.int_time[:, index_si]-int_time['si'])<0.00001) & (ssfr_l.shutter==1)
-    spectra_d = np.mean(counts_d[logic_d, :], axis=0)
-
-    spectra   = spectra_l - spectra_d
-    spectra[spectra<=0.0] = np.nan
-    rad_resp_si = spectra / int_time['si'] / resp['si']
+    if spectra_si is not None:
+        spectra_si[spectra_si<=0.0] = np.nan
+        rad_resp_si = spectra_si / int_time['si'] / resp['si']
+    else:
+        rad_resp_si = None
     #\----------------------------------------------------------------------------/#
 
 
     # InGaAs
     #/----------------------------------------------------------------------------\#
-    counts_l  = ssfr_l.spectra[:, :, index_in]
-    counts_d  = ssfr_d.spectra[:, :, index_in]
-
-    logic_l   = (np.abs(ssfr_l.int_time[:, index_in]-int_time['in'])<0.00001) & (ssfr_l.shutter==0)
-    spectra_l = np.mean(counts_l[logic_l, :], axis=0)
-
-    logic_d   = (np.abs(ssfr_d.int_time[:, index_in]-int_time['in'])<0.00001) & (ssfr_l.shutter==1)
-    spectra_d = np.mean(counts_d[logic_d, :], axis=0)
-
-    spectra   = spectra_l - spectra_d
-    spectra[spectra<=0.0] = np.nan
-    rad_resp_in = spectra / int_time['in'] / resp['in']
+    if spectra_in is not None:
+        spectra_in[spectra_in<=0.0] = np.nan
+        rad_resp_in = spectra_in / int_time['in'] / resp['in']
+    else:
+        rad_resp_in = None
     #\----------------------------------------------------------------------------/#
 
-    rad_resp = {'si':rad_resp_si,
-                'in':rad_resp_in}
+
+    # response output
+    #/----------------------------------------------------------------------------\#
+    rad_resp = {
+               'si':rad_resp_si,
+               'in':rad_resp_in
+               }
 
     return rad_resp
+    #\----------------------------------------------------------------------------/#
 
 
 
