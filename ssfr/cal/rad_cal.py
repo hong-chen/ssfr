@@ -93,9 +93,9 @@ def cal_rad_resp(
         data      = np.loadtxt(fname_lamp)
         data_wvl  = data[:, 0]
         if which_lamp == 'f-506c':
-            data_flux = data[:, 1]*0.01
+            data_flux = data[:, 1]*0.01      # W m^-2 nm^-1
         else:
-            data_flux = data[:, 1]*10000.0
+            data_flux = data[:, 1]*10000.0   # W m^-2 nm^-1
 
         # !!!!!!!!!! this will change !!!!!!!!!!!!!!
         # currently we are developing wavelength calibration,
@@ -114,7 +114,6 @@ def cal_rad_resp(
         for i in range(lamp_std_in.size):
             lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        # at this point we have (W m^-2 nm^-1 as a function of wavelength)
         resp = {
                 si_tag: lamp_std_si,
                 in_tag: lamp_std_in
@@ -182,9 +181,9 @@ def cdata_rad_resp(
         fnames_tra=None,
         fnames_sec=None,
         filename_tag=None,
-        which_lamp='f-1324',
-        which_lc='zen',
         which_ssfr='lasp|ssfr-a',
+        which_lc='zen',
+        which_lamp='f-1324',
         wvl_joint=950.0,
         wvl_range=[350.0, 2200.0],
         ):
@@ -256,7 +255,7 @@ def cdata_rad_resp(
     wvl_start = wvl_range[0]
     wvl_end   = wvl_range[-1]
     logic_si = (wvls['%s_si' % which_lc] >= wvl_start) & (wvls['%s_si' % which_lc] <= wvl_joint)
-    logic_in = (wvls['%s_in' % which_lc] >  wvl_joint)  & (wvls['%s_in' % which_lc] <= wvl_end)
+    logic_in = (wvls['%s_in' % which_lc] >  wvl_joint) & (wvls['%s_in' % which_lc] <= wvl_end)
 
     wvl_data      = np.concatenate((wvls['%s_si' % which_lc][logic_si], wvls['%s_in' % which_lc][logic_in]))
     pri_resp_data = np.hstack((pri_resp['si'][logic_si], pri_resp['in'][logic_in]))
@@ -270,9 +269,9 @@ def cdata_rad_resp(
     sec_resp = sec_resp_data[indices_sort]
 
     if filename_tag is not None:
-        fname_out = '%s_rad-resp_s%3.3di%3.3d.h5' % (filename_tag, int_time['si'], int_time['in'])
+        fname_out = '%s_rad-resp_%s|si-%3.3d-%s|in-%3.3d.h5' % (filename_tag, which_lc, int_time['si'], which_lc, int_time['in'])
     else:
-        fname_out = 'rad-resp_s%3.3di%3.3d.h5' % (int_time['si'], int_time['in'])
+        fname_out = 'rad-resp_%s|si-%3.3d-%s|in-%3.3d.h5' % (which_lc, int_time['si'], which_lc, int_time['in'])
 
     f = h5py.File(fname_out, 'w')
     f['wvl']       = wvl
