@@ -617,27 +617,31 @@ def cdata_arcsix_ssfr_v2(
 
     # primary transfer calibration (from arise)
     #/----------------------------------------------------------------------------\#
-    f_zs = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_s300.sav')
-    f_zi = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_i300.sav')
-    f_ns = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_s300.sav')
-    f_ni = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_i300.sav')
+    # f_zs = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_s300.sav')
+    # f_zi = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140921_s1z_150B_i300.sav')
+    # f_ns = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_s300.sav')
+    # f_ni = readsav('/argus/pre-mission/arcsix/cal/arise_20140921_pri-cal/20140924_s1n_150B_i300.sav')
 
-    logic_nsi1 = (f_zs.wl_si1 <= f_ni.join)
-    logic_nin1 = (f_zi.wl_in1 >= f_ni.join)
-    nsi1 = logic_nsi1.sum()
-    nin1 = logic_nin1.sum()
-    n1 = nsi1 + nin1
+    # logic_nsi1 = (f_zs.wl_si1 <= f_ni.join)
+    # logic_nin1 = (f_zi.wl_in1 >= f_ni.join)
+    # nsi1 = logic_nsi1.sum()
+    # nin1 = logic_nin1.sum()
+    # n1 = nsi1 + nin1
 
-    logic_nsi2 = (f_ns.wl_si2 <= f_ni.join)
-    logic_nin2 = (f_ni.wl_in2 >= f_ni.join)
-    nsi2 = logic_nsi2.sum()
-    nin2 = logic_nin2.sum()
-    n2 = nsi2 + nin2
+    # logic_nsi2 = (f_ns.wl_si2 <= f_ni.join)
+    # logic_nin2 = (f_ni.wl_in2 >= f_ni.join)
+    # nsi2 = logic_nsi2.sum()
+    # nin2 = logic_nin2.sum()
+    # n2 = nsi2 + nin2
 
-    wvl_resp_zen_ = np.append(f_zs.wl_si1[logic_nsi1], f_zi.wl_in1[logic_nin1][::-1])
-    wvl_resp_nad_ = np.append(f_ns.wl_si2[logic_nsi2], f_ni.wl_in2[logic_nin2][::-1])
-    sec_resp_zen_ = np.append(f_zs.resp2_si1[logic_nsi1], f_zi.resp2_in1[logic_nin1][::-1])
-    sec_resp_nad_ = np.append(f_ns.resp2_si2[logic_nsi2], f_ni.resp2_in2[logic_nin2][::-1])
+    # wvl_resp_zen_ = np.append(f_zs.wl_si1[logic_nsi1], f_zi.wl_in1[logic_nin1][::-1])
+    # wvl_resp_nad_ = np.append(f_ns.wl_si2[logic_nsi2], f_ni.wl_in2[logic_nin2][::-1])
+    # sec_resp_zen_ = np.append(f_zs.resp2_si1[logic_nsi1], f_zi.resp2_in1[logic_nin1][::-1])
+    # sec_resp_nad_ = np.append(f_ns.resp2_si2[logic_nsi2], f_ni.resp2_in2[logic_nin2][::-1])
+    #\----------------------------------------------------------------------------/#
+
+    # primary calibration (from pre-mission arcsix 2023-11-16)
+    #/----------------------------------------------------------------------------\#
     #\----------------------------------------------------------------------------/#
 
     fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
@@ -1048,94 +1052,24 @@ def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
     fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
     fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
 
-    resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|ssfr-b', which_lc='nad')
 
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(8, 6))
-        # fig.suptitle('Figure')
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-        # ax1.scatter(x, y, s=6, c='k', lw=0.0)
-        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-        ax1.plot(resp_pri['nad|si'], color='r', ls='--')
-        ax1.plot(resp_pri['nad|in'], color='r', ls='--')
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        #\--------------------------------------------------------------/#
-        # save figure
-        #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
-    #\----------------------------------------------------------------------------/#
-    print(resp_pri.keys())
+    date_cal_s   = '2023-11-16'
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
 
-    sys.exit()
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
+    for i in range(ssfr_.Ndset):
+        dset_ = getattr(ssfr_, 'dset%d' % i)
+        int_time = dset_['info']['int_time']
 
-    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
+        fname = 'RAD-CAL-PRI_LASP|%s|%s|SI%3.3d-IN%3.3d_%s_%s.h5' % (ssfr_tag.upper(), lc_tag.upper(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_cal_s, date_today_s)
+        f = h5py.File(fname, 'w')
 
-    xchan = np.arange(Nchan)
+        resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
 
-    spectra0     = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
-    spectra0_std = np.nanstd(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
-    spectra1     = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
-    spectra1_std = np.nanstd(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
+        for key in resp_pri.keys():
+            f[key] = resp_pri[key]
 
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        fig.suptitle('%s %s (illuminated by %s Lamp)' % (ssfr_tag.upper(), lc_tag.title(), lamp_tag.upper()))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(121)
-        # ax1.fill_between(xchan, spectra0[:, 0]-spectra0_std[:, 0], spectra0[:, 0]+spectra0_std[:, 0], color='r', lw=0.0, alpha=0.3)
-        # ax1.fill_between(xchan, spectra1[:, 0]-spectra1_std[:, 0], spectra1[:, 0]+spectra1_std[:, 0], color='b', lw=0.0, alpha=0.3)
-        ax1.plot(xchan, spectra0[:, 0]/80.0, lw=1, c='r')
-        ax1.plot(xchan, spectra1[:, 0]/120.0, lw=1, c='b')
-        ax1.set_xlabel('Channel #')
-        ax1.set_ylabel('Counts')
-        ax1.set_ylim(bottom=0)
-        ax1.set_title('Silicon')
-
-        ax2 = fig.add_subplot(122)
-        # ax2.fill_between(xchan, spectra0[:, 1]-spectra0_std[:, 1], spectra0[:, 1]+spectra0_std[:, 1], color='r', lw=0.0, alpha=0.3)
-        # ax2.fill_between(xchan, spectra1[:, 1]-spectra1_std[:, 1], spectra1[:, 1]+spectra1_std[:, 1], color='b', lw=0.0, alpha=0.3)
-        ax2.plot(xchan, spectra0[:, 1]/250.0, lw=1, c='r')
-        ax2.plot(xchan, spectra1[:, 1]/350.0, lw=1, c='b')
-        ax2.set_xlabel('Channel #')
-        ax2.set_ylabel('Counts')
-        ax2.set_ylim(bottom=0)
-        ax2.set_title('InGaAs')
-        #\--------------------------------------------------------------/#
-
-        patches_legend = [
-                          mpatches.Patch(color='red' , label='IntTime set 1'), \
-                          mpatches.Patch(color='blue', label='IntTime set 2'), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), lc_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-    #\----------------------------------------------------------------------------/#
+        f.close()
 #\----------------------------------------------------------------------------/#
 
 
@@ -1151,9 +1085,9 @@ def main_calibration():
 
     # radiometric calibration
     #/----------------------------------------------------------------------------\#
-    for ssfr_tag in ['SSFR-B']:
-        for lc_tag in ['nad']:
-            for lamp_tag in ['507']:
+    for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+        for lc_tag in ['zen', 'nad']:
+            for lamp_tag in ['1324']:
                 rad_cal(ssfr_tag, lc_tag, lamp_tag)
     #\----------------------------------------------------------------------------/#
 

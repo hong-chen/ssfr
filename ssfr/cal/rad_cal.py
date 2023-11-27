@@ -79,8 +79,11 @@ def cal_rad_resp(
         # check lamp
         #/--------------------------------------------------------------\#
         which_lamp = which_lamp.lower()
-        if which_lamp[:4] == 'f-50':
+
+        if (which_lamp[:4] == 'f-50') or (which_lamp[-3:-1] == '50'):
             which_lamp = 'f-506c'
+        elif (which_lamp[-4:] == '1324'):
+            which_lamp = 'f-1324'
         #\--------------------------------------------------------------/#
 
         # read in calibrated lamp data and interpolated/integrated at SSFR wavelengths/slits

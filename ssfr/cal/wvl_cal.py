@@ -92,8 +92,8 @@ def select_wvl_lamp(wvl, window=20.0):
 
 def select_chan_num(wvl, spectra, wvl_search, window=20.0):
 
-    spectra = spectra / np.nanmax(spectra)
-    spectra[spectra<0.08] = np.nan
+    # spectra = spectra / np.nanmax(spectra)
+    # spectra[spectra<0.08] = np.nan
 
     Nchan = wvl.size
     xchan = np.arange(Nchan, dtype=np.float64)
@@ -121,14 +121,15 @@ def select_chan_num(wvl, spectra, wvl_search, window=20.0):
         # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
         # ax1.scatter(x, y, s=6, c='k', lw=0.0)
         # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-        ax1.plot(wvl, spectra, color='k', marker='o', markersize=3)
+        ax1.plot(wvl, spectra, color='b', marker='o', markersize=3)
         for wvl0 in wvl_search:
-            ax1.axvspan(wvl0-window, wvl0+window, color='red', lw=1.0)
-        # ax1.set_xlim(())
+            # ax1.axvspan(wvl0-window, wvl0+window, color='red', lw=1.0)
+            ax1.axvline(wvl0, color='red', lw=1.0)
+        ax1.set_xlim((900, 2300))
         # ax1.set_ylim(())
-        # ax1.set_xlabel('')
+        ax1.set_xlabel('Wavelength [nm]')
         # ax1.set_ylabel('')
-        # ax1.set_title('')
+        ax1.set_title('SSFR-A|ZEN|IN')
         # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
         # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
         #\--------------------------------------------------------------/#
@@ -183,7 +184,8 @@ def cal_wvl_coef(spectra, which_spec='lasp|ssfr-a|zen|si'):
         # select lamp wavelength
         #/----------------------------------------------------------------------------\#
         lamp0    = lamps[lamp_tag]
-        wvl_lamp = np.append(wvl_lamp, select_wvl_lamp(lamp0, window=window))
+        # wvl_lamp = np.append(wvl_lamp, select_wvl_lamp(lamp0, window=window))
+        wvl_lamp = np.append(wvl_lamp, lamp0)
         #\----------------------------------------------------------------------------/#
 
         # retrieve ssfr channel numbers for selected lamp wavelength
