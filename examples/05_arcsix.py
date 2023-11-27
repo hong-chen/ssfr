@@ -24,7 +24,7 @@ import ssfr
 
 _mission_   = 'arcsix'
 _spns_      = 'spns-b'
-_ssfr_      = 'ssfr-a'
+_ssfr_      = 'ssfr-b'
 _fdir_data_ = '/argus/pre-mission/%s' % _mission_
 _fdir_hsk_  = '%s/raw/hsk'
 _fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
@@ -642,7 +642,10 @@ def cdata_arcsix_ssfr_v2(
 
     # primary calibration (from pre-mission arcsix 2023-11-16)
     #/----------------------------------------------------------------------------\#
+    f_zs = h5py.File('RAD-CAL-PRI_LASP|%s|ZEN|SI120-IN350_2023-11-16_2023-11-27.h5' % _ssfr_.upper(), 'r')
+    f_zs.close()
     #\----------------------------------------------------------------------------/#
+    sys.exit()
 
     fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'w')
@@ -823,9 +826,10 @@ def cdata_arcsix_ssfr_hsk():
 
 def process_ssfr_data(date):
 
-    cdata_arcsix_ssfr_v0(date)
-    cdata_arcsix_ssfr_v1(date)
+    # cdata_arcsix_ssfr_v0(date)
+    # cdata_arcsix_ssfr_v1(date)
     cdata_arcsix_ssfr_v2(date)
+    pass
 #\----------------------------------------------------------------------------/#
 
 
@@ -844,14 +848,18 @@ def plot_time_series(date, wvl0=700.0):
     fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
     wvl_ = f['dset0/wvl_zen'][...]
-    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
+    # flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
+    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     wvl_ = f['dset0/wvl_nad'][...]
-    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
+    # flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
+    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
 
     wvl_ = f['dset1/wvl_zen'][...]
-    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
+    # flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
+    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     wvl_ = f['dset1/wvl_nad'][...]
-    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
+    # flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
+    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     f.close()
 
     # figure
@@ -903,13 +911,17 @@ def plot_spectra(date, tmhr0=20.830):
 
     fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
-    flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
-    flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
+    # flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
+    # flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
+    flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
 
     wvl_ssfr_zen = f['dset1/wvl_zen'][...]
-    flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
     wvl_ssfr_nad = f['dset1/wvl_nad'][...]
-    flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
+    # flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
+    # flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
+    flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
     f.close()
 
     # figure
@@ -959,14 +971,14 @@ def main_process_data():
              # datetime.datetime(2023, 10, 13),
              # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
-             # datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
+             datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
-             datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
+             # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
             ]
 
     for date in dates:
-        process_spns_data(date)
+        # process_spns_data(date)
         process_ssfr_data(date)
         plot_time_series(date)
         plot_spectra(date)
@@ -1058,10 +1070,11 @@ def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
     ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
     for i in range(ssfr_.Ndset):
-        dset_ = getattr(ssfr_, 'dset%d' % i)
+        dset_tag = 'dset%d' % i
+        dset_ = getattr(ssfr_, dset_tag)
         int_time = dset_['info']['int_time']
 
-        fname = 'RAD-CAL-PRI_LASP|%s|%s|SI%3.3d-IN%3.3d_%s_%s.h5' % (ssfr_tag.upper(), lc_tag.upper(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_cal_s, date_today_s)
+        fname = 'RAD-CAL-PRI|LASP|%s|%s|%s|SI%3.3d-IN%3.3d|%s|%s.h5' % (ssfr_tag.upper(), lc_tag.upper(), dset_tag.upper(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_cal_s, date_today_s)
         f = h5py.File(fname, 'w')
 
         resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
