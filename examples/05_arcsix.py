@@ -679,8 +679,8 @@ def cdata_arcsix_ssfr_v2(
             wvl_nad = wvl_nad[indices_sort_nad]
             #\----------------------------------------------------------------------------/#
 
-            fnames_zen = sorted(glob.glob('RAD-CAL-PRI|LASP|%s|ZEN|%s|*|2023-11-16|2023-11-27.h5' % (_ssfr_.upper(), dset_s.upper())))
-            fnames_nad = sorted(glob.glob('RAD-CAL-PRI|LASP|%s|NAD|%s|*|2023-11-16|2023-11-27.h5' % (_ssfr_.upper(), dset_s.upper())))
+            fnames_zen = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|ZEN|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
+            fnames_nad = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|NAD|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
             if len(fnames_zen) == 1 and len(fnames_nad) == 1:
                 fname_zen = fnames_zen[0]
                 fname_nad = fnames_nad[0]
@@ -868,8 +868,8 @@ def cdata_arcsix_ssfr_hsk():
 
 def process_ssfr_data(date):
 
-    cdata_arcsix_ssfr_v0(date)
-    cdata_arcsix_ssfr_v1(date)
+    # cdata_arcsix_ssfr_v0(date)
+    # cdata_arcsix_ssfr_v1(date)
     cdata_arcsix_ssfr_v2(date)
     pass
 #\----------------------------------------------------------------------------/#
@@ -1012,15 +1012,15 @@ def main_process_data():
              # datetime.datetime(2023, 10, 12),
              # datetime.datetime(2023, 10, 13),
              # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
-             datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
-             # datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
+             # datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
+             datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
             ]
 
     for date in dates:
-        process_spns_data(date)
+        # process_spns_data(date)
         process_ssfr_data(date)
         plot_time_series(date)
         plot_spectra(date)
@@ -1116,7 +1116,7 @@ def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
         dset_ = getattr(ssfr_, dset_tag)
         int_time = dset_['info']['int_time']
 
-        fname = '%s|RAD-CAL-PRI|LASP|%s|%s|%s-SI%3.3d-IN%3.3d|%s.h5' % (date_cal_s, ssfr_tag.upper(), lc_tag.upper(), dset_tag.upper(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
+        fname = '%s/cal/%s|RAD-CAL-PRI|LASP|%s|%s|%s-SI%3.3d-IN%3.3d|%s.h5' % (ssfr.common.fdir_data, date_cal_s, ssfr_tag.upper(), lc_tag.upper(), dset_tag.upper(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
         f = h5py.File(fname, 'w')
 
         resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
@@ -1146,9 +1146,154 @@ def main_calibration():
                 rad_cal(ssfr_tag, lc_tag, lamp_tag)
     #\----------------------------------------------------------------------------/#
 
+def test_data_a(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
+
+    fdir_data = '/argus/field/arcsix/cal/rad-cal'
+
+    indices_spec = {
+            'zen': [0, 1],
+            'nad': [2, 3]
+            }
+
+    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+
+
+    date_cal_s   = '2023-11-16'
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        dset_ = getattr(ssfr_, dset_tag)
+        int_time = dset_['info']['int_time']
+
+        fname = '%s/cal/%s|RAD-CAL-PRI|LASP|%s|%s|%s-SI%3.3d-IN%3.3d|%s.h5' % (ssfr.common.fdir_data, date_cal_s, ssfr_tag.upper(), lc_tag.upper(), dset_tag.upper(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
+        f = h5py.File(fname, 'w')
+
+        resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
+
+        for key in resp_pri.keys():
+            f[key] = resp_pri[key]
+
+        f.close()
+
+def test_data_b(
+        date,
+        fdir_data=_fdir_v1_,
+        fdir_out=_fdir_v2_,
+        pitch_angle=0.0,
+        roll_angle=0.0,
+        ):
+
+    date_s = date.strftime('%Y-%m-%d')
+
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
+    f = h5py.File(fname_h5, 'w')
+
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
+    f_ = h5py.File(fname_h5, 'r')
+    tmhr = f_['tmhr'][...]
+    for dset_s in f_.keys():
+
+        if 'dset' in dset_s:
+
+            # primary calibration (from pre-mission arcsix in lab on 2023-11-16)
+            #/----------------------------------------------------------------------------\#
+            wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
+            wvl_start = 350.0
+            wvl_end   = 2100.0
+            wvl_join  = 950.0
+
+            # zenith wavelength
+            #/----------------------------------------------------------------------------\#
+            logic_zen_si = (wvls['zen|si'] >= wvl_start) & (wvls['zen|si'] <= wvl_join)
+            logic_zen_in = (wvls['zen|in'] >  wvl_join)  & (wvls['zen|in'] <= wvl_end)
+
+            wvl_zen = np.concatenate((wvls['zen|si'][logic_zen_si], wvls['zen|in'][logic_zen_in]))
+
+            indices_sort_zen = np.argsort(wvl_zen)
+            wvl_zen = wvl_zen[indices_sort_zen]
+            #\----------------------------------------------------------------------------/#
+
+            # nadir wavelength
+            #/----------------------------------------------------------------------------\#
+            logic_nad_si = (wvls['nad|si'] >= wvl_start) & (wvls['nad|si'] <= wvl_join)
+            logic_nad_in = (wvls['nad|in'] >  wvl_join)  & (wvls['nad|in'] <= wvl_end)
+
+            wvl_nad = np.concatenate((wvls['nad|si'][logic_nad_si], wvls['nad|in'][logic_nad_in]))
+
+            indices_sort_nad = np.argsort(wvl_nad)
+            wvl_nad = wvl_nad[indices_sort_nad]
+            #\----------------------------------------------------------------------------/#
+
+            fnames_zen = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|ZEN|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
+            fnames_nad = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|NAD|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
+            if len(fnames_zen) == 1 and len(fnames_nad) == 1:
+                fname_zen = fnames_zen[0]
+                fname_nad = fnames_nad[0]
+
+                f_zen = h5py.File(fname_zen, 'r')
+                sec_resp_zen_si = f_zen['zen|si'][...]
+                sec_resp_zen_in = f_zen['zen|in'][...]
+                f_zen.close()
+
+                f_nad = h5py.File(fname_nad, 'r')
+                sec_resp_nad_si = f_nad['nad|si'][...]
+                sec_resp_nad_in = f_nad['nad|in'][...]
+                f_nad.close()
+
+                sec_resp_zen = np.concatenate((sec_resp_zen_si[logic_zen_si], sec_resp_zen_in[logic_zen_in]))[indices_sort_zen]
+                sec_resp_nad = np.concatenate((sec_resp_nad_si[logic_nad_si], sec_resp_nad_in[logic_nad_in]))[indices_sort_nad]
+            #\----------------------------------------------------------------------------/#
+
+            # zenith
+            #/--------------------------------------------------------------\#
+            cnt_zen = f_['%s/cnt_zen' % dset_s][...]
+            wvl_zen = f_['%s/wvl_zen' % dset_s][...]
+
+            # sec_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, sec_resp_zen_)
+
+            flux_zen = cnt_zen.copy()
+            for i in range(tmhr.size):
+                if np.isnan(cnt_zen[i, :]).sum() == 0:
+                    flux_zen[i, :] = cnt_zen[i, :] / sec_resp_zen
+            #\--------------------------------------------------------------/#
+
+            # nadir
+            #/--------------------------------------------------------------\#
+            cnt_nad = f_['%s/cnt_nad' % dset_s][...]
+            wvl_nad = f_['%s/wvl_nad' % dset_s][...]
+
+            # sec_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, sec_resp_nad_)
+
+            flux_nad = cnt_nad.copy()
+            for i in range(tmhr.size):
+                if np.isnan(cnt_nad[i, :]).sum() == 0:
+                    flux_nad[i, :] = cnt_nad[i, :] / sec_resp_nad
+            #\--------------------------------------------------------------/#
+
+            g = f.create_group(dset_s)
+            g['flux_zen'] = flux_zen
+            g['flux_nad'] = flux_nad
+            g['wvl_zen']  = wvl_zen
+            g['wvl_nad']  = wvl_nad
+
+        else:
+
+            f[dset_s] = f_[dset_s][...]
+
+    f_.close()
+
+    f.close()
+
+    return
+
 
 if __name__ == '__main__':
 
     # main_process_data()
 
-    main_calibration()
+    # main_calibration()
+
+    test_data()
