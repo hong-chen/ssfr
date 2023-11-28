@@ -88,7 +88,7 @@ def cal_rad_resp(
 
         # read in calibrated lamp data and interpolated/integrated at SSFR wavelengths/slits
         #/--------------------------------------------------------------\#
-        fname_lamp = '%s/%s.dat' % (ssfr.common.fdir_data, which_lamp)
+        fname_lamp = '%s/lamp/%s.dat' % (ssfr.common.fdir_data, which_lamp)
         if not os.path.exists(fname_lamp):
             msg = '\nError [cal_rad_resp]: Cannot locate calibration file for lamp <%s>.' % which_lamp
             raise OSError(msg)
@@ -111,11 +111,11 @@ def cal_rad_resp(
 
         lamp_std_si = np.zeros_like(wvl_si)
         for i in range(lamp_std_si.size):
-            lamp_std_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
+            lamp_std_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
 
         lamp_std_in = np.zeros_like(wvl_in)
         for i in range(lamp_std_in.size):
-            lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+            lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
         resp = {
                 si_tag: lamp_std_si,

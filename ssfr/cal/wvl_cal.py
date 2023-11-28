@@ -42,7 +42,7 @@ lamps = {
         }
 
 
-def get_wvl_coef(which_spec, fname='%s/wvl_coef.dat' % ssfr.common.fdir_data):
+def get_wvl_coef(which_spec, fname='%s/wvl/wvl_coef.dat' % ssfr.common.fdir_data):
 
     with open(fname, 'r') as f:
         lines = f.readlines()
