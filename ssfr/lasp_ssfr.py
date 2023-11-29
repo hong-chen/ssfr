@@ -196,7 +196,7 @@ class read_ssfr:
             time_offset=0.0,
             process=True,
             dark_corr_mode='interp',
-            which_ssfr='Alvin',
+            which_ssfr=None,
             wvl_s=350.0,
             wvl_e=2100.0,
             wvl_j=950.0,
@@ -247,7 +247,7 @@ class read_ssfr:
         self.data_raw = {}
 
         self.data_raw['info'] = {}
-        self.data_raw['info']['ssfr_tag'] = '%s (%s)' % (self.ID, which_ssfr)
+        self.data_raw['info']['ssfr_tag'] = '%s' % (self.ID)
         self.data_raw['info']['fnames']   = fnames
 
         Nx         = Ndata * len(fnames)
@@ -304,7 +304,8 @@ class read_ssfr:
         if process:
             self.dset_sep()
             self.dark_corr(dark_corr_mode=dark_corr_mode)
-            self.wvl_join(wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
+            if which_ssfr is not None:
+                self.wvl_join(which_ssfr, wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
         #\----------------------------------------------------------------------------/#
 
     def dset_sep(
