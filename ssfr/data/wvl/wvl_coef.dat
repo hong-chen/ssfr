@@ -1,5 +1,23 @@
 # SSFR spectrometer tag, poly coef 0, poly coef 1, poly coef 2, poly coef 3, poly coef 4
 #
+# updated on 2023-11-29 16:30:00 (by Yu-Wen Chen)
+# notes: after some prelimary analysis using the data collected at Skywatch,
+#        we noticed wavelength inconsistencies between different instruments.
+#        Yu-Wen Chen re-processed the wavelength calibration data collected
+#        on 2023-11-10 and obtained the following new coefficients.
+lasp|ssfr-a|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+lasp|ssfr-a|zen|in, 2232.89, -4.47180, -0.00113787,  -2.21274e-6, -1.26306e-8
+lasp|ssfr-a|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+lasp|ssfr-a|nad|in, 2225.79, -4.65885,  0.00082067,  -1.46024e-5,  1.43764e-8
+lasp|ssfr-b|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+lasp|ssfr-b|zen|in, 2212.28, -4.37178, -0.00304555,   4.61961e-6, -1.87076e-8
+lasp|ssfr-b|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+lasp|ssfr-b|nad|in, 2232.13, -4.68951,  0.00081955,  -1.43216e-5,  1.54946e-8
+nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
+nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
+nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
+nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
+#
 # updated on 2023-11-28 13:30:00 with calibrated lines fitting (by Yu-Wen Chen)
 # notes: on 2023-11-10, we (Yu-Wen Chen, Hong Chen, and Ken Hirata) performed
 #        wavelength calibration on 2023-11-10 under the guidance from Bruce Kindel
@@ -8,18 +26,18 @@
 #        Yu-Wen Chen processed the wavelength calibration data and obtained
 #        the following new coefficients (only InGaAs spectrometer coefficients of
 #        SSFR-A and SSFR-B are updated).
-lasp|ssfr-a|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-lasp|ssfr-a|zen|in, 2227.90, -4.52333, -0.00089503,  -2.21274e-6, -1.26306e-8
-lasp|ssfr-a|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-lasp|ssfr-a|nad|in, 2228.19, -4.68109,  0.00081955,  -1.46349e-5, 1.54946e-8
-lasp|ssfr-b|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-lasp|ssfr-b|zen|in, 2189.85, -4.06195, -0.00323398,   3.07974e-6, -2.45422e-8
-lasp|ssfr-b|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-lasp|ssfr-b|nad|in, 2238.28, -4.72745,  0.00081955,  -1.41387e-5, 1.54946e-8
-nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
-nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
-nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
-nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
+#lasp|ssfr-a|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-a|zen|in, 2227.90, -4.52333, -0.00089503,  -2.21274e-6, -1.26306e-8
+#lasp|ssfr-a|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-a|nad|in, 2228.19, -4.68109,  0.00081955,  -1.46349e-5, 1.54946e-8
+#lasp|ssfr-b|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-b|zen|in, 2189.85, -4.06195, -0.00323398,   3.07974e-6, -2.45422e-8
+#lasp|ssfr-b|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-b|nad|in, 2238.28, -4.72745,  0.00081955,  -1.41387e-5, 1.54946e-8
+#nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
+#nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
+#nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
+#nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
 #
 # updated on 2023-11-14 12:15:00
 # notes: on 2023-10-19, we (Jeffery Drouet) swapped SSFR-A zenith InGaAs spectrometer
