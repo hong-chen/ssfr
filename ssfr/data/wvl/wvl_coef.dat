@@ -2,8 +2,9 @@
 #
 # updated on 2023-11-28 13:30:00 with calibrated lines fitting (by Yu-Wen Chen)
 # notes: on 2023-11-10, we (Yu-Wen Chen, Hong Chen, and Ken Hirata) performed
-#        wavelength calibration on 2023-11-10 using the Mercury and Krypton
-#        lamps (mounted on the field calibrator rack) for SSFR-A and SSFR-B.
+#        wavelength calibration on 2023-11-10 under the guidance from Bruce Kindel
+#        using the Mercury and Krypton lamps (mounted on the field calibrator rack)
+#        for SSFR-A and SSFR-B.
 #        Yu-Wen Chen processed the wavelength calibration data and obtained
 #        the following new coefficients (only InGaAs spectrometer coefficients of
 #        SSFR-A and SSFR-B are updated).
