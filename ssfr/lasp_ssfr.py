@@ -12,7 +12,7 @@ import ssfr
 
 
 __all__ = [
-        'get_ssfr_wavelength',
+        'get_ssfr_wvl',
         'read_ssfr_raw',
         'read_ssfr',
         ]
@@ -20,27 +20,21 @@ __all__ = [
 
 
 
-def get_ssfr_wavelength(
-        chanNum=256,
-        coef_zen_si = np.array([301.946,  3.31877,  0.00037585,  -1.76779e-6, 0]),
-        coef_zen_in = np.array([2202.33, -4.35275, -0.00269498,   3.84968e-6, -2.33845e-8]),
-        coef_nad_si = np.array([302.818,  3.31912,  0.000343831, -1.81135e-6, 0]),
-        coef_nad_in = np.array([2210.29,  -4.5998,  0.00102444,  -1.60349e-5, 1.29122e-8]),
+def get_ssfr_wvl(
+        which_ssfr,
+        Nchan=256,
         ):
 
-    xChan = np.arange(chanNum)
-
-    wvl_zen_si = coef_zen_si[0] + coef_zen_si[1]*xChan + coef_zen_si[2]*xChan**2 + coef_zen_si[3]*xChan**3 + coef_zen_si[4]*xChan**4
-    wvl_zen_in = coef_zen_in[0] + coef_zen_in[1]*xChan + coef_zen_in[2]*xChan**2 + coef_zen_in[3]*xChan**3 + coef_zen_in[4]*xChan**4
-
-    wvl_nad_si = coef_nad_si[0] + coef_nad_si[1]*xChan + coef_nad_si[2]*xChan**2 + coef_nad_si[3]*xChan**3 + coef_nad_si[4]*xChan**4
-    wvl_nad_in = coef_nad_in[0] + coef_nad_in[1]*xChan + coef_nad_in[2]*xChan**2 + coef_nad_in[3]*xChan**3 + coef_nad_in[4]*xChan**4
+    which_ssfr = which_ssfr.lower()
+    if which_ssfr not in ['lasp|ssfr-a', 'lasp|ssfr-b']:
+        msg = 'Error [get_ssfr_wvl]: <which_ssfr> can only be <lasp|ssfr-a> or <lasp|ssfr-b>.'
+        raise OSError(msg)
 
     wvls = {
-            'zen|si': wvl_zen_si,
-            'zen|in': wvl_zen_in,
-            'nad|si': wvl_nad_si,
-            'nad|in': wvl_nad_in
+            'zen|si': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|zen|si' % which_ssfr.lower()), Nchan=Nchan),
+            'zen|in': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|zen|in' % which_ssfr.lower()), Nchan=Nchan),
+            'nad|si': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|nad|si' % which_ssfr.lower()), Nchan=Nchan),
+            'nad|in': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|nad|in' % which_ssfr.lower()), Nchan=Nchan),
             }
 
     return wvls
@@ -384,12 +378,13 @@ class read_ssfr:
 
     def wvl_join(
             self,
+            which_ssfr,
             wvl_start=350.0,
             wvl_end=2100.0,
             wvl_join=950.0,
             ):
 
-        wvls = get_ssfr_wavelength()
+        wvls = get_ssfr_wvl(which_ssfr)
 
         # zenith wavelength
         #/----------------------------------------------------------------------------\#
