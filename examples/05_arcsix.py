@@ -24,7 +24,7 @@ import ssfr
 
 _mission_   = 'arcsix'
 _spns_      = 'spns-b'
-_ssfr_      = 'ssfr-b'
+_ssfr_      = 'ssfr-a'
 _fdir_data_ = '/argus/pre-mission/%s' % _mission_
 _fdir_hsk_  = '%s/raw/hsk'
 _fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
@@ -362,7 +362,7 @@ def cdata_arcsix_ssfr_v0(
     date_s = date.strftime('%Y-%m-%d')
     fnames = sorted(glob.glob('%s/%s/*.SKS' % (fdir_data, date_s)))
 
-    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
+    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp', which_ssfr='lasp|%s' % _ssfr_.lower())
 
     # data that are useful
     #   wvl_zen [nm]
@@ -652,7 +652,7 @@ def cdata_arcsix_ssfr_v2(
 
             # primary calibration (from pre-mission arcsix in lab on 2023-11-16)
             #/----------------------------------------------------------------------------\#
-            wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
+            wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|%s' % _ssfr_.lower())
             wvl_start = 350.0
             wvl_end   = 2100.0
             wvl_join  = 950.0
@@ -868,8 +868,8 @@ def cdata_arcsix_ssfr_hsk():
 
 def process_ssfr_data(date):
 
-    # cdata_arcsix_ssfr_v0(date)
-    # cdata_arcsix_ssfr_v1(date)
+    cdata_arcsix_ssfr_v0(date)
+    cdata_arcsix_ssfr_v1(date)
     cdata_arcsix_ssfr_v2(date)
     pass
 #\----------------------------------------------------------------------------/#
@@ -1013,9 +1013,9 @@ def main_process_data():
              # datetime.datetime(2023, 10, 13),
              # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
-             datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
+             # datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
-             # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
+             datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
             ]
 

@@ -31,10 +31,10 @@ def get_ssfr_wvl(
         raise OSError(msg)
 
     wvls = {
-            'zen|si': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|zen|si' % which_ssfr.lower()), Nchan=Nchan),
-            'zen|in': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|zen|in' % which_ssfr.lower()), Nchan=Nchan),
-            'nad|si': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|nad|si' % which_ssfr.lower()), Nchan=Nchan),
-            'nad|in': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|nad|in' % which_ssfr.lower()), Nchan=Nchan),
+            'zen|si': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|zen|si' % which_ssfr), Nchan=Nchan),
+            'zen|in': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|zen|in' % which_ssfr), Nchan=Nchan),
+            'nad|si': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|nad|si' % which_ssfr), Nchan=Nchan),
+            'nad|in': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|nad|in' % which_ssfr), Nchan=Nchan),
             }
 
     return wvls
