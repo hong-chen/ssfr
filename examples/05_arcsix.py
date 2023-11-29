@@ -679,8 +679,8 @@ def cdata_arcsix_ssfr_v2(
             wvl_nad = wvl_nad[indices_sort_nad]
             #\----------------------------------------------------------------------------/#
 
-            fnames_zen = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|ZEN|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
-            fnames_nad = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|NAD|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
+            fnames_zen = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|zen|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.lower(), dset_s.lower())))
+            fnames_nad = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|nad|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.lower(), dset_s.lower())))
             if len(fnames_zen) == 1 and len(fnames_nad) == 1:
                 fname_zen = fnames_zen[0]
                 fname_nad = fnames_nad[0]
@@ -1292,8 +1292,8 @@ def test_data_b(
 
 if __name__ == '__main__':
 
-    # main_process_data()
+    main_process_data()
 
-    main_calibration()
+    # main_calibration()
 
     # test_data()
