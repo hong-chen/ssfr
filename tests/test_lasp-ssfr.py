@@ -289,6 +289,7 @@ def test_joint_wvl_spectra(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
         ax1.axvspan(750, 1150, color='gray', alpha=0.1, lw=0.0)
         ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
         ax1.set_xlabel('Wavelength [nm]')
+        ax1.set_ylim((0.0, 0.3))
         ax1.set_title('Spectra')
 
         ax2 = fig.add_subplot(313)
