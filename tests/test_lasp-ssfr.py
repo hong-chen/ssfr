@@ -271,7 +271,7 @@ def test_joint_wvl_spectra(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
     for index in np.arange(30, 91):
         plt.close('all')
         fig = plt.figure(figsize=(12, 12))
-        # fig.suptitle('Figure')
+        fig.suptitle('LASP|%s|%s %5.5d' % (ssfr_tag.upper(), lc_tag.upper(), index))
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(312)
@@ -334,10 +334,6 @@ def test_joint_wvl_spectra(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
         fig.savefig('%5.5d_%s_[lasp|%s|%s].png' % (index, _metadata['Function'], ssfr_tag.lower(), lc_tag.lower()), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
-
-
-
-
 
 
 def main_test_joint_wvl_spectra():
