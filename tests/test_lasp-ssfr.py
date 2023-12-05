@@ -373,14 +373,15 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
 
 
     wvl_joint = 950.0
-    x = np.arange(flux_si_dset0.shape[0])
+    x0 = np.arange(flux_si_dset0.shape[0])
+    x1 = np.arange(flux_si_dset1.shape[0])
 
     index_joint_si = np.where(wvl_si< wvl_joint)[0][-1]
     index_joint_in = np.where(wvl_in>=wvl_joint)[0][-1]
 
     # figure
     #/----------------------------------------------------------------------------\#
-    for index in np.arange(0, x.size, 60):
+    for index in np.arange(0, x0.size, 60):
         plt.close('all')
         fig = plt.figure(figsize=(12, 12))
         fig.suptitle('LASP|%s|%s %s %5.5d' % (ssfr_tag.upper(), lc_tag.upper(), date_tag, index))
@@ -420,15 +421,15 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
         ax2.set_xlabel('Wavelength [nm]')
         ax2.set_xlim((750, 1150))
         # ax2.set_ylim((0.18, 0.26))
-        ax2.set_ylim((0.1, 0.3))
+        ax2.set_ylim((0.0, 0.3))
         ax2.set_title('Spectra [Zoomed In]')
 
 
         ax3 = fig.add_subplot(311)
-        ax3.plot(x, flux_si_dset0[:, index_joint_si], lw=2, c='r'      , alpha=0.5, marker='o', markersize=1)
-        ax3.plot(x, flux_si_dset1[:, index_joint_si], lw=2, c='magenta', alpha=0.5, marker='o', markersize=1)
-        ax3.plot(x, flux_in_dset0[:, index_joint_in], lw=2, c='b'      , alpha=0.5, marker='o', markersize=1)
-        ax3.plot(x, flux_in_dset1[:, index_joint_in], lw=2, c='cyan'   , alpha=0.5, marker='o', markersize=1)
+        ax3.plot(x0, flux_si_dset0[:, index_joint_si], lw=2, c='r'      , alpha=0.5, marker='o', markersize=1)
+        ax3.plot(x1, flux_si_dset1[:, index_joint_si], lw=2, c='magenta', alpha=0.5, marker='o', markersize=1)
+        ax3.plot(x0, flux_in_dset0[:, index_joint_in], lw=2, c='b'      , alpha=0.5, marker='o', markersize=1)
+        ax3.plot(x1, flux_in_dset1[:, index_joint_in], lw=2, c='cyan'   , alpha=0.5, marker='o', markersize=1)
 
         ax3.scatter(index, flux_si_dset0[index, index_joint_si], s=250, c='r', lw=0.0, marker='*')
         ax3.scatter(index, flux_si_dset1[index, index_joint_si], s=250, c='magenta', lw=0.0, marker='*')
@@ -439,7 +440,7 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
         ax3.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
         ax3.set_xlabel('Index')
         # ax3.set_ylim((0.18, 0.26))
-        ax3.set_ylim((0.1, 0.3))
+        ax3.set_ylim((0.0, 0.3))
         ax3.set_title('Time Series')
         #\--------------------------------------------------------------/#
         # save figure
@@ -454,16 +455,17 @@ def main_test_joint_wvl_skywatch():
 
     # skywatch
     #/----------------------------------------------------------------------------\#
-    for ssfr_tag in ['SSFR-A']:
-        for lc_tag in ['zen', 'nad']:
-            for date_tag in ['2023-10-27', '2023-10-30']:
-                test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag)
+    # for ssfr_tag in ['SSFR-A']:
+    #     for lc_tag in ['zen', 'nad']:
+    #         for date_tag in ['2023-10-27', '2023-10-30']:
+    #             test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag)
     #\----------------------------------------------------------------------------/#
 
     # skywatch
     #/----------------------------------------------------------------------------\#
     for ssfr_tag in ['SSFR-B']:
-        for lc_tag in ['zen', 'nad']:
+        # for lc_tag in ['zen', 'nad']:
+        for lc_tag in ['nad']:
             for date_tag in ['2023-10-19', '2023-10-20']:
                 test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag)
     #\----------------------------------------------------------------------------/#
