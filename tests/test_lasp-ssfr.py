@@ -402,7 +402,7 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
         ax1.axvspan(750, 1150, color='gray', alpha=0.1, lw=0.0)
         ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
         ax1.set_xlabel('Wavelength [nm]')
-        ax1.set_ylim((0.0, 0.8))
+        ax1.set_ylim((0.0, 1.0))
         ax1.set_title('Spectra')
 
         ax2 = fig.add_subplot(313)
@@ -421,7 +421,7 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
         ax2.set_xlabel('Wavelength [nm]')
         ax2.set_xlim((750, 1150))
         # ax2.set_ylim((0.18, 0.26))
-        ax2.set_ylim((0.0, 0.3))
+        ax2.set_ylim((0.0, 0.4))
         ax2.set_title('Spectra [Zoomed In]')
 
 
@@ -440,7 +440,7 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
         ax3.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
         ax3.set_xlabel('Index')
         # ax3.set_ylim((0.18, 0.26))
-        ax3.set_ylim((0.0, 0.3))
+        ax3.set_ylim((0.0, 0.4))
         ax3.set_title('Time Series')
         #\--------------------------------------------------------------/#
         # save figure
@@ -464,9 +464,9 @@ def main_test_joint_wvl_skywatch():
     # skywatch
     #/----------------------------------------------------------------------------\#
     for ssfr_tag in ['SSFR-B']:
-        # for lc_tag in ['zen', 'nad']:
-        for lc_tag in ['nad']:
-            for date_tag in ['2023-10-19', '2023-10-20']:
+        for lc_tag in ['zen', 'nad']:
+            # for date_tag in ['2023-10-19', '2023-10-20']:
+            for date_tag in ['2023-10-20']:
                 test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag)
     #\----------------------------------------------------------------------------/#
 
