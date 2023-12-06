@@ -359,5 +359,5 @@ def main_test_joint_wvl_skywatch():
 
 if __name__ == '__main__':
 
-    # main_test_joint_wvl_cal()
-    main_test_joint_wvl_skywatch()
+    main_test_joint_wvl_cal()
+    # main_test_joint_wvl_skywatch()
