@@ -196,6 +196,8 @@ class read_ssfr:
             time_offset=0.0,
             process=True,
             dark_corr_mode='interp',
+            dark_extend=2,
+            light_extend=2,
             which_ssfr=None,
             wvl_s=350.0,
             wvl_e=2100.0,
@@ -303,7 +305,7 @@ class read_ssfr:
         #/----------------------------------------------------------------------------\#
         if process:
             self.dset_sep()
-            self.dark_corr(dark_corr_mode=dark_corr_mode)
+            self.dark_corr(dark_corr_mode=dark_corr_mode, dark_extend=dark_extend, light_extend=light_extend)
             if which_ssfr is not None:
                 self.wvl_join(which_ssfr, wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
         #\----------------------------------------------------------------------------/#
@@ -354,6 +356,8 @@ class read_ssfr:
     def dark_corr(
             self,
             dark_corr_mode='interp',
+            dark_extend=2,
+            light_extend=2,
             fill_value=np.nan,
             ):
 
@@ -370,7 +374,7 @@ class read_ssfr:
             spectra_dark_corr = dset['spectra'].copy()
             spectra_dark_corr[...] = fill_value
             for ip in range(self.Nspec):
-                shutter_dark_corr, spectra_dark_corr[:, :, ip] = ssfr.corr.dark_corr(dset['tmhr'], dset['shutter'], dset['spectra'][:, :, ip], mode=dark_corr_mode, fillValue=fill_value)
+                shutter_dark_corr, spectra_dark_corr[:, :, ip] = ssfr.corr.dark_corr(dset['tmhr'], dset['shutter'], dset['spectra'][:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
 
             dset['shutter_dark-corr'] = shutter_dark_corr
             dset['spectra_dark-corr'] = spectra_dark_corr

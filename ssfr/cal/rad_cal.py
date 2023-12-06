@@ -104,7 +104,7 @@ def cal_rad_resp(
         # currently we are developing wavelength calibration,
         # the wavelength calculation process will be modified.
         #/--------------------------------------------------------------\#
-        wvls = ssfr_toolbox.get_ssfr_wavelength()
+        wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
         wvl_si = wvls[si_tag]
         wvl_in = wvls[in_tag]
         #\--------------------------------------------------------------/#
@@ -127,7 +127,7 @@ def cal_rad_resp(
 
     # read raw data
     #/----------------------------------------------------------------------------\#
-    ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp')
+    ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp', dark_extend=5, light_extend=5)
 
     spectra_si = None
     spectra_in = None
@@ -253,7 +253,7 @@ def cdata_rad_resp(
                 which_lamp=which_lamp,
                 )
 
-    wvls = ssfr_toolbox.get_ssfr_wavelength()
+    wvls = ssfr_toolbox.get_ssfr_wvl()
 
     wvl_start = wvl_range[0]
     wvl_end   = wvl_range[-1]

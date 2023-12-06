@@ -221,7 +221,7 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
     #/----------------------------------------------------------------------------\#
     fdir_data = '/argus/pre-mission/arcsix/raw/%s' % (ssfr_tag.lower())
     fnames = sorted(glob.glob('%s/%s/*.SKS' % (fdir_data, date_tag)))
-    ssfr_data = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp', which_ssfr='lasp|%s' % _ssfr_.lower())
+    ssfr_data = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp', which_ssfr='lasp|%s' % _ssfr_.lower(), dark_extend=4, light_extend=4)
 
     cnt_si_dset0 = ssfr_data.dset0['spectra_dark-corr'][:, :, index_si]/ssfr_data.dset0['info']['int_time'][si_tag]
     cnt_in_dset0 = ssfr_data.dset0['spectra_dark-corr'][:, :, index_in]/ssfr_data.dset0['info']['int_time'][in_tag]
@@ -340,18 +340,18 @@ def main_test_joint_wvl_skywatch():
 
     # skywatch
     #/----------------------------------------------------------------------------\#
-    for ssfr_tag in ['SSFR-A']:
-        for lc_tag in ['zen', 'nad']:
-            for date_tag in ['2023-10-27', '2023-10-30']:
-                test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag)
+    # for ssfr_tag in ['SSFR-A']:
+    #     for lc_tag in ['zen', 'nad']:
+    #         for date_tag in ['2023-10-27', '2023-10-30']:
+    #             test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag)
     #\----------------------------------------------------------------------------/#
 
     # skywatch
     #/----------------------------------------------------------------------------\#
-    # for ssfr_tag in ['SSFR-B']:
-    #     for lc_tag in ['zen', 'nad']:
-    #         for date_tag in ['2023-10-19', '2023-10-20']:
-    #             test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag)
+    for ssfr_tag in ['SSFR-B']:
+        for lc_tag in ['zen', 'nad']:
+            for date_tag in ['2023-10-19', '2023-10-20']:
+                test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag)
     #\----------------------------------------------------------------------------/#
 
 
