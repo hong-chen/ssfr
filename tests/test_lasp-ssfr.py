@@ -392,14 +392,14 @@ def cal_time_series(fnames):
     # mean_dset0 = np.nanmean(cnt_zen_in_dset0, axis=0)
     # mean_dset0 = np.nanmin(cnt_zen_in_dset0, axis=0)
     # stdv_dset0 = np.nanstd(cnt_zen_in_dset0, axis=0)
-    mean_dset0 = cnt_zen_in_dset0[:, -106]
-    stdv_dset0 = cnt_zen_in_dset0[:, -106]
+    mean_dset0 = cnt_zen_in_dset0[:, -6]
+    stdv_dset0 = cnt_zen_in_dset0[:, -16]
 
     # mean_dset1 = np.nanmean(cnt_zen_in_dset1, axis=0)
     # mean_dset1 = np.nanmin(cnt_zen_in_dset1, axis=0)
     # stdv_dset1 = np.nanstd(cnt_zen_in_dset1, axis=0)
-    mean_dset1 = cnt_zen_in_dset1[:, -106]
-    stdv_dset1 = cnt_zen_in_dset1[:, -106]
+    mean_dset1 = cnt_zen_in_dset1[:, -6]
+    stdv_dset1 = cnt_zen_in_dset1[:, -6]
 
     return mean_dset0, mean_dset1, stdv_dset0, stdv_dset1
 
@@ -504,7 +504,7 @@ def test_dark_cnt_time_series():
     #\----------------------------------------------------------------------------/#
 
 
-def test_dark_cnt_spectra():
+def test_dark_cnt_spectra_ssfr_b():
 
     wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
     wvl_zen_in = wvls['nad|in']
@@ -551,7 +551,7 @@ def test_dark_cnt_spectra():
         sys.exit()
     #\----------------------------------------------------------------------------/#
 
-def test_dark_cnt_time_series():
+def test_dark_cnt_time_series_ssfr_b():
 
     wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
     wvl_zen_in = wvls['nad|in']
@@ -654,7 +654,7 @@ def test_dark_cnt_time_series_ssfr_a():
     wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-a')
     wvl_zen_in = wvls['nad|in']
 
-    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-zen-1324'
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-nad-1324'
     fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
     mean_dset0, mean_dset1, stdv_dset0, stdv_dset1 = cal_time_series(fnames)
 
@@ -702,11 +702,119 @@ def test_dark_cnt_time_series_ssfr_a():
 
 
 
+
+def test_dark_cnt_time_series():
+
+    which_spec = 'zen'
+    index_spec = 3
+    int_time0  = 250.0
+    index_chan = -6
+    index_temp = 1
+
+    # wavelength ssfr-a
+    #/----------------------------------------------------------------------------\#
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-a')
+    wvl_in_a = wvls['%s|in' % which_spec]
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-a cal data
+    #/----------------------------------------------------------------------------\#
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-%s-1324' % which_spec
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    ssfr_a_cal = ssfr.lasp_ssfr.read_ssfr(fnames)
+    shutter0 = ssfr_a_cal.data_raw['shutter']
+    int_time_in0 = ssfr_a_cal.data_raw['int_time'][:, index_spec]
+    dark_cnt_in_cal_a0 = ssfr_a_cal.data_raw['spectra'][(shutter0==1)&(int_time_in0==int_time0), index_chan, index_spec]
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-a skywatch data
+    #/----------------------------------------------------------------------------\#
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-a/2023-10-27'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    ssfr_a_sky = ssfr.lasp_ssfr.read_ssfr(fnames)
+    shutter0 = ssfr_a_sky.data_raw['shutter']
+    int_time_in0 = ssfr_a_sky.data_raw['int_time'][:, index_spec]
+    dark_cnt_in_sky_a0 = ssfr_a_sky.data_raw['spectra'][(shutter0==1)&(int_time_in0==int_time0), index_chan, index_spec]
+    temp_a0 = ssfr_a_sky.data_raw['temp'][(shutter0==1)&(int_time_in0==int_time0), index_temp]
+    #\----------------------------------------------------------------------------/#
+
+    # wavelength ssfr-b
+    #/----------------------------------------------------------------------------\#
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
+    wvl_in_b = wvls['%s|in' % which_spec]
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-b cal data
+    #/----------------------------------------------------------------------------\#
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-%s-1324' % which_spec
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    ssfr_b_cal = ssfr.lasp_ssfr.read_ssfr(fnames)
+    shutter0 = ssfr_b_cal.data_raw['shutter']
+    int_time_in0 = ssfr_b_cal.data_raw['int_time'][:, index_spec]
+    dark_cnt_in_cal_b0 = ssfr_b_cal.data_raw['spectra'][(shutter0==1)&(int_time_in0==int_time0), index_chan, index_spec]
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-b skywatch data
+    #/----------------------------------------------------------------------------\#
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-b/2023-10-19'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    ssfr_b_sky = ssfr.lasp_ssfr.read_ssfr(fnames)
+    shutter0 = ssfr_b_sky.data_raw['shutter']
+    int_time_in0 = ssfr_b_sky.data_raw['int_time'][:, index_spec]
+    dark_cnt_in_sky_b0 = ssfr_b_sky.data_raw['spectra'][(shutter0==1)&(int_time_in0==int_time0), index_chan, index_spec]
+    temp_b0 = ssfr_b_sky.data_raw['temp'][(shutter0==1)&(int_time_in0==int_time0), index_temp]
+    #\----------------------------------------------------------------------------/#
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        fig.suptitle('%s' % which_spec.upper())
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # ax1.plot(dark_cnt_in_cal_a0, lw=2, c='r')
+        ax1.plot(dark_cnt_in_sky_a0, lw=2, c='magenta')
+        # ax1.plot(dark_cnt_in_cal_b0, lw=2, c='magenta')
+        ax1.plot(dark_cnt_in_sky_b0, lw=2, c='cyan')
+        ax1.set_ylabel('Counts')
+        ax1.set_xlabel('Time Index')
+
+
+        ax2 = ax1.twinx()
+        ax2.plot(temp_a0, lw=4.0, c='red' , ls='--')
+        ax2.plot(temp_b0, lw=4.0, c='blue', ls='--')
+        ax2.set_ylabel('Temperature', rotation=270)
+
+        patches_legend = [
+                         mpatches.Patch(color='red'   , label='SSFR-A Temp'), \
+                         mpatches.Patch(color='blue'  , label='SSFR-B Temp'), \
+                         mpatches.Patch(color='magenta', label='SSFR-A Dark'), \
+                         mpatches.Patch(color='cyan'   , label='SSFR-B Dark'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+        #\--------------------------------------------------------------/#
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+
+
+
 if __name__ == '__main__':
 
     # main_test_joint_wvl_cal()
     # main_test_joint_wvl_skywatch()
     # test_dark_cnt_spectra()
-    test_dark_cnt_time_series()
     # test_dark_cnt_spectra_ssfr_a()
     # test_dark_cnt_time_series_ssfr_a()
+    test_dark_cnt_time_series()
