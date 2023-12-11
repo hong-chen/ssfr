@@ -14,7 +14,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import ssfr
@@ -357,19 +357,356 @@ def main_test_joint_wvl_skywatch():
     #\----------------------------------------------------------------------------/#
 
 
+def cal_mean_stdv(fnames):
 
-def test_dark_cnt():
+    ssfr_data = ssfr.lasp_ssfr.read_ssfr(fnames)
+
+
+    index_spec = 3
+    shutter0 = ssfr_data.data_raw['shutter']
+    int_time_zen_in0 = ssfr_data.data_raw['int_time'][:, index_spec]
+    cnt_zen_in_dset0 = ssfr_data.data_raw['spectra'][(shutter0==1)&(int_time_zen_in0==250.0), :, index_spec]
+    cnt_zen_in_dset1 = ssfr_data.data_raw['spectra'][(shutter0==1)&(int_time_zen_in0==350.0), :, index_spec]
+
+    # mean_dset0 = np.nanmean(cnt_zen_in_dset0, axis=0)
+    mean_dset0 = np.nanmin(cnt_zen_in_dset0, axis=0)
+    stdv_dset0 = np.nanstd(cnt_zen_in_dset0, axis=0)
+
+    # mean_dset1 = np.nanmean(cnt_zen_in_dset1, axis=0)
+    mean_dset1 = np.nanmin(cnt_zen_in_dset1, axis=0)
+    stdv_dset1 = np.nanstd(cnt_zen_in_dset1, axis=0)
+
+    return mean_dset0, mean_dset1, stdv_dset0, stdv_dset1
+
+def cal_time_series(fnames):
+
+    ssfr_data = ssfr.lasp_ssfr.read_ssfr(fnames)
+
+
+    index_spec = 3
+    shutter0 = ssfr_data.data_raw['shutter']
+    int_time_zen_in0 = ssfr_data.data_raw['int_time'][:, index_spec]
+    cnt_zen_in_dset0 = ssfr_data.data_raw['spectra'][(shutter0==1)&(int_time_zen_in0==250.0), :, index_spec]
+    cnt_zen_in_dset1 = ssfr_data.data_raw['spectra'][(shutter0==1)&(int_time_zen_in0==350.0), :, index_spec]
+
+    # mean_dset0 = np.nanmean(cnt_zen_in_dset0, axis=0)
+    # mean_dset0 = np.nanmin(cnt_zen_in_dset0, axis=0)
+    # stdv_dset0 = np.nanstd(cnt_zen_in_dset0, axis=0)
+    mean_dset0 = cnt_zen_in_dset0[:, -106]
+    stdv_dset0 = cnt_zen_in_dset0[:, -106]
+
+    # mean_dset1 = np.nanmean(cnt_zen_in_dset1, axis=0)
+    # mean_dset1 = np.nanmin(cnt_zen_in_dset1, axis=0)
+    # stdv_dset1 = np.nanstd(cnt_zen_in_dset1, axis=0)
+    mean_dset1 = cnt_zen_in_dset1[:, -106]
+    stdv_dset1 = cnt_zen_in_dset1[:, -106]
+
+    return mean_dset0, mean_dset1, stdv_dset0, stdv_dset1
+
+
+
+def test_dark_cnt_spectra():
+
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
+    wvl_zen_in = wvls['nad|in']
 
     fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-zen-1324'
     fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
-    ssfr_cal = ssfr.lasp_ssfr.read_ssfr(fnames)
+    mean_dset0, mean_dset1, stdv_dset0, stdv_dset1 = cal_mean_stdv(fnames)
 
-    wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
-    print(wvls)
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-b/2023-10-19'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    mean_dset0_, mean_dset1_, stdv_dset0_, stdv_dset1_ = cal_mean_stdv(fnames)
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.plot(wvl_zen_in, mean_dset0, lw=2, c='b')
+        ax1.plot(wvl_zen_in, mean_dset1, lw=2, c='r')
+        ax1.plot(wvl_zen_in, mean_dset0_, lw=1, c='cyan')
+        ax1.plot(wvl_zen_in, mean_dset1_, lw=1, c='magenta')
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+def test_dark_cnt_time_series():
+
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
+    wvl_zen_in = wvls['nad|in']
+
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-zen-1324'
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    mean_dset0, mean_dset1, stdv_dset0, stdv_dset1 = cal_time_series(fnames)
+
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-b/2023-10-19'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    mean_dset0_, mean_dset1_, stdv_dset0_, stdv_dset1_ = cal_time_series(fnames)
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # ax1.plot(wvl_zen_in, mean_dset0, lw=2, c='b')
+        # ax1.plot(wvl_zen_in, mean_dset1, lw=2, c='r')
+        # ax1.plot(wvl_zen_in, mean_dset0_, lw=1, c='cyan')
+        # ax1.plot(wvl_zen_in, mean_dset1_, lw=1, c='magenta')
+        ax1.plot(mean_dset0, lw=2, c='b')
+        ax1.plot(mean_dset1, lw=2, c='r')
+        ax1.plot(mean_dset0_, lw=1, c='cyan')
+        ax1.plot(mean_dset1_, lw=1, c='magenta')
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+
+def test_dark_cnt_spectra():
+
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
+    wvl_zen_in = wvls['nad|in']
+
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-zen-1324'
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    mean_dset0, mean_dset1, stdv_dset0, stdv_dset1 = cal_mean_stdv(fnames)
+
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-b/2023-10-19'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    mean_dset0_, mean_dset1_, stdv_dset0_, stdv_dset1_ = cal_mean_stdv(fnames)
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.plot(wvl_zen_in, mean_dset0, lw=2, c='b')
+        ax1.plot(wvl_zen_in, mean_dset1, lw=2, c='r')
+        ax1.plot(wvl_zen_in, mean_dset0_, lw=1, c='cyan')
+        ax1.plot(wvl_zen_in, mean_dset1_, lw=1, c='magenta')
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+def test_dark_cnt_time_series():
+
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
+    wvl_zen_in = wvls['nad|in']
+
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-zen-1324'
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    mean_dset0, mean_dset1, stdv_dset0, stdv_dset1 = cal_time_series(fnames)
+
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-b/2023-10-19'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    mean_dset0_, mean_dset1_, stdv_dset0_, stdv_dset1_ = cal_time_series(fnames)
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # ax1.plot(wvl_zen_in, mean_dset0, lw=2, c='b')
+        # ax1.plot(wvl_zen_in, mean_dset1, lw=2, c='r')
+        # ax1.plot(wvl_zen_in, mean_dset0_, lw=1, c='cyan')
+        # ax1.plot(wvl_zen_in, mean_dset1_, lw=1, c='magenta')
+        ax1.plot(mean_dset0, lw=2, c='b')
+        ax1.plot(mean_dset1, lw=2, c='r')
+        ax1.plot(mean_dset0_, lw=1, c='cyan')
+        ax1.plot(mean_dset1_, lw=1, c='magenta')
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+def test_dark_cnt_spectra_ssfr_a():
+
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-a')
+    wvl_zen_in = wvls['nad|in']
+
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-zen-1324'
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    mean_dset0, mean_dset1, stdv_dset0, stdv_dset1 = cal_mean_stdv(fnames)
+
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-a/2023-10-27'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    mean_dset0_, mean_dset1_, stdv_dset0_, stdv_dset1_ = cal_mean_stdv(fnames)
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.plot(wvl_zen_in, mean_dset0, lw=2, c='b')
+        ax1.plot(wvl_zen_in, mean_dset1, lw=2, c='r')
+        ax1.plot(wvl_zen_in, mean_dset0_, lw=1, c='cyan')
+        ax1.plot(wvl_zen_in, mean_dset1_, lw=1, c='magenta')
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+def test_dark_cnt_time_series_ssfr_a():
+
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-a')
+    wvl_zen_in = wvls['nad|in']
+
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-zen-1324'
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    mean_dset0, mean_dset1, stdv_dset0, stdv_dset1 = cal_time_series(fnames)
+
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-a/2023-10-27'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    mean_dset0_, mean_dset1_, stdv_dset0_, stdv_dset1_ = cal_time_series(fnames)
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # ax1.plot(wvl_zen_in, mean_dset0, lw=2, c='b')
+        # ax1.plot(wvl_zen_in, mean_dset1, lw=2, c='r')
+        # ax1.plot(wvl_zen_in, mean_dset0_, lw=1, c='cyan')
+        # ax1.plot(wvl_zen_in, mean_dset1_, lw=1, c='magenta')
+        ax1.plot(mean_dset0, lw=2, c='b')
+        ax1.plot(mean_dset1, lw=2, c='r')
+        ax1.plot(mean_dset0_, lw=1, c='cyan')
+        ax1.plot(mean_dset1_, lw=1, c='magenta')
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
 
 
 if __name__ == '__main__':
 
     # main_test_joint_wvl_cal()
     # main_test_joint_wvl_skywatch()
-    test_dark_cnt()
+    # test_dark_cnt_spectra()
+    test_dark_cnt_time_series()
+    # test_dark_cnt_spectra_ssfr_a()
+    # test_dark_cnt_time_series_ssfr_a()
