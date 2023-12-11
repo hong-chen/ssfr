@@ -40,6 +40,8 @@ def cal_rad_resp(
     else:
         msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa|ssfr-6\'> or <\'lasp|ssfr-a\'> or <\'lasp|ssfr-b\'>).' % which_ssfr
         raise ValueError(msg)
+    print(which_ssfr)
+    print(which_lab)
     #\----------------------------------------------------------------------------/#
 
 
@@ -55,6 +57,8 @@ def cal_rad_resp(
     else:
         msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zen\'> or <\'nad\'>).' % which_lc
         raise ValueError(msg)
+    print(which_lc)
+    print(index_si, index_in)
     #\----------------------------------------------------------------------------/#
 
 
@@ -68,6 +72,8 @@ def cal_rad_resp(
 
     if in_tag not in int_time.keys():
         int_time[in_tag] = int_time.pop('in')
+    print(si_tag)
+    print(in_tag)
     #\----------------------------------------------------------------------------/#
 
 
@@ -84,6 +90,8 @@ def cal_rad_resp(
             which_lamp = 'f-506c'
         elif (which_lamp[-4:] == '1324'):
             which_lamp = 'f-1324'
+
+        print(which_lamp)
         #\--------------------------------------------------------------/#
 
         # read in calibrated lamp data and interpolated/integrated at SSFR wavelengths/slits
@@ -92,6 +100,8 @@ def cal_rad_resp(
         if not os.path.exists(fname_lamp):
             msg = '\nError [cal_rad_resp]: Cannot locate calibration file for lamp <%s>.' % which_lamp
             raise OSError(msg)
+
+        print(fname_lamp)
 
         data      = np.loadtxt(fname_lamp)
         data_wvl  = data[:, 0]
@@ -107,6 +117,7 @@ def cal_rad_resp(
         wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
         wvl_si = wvls[si_tag]
         wvl_in = wvls[in_tag]
+        print(wvls.keys())
         #\--------------------------------------------------------------/#
 
         lamp_std_si = np.zeros_like(wvl_si)
@@ -117,11 +128,13 @@ def cal_rad_resp(
         for i in range(lamp_std_in.size):
             lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
+        # lamp_std_si = np.interp(wvl_si, data_wvl, data_flux)
+        # lamp_std_in = np.interp(wvl_in, data_wvl, data_flux)
+
         resp = {
                 si_tag: lamp_std_si,
                 in_tag: lamp_std_in
                }
-        #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
 

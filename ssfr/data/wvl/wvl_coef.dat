@@ -1,22 +1,42 @@
 # SSFR spectrometer tag, poly coef 0, poly coef 1, poly coef 2, poly coef 3, poly coef 4
 #
+# updated on 2023-12-10 17:45:00 (by Yu-Wen Chen at AGU 2023)
+# notes: after initial wavelength and radiometric calibrations for SSFR, we
+#        found inconsistencies between Silicon and InGaAs spectrometers at
+#        joinder wavelength for SSFR-B. We weren't sure whether this inconsistency
+#        came from non-linearity or inaccurate wavelength. In addition to InGaAs
+#        spectrometers only, Yu-Wen processed wavelength fitting for Silicon
+#        and now the coefficients for SSFR-B Silicon has been updated.
+lasp|ssfr-a|zen|si, 303.488,  3.28111,  0.00045102,  -1.41423e-6, 0.0
+lasp|ssfr-a|zen|in, 2231.96, -4.43147, -0.00134255,  -2.24516e-6, -1.26306e-8
+lasp|ssfr-a|nad|si, 304.902,  3.27194,  0.00045102,  -1.41423e-6, 0.0
+lasp|ssfr-a|nad|in, 2223.89, -4.63471,  0.00081955,  -1.42378e-5,  1.03298e-8
+lasp|ssfr-b|zen|si, 304.519,  3.27231,  0.00045102,  -1.41423e-6, 0.0
+lasp|ssfr-b|zen|in, 2211.27, -4.35229, -0.00308048,   4.61962e-6, -2.02112e-8
+lasp|ssfr-b|nad|si, 303.765,  3.27848,  0.00045102,  -1.41423e-6, 0.0
+lasp|ssfr-b|nad|in, 2226.57, -4.62295,  0.00081955,  -1.53852e-5,  1.54946e-8
+nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
+nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
+nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
+nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
+#
 # updated on 2023-11-29 16:30:00 (by Yu-Wen Chen)
 # notes: after some prelimary analysis using the data collected at Skywatch,
 #        we noticed wavelength inconsistencies between different instruments.
 #        Yu-Wen Chen re-processed the wavelength calibration data collected
 #        on 2023-11-10 and obtained the following new coefficients.
-lasp|ssfr-a|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-lasp|ssfr-a|zen|in, 2232.89, -4.47180, -0.00113787,  -2.21274e-6, -1.26306e-8
-lasp|ssfr-a|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-lasp|ssfr-a|nad|in, 2225.79, -4.65885,  0.00082067,  -1.46024e-5,  1.43764e-8
-lasp|ssfr-b|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-lasp|ssfr-b|zen|in, 2212.28, -4.37178, -0.00304555,   4.61961e-6, -1.87076e-8
-lasp|ssfr-b|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
-lasp|ssfr-b|nad|in, 2232.13, -4.68951,  0.00081955,  -1.43216e-5,  1.54946e-8
-nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
-nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
-nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
-nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
+#lasp|ssfr-a|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-a|zen|in, 2232.89, -4.47180, -0.00113787,  -2.21274e-6, -1.26306e-8
+#lasp|ssfr-a|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-a|nad|in, 2225.79, -4.65885,  0.00082067,  -1.46024e-5,  1.43764e-8
+#lasp|ssfr-b|zen|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-b|zen|in, 2212.28, -4.37178, -0.00304555,   4.61961e-6, -1.87076e-8
+#lasp|ssfr-b|nad|si, 301.946,  3.31877,  0.00037585,  -1.76779e-6, 0.0
+#lasp|ssfr-b|nad|in, 2232.13, -4.68951,  0.00081955,  -1.43216e-5,  1.54946e-8
+#nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
+#nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
+#nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
+#nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
 #
 # updated on 2023-11-28 13:30:00 with calibrated lines fitting (by Yu-Wen Chen)
 # notes: on 2023-11-10, we (Yu-Wen Chen, Hong Chen, and Ken Hirata) performed

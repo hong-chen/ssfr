@@ -23,13 +23,13 @@ import ssfr
 _mission_   = 'arcsix'
 _spns_      = 'spns-b'
 _ssfr_      = 'ssfr-b'
-_fdir_data_ = '/argus/pre-mission/%s' % _mission_
+_fdir_data_ = 'data/%s/pre-mission' % _mission_
 _fdir_hsk_  = '%s/raw/hsk'
 _fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
 _fdir_spns_ = '%s/raw/%s' % (_fdir_data_, _spns_)
-_fdir_v0_   = '%s/processed'  % _fdir_data_
-_fdir_v1_   = '%s/processed'  % _fdir_data_
-_fdir_v2_   = '%s/processed'  % _fdir_data_
+_fdir_v0_   = 'data/processed'
+_fdir_v1_   = 'data/processed'
+_fdir_v2_   = 'data/processed'
 
 
 
@@ -219,7 +219,7 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
 
     # get spectra counts data
     #/----------------------------------------------------------------------------\#
-    fdir_data = '/argus/pre-mission/arcsix/raw/%s' % (ssfr_tag.lower())
+    fdir_data = '../examples/data/arcsix/pre-mission/raw/%s' % (ssfr_tag.lower())
     fnames = sorted(glob.glob('%s/%s/*.SKS' % (fdir_data, date_tag)))
     ssfr_data = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp', which_ssfr='lasp|%s' % _ssfr_.lower(), dark_extend=4, light_extend=4)
 
@@ -349,8 +349,10 @@ def main_test_joint_wvl_skywatch():
     # skywatch
     #/----------------------------------------------------------------------------\#
     for ssfr_tag in ['SSFR-B']:
-        for lc_tag in ['zen', 'nad']:
-            for date_tag in ['2023-10-19', '2023-10-20']:
+        # for lc_tag in ['zen', 'nad']:
+        #     for date_tag in ['2023-10-19', '2023-10-20']:
+        for lc_tag in ['zen']:
+            for date_tag in ['2023-10-19']:
                 test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag)
     #\----------------------------------------------------------------------------/#
 
@@ -359,5 +361,5 @@ def main_test_joint_wvl_skywatch():
 
 if __name__ == '__main__':
 
-    main_test_joint_wvl_cal()
-    # main_test_joint_wvl_skywatch()
+    # main_test_joint_wvl_cal()
+    main_test_joint_wvl_skywatch()

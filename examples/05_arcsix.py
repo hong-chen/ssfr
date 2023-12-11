@@ -24,8 +24,8 @@ import ssfr
 
 _mission_   = 'arcsix'
 _spns_      = 'spns-b'
-_ssfr_      = 'ssfr-a'
-_fdir_data_ = '/argus/pre-mission/%s' % _mission_
+_ssfr_      = 'ssfr-b'
+_fdir_data_ = 'data/%s/pre-mission' % _mission_
 _fdir_hsk_  = '%s/raw/hsk'
 _fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
 _fdir_spns_ = '%s/raw/%s' % (_fdir_data_, _spns_)
@@ -116,6 +116,7 @@ def cdata_arcsix_spns_v0(
     #/----------------------------------------------------------------------------\#
     fdir = '%s/%s' % (fdir_data, date_s)
 
+    print(fdir)
     fname_dif = sorted(glob.glob('%s/Diffuse.txt' % fdir))[0]
     data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
 
@@ -681,9 +682,9 @@ def cdata_arcsix_ssfr_v2(
 
             fnames_zen = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|zen|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.lower(), dset_s.lower())))
             fnames_nad = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|nad|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.lower(), dset_s.lower())))
-            if len(fnames_zen) == 1 and len(fnames_nad) == 1:
-                fname_zen = fnames_zen[0]
-                fname_nad = fnames_nad[0]
+            if len(fnames_zen) >= 1 and len(fnames_nad) >= 1:
+                fname_zen = fnames_zen[-1]
+                fname_nad = fnames_nad[-1]
 
                 f_zen = h5py.File(fname_zen, 'r')
                 sec_resp_zen_si = f_zen['zen|si'][...]
@@ -1012,15 +1013,15 @@ def main_process_data():
              # datetime.datetime(2023, 10, 12),
              # datetime.datetime(2023, 10, 13),
              # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
-             # datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
+             datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
              # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
-             datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
+             # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
             ]
 
     for date in dates:
-        # process_spns_data(date)
+        process_spns_data(date)
         process_ssfr_data(date)
         plot_time_series(date)
         plot_spectra(date)
@@ -1096,7 +1097,7 @@ def wvl_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
 def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
-    fdir_data = '/argus/field/arcsix/cal/rad-cal'
+    fdir_data = 'data/arcsix/cal/rad-cal'
 
     indices_spec = {
             'zen': [0, 1],
@@ -1292,8 +1293,8 @@ def test_data_b(
 
 if __name__ == '__main__':
 
-    # main_process_data()
+    main_process_data()
 
-    main_calibration()
+    # main_calibration()
 
     # test_data()
