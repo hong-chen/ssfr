@@ -685,6 +685,8 @@ def cdata_arcsix_ssfr_v2(
             if len(fnames_zen) >= 1 and len(fnames_nad) >= 1:
                 fname_zen = fnames_zen[-1]
                 fname_nad = fnames_nad[-1]
+                print(fname_zen)
+                print(fname_nad)
 
                 f_zen = h5py.File(fname_zen, 'r')
                 sec_resp_zen_si = f_zen['zen|si'][...]
@@ -877,7 +879,7 @@ def process_ssfr_data(date):
 
 
 
-def plot_time_series(date, wvl0=700.0):
+def plot_time_series(date, wvl0=950.0):
 
     date_s = date.strftime('%Y-%m-%d')
 

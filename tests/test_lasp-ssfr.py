@@ -358,8 +358,18 @@ def main_test_joint_wvl_skywatch():
 
 
 
+def test_dark_cnt():
+
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-zen-1324'
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    ssfr_cal = ssfr.lasp_ssfr.read_ssfr(fnames)
+
+    wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
+    print(wvls)
+
 
 if __name__ == '__main__':
 
     # main_test_joint_wvl_cal()
-    main_test_joint_wvl_skywatch()
+    # main_test_joint_wvl_skywatch()
+    test_dark_cnt()
