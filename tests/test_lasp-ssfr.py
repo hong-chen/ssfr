@@ -232,6 +232,27 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
 
     # get temperature
     #/----------------------------------------------------------------------------\#
+    # 1 housing temp
+    # 2 TEC 1
+    # 3 INGAS 1
+    # 4 INGAS 2
+    # 5 Wavelength controllor 1
+    # 6 Wavelength controller 2
+    # 7 Silicon temp
+    # 8 Relative humidity
+    # 9 TEC 2
+    # 10 CRio Temperature
+    #
+    # 1 ambient temp
+    # 2 INGAS 1 zenith temp
+    # 3 INGAS 2 nadir temp
+    # 4 plate temp
+    # 5 relative humidity
+    # 6 TEC1
+    # 7 TEC2
+    # 8 Wavelength controllor 1
+    # 9 nothing
+    # 10 CRio Temperature
     temp0 = ssfr_data.dset0['temp'][:, 5] # 5 or 6
     temp1 = ssfr_data.dset1['temp'][:, 5] # 5 or 6
     #\----------------------------------------------------------------------------/#
@@ -757,10 +778,15 @@ def test_dark_cnt_time_series_ssfr_a():
 
 
 
+
+
+
+
 def test_dark_cnt_time_series():
 
-    which_spec = 'zen'
+    which_lc = 'nad'
     index_spec = 3
+
     int_time0  = 250.0
     index_chan = -6
     index_temp = 2
@@ -768,12 +794,12 @@ def test_dark_cnt_time_series():
     # wavelength ssfr-a
     #/----------------------------------------------------------------------------\#
     wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-a')
-    wvl_in_a = wvls['%s|in' % which_spec]
+    wvl_in_a = wvls['%s|in' % which_lc]
     #\----------------------------------------------------------------------------/#
 
     # ssfr-a cal data
     #/----------------------------------------------------------------------------\#
-    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-%s-1324' % which_spec
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-%s-1324' % which_lc
     fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
     ssfr_a_cal = ssfr.lasp_ssfr.read_ssfr(fnames)
     shutter0 = ssfr_a_cal.data_raw['shutter']
@@ -795,12 +821,12 @@ def test_dark_cnt_time_series():
     # wavelength ssfr-b
     #/----------------------------------------------------------------------------\#
     wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
-    wvl_in_b = wvls['%s|in' % which_spec]
+    wvl_in_b = wvls['%s|in' % which_lc]
     #\----------------------------------------------------------------------------/#
 
     # ssfr-b cal data
     #/----------------------------------------------------------------------------\#
-    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-%s-1324' % which_spec
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-%s-1324' % which_lc
     fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
     ssfr_b_cal = ssfr.lasp_ssfr.read_ssfr(fnames)
     shutter0 = ssfr_b_cal.data_raw['shutter']
@@ -825,7 +851,7 @@ def test_dark_cnt_time_series():
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(8, 6))
-        fig.suptitle('%s' % which_spec.upper())
+        fig.suptitle('%s' % which_lc.upper())
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
@@ -867,9 +893,10 @@ def test_dark_cnt_time_series():
 if __name__ == '__main__':
 
     # main_test_joint_wvl_cal()
-    main_test_joint_wvl_skywatch()
+    # main_test_joint_wvl_skywatch()
     # test_dark_cnt_spectra_ssfr_b()
     # test_dark_cnt_time_series_ssfr_b()
     # test_dark_cnt_spectra_ssfr_a()
     # test_dark_cnt_time_series_ssfr_a()
-    # test_dark_cnt_time_series()
+
+    test_dark_cnt_time_series()
