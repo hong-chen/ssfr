@@ -243,16 +243,6 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
     # 9 TEC 2
     # 10 CRio Temperature
     #
-    # 1 ambient temp
-    # 2 INGAS 1 zenith temp
-    # 3 INGAS 2 nadir temp
-    # 4 plate temp
-    # 5 relative humidity
-    # 6 TEC1
-    # 7 TEC2
-    # 8 Wavelength controllor 1
-    # 9 nothing
-    # 10 CRio Temperature
     temp0 = ssfr_data.dset0['temp'][:, 5] # 5 or 6
     temp1 = ssfr_data.dset1['temp'][:, 5] # 5 or 6
     #\----------------------------------------------------------------------------/#
@@ -887,7 +877,182 @@ def test_dark_cnt_time_series():
         sys.exit()
     #\----------------------------------------------------------------------------/#
 
+def cdata_nonlin():
 
+
+    f = h5py.File('nonlin.h5', 'w')
+
+    # wavelength ssfr-a
+    #/----------------------------------------------------------------------------\#
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-a')
+    wvl_si_a = wvls['%s|si' % which_lc]
+    wvl_in_a = wvls['%s|in' % which_lc]
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-a cal data
+    #/----------------------------------------------------------------------------\#
+    # fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-%s-1324' % which_lc
+    # fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    # ssfr_a_cal = ssfr.lasp_ssfr.read_ssfr(fnames)
+    # shutter0 = ssfr_a_cal.data_raw['shutter']
+    # int_time_in0 = ssfr_a_cal.data_raw['int_time'][:, index_spec]
+    # dark_cnt_in_cal_a0 = ssfr_a_cal.data_raw['spectra'][(shutter0==1)&(int_time_in0==int_time0), index_chan, index_spec]
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-a skywatch data
+    #/----------------------------------------------------------------------------\#
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-a/2023-10-27'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    ssfr_a_sky = ssfr.lasp_ssfr.read_ssfr(fnames)
+
+    g_a = f.create_group('ssfr-a')
+    g_a['wvl_si'] = wvl_si_a
+    g_a['wvl_in'] = wvl_in_a
+    g_a['shutter']  = ssfr_a_sky.data_raw['shutter']
+    g_a['int_time'] = ssfr_a_sky.data_raw['int_time'][:, :]
+    g_a['counts']  = ssfr_a_sky.data_raw['spectra'][:, :, :]
+    g_a['temperature'] = ssfr_a_sky.data_raw['temp'][:, :]
+    #\----------------------------------------------------------------------------/#
+
+    # wavelength ssfr-b
+    #/----------------------------------------------------------------------------\#
+    wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
+    wvl_si_b = wvls['%s|si' % which_lc]
+    wvl_in_b = wvls['%s|in' % which_lc]
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-b cal data
+    #/----------------------------------------------------------------------------\#
+    # fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-%s-1324' % which_lc
+    # fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    # ssfr_b_cal = ssfr.lasp_ssfr.read_ssfr(fnames)
+    # shutter0 = ssfr_b_cal.data_raw['shutter']
+    # int_time_in0 = ssfr_b_cal.data_raw['int_time'][:, index_spec]
+    # dark_cnt_in_cal_b0 = ssfr_b_cal.data_raw['spectra'][(shutter0==1)&(int_time_in0==int_time0), index_chan, index_spec]
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-b skywatch data
+    #/----------------------------------------------------------------------------\#
+    fdir = '../examples/data/arcsix/pre-mission/raw/ssfr-b/2023-10-19'
+    fnames = sorted(glob.glob('%s/*.SKS' % (fdir)))
+    ssfr_b_sky = ssfr.lasp_ssfr.read_ssfr(fnames)
+
+    g_b = f.create_group('ssfr-b')
+    g_b['wvl_si'] = wvl_si_b
+    g_b['wvl_in'] = wvl_in_b
+    g_b['shutter']  = ssfr_b_sky.data_raw['shutter']
+    g_b['int_time'] = ssfr_b_sky.data_raw['int_time'][:, :]
+    g_b['counts']  = ssfr_b_sky.data_raw['spectra'][:, :, :]
+    g_b['temperature'] = ssfr_b_sky.data_raw['temp'][:, :]
+    #\----------------------------------------------------------------------------/#
+
+    f.close()
+
+
+
+def figure_ingaas_dark_counts_time_series(
+        which_lc='zen',
+        which_spec='in',
+        index_temp=0,
+        int_time0=250.0,
+        wvl0=950.0):
+
+    which_spec_ = '%s|%s' % (which_lc.lower(), which_spec.lower())
+
+    indices_spec = {
+            'zen|si': 0,
+            'zen|in': 1,
+            'nad|si': 2,
+            'nad|in': 3,
+            }
+
+    index_spec = indices_spec[which_spec_]
+
+    temp_tags = [
+    '1 ambient temp',
+    '2 InGaAs 1 zenith temp',
+    '3 InGaAs 2 nadir temp',
+    '4 plate temp',
+    '5 relative humidity',
+    '6 TEC1',
+    '7 TEC2',
+    '8 wavelength controllor 1'
+    '9 nothing',
+    '10 cRio temp',
+    ]
+
+    f = h5py.File('nonlin.h5', 'r')
+
+    # SSFR-A
+    #/----------------------------------------------------------------------------\#
+    wvls = f['ssfr-a/wvl_%s' % which_spec.lower()][...]
+    index_chan = np.argmin(np.abs(wvls-wvl0))
+
+    shutter0 = f['ssfr-a/shutter'][...]
+    int_time_in0 = f['ssfr-a/int_time'][...][:, index_spec]
+    logic_time = (shutter0==1)&(int_time_in0==int_time0)
+
+    dark_cnt_in_sky_a0 = f['ssfr-a/counts'][...][logic_time, index_chan, index_spec]
+    temp_a0 = f['ssfr-a/temperature'][...][logic_time, index_temp]
+    #\----------------------------------------------------------------------------/#
+
+    # SSFR-B
+    #/----------------------------------------------------------------------------\#
+    wvls = f['ssfr-b/wvl_%s' % which_spec.lower()][...]
+    index_chan = np.argmin(np.abs(wvls-wvl0))
+
+    shutter0 = f['ssfr-b/shutter'][...]
+    int_time_in0 = f['ssfr-b/int_time'][...][:, index_spec]
+    logic_time = (shutter0==1)&(int_time_in0==int_time0)
+
+    dark_cnt_in_sky_b0 = f['ssfr-b/counts'][...][logic_time, index_chan, index_spec]
+    temp_b0 = f['ssfr-b/temperature'][...][logic_time, index_temp]
+    #\----------------------------------------------------------------------------/#
+
+    f.close()
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        fig.suptitle('%s' % which_lc.upper())
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(211)
+
+        ax1.plot(dark_cnt_in_sky_a0, lw=2, c='blue')
+        ax1.set_title('Dark Counts (wavelength %d nm, integration time %d ms)' % (wvl0, int_time0))
+        ax1.set_ylabel('Counts', color='blue')
+        ax1_ = ax1.twinx()
+        ax1_.plot(dark_cnt_in_sky_b0, lw=2, c='red')
+        ax1_.set_ylabel('Counts', color='red')
+
+        ax2 = fig.add_subplot(212)
+        ax2.plot(temp_a0, lw=2.0, c='blue', ls='-')
+        ax2.set_title('Temperature (might be %s)' % temp_tags[index_temp].title())
+        ax2.set_ylabel('Temperature', color='blue')
+        ax2.set_xlabel('Time Index')
+        ax2_ = ax2.twinx()
+        ax2_.plot(temp_b0, lw=2.0, c='red' , ls='-')
+        ax2_.set_ylabel('Temperature', color='red')
+
+        patches_legend = [
+                         mpatches.Patch(color='blue', label='SSFR-A (2023-10-27)'), \
+                         mpatches.Patch(color='red' , label='SSFR-B (2023-10-19)'), \
+                         ]
+        ax2.legend(handles=patches_legend, loc='lower right', fontsize=16)
+        #\--------------------------------------------------------------/#
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
 
 
 if __name__ == '__main__':
@@ -899,4 +1064,8 @@ if __name__ == '__main__':
     # test_dark_cnt_spectra_ssfr_a()
     # test_dark_cnt_time_series_ssfr_a()
 
-    test_dark_cnt_time_series()
+    # test_dark_cnt_time_series()
+
+    # cdata_nonlin()
+
+    figure_ingaas_dark_counts_time_series()
