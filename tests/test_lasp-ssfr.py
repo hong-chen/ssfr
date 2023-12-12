@@ -974,11 +974,12 @@ def figure_ingaas_dark_counts_time_series(
     '3 InGaAs 2 nadir temp',
     '4 plate temp',
     '5 relative humidity',
-    '6 TEC1',
-    '7 TEC2',
-    '8 wavelength controllor 1'
+    '6 TEC1 (zenith)',
+    '7 TEC2 (nadir)',
+    '8 wavelength controllor 1',
     '9 nothing',
     '10 cRio temp',
+    '11 nothing',
     ]
 
     f = h5py.File('nonlin.h5', 'r')
@@ -1016,7 +1017,7 @@ def figure_ingaas_dark_counts_time_series(
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(12, 6))
-        fig.suptitle('%s' % which_lc.upper())
+        fig.suptitle('%s' % which_spec_.upper())
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(211)
@@ -1046,12 +1047,10 @@ def figure_ingaas_dark_counts_time_series(
 
         # save figure
         #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s_%s_%2.2d.png' % (_metadata['Function'], which_spec_, index_temp), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
     #\----------------------------------------------------------------------------/#
 
 
@@ -1068,4 +1067,6 @@ if __name__ == '__main__':
 
     # cdata_nonlin()
 
-    figure_ingaas_dark_counts_time_series()
+    for which_lc in ['zen', 'nad']:
+        for index_temp in range(10):
+            figure_ingaas_dark_counts_time_series(which_lc=which_lc, index_temp=index_temp)
