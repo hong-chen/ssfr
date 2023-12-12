@@ -232,8 +232,8 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
 
     # get temperature
     #/----------------------------------------------------------------------------\#
-    temp0 = ssfr_data.dset0['temp'][:, 1]
-    temp1 = ssfr_data.dset1['temp'][:, 1]
+    temp0 = ssfr_data.dset0['temp'][:, 5] # 5 or 6
+    temp1 = ssfr_data.dset1['temp'][:, 5] # 5 or 6
     #\----------------------------------------------------------------------------/#
 
     # get response
@@ -276,8 +276,8 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
     flux_si_dset1_ = flux_si_dset1[:, index_joint_si]
     flux_in_dset1_ = flux_in_dset1[:, index_joint_in]
 
-    diff_dset0 = flux_in_dset0_ / flux_si_dset0_
-    diff_dset1 = flux_in_dset1_ / flux_si_dset1_
+    diff_dset0 = flux_in_dset0_ - flux_si_dset0_
+    diff_dset1 = flux_in_dset1_ - flux_si_dset1_
 
     # figure
     #/----------------------------------------------------------------------------\#
@@ -294,8 +294,8 @@ def test_joint_wvl_skywatch(ssfr_tag, lc_tag, date_tag, Nchan=256):
         # ax1.plot([0, 1], [0, 1], color='k', ls='--')
         # ax1.set_xlim(())
         # ax1.set_ylim(())
-        ax1.set_xlabel('Irradiance Difference')
-        ax1.set_ylabel('Temperature')
+        ax1.set_xlabel('Temperature')
+        ax1.set_ylabel('Irradiance Difference')
         ax1.set_title('SSFR-B Skywatch 2023-10-19')
         # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
         # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
@@ -763,7 +763,7 @@ def test_dark_cnt_time_series():
     index_spec = 3
     int_time0  = 250.0
     index_chan = -6
-    index_temp = 1
+    index_temp = 2
 
     # wavelength ssfr-a
     #/----------------------------------------------------------------------------\#
@@ -867,9 +867,9 @@ def test_dark_cnt_time_series():
 if __name__ == '__main__':
 
     # main_test_joint_wvl_cal()
-    # main_test_joint_wvl_skywatch()
+    main_test_joint_wvl_skywatch()
     # test_dark_cnt_spectra_ssfr_b()
     # test_dark_cnt_time_series_ssfr_b()
     # test_dark_cnt_spectra_ssfr_a()
     # test_dark_cnt_time_series_ssfr_a()
-    test_dark_cnt_time_series()
+    # test_dark_cnt_time_series()
