@@ -1157,6 +1157,79 @@ def figure_silicon_dark_counts_time_series(
     #\----------------------------------------------------------------------------/#
 
 
+
+
+def cdata_nonlin_cal():
+
+    f = h5py.File('nonlin_cal.h5', 'w')
+
+    # ssfr-a nadir
+    #/----------------------------------------------------------------------------\#
+    wvls_a = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-a')
+
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-nad-1324'
+    fnames = [sorted(glob.glob('%s/*.SKS' % (fdir)))[-1]]
+    ssfr_a_nad = ssfr.lasp_ssfr.read_ssfr(fnames)
+
+    g_a_nad = f.create_group('ssfr-a_nad')
+    g_a_nad['wvl_si'] = wvls_a['nad|si']
+    g_a_nad['wvl_in'] = wvls_a['nad|in']
+    g_a_nad['shutter']  = ssfr_a_nad.data_raw['shutter']
+    g_a_nad['int_time'] = ssfr_a_nad.data_raw['int_time']
+    g_a_nad['counts']   = ssfr_a_nad.data_raw['spectra']
+    g_a_nad['temperature'] = ssfr_a_nad.data_raw['temp']
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-a zenith
+    #/----------------------------------------------------------------------------\#
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-A_2023-11-16_lab-rad-cal-zen-1324'
+    fnames = [sorted(glob.glob('%s/*.SKS' % (fdir)))[-1]]
+    ssfr_a_zen = ssfr.lasp_ssfr.read_ssfr(fnames)
+
+    g_a_zen = f.create_group('ssfr-a_zen')
+    g_a_zen['wvl_si'] = wvls_a['zen|si']
+    g_a_zen['wvl_in'] = wvls_a['zen|in']
+    g_a_zen['shutter']  = ssfr_a_zen.data_raw['shutter']
+    g_a_zen['int_time'] = ssfr_a_zen.data_raw['int_time']
+    g_a_zen['counts']   = ssfr_a_zen.data_raw['spectra']
+    g_a_zen['temperature'] = ssfr_a_zen.data_raw['temp']
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-b nadir
+    #/----------------------------------------------------------------------------\#
+    wvls_b = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
+
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-nad-1324'
+    fnames = [sorted(glob.glob('%s/*.SKS' % (fdir)))[-1]]
+    ssfr_b_nad = ssfr.lasp_ssfr.read_ssfr(fnames)
+
+    g_b_nad = f.create_group('ssfr-b_nad')
+    g_b_nad['wvl_si'] = wvls_b['nad|si']
+    g_b_nad['wvl_in'] = wvls_b['nad|in']
+    g_b_nad['shutter']  = ssfr_b_nad.data_raw['shutter']
+    g_b_nad['int_time'] = ssfr_b_nad.data_raw['int_time']
+    g_b_nad['counts']   = ssfr_b_nad.data_raw['spectra']
+    g_b_nad['temperature'] = ssfr_b_nad.data_raw['temp']
+    #\----------------------------------------------------------------------------/#
+
+    # ssfr-b zenith
+    #/----------------------------------------------------------------------------\#
+    fdir = '../examples/data/arcsix/cal/rad-cal/SSFR-B_2023-11-16_lab-rad-cal-zen-1324'
+    fnames = [sorted(glob.glob('%s/*.SKS' % (fdir)))[-1]]
+    ssfr_b_zen = ssfr.lasp_ssfr.read_ssfr(fnames)
+
+    g_b_zen = f.create_group('ssfr-b_zen')
+    g_b_zen['wvl_si'] = wvls_b['zen|si']
+    g_b_zen['wvl_in'] = wvls_b['zen|in']
+    g_b_zen['shutter']  = ssfr_b_zen.data_raw['shutter']
+    g_b_zen['int_time'] = ssfr_b_zen.data_raw['int_time']
+    g_b_zen['counts']   = ssfr_b_zen.data_raw['spectra']
+    g_b_zen['temperature'] = ssfr_b_zen.data_raw['temp']
+    #\----------------------------------------------------------------------------/#
+
+    f.close()
+
+
 if __name__ == '__main__':
 
     # main_test_joint_wvl_cal()
@@ -1170,7 +1243,9 @@ if __name__ == '__main__':
 
     # cdata_nonlin()
 
-    for which_lc in ['zen', 'nad']:
-        for index_temp in range(10):
-            # figure_ingaas_dark_counts_time_series(which_lc=which_lc, index_temp=index_temp)
-            figure_silicon_dark_counts_time_series(which_lc=which_lc, index_temp=index_temp)
+    cdata_nonlin_cal()
+
+    # for which_lc in ['zen', 'nad']:
+    #     for index_temp in range(10):
+    #         # figure_ingaas_dark_counts_time_series(which_lc=which_lc, index_temp=index_temp)
+    #         figure_silicon_dark_counts_time_series(which_lc=which_lc, index_temp=index_temp)
