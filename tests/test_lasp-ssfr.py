@@ -1229,6 +1229,109 @@ def cdata_nonlin_cal():
 
     f.close()
 
+def figure_ingaas_dark_counts_time_series(
+        which_lc='zen',
+        which_spec='in',
+        index_temp=0,
+        int_time0=250.0,
+        wvl0=950.0):
+
+    which_spec_ = '%s|%s' % (which_lc.lower(), which_spec.lower())
+
+    indices_spec = {
+            'zen|si': 0,
+            'zen|in': 1,
+            'nad|si': 2,
+            'nad|in': 3,
+            }
+
+    index_spec = indices_spec[which_spec_]
+
+    temp_tags = [
+    '1 ambient temp',
+    '2 InGaAs 1 zenith temp',
+    '3 InGaAs 2 nadir temp',
+    '4 plate temp',
+    '5 relative humidity',
+    '6 TEC1 (zenith)',
+    '7 TEC2 (nadir)',
+    '8 wavelength controllor 1',
+    '9 nothing',
+    '10 cRio temp',
+    '11 nothing',
+    ]
+
+    f = h5py.File('nonlin_cal.h5', 'r')
+
+    # SSFR-A
+    #/----------------------------------------------------------------------------\#
+    wvls = f['ssfr-a_%s/wvl_%s' % (which_lc.lower(), which_spec.lower())][...]
+    index_chan = np.argmin(np.abs(wvls-wvl0))
+
+    shutter0 = f['ssfr-a_%s/shutter' % (which_lc.lower())][...]
+    int_time_in0 = f['ssfr-a_%s/int_time' % (which_lc.lower())][...][:, index_spec]
+    logic_time = (shutter0==1)&(int_time_in0==int_time0)
+
+    dark_cnt_in_sky_a0 = f['ssfr-a_%s/counts' % (which_lc.lower())][...][logic_time, index_chan, index_spec]
+    temp_a0 = f['ssfr-a_%s/temperature' % (which_lc.lower())][...][logic_time, index_temp]
+    #\----------------------------------------------------------------------------/#
+
+    # SSFR-B
+    #/----------------------------------------------------------------------------\#
+    wvls = f['ssfr-b_%s/wvl_%s' % (which_lc.lower(), which_spec.lower())][...]
+    index_chan = np.argmin(np.abs(wvls-wvl0))
+
+    shutter0 = f['ssfr-b_%s/shutter' % (which_lc.lower())][...]
+    int_time_in0 = f['ssfr-b_%s/int_time' % (which_lc.lower())][...][:, index_spec]
+    logic_time = (shutter0==1)&(int_time_in0==int_time0)
+
+    dark_cnt_in_sky_b0 = f['ssfr-b_%s/counts' % (which_lc.lower())][...][logic_time, index_chan, index_spec]
+    temp_b0 = f['ssfr-b_%s/temperature' % (which_lc.lower())][...][logic_time, index_temp]
+    #\----------------------------------------------------------------------------/#
+
+    f.close()
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        fig.suptitle('%s' % which_spec_.upper())
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(211)
+
+        ax1.plot(dark_cnt_in_sky_a0, lw=2, c='blue')
+        ax1.set_title('Dark Counts (wavelength %d nm, integration time %d ms)' % (wvl0, int_time0))
+        ax1.set_ylabel('Counts', color='blue')
+        ax1_ = ax1.twinx()
+        ax1_.plot(dark_cnt_in_sky_b0, lw=2, c='red')
+        ax1_.set_ylabel('Counts', color='red')
+
+        ax2 = fig.add_subplot(212)
+        ax2.plot(temp_a0, lw=2.0, c='blue', ls='-')
+        ax2.set_title('Temperature (might be %s)' % temp_tags[index_temp].title())
+        ax2.set_ylabel('Temperature', color='blue')
+        ax2.set_xlabel('Time Index')
+        ax2_ = ax2.twinx()
+        ax2_.plot(temp_b0, lw=2.0, c='red' , ls='-')
+        ax2_.set_ylabel('Temperature', color='red')
+
+        patches_legend = [
+                         mpatches.Patch(color='blue', label='SSFR-A'), \
+                         mpatches.Patch(color='red' , label='SSFR-B'), \
+                         ]
+        ax2.legend(handles=patches_legend, loc='lower right', fontsize=16)
+        #\--------------------------------------------------------------/#
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s_%s_%2.2d.png' % (_metadata['Function'], which_spec_, index_temp), bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
+
 
 if __name__ == '__main__':
 
@@ -1243,9 +1346,9 @@ if __name__ == '__main__':
 
     # cdata_nonlin()
 
-    cdata_nonlin_cal()
+    # cdata_nonlin_cal()
 
-    # for which_lc in ['zen', 'nad']:
-    #     for index_temp in range(10):
-    #         # figure_ingaas_dark_counts_time_series(which_lc=which_lc, index_temp=index_temp)
-    #         figure_silicon_dark_counts_time_series(which_lc=which_lc, index_temp=index_temp)
+    for which_lc in ['zen', 'nad']:
+        for index_temp in range(10):
+            figure_ingaas_dark_counts_time_series(which_lc=which_lc, index_temp=index_temp)
+            # figure_silicon_dark_counts_time_series(which_lc=which_lc, index_temp=index_temp)
