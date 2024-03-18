@@ -1128,10 +1128,64 @@ def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
             f[key] = resp_pri[key]
 
         f.close()
+
+def ang_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
+
+    """
+
+    Notes:
+        angular calibration is done for three different azimuth angles (reference to the vaccum port)
+        60, 180, 300
+
+        angles
+    """
+
+    fdir_data = 'data/arcsix/cal/ang-cal'
+
+    date_cal_s   = '2024-03-15'
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 50.0, 5.0), np.arange(50.0, 91.0, 10.0)))
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+
+    fnames_ = sorted(glob.glob('%s/%s_%s_%s_ang-cal_vaa-180_%s/*.SKS' % (fdir_data, date_cal_s, ssfr_tag, lc_tag, lamp_tag)))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+
+    ssfr.cal.cdata_cos_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time={'si':80 , 'in':250})
+    # ssfr.cal.cdata_cos_resp(fnames, which_ssfr='lasp', which_lc=lc_tag, int_time={'si':120, 'in':350})
+
+    sys.exit()
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        dset_ = getattr(ssfr_, dset_tag)
+        int_time = dset_['info']['int_time']
+
+        fname = '%s/cal/%s|cal-rad-pri|lasp|%s|%s|%s-si%3.3d-in%3.3d|%s.h5' % (ssfr.common.fdir_data, date_cal_s, ssfr_tag.lower(), lc_tag.lower(), dset_tag.lower(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
+        f = h5py.File(fname, 'w')
+
+        resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
+
+        for key in resp_pri.keys():
+            f[key] = resp_pri[key]
+
+        f.close()
 #\----------------------------------------------------------------------------/#
 
 
 def main_calibration():
+
+    """
+    Notes:
+        irradiance setup:
+            SSFR-A (Alvin)
+              - nadir : LC6 + stainless steel cased fiber
+              - zenith: LC4 + black plastic cased fiber
+    """
 
     # wavelength calibration
     #/----------------------------------------------------------------------------\#
@@ -1143,10 +1197,20 @@ def main_calibration():
 
     # radiometric calibration
     #/----------------------------------------------------------------------------\#
-    for ssfr_tag in ['SSFR-A', 'SSFR-B']:
-        for lc_tag in ['zen', 'nad']:
-            for lamp_tag in ['1324']:
-                rad_cal(ssfr_tag, lc_tag, lamp_tag)
+    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+    #     for lc_tag in ['zen', 'nad']:
+    #         for lamp_tag in ['1324']:
+    #             rad_cal(ssfr_tag, lc_tag, lamp_tag)
+    #\----------------------------------------------------------------------------/#
+
+    # angular calibration
+    #/----------------------------------------------------------------------------\#
+    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+    #     for lc_tag in ['zen', 'nad']:
+    for ssfr_tag in ['SSFR-A']:
+        for lc_tag in ['zen']:
+            for lamp_tag in ['507']:
+                ang_cal(ssfr_tag, lc_tag, lamp_tag)
     #\----------------------------------------------------------------------------/#
 
 def test_data_a(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
@@ -1295,8 +1359,8 @@ def test_data_b(
 
 if __name__ == '__main__':
 
-    main_process_data()
+    # main_process_data()
 
-    # main_calibration()
+    main_calibration()
 
     # test_data()

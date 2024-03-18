@@ -20,7 +20,7 @@ __all__ = ['cal_cos_resp', 'cdata_cos_resp', 'load_cos_resp_h5']
 
 def cal_cos_resp(
         fnames,
-        which_ssfr='lasp',
+        which_ssfr='lasp|ssfr-a',
         which_lc='zenith',
         int_time={'si':60, 'in':300},
         Nchan=256
@@ -29,9 +29,9 @@ def cal_cos_resp(
     # check SSFR spectrometer
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
-    if which_ssfr == 'nasa':
+    if which_ssfr.split('|')[0] == 'nasa':
         import ssfr.nasa_ssfr as ssfr_toolbox
-    elif which_ssfr == 'lasp':
+    elif which_ssfr.split('|')[0] == 'lasp':
         import ssfr.lasp_ssfr as ssfr_toolbox
     else:
         msg = '\nError [cal_ang_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
@@ -42,10 +42,10 @@ def cal_cos_resp(
     # check light collector
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
-    if which_lc == 'zenith':
+    if which_lc in ['zenith', 'zen', 'z']:
         index_si = 0
         index_in = 1
-    elif which_lc == 'nadir':
+    elif which_lc in ['nadir', 'nad', 'n']:
         index_si = 2
         index_in = 3
     else:
@@ -61,16 +61,18 @@ def cal_cos_resp(
 
         ssfr0 = ssfr_toolbox.read_ssfr([fname])
 
-        logic_si = (np.abs(ssfr0.int_time[:, index_si]-int_time['si'])<0.00001)
-        logic_in = (np.abs(ssfr0.int_time[:, index_in]-int_time['in'])<0.00001)
+        logic_si = (np.abs(ssfr0.data_raw['int_time'][:, index_si]-int_time['si'])<0.00001)
+        logic_in = (np.abs(ssfr0.data_raw['int_time'][:, index_in]-int_time['in'])<0.00001)
 
-        shutter, counts = ssfr.corr.dark_corr(ssfr0.tmhr[logic_si], ssfr0.shutter[logic_si], ssfr0.spectra[logic_si, :, index_si], mode='mean')
-        logic  = (logic_si) & (shutter==0)
+        shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_si], ssfr0.data_raw['shutter'][logic_si], ssfr0.data_raw['spectra'][logic_si, :, index_si], mode='interp')
+        logic  = (shutter==0)
         counts_si[i, :] = np.mean(counts[logic, :], axis=0)
+        print(shutter)
 
-        shutter, counts = ssfr.corr.dark_corr(ssfr0.tmhr[logic_in], ssfr0.shutter[logic_in], ssfr0.spectra[logic_in, :, index_in])
-        logic  = (logic_in) & (shutter==0)
+        shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_in], ssfr0.data_raw['shutter'][logic_in], ssfr0.data_raw['spectra'][logic_in, :, index_in], mode='interp')
+        logic  = (shutter==0)
         counts_in[i, :] = np.mean(counts[logic, :], axis=0)
+        print(shutter)
 
     cos_resp = {
             'si': counts_si/(np.tile(counts_si[0, :], Nfile).reshape(Nfile, -1)),
@@ -84,7 +86,7 @@ def cal_cos_resp(
 def cdata_cos_resp(
         fnames,
         filename_tag=None,
-        which_ssfr='lasp',
+        which_ssfr='lasp|ssfr-a',
         which_lc='zenith',
         Nchan=256,
         wvl_joint=950.0,
@@ -96,9 +98,9 @@ def cdata_cos_resp(
     # check SSFR spectrometer
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
-    if which_ssfr == 'nasa':
+    if which_ssfr.split('|')[0] == 'nasa':
         import ssfr.nasa_ssfr as ssfr_toolbox
-    elif which_ssfr == 'lasp':
+    elif which_ssfr.split('|')[0] == 'lasp':
         import ssfr.lasp_ssfr as ssfr_toolbox
     else:
         msg = '\nError [cdata_cos_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa\'> or <\'lasp\'>).' % which_ssfr
@@ -109,10 +111,10 @@ def cdata_cos_resp(
     # check light collector
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
-    if which_lc == 'zenith':
+    if which_lc in ['zenith', 'zen', 'z']:
         index_si = 0
         index_in = 1
-    elif which_lc == 'nadir':
+    elif which_lc in ['nadir', 'nad', 'n']:
         index_si = 2
         index_in = 3
     else:
@@ -156,14 +158,14 @@ def cdata_cos_resp(
         f = interpolate.interp1d(cos_mu0, cos_resp_std0['in'][:, i], fill_value='extrapolate')
         cos_resp_std_all['in'][:, i] = f(cos_mu_all)
 
-    wvls = ssfr_toolbox.get_ssfr_wavelength()
+    wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
 
     wvl_start = wvl_range[0]
     wvl_end   = wvl_range[-1]
-    logic_si = (wvls['%s_si' % which_lc] >= wvl_start) & (wvls['%s_si' % which_lc] <= wvl_joint)
-    logic_in = (wvls['%s_in' % which_lc] >  wvl_joint)  & (wvls['%s_in' % which_lc] <= wvl_end)
+    logic_si = (wvls['%s|si' % which_lc] >= wvl_start)  & (wvls['%s|si' % which_lc] <= wvl_joint)
+    logic_in = (wvls['%s|in' % which_lc] >  wvl_joint)  & (wvls['%s|in' % which_lc] <= wvl_end)
 
-    wvl_data      = np.concatenate((wvls['%s_si' % which_lc][logic_si], wvls['%s_in' % which_lc][logic_in]))
+    wvl_data      = np.concatenate((wvls['%s|si' % which_lc][logic_si], wvls['%s|in' % which_lc][logic_in]))
 
     cos_resp_data = np.hstack((cos_resp_all['si'][:, logic_si], cos_resp_all['in'][:, logic_in]))
     cos_resp_std_data = np.hstack((cos_resp_std_all['si'][:, logic_si], cos_resp_std_all['in'][:, logic_in]))
