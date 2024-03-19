@@ -1129,7 +1129,7 @@ def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
         f.close()
 
-def ang_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
+def ang_cal(fdir):
 
     """
 
@@ -1140,9 +1140,7 @@ def ang_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
         angles
     """
 
-    fdir_data = 'data/arcsix/cal/ang-cal'
-
-    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
+    date_cal_s, ssfr_tag, lc_tag, _, vaa_tag, lamp_tag = os.path.basename(fdir).split('_')
 
     date_cal_s   = fdir.split('_')[0]
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -1169,7 +1167,7 @@ def ang_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
         dset_ = getattr(ssfr_, dset_tag)
         int_time = dset_['info']['int_time']
 
-        filename_tag = '%s|%s|vaa-180|%s' % (date_cal_s, date_today_s, dset_tag.lower())
+        filename_tag = '%s|%s|%s|%s' % (date_cal_s, date_today_s, vaa_tag, dset_tag.lower())
         ssfr.cal.cdata_cos_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
 #\----------------------------------------------------------------------------/#
 
@@ -1202,11 +1200,14 @@ def main_calibration():
 
     # angular calibration
     #/----------------------------------------------------------------------------\#
-    #     for lc_tag in ['zen', 'nad']:
-    for ssfr_tag in ['SSFR-A']:
-        for lc_tag in ['zen', 'nad']:
-            for lamp_tag in ['507']:
-                ang_cal(ssfr_tag, lc_tag, lamp_tag)
+    fdirs = [
+            'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen_ang-cal_vaa-180_507',
+            'data/arcsix/cal/ang-cal/2024-03-16_SSFR-A_zen_ang-cal_vaa-180_507',
+            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_ang-cal_vaa-180_507',
+            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_ang-cal_vaa-300_507',
+            ]
+    for fdir in fdirs:
+        ang_cal(fdir)
     #\----------------------------------------------------------------------------/#
 
 def test_data_a(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
