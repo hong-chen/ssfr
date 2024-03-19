@@ -48,14 +48,14 @@ def cal_rad_resp(
     # check light collector
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
-    if which_lc == 'zen':
+    if which_lc in ['zenith', 'zen', 'z']:
         index_si = 0
         index_in = 1
-    elif which_lc == 'nad':
+    elif which_lc in ['nadir', 'nad', 'n']:
         index_si = 2
         index_in = 3
     else:
-        msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zen\'> or <\'nad\'>).' % which_lc
+        msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
         raise ValueError(msg)
     print(which_lc)
     print(index_si, index_in)
@@ -72,8 +72,6 @@ def cal_rad_resp(
 
     if in_tag not in int_time.keys():
         int_time[in_tag] = int_time.pop('in')
-    print(si_tag)
-    print(in_tag)
     #\----------------------------------------------------------------------------/#
 
 

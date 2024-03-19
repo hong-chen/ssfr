@@ -1145,35 +1145,32 @@ def ang_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
     date_cal_s   = '2024-03-15'
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
 
+    # get angles
+    #/----------------------------------------------------------------------------\#
     angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 50.0, 5.0), np.arange(50.0, 91.0, 10.0)))
     angles_neg = -angles_pos
     angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+    #\----------------------------------------------------------------------------/#
 
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #/----------------------------------------------------------------------------\#
     fnames_ = sorted(glob.glob('%s/%s_%s_%s_ang-cal_vaa-180_%s/*.SKS' % (fdir_data, date_cal_s, ssfr_tag, lc_tag, lamp_tag)))
     fnames  = {
             fnames_[i]: angles[i] for i in range(angles.size)
             }
+    #\----------------------------------------------------------------------------/#
 
-    ssfr.cal.cdata_cos_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time={'si':80 , 'in':250})
-    # ssfr.cal.cdata_cos_resp(fnames, which_ssfr='lasp', which_lc=lc_tag, int_time={'si':120, 'in':350})
 
-    sys.exit()
-
-    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
     for i in range(ssfr_.Ndset):
         dset_tag = 'dset%d' % i
         dset_ = getattr(ssfr_, dset_tag)
         int_time = dset_['info']['int_time']
 
-        fname = '%s/cal/%s|cal-rad-pri|lasp|%s|%s|%s-si%3.3d-in%3.3d|%s.h5' % (ssfr.common.fdir_data, date_cal_s, ssfr_tag.lower(), lc_tag.lower(), dset_tag.lower(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
-        f = h5py.File(fname, 'w')
+        filename_tag = '%s|%s|vaa-180|%s' % (date_cal_s, date_today_s, dset_tag.lower())
+        ssfr.cal.cdata_cos_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
 
-        resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
-
-        for key in resp_pri.keys():
-            f[key] = resp_pri[key]
-
-        f.close()
 #\----------------------------------------------------------------------------/#
 
 
