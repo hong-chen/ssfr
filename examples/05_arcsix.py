@@ -1140,9 +1140,8 @@ def ang_cal(fdir):
         angles
     """
 
-    date_cal_s, ssfr_tag, lc_tag, _, vaa_tag, lamp_tag = os.path.basename(fdir).split('_')
+    date_cal_s, ssfr_tag, lc_tag, vaa_tag, lamp_tag = os.path.basename(fdir).split('_')
 
-    date_cal_s   = fdir.split('_')[0]
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
 
     # get angles
