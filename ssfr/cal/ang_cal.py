@@ -152,7 +152,11 @@ def cdata_cos_resp(
         int_time[in_tag] = int_time.pop('in')
     #\----------------------------------------------------------------------------/#
 
+
+    # get cosine response (aka angular response)
+    #/----------------------------------------------------------------------------\#
     cos_resp = cal_cos_resp(fnames, which_ssfr=which_ssfr, which_lc=which_lc, Nchan=Nchan, int_time=int_time)
+    #\----------------------------------------------------------------------------/#
 
     angles = np.array([fnames[fname] for fname in fnames.keys()])
     cos_mu = np.cos(np.deg2rad(angles))
