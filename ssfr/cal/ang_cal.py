@@ -44,9 +44,11 @@ def cal_cos_resp(
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
     if which_lc in ['zenith', 'zen', 'z']:
+        which_lc = 'zen'
         index_si = 0
         index_in = 1
     elif which_lc in ['nadir', 'nad', 'n']:
+        which_lc = 'nad'
         index_si = 2
         index_in = 3
     else:
@@ -125,9 +127,11 @@ def cdata_cos_resp(
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
     if which_lc in ['zenith', 'zen', 'z']:
+        which_lc = 'zen'
         index_si = 0
         index_in = 1
     elif which_lc in ['nadir', 'nad', 'n']:
+        which_lc = 'nad'
         index_si = 2
         index_in = 3
     else:
