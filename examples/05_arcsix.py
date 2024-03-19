@@ -1200,10 +1200,10 @@ def main_calibration():
     # angular calibration
     #/----------------------------------------------------------------------------\#
     fdirs = [
-            'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen_ang-cal_vaa-180_507',
-            'data/arcsix/cal/ang-cal/2024-03-16_SSFR-A_zen_ang-cal_vaa-180_507',
-            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_ang-cal_vaa-180_507',
-            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_ang-cal_vaa-300_507',
+            'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen_vaa-180_507',
+            'data/arcsix/cal/ang-cal/2024-03-16_SSFR-A_zen_vaa-180_507',
+            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-180_507',
+            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-300_507',
             ]
     for fdir in fdirs:
         ang_cal(fdir)
