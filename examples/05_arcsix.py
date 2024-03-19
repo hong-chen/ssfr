@@ -1142,7 +1142,9 @@ def ang_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
     fdir_data = 'data/arcsix/cal/ang-cal'
 
-    date_cal_s   = '2024-03-15'
+    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
+
+    date_cal_s   = fdir.split('_')[0]
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
 
     # get angles
@@ -1152,10 +1154,9 @@ def ang_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
     angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
     #\----------------------------------------------------------------------------/#
 
-
     # make fnames, a dictionary <key:value> with file name as key, angle as value
     #/----------------------------------------------------------------------------\#
-    fnames_ = sorted(glob.glob('%s/%s_%s_%s_ang-cal_vaa-180_%s/*.SKS' % (fdir_data, date_cal_s, ssfr_tag, lc_tag, lamp_tag)))
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
     fnames  = {
             fnames_[i]: angles[i] for i in range(angles.size)
             }
@@ -1170,7 +1171,6 @@ def ang_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
         filename_tag = '%s|%s|vaa-180|%s' % (date_cal_s, date_today_s, dset_tag.lower())
         ssfr.cal.cdata_cos_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
-
 #\----------------------------------------------------------------------------/#
 
 
@@ -1202,10 +1202,9 @@ def main_calibration():
 
     # angular calibration
     #/----------------------------------------------------------------------------\#
-    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
     #     for lc_tag in ['zen', 'nad']:
     for ssfr_tag in ['SSFR-A']:
-        for lc_tag in ['zen']:
+        for lc_tag in ['zen', 'nad']:
             for lamp_tag in ['507']:
                 ang_cal(ssfr_tag, lc_tag, lamp_tag)
     #\----------------------------------------------------------------------------/#
