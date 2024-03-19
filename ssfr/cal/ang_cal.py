@@ -155,7 +155,7 @@ def cdata_cos_resp(
 
     # get cosine response (aka angular response)
     #/----------------------------------------------------------------------------\#
-    cos_resp = cal_cos_resp(fnames, which_ssfr=which_ssfr, which_lc=which_lc, Nchan=Nchan, int_time=int_time)
+    cos_resp_ = cal_cos_resp(fnames, which_ssfr=which_ssfr, which_lc=which_lc, Nchan=Nchan, int_time=int_time)
     #\----------------------------------------------------------------------------/#
 
     angles = np.array([fnames[fname] for fname in fnames.keys()])
@@ -176,10 +176,10 @@ def cdata_cos_resp(
 
     for i, mu in enumerate(cos_mu0):
         indices = np.where(cos_mu==mu)[0]
-        cos_resp0[si_tag][i, :] = np.mean(cos_resp[si_tag][indices, :], axis=0)
-        cos_resp0[in_tag][i, :] = np.mean(cos_resp[in_tag][indices, :], axis=0)
-        cos_resp_std0[si_tag][i, :] = np.std(cos_resp[si_tag][indices, :], axis=0)
-        cos_resp_std0[in_tag][i, :] = np.std(cos_resp[in_tag][indices, :], axis=0)
+        cos_resp0[si_tag][i, :] = np.mean(cos_resp_[si_tag][indices, :], axis=0)
+        cos_resp0[in_tag][i, :] = np.mean(cos_resp_[in_tag][indices, :], axis=0)
+        cos_resp_std0[si_tag][i, :] = np.std(cos_resp_[si_tag][indices, :], axis=0)
+        cos_resp_std0[in_tag][i, :] = np.std(cos_resp_[in_tag][indices, :], axis=0)
 
     cos_mu_all   = np.linspace(0.0, 1.0, 1001)
     Nmu_all      = cos_mu_all.size
@@ -285,6 +285,16 @@ def cdata_cos_resp(
         print(info)
 
     f = h5py.File(fname_out, 'w')
+
+    g = f.create_group('raw')
+    g['ang'] = angles
+    g['mu']  = cos_mu
+
+    for spec_tag in cos_resp_.keys():
+        g_ = g.create_group(spec_tag)
+        g_['wvl'] = wvls[spec_tag]
+        g_['cos_resp'] = cos_resp_[spec_tag]
+
     f['wvl']          = wvl
     f['mu']           = cos_mu_all
     f['cos_resp']     = cos_resp
