@@ -158,10 +158,13 @@ def cdata_cos_resp(
     cos_resp_ = cal_cos_resp(fnames, which_ssfr=which_ssfr, which_lc=which_lc, Nchan=Nchan, int_time=int_time)
     #\----------------------------------------------------------------------------/#
 
+
+    # average the data from two different directions
+    #/----------------------------------------------------------------------------\#
     angles = np.array([fnames[fname] for fname in fnames.keys()])
     cos_mu = np.cos(np.deg2rad(angles))
 
-    cos_mu0 = np.unique(cos_mu)
+    cos_mu0 = np.sort(np.unique(cos_mu))[::-1]
     Nmu0    = cos_mu0.size
 
     cos_resp0 = {
@@ -174,13 +177,18 @@ def cdata_cos_resp(
             in_tag: np.zeros((Nmu0, Nchan), dtype=np.float64)
             }
 
-    for i, mu in enumerate(cos_mu0):
-        indices = np.where(cos_mu==mu)[0]
-        cos_resp0[si_tag][i, :] = np.mean(cos_resp_[si_tag][indices, :], axis=0)
-        cos_resp0[in_tag][i, :] = np.mean(cos_resp_[in_tag][indices, :], axis=0)
-        cos_resp_std0[si_tag][i, :] = np.std(cos_resp_[si_tag][indices, :], axis=0)
-        cos_resp_std0[in_tag][i, :] = np.std(cos_resp_[in_tag][indices, :], axis=0)
+    for i, mu0 in enumerate(cos_mu0):
+        indices = np.where(cos_mu==mu0)[0]
+        if indices.size in [2, 3]:
+            cos_resp0[si_tag][i, :] = np.nanmean(cos_resp_[si_tag][indices, :], axis=0)
+            cos_resp0[in_tag][i, :] = np.nanmean(cos_resp_[in_tag][indices, :], axis=0)
+            cos_resp_std0[si_tag][i, :] = np.nanstd(cos_resp_[si_tag][indices, :], axis=0)
+            cos_resp_std0[in_tag][i, :] = np.nanstd(cos_resp_[in_tag][indices, :], axis=0)
+    #\----------------------------------------------------------------------------/#
 
+
+    # gridding the data
+    #/----------------------------------------------------------------------------\#
     cos_mu_all   = np.linspace(0.0, 1.0, 1001)
     Nmu_all      = cos_mu_all.size
     cos_resp_all = {
@@ -205,7 +213,11 @@ def cdata_cos_resp(
 
         f = interpolate.interp1d(cos_mu0, cos_resp_std0[in_tag][:, i], fill_value='extrapolate')
         cos_resp_std_all[in_tag][:, i] = f(cos_mu_all)
+    #\----------------------------------------------------------------------------/#
 
+
+    # wavelength fitting
+    #/----------------------------------------------------------------------------\#
     wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
 
     wvl_start = wvl_range[0]
@@ -231,13 +243,50 @@ def cdata_cos_resp(
     coef  = np.zeros((Nmu_all, order+1), dtype=np.float64)
     for i in range(Nmu_all):
         coef[i, :] = np.polyfit(wvl[logic], cos_resp[i, :][logic], order)
+    #\----------------------------------------------------------------------------/#
 
+
+    # save file
+    #/----------------------------------------------------------------------------\#
     if filename_tag is not None:
         fname_out = '%s|cos-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssfr, which_lc, int_time[si_tag], int_time[in_tag])
     else:
         fname_out = 'cos-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssfr, which_lc, int_time[si_tag], int_time[in_tag])
 
-    # =============================================================================
+    info = 'Light Collector: %s\nJoint Wavelength: %.4fnm\nStart Wavelength: %.4fnm\nEnd Wavelength: %.4fnm\nIntegration Time for Silicon Channel: %dms\nIntegration Time for InGaAs Channel: %dms\nProcessed Files:\n' % (which_lc.title(), wvl_joint, wvl_start, wvl_end, int_time[si_tag], int_time[in_tag])
+    for key in fnames.keys():
+        line = 'At %3d [degree] Angle: %s\n' % (fnames[key], key)
+        info += line
+
+    if verbose:
+        print(info)
+
+    f = h5py.File(fname_out, 'w')
+
+    g = f.create_group('raw')
+    g['ang'] = angles
+    g['mu']  = cos_mu
+    g['mu0'] = cos_mu0
+
+    for spec_tag in cos_resp_.keys():
+        g_ = g.create_group(spec_tag)
+        g_['wvl'] = wvls[spec_tag]
+        g_['cos_resp'] = cos_resp_[spec_tag]
+        g_['cos_resp0'] = cos_resp0[spec_tag]
+        g_['cos_resp_std0'] = cos_resp_std0[spec_tag]
+
+    f['wvl']          = wvl
+    f['mu']           = cos_mu_all
+    f['cos_resp']     = cos_resp
+    f['cos_resp_int'] = cos_resp_int
+    f['poly_coef']    = coef
+    f['info']         = info
+    f.close()
+    #\----------------------------------------------------------------------------/#
+
+
+    # plot
+    #/----------------------------------------------------------------------------\#
     if False:
         import matplotlib as mpl
         # mpl.use('Agg')
@@ -274,34 +323,8 @@ def cdata_cos_resp(
         ax1.set_ylabel('Response')
 
         plt.savefig('cos_resp_mu-%06.4f.png' % cos_mu_all[index], bbox_inches='tight')
-    # =============================================================================
+    #\----------------------------------------------------------------------------/#
 
-    info = 'Light Collector: %s\nJoint Wavelength: %.4fnm\nStart Wavelength: %.4fnm\nEnd Wavelength: %.4fnm\nIntegration Time for Silicon Channel: %dms\nIntegration Time for InGaAs Channel: %dms\nProcessed Files:\n' % (which_lc.title(), wvl_joint, wvl_start, wvl_end, int_time[si_tag], int_time[in_tag])
-    for key in fnames.keys():
-        line = 'At %3d [degree] Angle: %s\n' % (fnames[key], key)
-        info += line
-
-    if verbose:
-        print(info)
-
-    f = h5py.File(fname_out, 'w')
-
-    g = f.create_group('raw')
-    g['ang'] = angles
-    g['mu']  = cos_mu
-
-    for spec_tag in cos_resp_.keys():
-        g_ = g.create_group(spec_tag)
-        g_['wvl'] = wvls[spec_tag]
-        g_['cos_resp'] = cos_resp_[spec_tag]
-
-    f['wvl']          = wvl
-    f['mu']           = cos_mu_all
-    f['cos_resp']     = cos_resp
-    f['cos_resp_int'] = cos_resp_int
-    f['poly_coef']    = coef
-    f['info']         = info
-    f.close()
 
     return fname_out
 
