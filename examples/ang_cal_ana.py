@@ -18,16 +18,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 
-def fig_cos_resp():
-
-    # fname = '2024-03-15|2024-03-19|vaa-180|dset0|cos-resp|lasp|ssfr-a|zen|si-080|in-250.h5'
-    # fname = '2024-03-15|2024-03-19|vaa-180|dset1|cos-resp|lasp|ssfr-a|zen|si-120|in-350.h5'
-    # fname = '2024-03-16|2024-03-19|vaa-180|dset0|cos-resp|lasp|ssfr-a|zen|si-080|in-250.h5'
-    # fname = '2024-03-16|2024-03-19|vaa-180|dset1|cos-resp|lasp|ssfr-a|zen|si-120|in-350.h5'
-    # fname = '2024-03-18|2024-03-19|vaa-180|dset0|cos-resp|lasp|ssfr-a|nad|si-080|in-250.h5'
-    # fname = '2024-03-18|2024-03-19|vaa-180|dset1|cos-resp|lasp|ssfr-a|nad|si-120|in-350.h5'
-    # fname = '2024-03-18|2024-03-19|vaa-300|dset0|cos-resp|lasp|ssfr-a|nad|si-080|in-250.h5'
-    fname = '2024-03-18|2024-03-19|vaa-300|dset1|cos-resp|lasp|ssfr-a|nad|si-120|in-350.h5'
+def fig_cos_resp(fname, wvl0=555.0):
 
     f = h5py.File(fname, 'r')
     mu = f['mu'][...]
@@ -36,44 +27,63 @@ def fig_cos_resp():
 
     ang_ = f['raw/ang'][...]
     mu_  = f['raw/mu'][...]
-    wvl_ = f['raw/nad|si/wvl'][...]
-    cos_resp_ = f['raw/nad|si/cos_resp'][...]
     mu0  = f['raw/mu0'][...]
-    cos_resp0 = f['raw/nad|si/cos_resp0'][...]
-    cos_resp_std0 = f['raw/nad|si/cos_resp_std0'][...]
+
+    try:
+        wvl_ = f['raw/nad|si/wvl'][...]
+        cos_resp_ = f['raw/nad|si/cos_resp'][...]
+        cos_resp0 = f['raw/nad|si/cos_resp0'][...]
+        cos_resp_std0 = f['raw/nad|si/cos_resp_std0'][...]
+    except:
+        wvl_ = f['raw/zen|si/wvl'][...]
+        cos_resp_ = f['raw/zen|si/cos_resp'][...]
+        cos_resp0 = f['raw/zen|si/cos_resp0'][...]
+        cos_resp_std0 = f['raw/zen|si/cos_resp_std0'][...]
     f.close()
 
     # figure
     #/----------------------------------------------------------------------------\#
     if True:
+        title = fname.replace('.h5', '').upper()
         plt.close('all')
         fig = plt.figure(figsize=(8, 6))
-        # fig.suptitle('Figure')
+        fig.suptitle('Cosine Response (%d nm)' % (wvl0), fontsize=18)
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
-        ax1.scatter(mu, cos_resp[:, np.argmin(np.abs(wvl-555.0))], s=6, c='k', lw=0.0)
-        ax1.scatter(mu_[:19], cos_resp_[:19, np.argmin(np.abs(wvl_-555.0))], s=60, c='r', lw=0.0, alpha=0.6)
-        ax1.scatter(mu_[19:], cos_resp_[19:, np.argmin(np.abs(wvl_-555.0))], s=30, c='b', lw=0.0, alpha=0.6)
-        ax1.errorbar(mu0, cos_resp0[:, np.argmin(np.abs(wvl_-555.0))], yerr=cos_resp_std0[:, np.argmin(np.abs(wvl_-555.0))], color='g', lw=1.0)
-        ax1.axhline(1.0, color='red', ls='--')
+        ax1.scatter(mu, cos_resp[:, np.argmin(np.abs(wvl-wvl0))], s=6, c='k', lw=0.0)
+        ax1.plot(mu_[:19]  , cos_resp_[:19, np.argmin(np.abs(wvl_-wvl0))]  , marker='o', markersize=8, color='r', lw=1.0, alpha=0.6)
+        ax1.plot(mu_[19:-1], cos_resp_[19:-1, np.argmin(np.abs(wvl_-wvl0))], marker='o', markersize=8, color='b', lw=1.0, alpha=0.6)
+        ax1.errorbar(mu0, cos_resp0[:, np.argmin(np.abs(wvl_-wvl0))], yerr=cos_resp_std0[:, np.argmin(np.abs(wvl_-wvl0))], color='g', lw=1.0)
+        ax1.axhline(1.0, color='gray', ls='--')
         ax1.plot([0.0, 1.0], [0.0, 1.0], color='gray', ls='--')
         ax1.set_xlim((0.0, 1.0))
         ax1.set_ylim((0.0, 1.1))
         ax1.set_xlabel('$cos(\\theta)$')
         ax1.set_ylabel('Response')
+        ax1.set_title('%s' % (title), fontsize=12)
+
+        patches_legend = [
+                          mpatches.Patch(color='black' , label='Average&Interpolated'), \
+                          mpatches.Patch(color='red'   , label='Pos. Angles (C.C.W.)'), \
+                          mpatches.Patch(color='blue'  , label='Neg. Angles (C.W.)'), \
+                          mpatches.Patch(color='green' , label='Average&Std.'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='lower right', fontsize=16)
         #\--------------------------------------------------------------/#
+
         # save figure
         #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        fname_png = fname.replace('.h5', '.png')
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig(fname_png, bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
     #\----------------------------------------------------------------------------/#
 
 
 if __name__ == '__main__':
 
-    fig_cos_resp()
+    fnames = sorted(glob.glob('*cos-resp*.h5'))
+    for fname in fnames:
+        fig_cos_resp(fname)
