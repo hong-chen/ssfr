@@ -24,7 +24,7 @@ import ssfr
 
 _mission_   = 'arcsix'
 _spns_      = 'spns-b'
-_ssfr_      = 'ssfr-b'
+_ssfr_      = 'ssfr-a'
 _fdir_data_ = 'data/%s/pre-mission' % _mission_
 _fdir_hsk_  = '%s/raw/hsk'
 _fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
@@ -1364,5 +1364,5 @@ if __name__ == '__main__':
 
     # test_data()
 
-    date = datetime.datetime(2024, 3, 21) # SPNS-B and SSFR-B at Skywatch
+    date = datetime.datetime(2024, 3, 20) # SPNS-B and SSFR-B at Skywatch
     cdata_arcsix_ssfr_v0(date)
