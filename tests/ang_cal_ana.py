@@ -89,8 +89,58 @@ def fig_cos_resp(fname, wvl0=555.0):
     #\----------------------------------------------------------------------------/#
 
 
+def fig_belana_darks_si():
+
+    fname = 'ARCSIX_SSFR-B_2024-03-21_v0.h5'
+    f = h5py.File(fname)
+    zen_si_cnt0 = f['dset0/spectra'][...][:30, :, 0]
+    nad_si_cnt0 = f['dset0/spectra'][...][:30, :, 2]
+    zen_si_cnt1 = f['dset1/spectra'][...][:30, :, 0]
+    nad_si_cnt1 = f['dset1/spectra'][...][:30, :, 2]
+    f.close()
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(14, 10))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(221)
+        ax2 = fig.add_subplot(222)
+        ax3 = fig.add_subplot(223)
+        ax4 = fig.add_subplot(224)
+
+        colors = mpl.cm.jet(np.linspace(0.0, 1.0, 30))
+
+        for i in range(0, 30, 3):
+            ax1.plot(np.arange(256), zen_si_cnt0[i, :], alpha=1.0, lw=1.0, color=colors[i, ...])
+            ax2.plot(np.arange(256), nad_si_cnt0[i, :], alpha=1.0, lw=1.0, color=colors[i, ...])
+            ax3.plot(np.arange(256), zen_si_cnt1[i, :], alpha=1.0, lw=1.0, color=colors[i, ...])
+            ax4.plot(np.arange(256), nad_si_cnt0[i, :], alpha=1.0, lw=1.0, color=colors[i, ...])
+        ax3.set_xlabel('Channel #')
+        ax4.set_xlabel('Channel #')
+        ax1.set_ylabel('Counts')
+        ax3.set_ylabel('Counts')
+        ax1.set_title('Belana Zenith Silicon (dset0)')
+        ax2.set_title('Belana Nadir Silicon (dset0)')
+        ax3.set_title('Belana Zenith Silicon (dset1)')
+        ax4.set_title('Belana Nadir Silicon (dset1)')
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
 if __name__ == '__main__':
 
-    fnames = sorted(glob.glob('data/*cos-resp*.h5'))
-    for fname in [fnames[-1]]:
-        fig_cos_resp(fname)
+    fig_belana_darks_si()
+    # fnames = sorted(glob.glob('data/*cos-resp*.h5'))
+    # for fname in [fnames[-1]]:
+    #     fig_cos_resp(fname)
