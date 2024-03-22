@@ -73,8 +73,8 @@ def fig_cos_resp(fname, wvl0=555.0):
                           mpatches.Patch(color='blue'  , label='Neg. Angles (C.W.)'), \
                           mpatches.Patch(color='green' , label='Average&Std.'), \
                          ]
-        # ax1.legend(handles=patches_legend, loc='lower right', fontsize=16)
-        ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
+        ax1.legend(handles=patches_legend, loc='lower right', fontsize=16)
+        # ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
         #\--------------------------------------------------------------/#
 
         # save figure
