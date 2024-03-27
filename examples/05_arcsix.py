@@ -1360,9 +1360,6 @@ if __name__ == '__main__':
 
     # main_process_data()
 
-    # main_calibration()
+    main_calibration()
 
-    # test_data()
-
-    date = datetime.datetime(2024, 3, 20) # SPNS-B and SSFR-B at Skywatch
-    cdata_arcsix_ssfr_v0(date)
+    pass
