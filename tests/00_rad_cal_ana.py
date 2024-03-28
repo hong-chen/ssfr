@@ -276,8 +276,8 @@ def main_calibration():
 
     # radiometric calibration
     #/----------------------------------------------------------------------------\#
-    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
-    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350'
+    fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
+    fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350'
 
     # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
     # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350'

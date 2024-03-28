@@ -115,22 +115,23 @@ def cal_rad_resp(
         else:
             data_flux = data[:, 1]*10000.0   # W m^-2 nm^-1
 
-        # !!!!!!!!!! this will change !!!!!!!!!!!!!!
-        # currently we are developing wavelength calibration,
-        # the wavelength calculation process will be modified.
+        # get ssfr wavelength for two spectrometers
         #/--------------------------------------------------------------\#
         wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
         wvl_si = wvls[si_tag]
         wvl_in = wvls[in_tag]
         #\--------------------------------------------------------------/#
 
-        lamp_std_si = np.zeros_like(wvl_si)
-        for i in range(lamp_std_si.size):
-            lamp_std_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
+        # lamp_std_si = np.zeros_like(wvl_si)
+        # for i in range(lamp_std_si.size):
+        #     lamp_std_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        lamp_std_in = np.zeros_like(wvl_in)
-        for i in range(lamp_std_in.size):
-            lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+        # lamp_std_in = np.zeros_like(wvl_in)
+        # for i in range(lamp_std_in.size):
+        #     lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+
+        lamp_std_si = np.interp(wvl_si, data_wvl, data_flux)
+        lamp_std_in = np.interp(wvl_in, data_wvl, data_flux)
 
         resp = {
                 si_tag: lamp_std_si,
@@ -261,7 +262,7 @@ def cdata_rad_resp(
                 verbose=verbose,
                 )
     else:
-        msg = '\nError [cdata_rad_resp]: Cannot proceed without primary calibration files.'
+        msg = '\nError [cdata_rad_resp]: cannot proceed without primary calibration files.'
         raise OSError(msg)
 
     if fnames_tra is not None:
@@ -275,7 +276,7 @@ def cdata_rad_resp(
                 verbose=verbose,
                 )
     else:
-        msg = '\nError [cdata_rad_resp]: Cannot proceed without transfer calibration files.'
+        msg = '\nError [cdata_rad_resp]: cannot proceed without transfer calibration files.'
         raise OSError(msg)
 
     if fnames_sec is not None:

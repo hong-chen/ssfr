@@ -225,14 +225,11 @@ def cdata_cos_resp(
     logic_si  = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
     logic_in  = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
 
-    wvl_data     = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
+    wvl_data      = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
+    cos_resp_data = np.concatenate((cos_resp_all[si_tag][:, logic_si], cos_resp_all[in_tag][:, logic_in]))
+
     indices_sort = np.argsort(wvl_data)
     wvl          = wvl_data[indices_sort]
-    #\----------------------------------------------------------------------------/#
-
-    cos_resp_data = np.hstack((cos_resp_all[si_tag][:, logic_si], cos_resp_all[in_tag][:, logic_in]))
-    cos_resp_std_data = np.hstack((cos_resp_std_all[si_tag][:, logic_si], cos_resp_std_all[in_tag][:, logic_in]))
-
     cos_resp = cos_resp_data[:, indices_sort]
 
     cos_resp_int = np.zeros(wvl.size, dtype=np.float64)
@@ -244,6 +241,8 @@ def cdata_cos_resp(
     coef  = np.zeros((Nmu_all, order+1), dtype=np.float64)
     for i in range(Nmu_all):
         coef[i, :] = np.polyfit(wvl[logic], cos_resp[i, :][logic], order)
+    #\----------------------------------------------------------------------------/#
+
 
     # save file
     #/----------------------------------------------------------------------------\#
