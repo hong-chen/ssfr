@@ -48,11 +48,11 @@ def cal_rad_resp(
     # check light collector
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
-    if which_lc in ['zenith', 'zen', 'z']:
+    if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
         which_lc = 'zen'
         index_si = 0
         index_in = 1
-    elif which_lc in ['nadir', 'nad', 'n']:
+    elif (which_lc in ['nadir', 'nad', 'n']) | ('nad' in which_lc):
         which_lc = 'nad'
         index_si = 2
         index_in = 3
@@ -202,6 +202,7 @@ def cdata_rad_resp(
         which_lamp='f-1324',
         wvl_joint=950.0,
         wvl_range=[350.0, 2200.0],
+        int_time={'si':80.0, 'in':250.0},
         ):
 
     # check SSFR spectrometer
@@ -230,6 +231,7 @@ def cdata_rad_resp(
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
                 which_lamp=which_lamp,
+                int_time=int_time,
                 )
     else:
         msg = '\nError [cdata_rad_resp]: Cannot proceed without primary calibration files.'
@@ -242,6 +244,7 @@ def cdata_rad_resp(
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
                 which_lamp=which_lamp,
+                int_time=int_time,
                 )
     else:
         msg = '\nError [cdata_rad_resp]: Cannot proceed without transfer calibration files.'
@@ -254,6 +257,7 @@ def cdata_rad_resp(
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
                 which_lamp=which_lamp,
+                int_time=int_time,
                 )
     else:
         msg = '\nWarning [cdata_rad_resp]: Secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...'
@@ -264,9 +268,12 @@ def cdata_rad_resp(
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
                 which_lamp=which_lamp,
+                int_time=int_time,
                 )
 
-    wvls = ssfr_toolbox.get_ssfr_wvl()
+    sys.exit()
+
+    wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
 
     wvl_start = wvl_range[0]
     wvl_end   = wvl_range[-1]

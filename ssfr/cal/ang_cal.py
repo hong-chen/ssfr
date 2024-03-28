@@ -43,11 +43,11 @@ def cal_cos_resp(
     # check light collector
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
-    if which_lc in ['zenith', 'zen', 'z']:
+    if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
         which_lc = 'zen'
         index_si = 0
         index_in = 1
-    elif which_lc in ['nadir', 'nad', 'n']:
+    elif (which_lc in ['nadir', 'nad', 'n']) | ('nad' in which_lc):
         which_lc = 'nad'
         index_si = 2
         index_in = 3
@@ -126,11 +126,11 @@ def cdata_cos_resp(
     # check light collector
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
-    if which_lc in ['zenith', 'zen', 'z']:
+    if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
         which_lc = 'zen'
         index_si = 0
         index_in = 1
-    elif which_lc in ['nadir', 'nad', 'n']:
+    elif (which_lc in ['nadir', 'nad', 'n']) | ('nad' in which_lc):
         which_lc = 'nad'
         index_si = 2
         index_in = 3
