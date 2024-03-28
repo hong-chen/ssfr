@@ -59,6 +59,8 @@ def cal_rad_resp(
     else:
         msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
         raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
+
 
     if verbose:
         if resp is None:
@@ -66,7 +68,6 @@ def cal_rad_resp(
         else:
             msg = '\nMessage [cal_rad_resp]: processing transfer/secondary response for <%s|%s> ...' % (which_ssfr.upper(), which_lc.upper())
         print(msg)
-    #\----------------------------------------------------------------------------/#
 
 
     # si/in tag
@@ -95,10 +96,6 @@ def cal_rad_resp(
             which_lamp = 'f-506c'
         elif (which_lamp[-4:] == '1324'):
             which_lamp = 'f-1324'
-
-        if verbose:
-            msg = '\nMessage [cal_rad_resp]: using calibrated lamp <%s> ...' % (which_lamp)
-            print(msg)
         #\--------------------------------------------------------------/#
 
         # read in calibrated lamp data and interpolated/integrated at SSFR wavelengths/slits
@@ -230,6 +227,30 @@ def cdata_rad_resp(
     # check light collector
     #/----------------------------------------------------------------------------\#
     which_lc = which_lc.lower()
+    if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
+        which_lc = 'zen'
+        index_si = 0
+        index_in = 1
+    elif (which_lc in ['nadir', 'nad', 'n']) | ('nad' in which_lc):
+        which_lc = 'nad'
+        index_si = 2
+        index_in = 3
+    else:
+        msg = '\nError [cdata_cos_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
+
+
+    # si/in tag
+    #/----------------------------------------------------------------------------\#
+    si_tag = '%s|si' % which_lc
+    in_tag = '%s|in' % which_lc
+
+    if si_tag not in int_time.keys():
+        int_time[si_tag] = int_time.pop('si')
+
+    if in_tag not in int_time.keys():
+        int_time[in_tag] = int_time.pop('in')
     #\----------------------------------------------------------------------------/#
 
     if fnames_pri is not None:
@@ -268,7 +289,7 @@ def cdata_rad_resp(
                 int_time=int_time,
                 )
     else:
-        msg = '\nWarning [cdata_rad_resp]: Secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...'
+        msg = '\nWarning [cdata_rad_resp]: secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...'
         warnings.warn(msg)
         sec_resp = cal_rad_resp(
                 fnames_tra,
@@ -279,25 +300,28 @@ def cdata_rad_resp(
                 int_time=int_time,
                 )
 
-    sys.exit()
-
+    # wavelength fitting
+    #/----------------------------------------------------------------------------\#
     wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
 
     wvl_start = wvl_range[0]
     wvl_end   = wvl_range[-1]
-    logic_si = (wvls['%s_si' % which_lc] >= wvl_start) & (wvls['%s_si' % which_lc] <= wvl_joint)
-    logic_in = (wvls['%s_in' % which_lc] >  wvl_joint) & (wvls['%s_in' % which_lc] <= wvl_end)
-
-    wvl_data      = np.concatenate((wvls['%s_si' % which_lc][logic_si], wvls['%s_in' % which_lc][logic_in]))
-    pri_resp_data = np.hstack((pri_resp['si'][logic_si], pri_resp['in'][logic_in]))
-    transfer_data = np.hstack((transfer['si'][logic_si], transfer['in'][logic_in]))
-    sec_resp_data = np.hstack((sec_resp['si'][logic_si], sec_resp['in'][logic_in]))
-
+    logic_si = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
+    logic_in = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
+    wvl_data      = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
     indices_sort = np.argsort(wvl_data)
     wvl      = wvl_data[indices_sort]
+    #\----------------------------------------------------------------------------/#
+
+    pri_resp_data = np.hstack((pri_resp[si_tag][logic_si], pri_resp[in_tag][logic_in]))
+    transfer_data = np.hstack((transfer[si_tag][logic_si], transfer[in_tag][logic_in]))
+    sec_resp_data = np.hstack((sec_resp[si_tag][logic_si], sec_resp[in_tag][logic_in]))
+
     pri_resp = pri_resp_data[indices_sort]
     transfer = transfer_data[indices_sort]
     sec_resp = sec_resp_data[indices_sort]
+
+    sys.exit()
 
     if filename_tag is not None:
         fname_out = '%s_rad-resp_%s|si-%3.3d-%s|in-%3.3d.h5' % (filename_tag, which_lc, int_time['si'], which_lc, int_time['in'])
