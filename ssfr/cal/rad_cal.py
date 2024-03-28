@@ -122,16 +122,16 @@ def cal_rad_resp(
         wvl_in = wvls[in_tag]
         #\--------------------------------------------------------------/#
 
-        # lamp_std_si = np.zeros_like(wvl_si)
-        # for i in range(lamp_std_si.size):
-        #     lamp_std_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
+        lamp_std_si = np.zeros_like(wvl_si)
+        for i in range(lamp_std_si.size):
+            lamp_std_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        # lamp_std_in = np.zeros_like(wvl_in)
-        # for i in range(lamp_std_in.size):
-        #     lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+        lamp_std_in = np.zeros_like(wvl_in)
+        for i in range(lamp_std_in.size):
+            lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        lamp_std_si = np.interp(wvl_si, data_wvl, data_flux)
-        lamp_std_in = np.interp(wvl_in, data_wvl, data_flux)
+        # lamp_std_si = np.interp(wvl_si, data_wvl, data_flux)
+        # lamp_std_in = np.interp(wvl_in, data_wvl, data_flux)
 
         resp = {
                 si_tag: lamp_std_si,
