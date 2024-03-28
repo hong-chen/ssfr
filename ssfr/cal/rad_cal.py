@@ -41,7 +41,6 @@ def cal_rad_resp(
     else:
         msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa|ssfr-6\'> or <\'lasp|ssfr-a\'> or <\'lasp|ssfr-b\'>).' % which_ssfr
         raise ValueError(msg)
-
     #\----------------------------------------------------------------------------/#
 
 
@@ -145,7 +144,7 @@ def cal_rad_resp(
 
     # read raw data
     #/----------------------------------------------------------------------------\#
-    ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp', dark_extend=5, light_extend=5)
+    ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp', dark_extend=10, light_extend=10)
 
     spectra_si = None
     spectra_in = None
@@ -300,7 +299,7 @@ def cdata_rad_resp(
                 int_time=int_time,
                 )
 
-    # wavelength fitting
+    # wavelength
     #/----------------------------------------------------------------------------\#
     wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
 
@@ -308,9 +307,9 @@ def cdata_rad_resp(
     wvl_end   = wvl_range[-1]
     logic_si = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
     logic_in = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
-    wvl_data      = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
+    wvl_data     = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
     indices_sort = np.argsort(wvl_data)
-    wvl      = wvl_data[indices_sort]
+    wvl          = wvl_data[indices_sort]
     #\----------------------------------------------------------------------------/#
 
     pri_resp_data = np.hstack((pri_resp[si_tag][logic_si], pri_resp[in_tag][logic_in]))
@@ -321,12 +320,12 @@ def cdata_rad_resp(
     transfer = transfer_data[indices_sort]
     sec_resp = sec_resp_data[indices_sort]
 
-    sys.exit()
-
+    # save file
+    #/----------------------------------------------------------------------------\#
     if filename_tag is not None:
-        fname_out = '%s_rad-resp_%s|si-%3.3d-%s|in-%3.3d.h5' % (filename_tag, which_lc, int_time['si'], which_lc, int_time['in'])
+        fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssfr, which_lc, int_time[si_tag], int_time[in_tag])
     else:
-        fname_out = 'rad-resp_%s|si-%3.3d-%s|in-%3.3d.h5' % (which_lc, int_time['si'], which_lc, int_time['in'])
+        fname_out = 'rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssfr, which_lc, int_time[si_tag], int_time[in_tag])
 
     f = h5py.File(fname_out, 'w')
     f['wvl']       = wvl
@@ -334,6 +333,9 @@ def cdata_rad_resp(
     f['transfer']  = transfer
     f['sec_resp']  = sec_resp
     f.close()
+    #\----------------------------------------------------------------------------/#
+
+
 
     return fname_out
 
