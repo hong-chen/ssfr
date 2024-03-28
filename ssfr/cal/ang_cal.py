@@ -222,8 +222,8 @@ def cdata_cos_resp(
 
     wvl_start = wvl_range[0]
     wvl_end   = wvl_range[-1]
-    logic_si = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
-    logic_in = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
+    logic_si  = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
+    logic_in  = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
 
     wvl_data     = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
     indices_sort = np.argsort(wvl_data)

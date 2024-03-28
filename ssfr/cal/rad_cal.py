@@ -207,6 +207,7 @@ def cdata_rad_resp(
         wvl_joint=950.0,
         wvl_range=[350.0, 2200.0],
         int_time={'si':80.0, 'in':250.0},
+        verbose=True,
         ):
 
     # check SSFR spectrometer
@@ -260,6 +261,7 @@ def cdata_rad_resp(
                 which_lc=which_lc,
                 which_lamp=which_lamp,
                 int_time=int_time,
+                verbose=verbose,
                 )
     else:
         msg = '\nError [cdata_rad_resp]: Cannot proceed without primary calibration files.'
@@ -273,6 +275,7 @@ def cdata_rad_resp(
                 which_lc=which_lc,
                 which_lamp=which_lamp,
                 int_time=int_time,
+                verbose=verbose,
                 )
     else:
         msg = '\nError [cdata_rad_resp]: Cannot proceed without transfer calibration files.'
@@ -286,6 +289,7 @@ def cdata_rad_resp(
                 which_lc=which_lc,
                 which_lamp=which_lamp,
                 int_time=int_time,
+                verbose=verbose,
                 )
     else:
         msg = '\nWarning [cdata_rad_resp]: secondary/field calibration files are not available, use transfer calibration files for secondary/field calibration ...'
@@ -297,6 +301,7 @@ def cdata_rad_resp(
                 which_lc=which_lc,
                 which_lamp=which_lamp,
                 int_time=int_time,
+                verbose=verbose,
                 )
 
     # wavelength
@@ -305,8 +310,9 @@ def cdata_rad_resp(
 
     wvl_start = wvl_range[0]
     wvl_end   = wvl_range[-1]
-    logic_si = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
-    logic_in = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
+    logic_si  = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
+    logic_in  = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
+
     wvl_data     = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
     indices_sort = np.argsort(wvl_data)
     wvl          = wvl_data[indices_sort]
