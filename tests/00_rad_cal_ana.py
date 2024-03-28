@@ -191,56 +191,9 @@ def fig_alvin_darks_si():
     #\----------------------------------------------------------------------------/#
 
 
-def field_lamp_consis_check():
-
-    fdir = ''
 
 
 
-
-
-
-def ang_cal(
-        fdir
-        ):
-
-    """
-
-    Notes:
-        angular calibration is done for three different azimuth angles (reference to the vaccum port)
-        60, 180, 300
-
-        angles
-    """
-
-    date_cal_s, ssfr_tag, lc_tag, vaa_tag, lamp_tag = os.path.basename(fdir).split('_')
-
-    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
-
-    # get angles
-    #/----------------------------------------------------------------------------\#
-    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 50.0, 5.0), np.arange(50.0, 91.0, 10.0)))
-    angles_neg = -angles_pos
-    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
-    #\----------------------------------------------------------------------------/#
-
-    # make fnames, a dictionary <key:value> with file name as key, angle as value
-    #/----------------------------------------------------------------------------\#
-    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
-    fnames  = {
-            fnames_[i]: angles[i] for i in range(angles.size)
-            }
-    #\----------------------------------------------------------------------------/#
-
-
-    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
-    for i in range(ssfr_.Ndset):
-        dset_tag = 'dset%d' % i
-        dset_ = getattr(ssfr_, dset_tag)
-        int_time = dset_['info']['int_time']
-
-        filename_tag = '%s|%s|%s|%s' % (date_cal_s, date_today_s, vaa_tag, dset_tag.lower())
-        ssfr.cal.cdata_cos_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
 
 
 def rad_cal(
@@ -273,13 +226,14 @@ def rad_cal(
 
     # placeholder for calibration files of transfer
     #/----------------------------------------------------------------------------\#
-    date_cal_s_sec, ssfr_tag_sec, lc_tag_sec, cal_tag_sec, lamp_tag_sec, si_int_tag_sec, in_int_tag_sec = os.path.basename(fdir_tra).split('_')
-    # date_cal_s_sec, ssfr_tag_sec, lc_tag_sec, cal_tag_sec, lamp_tag_sec, si_int_tag_sec, in_int_tag_sec = os.path.basename(fdir_sec).split('_')
-    # fnames_sec_ = sorted(glob.glob('%s/*.SKS' % (fdir_sec)))
-    # fnames_sec = [fnames_sec_[-1]]
-    # if len(fnames_sec) > 1:
-    #     msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_sec, fnames_sec[0])
-    #     warnings.warn(msg)
+    if fdir_sec is None:
+        fdir_sec = fdir_tra
+    date_cal_s_sec, ssfr_tag_sec, lc_tag_sec, cal_tag_sec, lamp_tag_sec, si_int_tag_sec, in_int_tag_sec = os.path.basename(fdir_sec).split('_')
+    fnames_sec_ = sorted(glob.glob('%s/*.SKS' % (fdir_sec)))
+    fnames_sec = [fnames_sec_[-1]]
+    if len(fnames_sec) > 1:
+        msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_sec, fnames_sec[0])
+        warnings.warn(msg)
     #\----------------------------------------------------------------------------/#
 
     if (ssfr_tag_pri==ssfr_tag_tra):
@@ -299,8 +253,7 @@ def rad_cal(
         cal_tag = '%s_%s|%s_%s|%s_%s' % (date_cal_s_pri, lamp_tag_pri, date_cal_s_tra, lamp_tag_tra, date_cal_s_sec, lamp_tag_sec)
         filename_tag = '%s|%s|%s' % (cal_tag, date_today_s, dset_tag)
 
-        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=lamp_tag_pri, filename_tag=filename_tag)
-
+        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=lamp_tag_pri, filename_tag=filename_tag)
 
 
 def main_calibration():
@@ -323,8 +276,21 @@ def main_calibration():
 
     # radiometric calibration
     #/----------------------------------------------------------------------------\#
-    fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
-    fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350'
+    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
+    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350'
+
+    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
+    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350'
+
+    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'
+    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350'
+
+    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350'
+    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350'
+
+    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
+    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350'
+
     rad_cal(fdir_pri, fdir_tra)
     #\----------------------------------------------------------------------------/#
 
@@ -344,6 +310,50 @@ def main_calibration():
     #\----------------------------------------------------------------------------/#
 
 
+
+def field_lamp_consis_check():
+
+    fnames = sorted(glob.glob('*150e*.h5'))
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+
+        for fname in fnames:
+            f = h5py.File(fname, 'r')
+            wvl = f['wvl'][...]
+            transfer = f['pri_resp'][...]
+            f.close()
+        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+            ax1.scatter(wvl, transfer, s=6, lw=0.0)
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+
+
 if __name__ == '__main__':
 
     # fig_belana_darks_si()
@@ -353,5 +363,7 @@ if __name__ == '__main__':
     #     fig_cos_resp(fname)
 
     main_calibration()
+
+    # field_lamp_consis_check()
 
     pass

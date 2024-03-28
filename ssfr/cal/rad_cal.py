@@ -101,7 +101,7 @@ def cal_rad_resp(
         #/--------------------------------------------------------------\#
         fname_lamp = '%s/lamp/%s.dat' % (ssfr.common.fdir_data, which_lamp)
         if not os.path.exists(fname_lamp):
-            msg = '\nError [cal_rad_resp]: Cannot locate calibration file for lamp <%s>.' % which_lamp
+            msg = '\nError [cal_rad_resp]: cannot locate calibration file for lamp <%s>.' % which_lamp
             raise OSError(msg)
 
         if verbose:
@@ -132,9 +132,6 @@ def cal_rad_resp(
         for i in range(lamp_std_in.size):
             lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        # lamp_std_si = np.interp(wvl_si, data_wvl, data_flux)
-        # lamp_std_in = np.interp(wvl_in, data_wvl, data_flux)
-
         resp = {
                 si_tag: lamp_std_si,
                 in_tag: lamp_std_in
@@ -144,7 +141,7 @@ def cal_rad_resp(
 
     # read raw data
     #/----------------------------------------------------------------------------\#
-    ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp', dark_extend=10, light_extend=10)
+    ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp', dark_extend=5, light_extend=5)
 
     spectra_si = None
     spectra_in = None
@@ -313,18 +310,18 @@ def cdata_rad_resp(
     logic_si  = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
     logic_in  = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
 
-    wvl_data     = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
+    wvl_data      = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
+    pri_resp_data = np.concatenate((pri_resp[si_tag][logic_si], pri_resp[in_tag][logic_in]))
+    transfer_data = np.concatenate((transfer[si_tag][logic_si], transfer[in_tag][logic_in]))
+    sec_resp_data = np.concatenate((sec_resp[si_tag][logic_si], sec_resp[in_tag][logic_in]))
+
     indices_sort = np.argsort(wvl_data)
-    wvl          = wvl_data[indices_sort]
-    #\----------------------------------------------------------------------------/#
-
-    pri_resp_data = np.hstack((pri_resp[si_tag][logic_si], pri_resp[in_tag][logic_in]))
-    transfer_data = np.hstack((transfer[si_tag][logic_si], transfer[in_tag][logic_in]))
-    sec_resp_data = np.hstack((sec_resp[si_tag][logic_si], sec_resp[in_tag][logic_in]))
-
+    wvl      = wvl_data[indices_sort]
     pri_resp = pri_resp_data[indices_sort]
     transfer = transfer_data[indices_sort]
     sec_resp = sec_resp_data[indices_sort]
+    #\----------------------------------------------------------------------------/#
+
 
     # save file
     #/----------------------------------------------------------------------------\#
