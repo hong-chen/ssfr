@@ -200,7 +200,9 @@ def field_lamp_consis_check():
 
 
 
-def ang_cal(fdir):
+def ang_cal(
+        fdir
+        ):
 
     """
 

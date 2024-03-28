@@ -26,6 +26,7 @@ def cal_rad_resp(
         which_lc='zen',
         which_lamp='f-1324',
         int_time={'si':80.0, 'in':250.0},
+        verbose=True,
         ):
 
 
@@ -40,8 +41,7 @@ def cal_rad_resp(
     else:
         msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa|ssfr-6\'> or <\'lasp|ssfr-a\'> or <\'lasp|ssfr-b\'>).' % which_ssfr
         raise ValueError(msg)
-    print(which_ssfr)
-    print(which_lab)
+
     #\----------------------------------------------------------------------------/#
 
 
@@ -59,8 +59,13 @@ def cal_rad_resp(
     else:
         msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
         raise ValueError(msg)
-    print(which_lc)
-    print(index_si, index_in)
+
+    if verbose:
+        if resp is None:
+            msg = '\nMessage [cal_rad_resp]: processing primary response for <%s|%s> ...' % (which_ssfr.upper(), which_lc.upper())
+        else:
+            msg = '\nMessage [cal_rad_resp]: processing transfer/secondary response for <%s|%s> ...' % (which_ssfr.upper(), which_lc.upper())
+        print(msg)
     #\----------------------------------------------------------------------------/#
 
 
@@ -91,7 +96,9 @@ def cal_rad_resp(
         elif (which_lamp[-4:] == '1324'):
             which_lamp = 'f-1324'
 
-        print(which_lamp)
+        if verbose:
+            msg = '\nMessage [cal_rad_resp]: using calibrated lamp <%s> ...' % (which_lamp)
+            print(msg)
         #\--------------------------------------------------------------/#
 
         # read in calibrated lamp data and interpolated/integrated at SSFR wavelengths/slits
@@ -101,7 +108,9 @@ def cal_rad_resp(
             msg = '\nError [cal_rad_resp]: Cannot locate calibration file for lamp <%s>.' % which_lamp
             raise OSError(msg)
 
-        print(fname_lamp)
+        if verbose:
+            msg = '\nMessage [cal_rad_resp]: using calibrated lamp <%s> with lamp file at \n  <%s>...' % (which_lamp, fname_lamp)
+            print(msg)
 
         data      = np.loadtxt(fname_lamp)
         data_wvl  = data[:, 0]
@@ -117,7 +126,6 @@ def cal_rad_resp(
         wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
         wvl_si = wvls[si_tag]
         wvl_in = wvls[in_tag]
-        print(wvls.keys())
         #\--------------------------------------------------------------/#
 
         lamp_std_si = np.zeros_like(wvl_si)
