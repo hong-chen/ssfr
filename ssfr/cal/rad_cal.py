@@ -61,12 +61,15 @@ def cal_rad_resp(
     #\----------------------------------------------------------------------------/#
 
 
+    # print message
+    #/----------------------------------------------------------------------------\#
     if verbose:
         if resp is None:
             msg = '\nMessage [cal_rad_resp]: processing primary response for <%s|%s> ...' % (which_ssfr.upper(), which_lc.upper())
         else:
             msg = '\nMessage [cal_rad_resp]: processing transfer/secondary response for <%s|%s> ...' % (which_ssfr.upper(), which_lc.upper())
         print(msg)
+    #\----------------------------------------------------------------------------/#
 
 
     # si/in tag

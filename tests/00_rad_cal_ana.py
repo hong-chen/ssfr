@@ -114,9 +114,9 @@ def main_calibration():
     #\----------------------------------------------------------------------------/#
 
 
-def field_lamp_150c_consis_check():
+def field_lamp_150c_consis_check(int_si=120):
 
-    fnames = sorted(glob.glob('*150c*si-080*.h5'))
+    fnames = sorted(glob.glob('*150c*si-%3.3d*.h5' % int_si))
 
     colors = plt.cm.jet(np.linspace(0.0, 1.0, len(fnames)))
 
@@ -125,7 +125,6 @@ def field_lamp_150c_consis_check():
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(8, 6))
-        fig.suptitle('Field Lamp 150c', fontsize=24)
 
         ax1 = fig.add_subplot(111)
 
@@ -143,20 +142,21 @@ def field_lamp_150c_consis_check():
         ax1.set_xlim((350, 2150))
         ax1.set_ylim((0, 0.35))
         plt.legend(fontsize=10)
+        fig.suptitle('Field Lamp 150c (%s|%s)' % (tags[-2], tags[-1]), fontsize=24)
 
 
         # save figure
         #/--------------------------------------------------------------\#
         fig.subplots_adjust(hspace=0.3, wspace=0.3)
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s.png' % (_metadata['Function']), bbox_inches='tight', metadata=_metadata)
+        fig.savefig('%s_%s_%s.png' % (_metadata['Function'], tags[-2], tags[-1]), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
 
-def field_lamp_150e_consis_check():
+def field_lamp_150e_consis_check(int_si=120):
 
-    fnames = sorted(glob.glob('*150e*si-080*.h5'))
+    fnames = sorted(glob.glob('*150e*si-%3.3d*.h5' % int_si))
 
     colors = plt.cm.jet(np.linspace(0.0, 1.0, len(fnames)))
 
@@ -165,7 +165,6 @@ def field_lamp_150e_consis_check():
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(8, 6))
-        fig.suptitle('Field Lamp 150e', fontsize=24)
 
         ax1 = fig.add_subplot(111)
 
@@ -183,13 +182,14 @@ def field_lamp_150e_consis_check():
         ax1.set_xlim((350, 2150))
         ax1.set_ylim((0, 0.35))
         plt.legend(fontsize=10)
+        fig.suptitle('Field Lamp 150c (%s|%s)' % (tags[-2], tags[-1]), fontsize=24)
 
 
         # save figure
         #/--------------------------------------------------------------\#
         fig.subplots_adjust(hspace=0.3, wspace=0.3)
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s.png' % (_metadata['Function']), bbox_inches='tight', metadata=_metadata)
+        fig.savefig('%s_%s_%s.png' % (_metadata['Function'], tags[-2], tags[-1]), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
@@ -207,6 +207,8 @@ if __name__ == '__main__':
     # for fname in fnames:
     #     field_lamp_consis_check(fname)
 
-    # field_lamp_150c_consis_check()
-    field_lamp_150e_consis_check()
+    field_lamp_150c_consis_check(int_si=80)
+    field_lamp_150e_consis_check(int_si=80)
+    field_lamp_150c_consis_check(int_si=120)
+    field_lamp_150e_consis_check(int_si=120)
     pass
