@@ -100,6 +100,7 @@ def cal_rad_resp(
             which_lamp = 'f-1324'
         #\--------------------------------------------------------------/#
 
+
         # read in calibrated lamp data and interpolated/integrated at SSFR wavelengths/slits
         #/--------------------------------------------------------------\#
         fname_lamp = '%s/lamp/%s.dat' % (ssfr.common.fdir_data, which_lamp)
@@ -117,6 +118,8 @@ def cal_rad_resp(
             data_flux = data[:, 1]*0.01      # W m^-2 nm^-1
         else:
             data_flux = data[:, 1]*10000.0   # W m^-2 nm^-1
+        #\--------------------------------------------------------------/#
+
 
         # get ssfr wavelength for two spectrometers
         #/--------------------------------------------------------------\#
@@ -125,20 +128,25 @@ def cal_rad_resp(
         wvl_in = wvls[in_tag]
         #\--------------------------------------------------------------/#
 
-        lamp_std_si = np.zeros_like(wvl_si)
-        for i in range(lamp_std_si.size):
-            lamp_std_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        lamp_std_in = np.zeros_like(wvl_in)
-        for i in range(lamp_std_in.size):
-            lamp_std_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+        # use SSFR slit functions to get flux from lamp file
+        # the other option is to interpolate the lamp file at SSFR wavelength, which is commented out
+        #/--------------------------------------------------------------\#
+        lamp_nist_si = np.zeros_like(wvl_si)
+        for i in range(lamp_nist_si.size):
+            lamp_nist_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        # lamp_std_si = np.interp(wvl_si, data_wvl, data_flux)
-        # lamp_std_in = np.interp(wvl_in, data_wvl, data_flux)
+        lamp_nist_in = np.zeros_like(wvl_in)
+        for i in range(lamp_nist_in.size):
+            lamp_nist_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+
+        # lamp_nist_si = np.interp(wvl_si, data_wvl, data_flux)
+        # lamp_nist_in = np.interp(wvl_in, data_wvl, data_flux)
+        #\--------------------------------------------------------------/#
 
         resp = {
-                si_tag: lamp_std_si,
-                in_tag: lamp_std_in
+                si_tag: lamp_nist_si,
+                in_tag: lamp_nist_in
                }
     #\----------------------------------------------------------------------------/#
 
