@@ -79,7 +79,7 @@ def rad_cal(
         cal_tag = '%s_%s|%s_%s|%s_%s' % (date_cal_s_pri, lamp_tag_pri, date_cal_s_tra, lamp_tag_tra, date_cal_s_sec, lamp_tag_sec)
         filename_tag = '%s|%s|%s' % (cal_tag, date_today_s, dset_tag)
 
-        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=lamp_tag_pri, filename_tag=filename_tag)
+        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=lamp_tag_pri, filename_tag=filename_tag, verbose=False)
 
 
 def main_calibration():
@@ -94,14 +94,23 @@ def main_calibration():
 
     # radiometric calibration
     #/----------------------------------------------------------------------------\#
-    fdirs_pri = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/*pri-cal*si-080-120_in-250-350*'))
+    fdirs_pri = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/*SSFR-A*pri-cal*si-080-120_in-250-350*'))
     for fdir_pri in fdirs_pri:
         date_cal_s_pri, ssfr_tag_pri, lc_tag_pri, cal_tag_pri, lamp_tag_pri, si_int_tag_pri, in_int_tag_pri = os.path.basename(fdir_pri).split('_')
 
-        fdirs_tra = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/*%s*%s*transfer*%s*%s*' % (ssfr_tag_pri, lc_tag_pri, si_int_tag_pri, in_int_tag_pri)))
+        date_cal_pri = datetime.datetime.strptime(date_cal_s_pri, '%Y-%m-%d')
 
-        for fdir_tra in fdirs_tra:
-            rad_cal(fdir_pri, fdir_tra)
+        if date_cal_pri >= datetime.datetime(2024, 3, 1):
+            fdirs_tra = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/*%s*%s*transfer*%s*%s*' % (ssfr_tag_pri, lc_tag_pri, si_int_tag_pri, in_int_tag_pri)))
+
+            if len(fdirs_tra) >= 1:
+                for fdir_tra in fdirs_tra:
+                    print('='*50)
+                    print(fdir_pri)
+                    print(fdir_tra)
+                    rad_cal(fdir_pri, fdir_tra)
+                    print('='*50)
+                    print()
     #\----------------------------------------------------------------------------/#
 
 
