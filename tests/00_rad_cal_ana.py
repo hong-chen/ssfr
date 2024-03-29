@@ -92,47 +92,16 @@ def main_calibration():
               - zenith: LC4 + black plastic cased fiber
     """
 
-    # wavelength calibration
-    #/----------------------------------------------------------------------------\#
-    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
-    #     for lc_tag in ['zen', 'nad']:
-    #         for lamp_tag in ['kr', 'hg']:
-    #             wvl_cal(ssfr_tag, lc_tag, lamp_tag)
-    #\----------------------------------------------------------------------------/#
-
     # radiometric calibration
     #/----------------------------------------------------------------------------\#
-    fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
-    fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350'
+    fdirs_pri = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/*pri-cal*si-080-120_in-250-350*'))
+    for fdir_pri in fdirs_pri:
+        date_cal_s_pri, ssfr_tag_pri, lc_tag_pri, cal_tag_pri, lamp_tag_pri, si_int_tag_pri, in_int_tag_pri = os.path.basename(fdir_pri).split('_')
 
-    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
-    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350'
+        fdirs_tra = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/*%s*%s*transfer*%s*%s*' % (ssfr_tag_pri, lc_tag_pri, si_int_tag_pri, in_int_tag_pri)))
 
-    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'
-    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350'
-
-    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350'
-    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350'
-
-    # fdir_pri = '/argus/field/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350'
-    # fdir_tra = '/argus/field/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350'
-
-    rad_cal(fdir_pri, fdir_tra)
-    #\----------------------------------------------------------------------------/#
-
-    # angular calibration
-    #/----------------------------------------------------------------------------\#
-    # fdirs = [
-    #         'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen_vaa-180_507',
-    #         'data/arcsix/cal/ang-cal/2024-03-16_SSFR-A_zen_vaa-180_507',
-    #         'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-180_507',
-    #         'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-300_507',
-    #         'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_nad_vaa-060_507',
-    #         'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen_vaa-060_507',
-    #         'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen_vaa-300_507',
-    #         ]
-    # for fdir in fdirs:
-    #     ang_cal(fdir)
+        for fdir_tra in fdirs_tra:
+            rad_cal(fdir_pri, fdir_tra)
     #\----------------------------------------------------------------------------/#
 
 
@@ -177,7 +146,6 @@ def field_lamp_consis_check():
         plt.show()
         sys.exit()
     #\----------------------------------------------------------------------------/#
-
 
 
 if __name__ == '__main__':
