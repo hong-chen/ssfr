@@ -82,11 +82,11 @@ def cal_cos_resp(
 
         shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_si], ssfr0.data_raw['shutter'][logic_si], ssfr0.data_raw['spectra'][logic_si, :, index_si], mode='interp')
         logic  = (shutter==0)
-        counts_si[i, :] = np.mean(counts[logic, :], axis=0)
+        counts_si[i, :] = np.nanmean(counts[logic, :], axis=0)
 
         shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_in], ssfr0.data_raw['shutter'][logic_in], ssfr0.data_raw['spectra'][logic_in, :, index_in], mode='interp')
         logic  = (shutter==0)
-        counts_in[i, :] = np.mean(counts[logic, :], axis=0)
+        counts_in[i, :] = np.nanmean(counts[logic, :], axis=0)
 
     cos_resp = {
             si_tag: counts_si/(np.tile(counts_si[0, :], Nfile).reshape(Nfile, -1)),

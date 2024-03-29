@@ -26,6 +26,8 @@ def cal_rad_resp(
         which_lc='zen',
         which_lamp='f-1324',
         int_time={'si':80.0, 'in':250.0},
+        dark_extend=5,
+        light_extend=5,
         verbose=True,
         ):
 
@@ -61,17 +63,6 @@ def cal_rad_resp(
     #\----------------------------------------------------------------------------/#
 
 
-    # print message
-    #/----------------------------------------------------------------------------\#
-    if verbose:
-        if resp is None:
-            msg = '\nMessage [cal_rad_resp]: processing primary response for <%s|%s> ...' % (which_ssfr.upper(), which_lc.upper())
-        else:
-            msg = '\nMessage [cal_rad_resp]: processing transfer/secondary response for <%s|%s> ...' % (which_ssfr.upper(), which_lc.upper())
-        print(msg)
-    #\----------------------------------------------------------------------------/#
-
-
     # si/in tag
     #/----------------------------------------------------------------------------\#
     si_tag = '%s|si' % which_lc
@@ -85,6 +76,17 @@ def cal_rad_resp(
     #\----------------------------------------------------------------------------/#
 
 
+    # print message
+    #/----------------------------------------------------------------------------\#
+    if verbose:
+        if resp is None:
+            msg = '\nMessage [cal_rad_resp]: processing primary response for <%s|%s|SI-%3.3d|IN-%3.3d> ...' % (which_ssfr.upper(), which_lc.upper(), int_time[si_tag], int_time[in_tag])
+        else:
+            msg = '\nMessage [cal_rad_resp]: processing transfer/secondary response for <%s|%s|SI-%3.3d|IN-%3.3d> ...' % (which_ssfr.upper(), which_lc.upper(), int_time[si_tag], int_time[in_tag])
+        print(msg)
+    #\----------------------------------------------------------------------------/#
+
+
     # get radiometric response
     # by default (resp=None), this function will perform primary radiometric calibration
     #/----------------------------------------------------------------------------\#
@@ -94,9 +96,9 @@ def cal_rad_resp(
         #/--------------------------------------------------------------\#
         which_lamp = which_lamp.lower()
 
-        if (which_lamp[:4] == 'f-50') or (which_lamp[-3:-1] == '50'):
+        if (which_lamp[:4] == 'f-50') or (which_lamp[-3:-1] == '50') or (('50' in which_lamp) and ('150' not in which_lamp)):
             which_lamp = 'f-506c'
-        elif (which_lamp[-4:] == '1324'):
+        elif (which_lamp[-4:] == '1324') or ('1324' in which_lamp):
             which_lamp = 'f-1324'
         #\--------------------------------------------------------------/#
 
@@ -153,20 +155,48 @@ def cal_rad_resp(
 
     # read raw data
     #/----------------------------------------------------------------------------\#
-    ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp', dark_extend=5, light_extend=5)
+    try:
+        ssfr0 = ssfr_toolbox.read_ssfr(fnames)
 
-    spectra_si = None
-    spectra_in = None
-    for i in range(ssfr_obj.Ndset):
+        logic_si = (np.abs(ssfr0.data_raw['int_time'][:, index_si]-int_time[si_tag])<0.00001)
+        logic_in = (np.abs(ssfr0.data_raw['int_time'][:, index_in]-int_time[in_tag])<0.00001)
 
-        dset_name = 'dset%d' % i
-        data = getattr(ssfr_obj, dset_name)
+        shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_si], ssfr0.data_raw['shutter'][logic_si], ssfr0.data_raw['spectra'][logic_si, :, index_si], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
+        logic  = (shutter==0)
+        spectra_si     = np.nanmean(counts[logic, :], axis=0)
+        spectra_si_std = np.nanstd(counts[logic, :], axis=0)
 
-        if abs(data['info']['int_time'][si_tag] - int_time[si_tag]) < 0.00001:
-            spectra_si = np.nanmean(data['spectra_dark-corr'][:, :, index_si], axis=0)
+        shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_in], ssfr0.data_raw['shutter'][logic_in], ssfr0.data_raw['spectra'][logic_in, :, index_in], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
+        logic  = (shutter==0)
+        spectra_in     = np.nanmean(counts[logic, :], axis=0)
+        spectra_in_std = np.nanstd(counts[logic, :], axis=0)
+    except Exception as error:
+        print(error)
+        msg = '\nWarning [rad_cal_resp]: cannot process the data, set parameters to <None>.'
+        warnings.warn(msg)
+        spectra_si     = None
+        spectra_si_std = None
+        spectra_in     = None
+        spectra_in_std = None
+    #\----------------------------------------------------------------------------/#
 
-        if abs(data['info']['int_time'][in_tag] - int_time[in_tag]) < 0.00001:
-            spectra_in = np.nanmean(data['spectra_dark-corr'][:, :, index_in], axis=0)
+
+    # read raw data
+    #/----------------------------------------------------------------------------\#
+    # ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp', dark_extend=5, light_extend=5)
+
+    # spectra_si = None
+    # spectra_in = None
+    # for i in range(ssfr_obj.Ndset):
+
+    #     dset_name = 'dset%d' % i
+    #     data = getattr(ssfr_obj, dset_name)
+
+    #     if abs(data['info']['int_time'][si_tag] - int_time[si_tag]) < 0.00001:
+    #         spectra_si = np.nanmean(data['spectra_dark-corr'][:, :, index_si], axis=0)
+
+    #     if abs(data['info']['int_time'][in_tag] - int_time[in_tag]) < 0.00001:
+    #         spectra_in = np.nanmean(data['spectra_dark-corr'][:, :, index_in], axis=0)
     #\----------------------------------------------------------------------------/#
 
 
@@ -178,8 +208,12 @@ def cal_rad_resp(
     if spectra_si is not None:
         spectra_si[spectra_si<=0.0] = np.nan
         rad_resp_si = spectra_si / int_time[si_tag] / resp[si_tag]
+
+        spectra_si_std[spectra_si_std<=0.0] = np.nan
+        rad_resp_si_std = spectra_si_std / int_time[si_tag] / resp[si_tag]
     else:
-        rad_resp_si = None
+        rad_resp_si     = None
+        rad_resp_si_std = None
     #\----------------------------------------------------------------------------/#
 
 
@@ -188,8 +222,12 @@ def cal_rad_resp(
     if spectra_in is not None:
         spectra_in[spectra_in<=0.0] = np.nan
         rad_resp_in = spectra_in / int_time[in_tag] / resp[in_tag]
+
+        spectra_in_std[spectra_in_std<=0.0] = np.nan
+        rad_resp_in_std = spectra_in_std / int_time[in_tag] / resp[in_tag]
     else:
-        rad_resp_in = None
+        rad_resp_in     = None
+        rad_resp_in_std = None
     #\----------------------------------------------------------------------------/#
 
 
