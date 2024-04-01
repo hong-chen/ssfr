@@ -235,7 +235,7 @@ def main_calibration_20240329():
                     print('='*50)
                     print(fdir_pri)
                     print(fdir_tra)
-                    if (fdir_tra.split('_')[-1][:4] != 'spec') and (fdir_tra.split('_')[-1][:4] != 'fibe'):
+                    if (fdir_tra.split('_')[-1][:4] != 'spec'):
                         rad_cal(fdir_pri, fdir_tra, spec_reverse=False)
                     else:
                         rad_cal(fdir_pri, fdir_tra, spec_reverse=True)
@@ -271,7 +271,7 @@ def field_lamp_150c_consis_check_20240329(int_si=120):
         ax1.set_ylabel('Irradiance [$W m^{-2} nm^{-1}$]')
         ax1.set_xlim((350, 2150))
         ax1.set_ylim((0, 0.35))
-        plt.legend(fontsize=10)
+        plt.legend(fontsize=6)
         fig.suptitle('Field Lamp 150c (%s|%s)' % (tags[-2], tags[-1]), fontsize=24)
 
 
@@ -311,7 +311,7 @@ def field_lamp_150e_consis_check_20240329(int_si=120):
         ax1.set_ylabel('Irradiance [$W m^{-2} nm^{-1}$]')
         ax1.set_xlim((350, 2150))
         ax1.set_ylim((0, 0.35))
-        plt.legend(fontsize=10)
+        plt.legend(fontsize=6)
         fig.suptitle('Field Lamp 150e (%s|%s)' % (tags[-2], tags[-1]), fontsize=24)
 
 
