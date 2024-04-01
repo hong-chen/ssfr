@@ -24,6 +24,7 @@ def cal_rad_resp(
         resp=None,
         which_ssfr='lasp|ssfr-a',
         which_lc='zen',
+        spec_reverse=False,
         which_lamp='f-1324',
         int_time={'si':80.0, 'in':250.0},
         dark_extend=5,
@@ -51,12 +52,20 @@ def cal_rad_resp(
     which_lc = which_lc.lower()
     if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
         which_lc = 'zen'
-        index_si = 0
-        index_in = 1
+        if not spec_reverse:
+            index_si = 0
+            index_in = 1
+        else:
+            index_si = 2
+            index_in = 3
     elif (which_lc in ['nadir', 'nad', 'n']) | ('nad' in which_lc):
         which_lc = 'nad'
-        index_si = 2
-        index_in = 3
+        if not spec_reverse:
+            index_si = 2
+            index_in = 3
+        else:
+            index_si = 0
+            index_in = 1
     else:
         msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
         raise ValueError(msg)
@@ -250,6 +259,7 @@ def cdata_rad_resp(
         filename_tag=None,
         which_ssfr='lasp|ssfr-a',
         which_lc='zen',
+        spec_reverse=False,
         which_lamp='f-1324',
         wvl_joint=950.0,
         wvl_range=[350.0, 2200.0],
@@ -276,12 +286,8 @@ def cdata_rad_resp(
     which_lc = which_lc.lower()
     if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
         which_lc = 'zen'
-        index_si = 0
-        index_in = 1
     elif (which_lc in ['nadir', 'nad', 'n']) | ('nad' in which_lc):
         which_lc = 'nad'
-        index_si = 2
-        index_in = 3
     else:
         msg = '\nError [cdata_cos_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
         raise ValueError(msg)
@@ -306,6 +312,7 @@ def cdata_rad_resp(
                 resp=None,
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
+                spec_reverse=spec_reverse,
                 which_lamp=which_lamp,
                 int_time=int_time,
                 verbose=verbose,
@@ -320,6 +327,7 @@ def cdata_rad_resp(
                 resp=pri_resp,
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
+                spec_reverse=spec_reverse,
                 which_lamp=which_lamp,
                 int_time=int_time,
                 verbose=verbose,
@@ -334,6 +342,7 @@ def cdata_rad_resp(
                 resp=transfer,
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
+                spec_reverse=spec_reverse,
                 which_lamp=which_lamp,
                 int_time=int_time,
                 verbose=verbose,
@@ -346,6 +355,7 @@ def cdata_rad_resp(
                 resp=transfer,
                 which_ssfr=which_ssfr,
                 which_lc=which_lc,
+                spec_reverse=spec_reverse,
                 which_lamp=which_lamp,
                 int_time=int_time,
                 verbose=verbose,
