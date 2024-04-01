@@ -161,12 +161,12 @@ def cal_rad_resp(
         logic_si = (np.abs(ssfr0.data_raw['int_time'][:, index_si]-int_time[si_tag])<0.00001)
         logic_in = (np.abs(ssfr0.data_raw['int_time'][:, index_in]-int_time[in_tag])<0.00001)
 
-        shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_si], ssfr0.data_raw['shutter'][logic_si], ssfr0.data_raw['spectra'][logic_si, :, index_si], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
+        shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_si], ssfr0.data_raw['shutter'][logic_si], ssfr0.data_raw['spectra'][logic_si, :, index_si], mode='interp', darkExtend=dark_extend, lightExtend=light_extend)
         logic  = (shutter==0)
         spectra_si     = np.nanmean(counts[logic, :], axis=0)
         spectra_si_std = np.nanstd(counts[logic, :], axis=0)
 
-        shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_in], ssfr0.data_raw['shutter'][logic_in], ssfr0.data_raw['spectra'][logic_in, :, index_in], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
+        shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_in], ssfr0.data_raw['shutter'][logic_in], ssfr0.data_raw['spectra'][logic_in, :, index_in], mode='interp', darkExtend=dark_extend, lightExtend=light_extend)
         logic  = (shutter==0)
         spectra_in     = np.nanmean(counts[logic, :], axis=0)
         spectra_in_std = np.nanstd(counts[logic, :], axis=0)
