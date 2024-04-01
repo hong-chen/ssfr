@@ -243,7 +243,7 @@ def main_calibration_20240329():
 
 def field_lamp_150c_consis_check_20240329(int_si=120):
 
-    fnames = sorted(glob.glob('*150c*si-%3.3d*.h5' % int_si))
+    fnames = sorted(glob.glob('2024-03-29*150c*si-%3.3d*.h5' % int_si))
 
     colors = plt.cm.jet(np.linspace(0.0, 1.0, len(fnames)))
 
@@ -283,7 +283,7 @@ def field_lamp_150c_consis_check_20240329(int_si=120):
 
 def field_lamp_150e_consis_check_20240329(int_si=120):
 
-    fnames = sorted(glob.glob('*150e*si-%3.3d*.h5' % int_si))
+    fnames = sorted(glob.glob('2024-03-29*150e*si-%3.3d*.h5' % int_si))
 
     colors = plt.cm.jet(np.linspace(0.0, 1.0, len(fnames)))
 
@@ -309,7 +309,7 @@ def field_lamp_150e_consis_check_20240329(int_si=120):
         ax1.set_xlim((350, 2150))
         ax1.set_ylim((0, 0.35))
         plt.legend(fontsize=10)
-        fig.suptitle('Field Lamp 150c (%s|%s)' % (tags[-2], tags[-1]), fontsize=24)
+        fig.suptitle('Field Lamp 150e (%s|%s)' % (tags[-2], tags[-1]), fontsize=24)
 
 
         # save figure
@@ -336,5 +336,9 @@ if __name__ == '__main__':
     # field_lamp_150e_consis_check(int_si=120)
 
 
-    main_calibration_20240329()
+    # main_calibration_20240329()
+    # field_lamp_150c_consis_check_20240329(int_si=80)
+    # field_lamp_150e_consis_check_20240329(int_si=80)
+    field_lamp_150c_consis_check_20240329(int_si=120)
+    field_lamp_150e_consis_check_20240329(int_si=120)
     pass

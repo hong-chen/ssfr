@@ -53,17 +53,21 @@ def cal_rad_resp(
     if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
         which_lc = 'zen'
         if not spec_reverse:
+            which_spec = 'zen'
             index_si = 0
             index_in = 1
         else:
+            which_spec = 'nad'
             index_si = 2
             index_in = 3
     elif (which_lc in ['nadir', 'nad', 'n']) | ('nad' in which_lc):
         which_lc = 'nad'
         if not spec_reverse:
+            which_spec = 'nad'
             index_si = 2
             index_in = 3
         else:
+            which_spec = 'zen'
             index_si = 0
             index_in = 1
     else:
@@ -74,8 +78,8 @@ def cal_rad_resp(
 
     # si/in tag
     #/----------------------------------------------------------------------------\#
-    si_tag = '%s|si' % which_lc
-    in_tag = '%s|in' % which_lc
+    si_tag = '%s|si' % which_spec
+    in_tag = '%s|in' % which_spec
 
     if si_tag not in int_time.keys():
         int_time[si_tag] = int_time.pop('si')
@@ -143,16 +147,16 @@ def cal_rad_resp(
         # use SSFR slit functions to get flux from lamp file
         # the other option is to interpolate the lamp file at SSFR wavelength, which is commented out
         #/--------------------------------------------------------------\#
-        lamp_nist_si = np.zeros_like(wvl_si)
-        for i in range(lamp_nist_si.size):
-            lamp_nist_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
+        # lamp_nist_si = np.zeros_like(wvl_si)
+        # for i in range(lamp_nist_si.size):
+        #     lamp_nist_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        lamp_nist_in = np.zeros_like(wvl_in)
-        for i in range(lamp_nist_in.size):
-            lamp_nist_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+        # lamp_nist_in = np.zeros_like(wvl_in)
+        # for i in range(lamp_nist_in.size):
+        #     lamp_nist_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
 
-        # lamp_nist_si = np.interp(wvl_si, data_wvl, data_flux)
-        # lamp_nist_in = np.interp(wvl_in, data_wvl, data_flux)
+        lamp_nist_si = np.interp(wvl_si, data_wvl, data_flux)
+        lamp_nist_in = np.interp(wvl_in, data_wvl, data_flux)
         #\--------------------------------------------------------------/#
 
         resp = {
@@ -286,8 +290,16 @@ def cdata_rad_resp(
     which_lc = which_lc.lower()
     if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
         which_lc = 'zen'
+        if not spec_reverse:
+            which_spec = 'zen'
+        else:
+            which_spec = 'nad'
     elif (which_lc in ['nadir', 'nad', 'n']) | ('nad' in which_lc):
         which_lc = 'nad'
+        if not spec_reverse:
+            which_spec = 'nad'
+        else:
+            which_spec = 'zen'
     else:
         msg = '\nError [cdata_cos_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
         raise ValueError(msg)
@@ -296,8 +308,8 @@ def cdata_rad_resp(
 
     # si/in tag
     #/----------------------------------------------------------------------------\#
-    si_tag = '%s|si' % which_lc
-    in_tag = '%s|in' % which_lc
+    si_tag = '%s|si' % which_spec
+    in_tag = '%s|in' % which_spec
 
     if si_tag not in int_time.keys():
         int_time[si_tag] = int_time.pop('si')
@@ -386,9 +398,9 @@ def cdata_rad_resp(
     # save file
     #/----------------------------------------------------------------------------\#
     if filename_tag is not None:
-        fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssfr, which_lc, int_time[si_tag], int_time[in_tag])
+        fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssfr, which_spec, int_time[si_tag], int_time[in_tag])
     else:
-        fname_out = 'rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssfr, which_lc, int_time[si_tag], int_time[in_tag])
+        fname_out = 'rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssfr, which_spec, int_time[si_tag], int_time[in_tag])
 
     f = h5py.File(fname_out, 'w')
     f['wvl']       = wvl
