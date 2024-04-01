@@ -340,10 +340,10 @@ if __name__ == '__main__':
     # field_lamp_150e_consis_check(int_si=120)
 
 
-    main_calibration_20240329()
-    # field_lamp_150c_consis_check_20240329(int_si=80)
-    # field_lamp_150e_consis_check_20240329(int_si=80)
-    # field_lamp_150c_consis_check_20240329(int_si=120)
-    # field_lamp_150e_consis_check_20240329(int_si=120)
+    # main_calibration_20240329()
+    field_lamp_150c_consis_check_20240329(int_si=80)
+    field_lamp_150e_consis_check_20240329(int_si=80)
+    field_lamp_150c_consis_check_20240329(int_si=120)
+    field_lamp_150e_consis_check_20240329(int_si=120)
 
     pass
