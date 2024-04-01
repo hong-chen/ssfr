@@ -25,7 +25,8 @@ import ssfr
 def rad_cal(
         fdir_pri,
         fdir_tra,
-        fdir_sec=None
+        fdir_sec=None,
+        spec_reverse=False,
         ):
 
     # get calibration files of primary
@@ -91,7 +92,7 @@ def rad_cal(
 
         filename_tag = '%s|%s|%s' % (cal_tag, date_today_s, dset_tag)
 
-        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=tags_pri[4], filename_tag=filename_tag, verbose=False)
+        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=tags_pri[4], filename_tag=filename_tag, verbose=True, spec_reverse=spec_reverse)
 
 
 def main_calibration():
@@ -231,13 +232,15 @@ def main_calibration_20240329():
 
             if len(fdirs_tra) >= 1:
                 for fdir_tra in fdirs_tra:
+                    print('='*50)
+                    print(fdir_pri)
+                    print(fdir_tra)
                     if (fdir_tra.split('_')[-1][:4] != 'spec') and (fdir_tra.split('_')[-1][:4] != 'fibe'):
-                        print('='*50)
-                        print(fdir_pri)
-                        print(fdir_tra)
-                        rad_cal(fdir_pri, fdir_tra)
-                        print('='*50)
-                        print()
+                        rad_cal(fdir_pri, fdir_tra, spec_reverse=False)
+                    else:
+                        rad_cal(fdir_pri, fdir_tra, spec_reverse=True)
+                    print('='*50)
+                    print()
     #\----------------------------------------------------------------------------/#
 
 
@@ -320,6 +323,7 @@ def field_lamp_150e_consis_check_20240329(int_si=120):
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
+
 if __name__ == '__main__':
 
     # fig_belana_darks_si()
@@ -336,9 +340,10 @@ if __name__ == '__main__':
     # field_lamp_150e_consis_check(int_si=120)
 
 
-    # main_calibration_20240329()
+    main_calibration_20240329()
     # field_lamp_150c_consis_check_20240329(int_si=80)
     # field_lamp_150e_consis_check_20240329(int_si=80)
-    field_lamp_150c_consis_check_20240329(int_si=120)
-    field_lamp_150e_consis_check_20240329(int_si=120)
+    # field_lamp_150c_consis_check_20240329(int_si=120)
+    # field_lamp_150e_consis_check_20240329(int_si=120)
+
     pass
