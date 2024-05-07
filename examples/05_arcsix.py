@@ -1008,26 +1008,6 @@ def plot_spectra(date, tmhr0=20.830):
 
 
 
-def main_process_data():
-
-    dates = [
-             # datetime.datetime(2023, 10, 10),
-             # datetime.datetime(2023, 10, 12),
-             # datetime.datetime(2023, 10, 13),
-             # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
-             datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
-             # datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
-             # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
-             # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
-             # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
-            ]
-
-    for date in dates:
-        process_spns_data(date)
-        process_ssfr_data(date)
-        plot_time_series(date)
-        plot_spectra(date)
-
 
 
 # calibration
@@ -1356,10 +1336,78 @@ def test_data_b(
     return
 
 
+
+
+
+
+# data processing
+#/----------------------------------------------------------------------------\#
+def main_process_data():
+
+    dates = [
+             # datetime.datetime(2023, 10, 10),
+             # datetime.datetime(2023, 10, 12),
+             # datetime.datetime(2023, 10, 13),
+             # datetime.datetime(2023, 10, 18), # SPNS-B and SSFR-B at Skywatch
+             # datetime.datetime(2023, 10, 19), # SPNS-B and SSFR-B at Skywatch
+             # datetime.datetime(2023, 10, 20), # SPNS-B and SSFR-B at Skywatch
+             # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
+             # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
+             # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
+             datetime.datetime(2024, 5, 17), # placeholder for test flight at NASA WFF
+            ]
+
+    for date in dates:
+
+        # 1. aircraft housekeeping file (need to request data from the P-3 data system)
+        #    - longitude
+        #    - latitude
+        #    - altitude
+        #    - UTC time
+        #    - pitch angle
+        #    - roll angle
+        #    - heading angle
+        fname_hsk  = process_hsk_data(date)
+
+        # 2. active leveling platform
+        #    - longitude
+        #    - latitude
+        #    - altitude
+        #    - UTC time
+        #    - pitch angle
+        #    - roll angle
+        #    - heading angle
+        #    - motor pitch angle
+        #    - motor roll angle
+        fname_alp  = process_alp_data(date)
+
+        # 3. SPNS - irradiance (400nm - 900nm)
+        #    - spectral downwelling diffuse
+        #    - spectral downwelling global/direct (direct=global-diffuse)
+        fname_spns = fname_spns = process_spns_data(date)
+
+        # 4. SSFR-A - irradiance (350nm - 2200nm)
+        #    - spectral downwelling global
+        #    - spectral upwelling global
+        fname_ssfr_a = process_ssfr_data(date, which_ssfr='SSFR-A')
+
+        # 5. SSFR-B - radiance (350nm - 2200nm)
+        #    - spectral downwelling global
+        #    - spectral upwelling global
+        fname_ssfr_b = process_ssfr_data(date, which_ssfr='SSFR-B')
+
+        # 5. SSFR-B - radiance (350nm - 2200nm)
+        #    - spectral downwelling global
+        #    - spectral upwelling global
+        generate_quicklook_video(date)
+#\----------------------------------------------------------------------------/#
+
+
 if __name__ == '__main__':
+
+    # main_calibration()
 
     # main_process_data()
 
-    main_calibration()
 
     pass
