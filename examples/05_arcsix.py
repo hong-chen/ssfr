@@ -1391,7 +1391,7 @@ def main_process_data(date):
 
 if __name__ == '__main__':
 
-    warnings.warm('!!!!!!!! Under development !!!!!!!!')
+    warnings.warn('!!!!!!!! Under development !!!!!!!!')
     sys.exit()
 
     # main_calibration()
