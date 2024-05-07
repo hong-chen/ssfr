@@ -35,6 +35,466 @@ _fdir_v2_   = 'data/processed'
 
 
 
+
+
+
+def plot_time_series(date, wvl0=950.0):
+
+    date_s = date.strftime('%Y-%m-%d')
+
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _spns_.upper(), date_s)
+    f = h5py.File(fname_h5, 'r')
+    tmhr = f['tmhr'][...]
+    wvl_ = f['tot/wvl'][...]
+    flux_spns_tot = f['tot/flux'][...][:, np.argmin(np.abs(wvl_-wvl0))]
+    f.close()
+
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
+    f = h5py.File(fname_h5, 'r')
+    wvl_ = f['dset0/wvl_zen'][...]
+    # flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
+    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
+    wvl_ = f['dset0/wvl_nad'][...]
+    # flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
+    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
+
+    wvl_ = f['dset1/wvl_zen'][...]
+    # flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
+    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
+    wvl_ = f['dset1/wvl_nad'][...]
+    # flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
+    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
+    f.close()
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(tmhr, flux_spns_tot, s=6, c='k', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_zen0, s=3, c='r', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_nad0, s=3, c='b', lw=0.0)
+        ax1.scatter(tmhr, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
+        ax1.set_xlabel('Time [Hour]')
+        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+        ax1.set_title('Skywatch Test (%s, %s, %d nm)' % (_ssfr_.upper(), date_s, wvl0))
+        #\--------------------------------------------------------------/#
+
+        patches_legend = [
+                          mpatches.Patch(color='black' , label='%s Total' % _spns_.upper()), \
+                          mpatches.Patch(color='red'    , label='%s Zenith Si080In250' % _ssfr_.upper()), \
+                          mpatches.Patch(color='magenta', label='%s Zenith Si120In350' % _ssfr_.upper()), \
+                          mpatches.Patch(color='blue'   , label='%s Nadir Si080In250' % _ssfr_.upper()), \
+                          mpatches.Patch(color='cyan'   , label='%s Nadir Si120In350' % _ssfr_.upper()), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+    #\----------------------------------------------------------------------------/#
+
+def plot_spectra(date, tmhr0=20.830):
+
+    date_s = date.strftime('%Y-%m-%d')
+
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _spns_.upper(), date_s)
+    f = h5py.File(fname_h5, 'r')
+    tmhr = f['tmhr'][...]
+    wvl_spns_tot  = f['tot/wvl'][...]
+    flux_spns_tot = f['tot/flux'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    f.close()
+
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
+    f = h5py.File(fname_h5, 'r')
+    # flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
+    # flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
+    flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+
+    wvl_ssfr_zen = f['dset1/wvl_zen'][...]
+    wvl_ssfr_nad = f['dset1/wvl_nad'][...]
+    # flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
+    # flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
+    flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
+    f.close()
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(wvl_spns_tot, flux_spns_tot, s=6, c='k', lw=0.0)
+        ax1.scatter(wvl_ssfr_zen, flux_ssfr_zen0, s=3, c='r', lw=0.0)
+        ax1.scatter(wvl_ssfr_zen, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
+        ax1.scatter(wvl_ssfr_nad, flux_ssfr_nad0, s=3, c='b', lw=0.0)
+        ax1.scatter(wvl_ssfr_nad, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
+        ax1.set_xlabel('Wavelength [nm]')
+        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+        ax1.set_title('Skywatch Test (%s, %s, %.4f Hour)' % (_ssfr_.upper(), date_s, tmhr0))
+        #\--------------------------------------------------------------/#
+
+        patches_legend = [
+                          mpatches.Patch(color='black' , label='%s Total' % _spns_.upper()), \
+                          mpatches.Patch(color='red'    , label='%s Zenith Si080In250' % _ssfr_.upper()), \
+                          mpatches.Patch(color='magenta', label='%s Zenith Si120In350' % _ssfr_.upper()), \
+                          mpatches.Patch(color='blue'   , label='%s Nadir Si080In250' % _ssfr_.upper()), \
+                          mpatches.Patch(color='cyan'   , label='%s Nadir Si120In350' % _ssfr_.upper()), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+    #\----------------------------------------------------------------------------/#
+
+
+
+
+
+
+# calibration
+#/----------------------------------------------------------------------------\#
+def wvl_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
+
+    fdir_data = '/argus/field/arcsix/cal/wvl-cal'
+
+    indices_spec = {
+            'zen': [0, 1],
+            'nad': [2, 3]
+            }
+
+    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+
+    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
+
+    xchan = np.arange(Nchan)
+
+    spectra0 = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
+    spectra1 = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
+
+    # spectra_inp = {lamp_tag.lower(): spectra0[:, 0]}
+    # ssfr.cal.cal_wvl_coef(spectra_inp, which_spec='lasp|%s|%s|si' % (ssfr_tag.lower(), lc_tag.lower()))
+
+    spectra_inp = {lamp_tag.lower(): spectra0[:, 1]}
+    ssfr.cal.cal_wvl_coef(spectra_inp, which_spec='lasp|%s|%s|in' % (ssfr_tag.lower(), lc_tag.lower()))
+    sys.exit()
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        fig.suptitle('%s %s (illuminated by %s Lamp)' % (ssfr_tag.upper(), lc_tag.title(), lamp_tag.upper()))
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(121)
+        ax1.plot(xchan, spectra0[:, 0], lw=1, c='r')
+        ax1.plot(xchan, spectra1[:, 0], lw=1, c='b')
+        ax1.set_xlabel('Channel #')
+        ax1.set_ylabel('Counts')
+        ax1.set_ylim(bottom=0)
+        ax1.set_title('Silicon')
+
+        ax2 = fig.add_subplot(122)
+        ax2.plot(xchan, spectra0[:, 1], lw=1, c='r')
+        ax2.plot(xchan, spectra1[:, 1], lw=1, c='b')
+        ax2.set_xlabel('Channel #')
+        ax2.set_ylabel('Counts')
+        ax2.set_ylim(bottom=0)
+        ax2.set_title('InGaAs')
+        #\--------------------------------------------------------------/#
+
+        patches_legend = [
+                          mpatches.Patch(color='red' , label='IntTime set 1'), \
+                          mpatches.Patch(color='blue', label='IntTime set 2'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), lc_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
+
+def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
+
+    fdir_data = 'data/arcsix/cal/rad-cal'
+
+    indices_spec = {
+            'zen': [0, 1],
+            'nad': [2, 3]
+            }
+
+    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+
+
+    date_cal_s   = '2023-11-16'
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        dset_ = getattr(ssfr_, dset_tag)
+        int_time = dset_['info']['int_time']
+
+        fname = '%s/cal/%s|cal-rad-pri|lasp|%s|%s|%s-si%3.3d-in%3.3d|%s.h5' % (ssfr.common.fdir_data, date_cal_s, ssfr_tag.lower(), lc_tag.lower(), dset_tag.lower(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
+        f = h5py.File(fname, 'w')
+
+        resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
+
+        for key in resp_pri.keys():
+            f[key] = resp_pri[key]
+
+        f.close()
+
+def ang_cal(fdir):
+
+    """
+
+    Notes:
+        angular calibration is done for three different azimuth angles (reference to the vaccum port)
+        60, 180, 300
+
+        angles
+    """
+
+    date_cal_s, ssfr_tag, lc_tag, vaa_tag, lamp_tag = os.path.basename(fdir).split('_')
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    # get angles
+    #/----------------------------------------------------------------------------\#
+    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 50.0, 5.0), np.arange(50.0, 91.0, 10.0)))
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+    #\----------------------------------------------------------------------------/#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #/----------------------------------------------------------------------------\#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #\----------------------------------------------------------------------------/#
+
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        dset_ = getattr(ssfr_, dset_tag)
+        int_time = dset_['info']['int_time']
+
+        filename_tag = '%s|%s|%s|%s' % (date_cal_s, date_today_s, vaa_tag, dset_tag.lower())
+        ssfr.cal.cdata_cos_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+#\----------------------------------------------------------------------------/#
+
+
+def main_calibration():
+
+    """
+    Notes:
+        irradiance setup:
+            SSFR-A (Alvin)
+              - nadir : LC6 + stainless steel cased fiber
+              - zenith: LC4 + black plastic cased fiber
+    """
+
+    # wavelength calibration
+    #/----------------------------------------------------------------------------\#
+    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+    #     for lc_tag in ['zen', 'nad']:
+    #         for lamp_tag in ['kr', 'hg']:
+    #             wvl_cal(ssfr_tag, lc_tag, lamp_tag)
+    #\----------------------------------------------------------------------------/#
+
+    # radiometric calibration
+    #/----------------------------------------------------------------------------\#
+    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+    #     for lc_tag in ['zen', 'nad']:
+    #         for lamp_tag in ['1324']:
+    #             rad_cal(ssfr_tag, lc_tag, lamp_tag)
+    #\----------------------------------------------------------------------------/#
+
+    # angular calibration
+    #/----------------------------------------------------------------------------\#
+    fdirs = [
+            'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen_vaa-180_507',
+            'data/arcsix/cal/ang-cal/2024-03-16_SSFR-A_zen_vaa-180_507',
+            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-180_507',
+            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-300_507',
+            'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_nad_vaa-060_507',
+            'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen_vaa-060_507',
+            'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen_vaa-300_507',
+            ]
+    for fdir in fdirs:
+        ang_cal(fdir)
+    #\----------------------------------------------------------------------------/#
+
+def test_data_a(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
+
+    fdir_data = '/argus/field/arcsix/cal/rad-cal'
+
+    indices_spec = {
+            'zen': [0, 1],
+            'nad': [2, 3]
+            }
+
+    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
+    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+
+
+    date_cal_s   = '2023-11-16'
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        dset_ = getattr(ssfr_, dset_tag)
+        int_time = dset_['info']['int_time']
+
+        fname = '%s/cal/%s|RAD-CAL-PRI|LASP|%s|%s|%s-SI%3.3d-IN%3.3d|%s.h5' % (ssfr.common.fdir_data, date_cal_s, ssfr_tag.upper(), lc_tag.upper(), dset_tag.upper(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
+        f = h5py.File(fname, 'w')
+
+        resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
+
+        for key in resp_pri.keys():
+            f[key] = resp_pri[key]
+
+        f.close()
+
+def test_data_b(
+        date,
+        fdir_data=_fdir_v1_,
+        fdir_out=_fdir_v2_,
+        pitch_angle=0.0,
+        roll_angle=0.0,
+        ):
+
+    date_s = date.strftime('%Y-%m-%d')
+
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
+    f = h5py.File(fname_h5, 'w')
+
+    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
+    f_ = h5py.File(fname_h5, 'r')
+    tmhr = f_['tmhr'][...]
+    for dset_s in f_.keys():
+
+        if 'dset' in dset_s:
+
+            # primary calibration (from pre-mission arcsix in lab on 2023-11-16)
+            #/----------------------------------------------------------------------------\#
+            wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
+            wvl_start = 350.0
+            wvl_end   = 2100.0
+            wvl_join  = 950.0
+
+            # zenith wavelength
+            #/----------------------------------------------------------------------------\#
+            logic_zen_si = (wvls['zen|si'] >= wvl_start) & (wvls['zen|si'] <= wvl_join)
+            logic_zen_in = (wvls['zen|in'] >  wvl_join)  & (wvls['zen|in'] <= wvl_end)
+
+            wvl_zen = np.concatenate((wvls['zen|si'][logic_zen_si], wvls['zen|in'][logic_zen_in]))
+
+            indices_sort_zen = np.argsort(wvl_zen)
+            wvl_zen = wvl_zen[indices_sort_zen]
+            #\----------------------------------------------------------------------------/#
+
+            # nadir wavelength
+            #/----------------------------------------------------------------------------\#
+            logic_nad_si = (wvls['nad|si'] >= wvl_start) & (wvls['nad|si'] <= wvl_join)
+            logic_nad_in = (wvls['nad|in'] >  wvl_join)  & (wvls['nad|in'] <= wvl_end)
+
+            wvl_nad = np.concatenate((wvls['nad|si'][logic_nad_si], wvls['nad|in'][logic_nad_in]))
+
+            indices_sort_nad = np.argsort(wvl_nad)
+            wvl_nad = wvl_nad[indices_sort_nad]
+            #\----------------------------------------------------------------------------/#
+
+            fnames_zen = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|ZEN|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
+            fnames_nad = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|NAD|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
+            if len(fnames_zen) == 1 and len(fnames_nad) == 1:
+                fname_zen = fnames_zen[0]
+                fname_nad = fnames_nad[0]
+
+                f_zen = h5py.File(fname_zen, 'r')
+                sec_resp_zen_si = f_zen['zen|si'][...]
+                sec_resp_zen_in = f_zen['zen|in'][...]
+                f_zen.close()
+
+                f_nad = h5py.File(fname_nad, 'r')
+                sec_resp_nad_si = f_nad['nad|si'][...]
+                sec_resp_nad_in = f_nad['nad|in'][...]
+                f_nad.close()
+
+                sec_resp_zen = np.concatenate((sec_resp_zen_si[logic_zen_si], sec_resp_zen_in[logic_zen_in]))[indices_sort_zen]
+                sec_resp_nad = np.concatenate((sec_resp_nad_si[logic_nad_si], sec_resp_nad_in[logic_nad_in]))[indices_sort_nad]
+            #\----------------------------------------------------------------------------/#
+
+            # zenith
+            #/--------------------------------------------------------------\#
+            cnt_zen = f_['%s/cnt_zen' % dset_s][...]
+            wvl_zen = f_['%s/wvl_zen' % dset_s][...]
+
+            # sec_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, sec_resp_zen_)
+
+            flux_zen = cnt_zen.copy()
+            for i in range(tmhr.size):
+                if np.isnan(cnt_zen[i, :]).sum() == 0:
+                    flux_zen[i, :] = cnt_zen[i, :] / sec_resp_zen
+            #\--------------------------------------------------------------/#
+
+            # nadir
+            #/--------------------------------------------------------------\#
+            cnt_nad = f_['%s/cnt_nad' % dset_s][...]
+            wvl_nad = f_['%s/wvl_nad' % dset_s][...]
+
+            # sec_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, sec_resp_nad_)
+
+            flux_nad = cnt_nad.copy()
+            for i in range(tmhr.size):
+                if np.isnan(cnt_nad[i, :]).sum() == 0:
+                    flux_nad[i, :] = cnt_nad[i, :] / sec_resp_nad
+            #\--------------------------------------------------------------/#
+
+            g = f.create_group(dset_s)
+            g['flux_zen'] = flux_zen
+            g['flux_nad'] = flux_nad
+            g['wvl_zen']  = wvl_zen
+            g['wvl_nad']  = wvl_nad
+
+        else:
+
+            f[dset_s] = f_[dset_s][...]
+
+    f_.close()
+
+    f.close()
+
+    return
+
+
 # functions for processing SPNS
 #/----------------------------------------------------------------------------\#
 def cdata_arcsix_hsk_v0(
@@ -879,470 +1339,58 @@ def process_ssfr_data(date):
 
 
 
-def plot_time_series(date, wvl0=950.0):
-
-    date_s = date.strftime('%Y-%m-%d')
-
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _spns_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
-    tmhr = f['tmhr'][...]
-    wvl_ = f['tot/wvl'][...]
-    flux_spns_tot = f['tot/flux'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-    f.close()
-
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
-    wvl_ = f['dset0/wvl_zen'][...]
-    # flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
-    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-    wvl_ = f['dset0/wvl_nad'][...]
-    # flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
-    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-
-    wvl_ = f['dset1/wvl_zen'][...]
-    # flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
-    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-    wvl_ = f['dset1/wvl_nad'][...]
-    # flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
-    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-    f.close()
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(tmhr, flux_spns_tot, s=6, c='k', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_zen0, s=3, c='r', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_nad0, s=3, c='b', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
-        ax1.set_xlabel('Time [Hour]')
-        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
-        ax1.set_title('Skywatch Test (%s, %s, %d nm)' % (_ssfr_.upper(), date_s, wvl0))
-        #\--------------------------------------------------------------/#
-
-        patches_legend = [
-                          mpatches.Patch(color='black' , label='%s Total' % _spns_.upper()), \
-                          mpatches.Patch(color='red'    , label='%s Zenith Si080In250' % _ssfr_.upper()), \
-                          mpatches.Patch(color='magenta', label='%s Zenith Si120In350' % _ssfr_.upper()), \
-                          mpatches.Patch(color='blue'   , label='%s Nadir Si080In250' % _ssfr_.upper()), \
-                          mpatches.Patch(color='cyan'   , label='%s Nadir Si120In350' % _ssfr_.upper()), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-    #\----------------------------------------------------------------------------/#
-
-def plot_spectra(date, tmhr0=20.830):
-
-    date_s = date.strftime('%Y-%m-%d')
-
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _spns_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
-    tmhr = f['tmhr'][...]
-    wvl_spns_tot  = f['tot/wvl'][...]
-    flux_spns_tot = f['tot/flux'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-    f.close()
-
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
-    # flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
-    # flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
-    flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-    flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-
-    wvl_ssfr_zen = f['dset1/wvl_zen'][...]
-    wvl_ssfr_nad = f['dset1/wvl_nad'][...]
-    # flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
-    # flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
-    flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-    flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-    f.close()
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(wvl_spns_tot, flux_spns_tot, s=6, c='k', lw=0.0)
-        ax1.scatter(wvl_ssfr_zen, flux_ssfr_zen0, s=3, c='r', lw=0.0)
-        ax1.scatter(wvl_ssfr_zen, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
-        ax1.scatter(wvl_ssfr_nad, flux_ssfr_nad0, s=3, c='b', lw=0.0)
-        ax1.scatter(wvl_ssfr_nad, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
-        ax1.set_xlabel('Wavelength [nm]')
-        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
-        ax1.set_title('Skywatch Test (%s, %s, %.4f Hour)' % (_ssfr_.upper(), date_s, tmhr0))
-        #\--------------------------------------------------------------/#
-
-        patches_legend = [
-                          mpatches.Patch(color='black' , label='%s Total' % _spns_.upper()), \
-                          mpatches.Patch(color='red'    , label='%s Zenith Si080In250' % _ssfr_.upper()), \
-                          mpatches.Patch(color='magenta', label='%s Zenith Si120In350' % _ssfr_.upper()), \
-                          mpatches.Patch(color='blue'   , label='%s Nadir Si080In250' % _ssfr_.upper()), \
-                          mpatches.Patch(color='cyan'   , label='%s Nadir Si120In350' % _ssfr_.upper()), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-    #\----------------------------------------------------------------------------/#
-
-
-
-
-
-
-# calibration
-#/----------------------------------------------------------------------------\#
-def wvl_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
-
-    fdir_data = '/argus/field/arcsix/cal/wvl-cal'
-
-    indices_spec = {
-            'zen': [0, 1],
-            'nad': [2, 3]
-            }
-
-    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
-    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
-
-    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp')
-
-    xchan = np.arange(Nchan)
-
-    spectra0 = np.nanmean(ssfr0.dset0['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
-    spectra1 = np.nanmean(ssfr0.dset1['spectra_dark-corr'][:, :, indices_spec[lc_tag]], axis=0)
-
-    # spectra_inp = {lamp_tag.lower(): spectra0[:, 0]}
-    # ssfr.cal.cal_wvl_coef(spectra_inp, which_spec='lasp|%s|%s|si' % (ssfr_tag.lower(), lc_tag.lower()))
-
-    spectra_inp = {lamp_tag.lower(): spectra0[:, 1]}
-    ssfr.cal.cal_wvl_coef(spectra_inp, which_spec='lasp|%s|%s|in' % (ssfr_tag.lower(), lc_tag.lower()))
-    sys.exit()
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        fig.suptitle('%s %s (illuminated by %s Lamp)' % (ssfr_tag.upper(), lc_tag.title(), lamp_tag.upper()))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(121)
-        ax1.plot(xchan, spectra0[:, 0], lw=1, c='r')
-        ax1.plot(xchan, spectra1[:, 0], lw=1, c='b')
-        ax1.set_xlabel('Channel #')
-        ax1.set_ylabel('Counts')
-        ax1.set_ylim(bottom=0)
-        ax1.set_title('Silicon')
-
-        ax2 = fig.add_subplot(122)
-        ax2.plot(xchan, spectra0[:, 1], lw=1, c='r')
-        ax2.plot(xchan, spectra1[:, 1], lw=1, c='b')
-        ax2.set_xlabel('Channel #')
-        ax2.set_ylabel('Counts')
-        ax2.set_ylim(bottom=0)
-        ax2.set_title('InGaAs')
-        #\--------------------------------------------------------------/#
-
-        patches_legend = [
-                          mpatches.Patch(color='red' , label='IntTime set 1'), \
-                          mpatches.Patch(color='blue', label='IntTime set 2'), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), lc_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-    #\----------------------------------------------------------------------------/#
-
-def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
-
-    fdir_data = 'data/arcsix/cal/rad-cal'
-
-    indices_spec = {
-            'zen': [0, 1],
-            'nad': [2, 3]
-            }
-
-    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
-    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
-
-
-    date_cal_s   = '2023-11-16'
-    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
-
-    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
-    for i in range(ssfr_.Ndset):
-        dset_tag = 'dset%d' % i
-        dset_ = getattr(ssfr_, dset_tag)
-        int_time = dset_['info']['int_time']
-
-        fname = '%s/cal/%s|cal-rad-pri|lasp|%s|%s|%s-si%3.3d-in%3.3d|%s.h5' % (ssfr.common.fdir_data, date_cal_s, ssfr_tag.lower(), lc_tag.lower(), dset_tag.lower(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
-        f = h5py.File(fname, 'w')
-
-        resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
-
-        for key in resp_pri.keys():
-            f[key] = resp_pri[key]
-
-        f.close()
-
-def ang_cal(fdir):
-
-    """
-
-    Notes:
-        angular calibration is done for three different azimuth angles (reference to the vaccum port)
-        60, 180, 300
-
-        angles
-    """
-
-    date_cal_s, ssfr_tag, lc_tag, vaa_tag, lamp_tag = os.path.basename(fdir).split('_')
-
-    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
-
-    # get angles
-    #/----------------------------------------------------------------------------\#
-    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 50.0, 5.0), np.arange(50.0, 91.0, 10.0)))
-    angles_neg = -angles_pos
-    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
-    #\----------------------------------------------------------------------------/#
-
-    # make fnames, a dictionary <key:value> with file name as key, angle as value
-    #/----------------------------------------------------------------------------\#
-    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
-    fnames  = {
-            fnames_[i]: angles[i] for i in range(angles.size)
-            }
-    #\----------------------------------------------------------------------------/#
-
-
-    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
-    for i in range(ssfr_.Ndset):
-        dset_tag = 'dset%d' % i
-        dset_ = getattr(ssfr_, dset_tag)
-        int_time = dset_['info']['int_time']
-
-        filename_tag = '%s|%s|%s|%s' % (date_cal_s, date_today_s, vaa_tag, dset_tag.lower())
-        ssfr.cal.cdata_cos_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
-#\----------------------------------------------------------------------------/#
-
-
-def main_calibration():
-
-    """
-    Notes:
-        irradiance setup:
-            SSFR-A (Alvin)
-              - nadir : LC6 + stainless steel cased fiber
-              - zenith: LC4 + black plastic cased fiber
-    """
-
-    # wavelength calibration
-    #/----------------------------------------------------------------------------\#
-    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
-    #     for lc_tag in ['zen', 'nad']:
-    #         for lamp_tag in ['kr', 'hg']:
-    #             wvl_cal(ssfr_tag, lc_tag, lamp_tag)
-    #\----------------------------------------------------------------------------/#
-
-    # radiometric calibration
-    #/----------------------------------------------------------------------------\#
-    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
-    #     for lc_tag in ['zen', 'nad']:
-    #         for lamp_tag in ['1324']:
-    #             rad_cal(ssfr_tag, lc_tag, lamp_tag)
-    #\----------------------------------------------------------------------------/#
-
-    # angular calibration
-    #/----------------------------------------------------------------------------\#
-    fdirs = [
-            'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen_vaa-180_507',
-            'data/arcsix/cal/ang-cal/2024-03-16_SSFR-A_zen_vaa-180_507',
-            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-180_507',
-            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-300_507',
-            'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_nad_vaa-060_507',
-            'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen_vaa-060_507',
-            'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen_vaa-300_507',
-            ]
-    for fdir in fdirs:
-        ang_cal(fdir)
-    #\----------------------------------------------------------------------------/#
-
-def test_data_a(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
-
-    fdir_data = '/argus/field/arcsix/cal/rad-cal'
-
-    indices_spec = {
-            'zen': [0, 1],
-            'nad': [2, 3]
-            }
-
-    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
-    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
-
-
-    date_cal_s   = '2023-11-16'
-    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
-
-    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
-    for i in range(ssfr_.Ndset):
-        dset_tag = 'dset%d' % i
-        dset_ = getattr(ssfr_, dset_tag)
-        int_time = dset_['info']['int_time']
-
-        fname = '%s/cal/%s|RAD-CAL-PRI|LASP|%s|%s|%s-SI%3.3d-IN%3.3d|%s.h5' % (ssfr.common.fdir_data, date_cal_s, ssfr_tag.upper(), lc_tag.upper(), dset_tag.upper(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
-        f = h5py.File(fname, 'w')
-
-        resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
-
-        for key in resp_pri.keys():
-            f[key] = resp_pri[key]
-
-        f.close()
-
-def test_data_b(
-        date,
-        fdir_data=_fdir_v1_,
-        fdir_out=_fdir_v2_,
-        pitch_angle=0.0,
-        roll_angle=0.0,
-        ):
-
-    date_s = date.strftime('%Y-%m-%d')
-
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
-    f = h5py.File(fname_h5, 'w')
-
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
-    f_ = h5py.File(fname_h5, 'r')
-    tmhr = f_['tmhr'][...]
-    for dset_s in f_.keys():
-
-        if 'dset' in dset_s:
-
-            # primary calibration (from pre-mission arcsix in lab on 2023-11-16)
-            #/----------------------------------------------------------------------------\#
-            wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
-            wvl_start = 350.0
-            wvl_end   = 2100.0
-            wvl_join  = 950.0
-
-            # zenith wavelength
-            #/----------------------------------------------------------------------------\#
-            logic_zen_si = (wvls['zen|si'] >= wvl_start) & (wvls['zen|si'] <= wvl_join)
-            logic_zen_in = (wvls['zen|in'] >  wvl_join)  & (wvls['zen|in'] <= wvl_end)
-
-            wvl_zen = np.concatenate((wvls['zen|si'][logic_zen_si], wvls['zen|in'][logic_zen_in]))
-
-            indices_sort_zen = np.argsort(wvl_zen)
-            wvl_zen = wvl_zen[indices_sort_zen]
-            #\----------------------------------------------------------------------------/#
-
-            # nadir wavelength
-            #/----------------------------------------------------------------------------\#
-            logic_nad_si = (wvls['nad|si'] >= wvl_start) & (wvls['nad|si'] <= wvl_join)
-            logic_nad_in = (wvls['nad|in'] >  wvl_join)  & (wvls['nad|in'] <= wvl_end)
-
-            wvl_nad = np.concatenate((wvls['nad|si'][logic_nad_si], wvls['nad|in'][logic_nad_in]))
-
-            indices_sort_nad = np.argsort(wvl_nad)
-            wvl_nad = wvl_nad[indices_sort_nad]
-            #\----------------------------------------------------------------------------/#
-
-            fnames_zen = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|ZEN|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
-            fnames_nad = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|NAD|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
-            if len(fnames_zen) == 1 and len(fnames_nad) == 1:
-                fname_zen = fnames_zen[0]
-                fname_nad = fnames_nad[0]
-
-                f_zen = h5py.File(fname_zen, 'r')
-                sec_resp_zen_si = f_zen['zen|si'][...]
-                sec_resp_zen_in = f_zen['zen|in'][...]
-                f_zen.close()
-
-                f_nad = h5py.File(fname_nad, 'r')
-                sec_resp_nad_si = f_nad['nad|si'][...]
-                sec_resp_nad_in = f_nad['nad|in'][...]
-                f_nad.close()
-
-                sec_resp_zen = np.concatenate((sec_resp_zen_si[logic_zen_si], sec_resp_zen_in[logic_zen_in]))[indices_sort_zen]
-                sec_resp_nad = np.concatenate((sec_resp_nad_si[logic_nad_si], sec_resp_nad_in[logic_nad_in]))[indices_sort_nad]
-            #\----------------------------------------------------------------------------/#
-
-            # zenith
-            #/--------------------------------------------------------------\#
-            cnt_zen = f_['%s/cnt_zen' % dset_s][...]
-            wvl_zen = f_['%s/wvl_zen' % dset_s][...]
-
-            # sec_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, sec_resp_zen_)
-
-            flux_zen = cnt_zen.copy()
-            for i in range(tmhr.size):
-                if np.isnan(cnt_zen[i, :]).sum() == 0:
-                    flux_zen[i, :] = cnt_zen[i, :] / sec_resp_zen
-            #\--------------------------------------------------------------/#
-
-            # nadir
-            #/--------------------------------------------------------------\#
-            cnt_nad = f_['%s/cnt_nad' % dset_s][...]
-            wvl_nad = f_['%s/wvl_nad' % dset_s][...]
-
-            # sec_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, sec_resp_nad_)
-
-            flux_nad = cnt_nad.copy()
-            for i in range(tmhr.size):
-                if np.isnan(cnt_nad[i, :]).sum() == 0:
-                    flux_nad[i, :] = cnt_nad[i, :] / sec_resp_nad
-            #\--------------------------------------------------------------/#
-
-            g = f.create_group(dset_s)
-            g['flux_zen'] = flux_zen
-            g['flux_nad'] = flux_nad
-            g['wvl_zen']  = wvl_zen
-            g['wvl_nad']  = wvl_nad
-
-        else:
-
-            f[dset_s] = f_[dset_s][...]
-
-    f_.close()
-
-    f.close()
-
-    return
-
-
-
-
-
 
 # data processing
 #/----------------------------------------------------------------------------\#
-def main_process_data():
+def main_process_data(date):
+
+    # 1. aircraft housekeeping file (need to request data from the P-3 data system)
+    #    - longitude
+    #    - latitude
+    #    - altitude
+    #    - UTC time
+    #    - pitch angle
+    #    - roll angle
+    #    - heading angle
+    fname_hsk  = process_hsk_data(date)
+
+    # 2. active leveling platform
+    #    - longitude
+    #    - latitude
+    #    - altitude
+    #    - UTC time
+    #    - pitch angle
+    #    - roll angle
+    #    - heading angle
+    #    - motor pitch angle
+    #    - motor roll angle
+    fname_alp  = process_alp_data(date)
+
+    # 3. SPNS - irradiance (400nm - 900nm)
+    #    - spectral downwelling diffuse
+    #    - spectral downwelling global/direct (direct=global-diffuse)
+    fname_spns = fname_spns = process_spns_data(date)
+
+    # 4. SSFR-A - irradiance (350nm - 2200nm)
+    #    - spectral downwelling global
+    #    - spectral upwelling global
+    fname_ssfr_a = process_ssfr_data(date, which_ssfr='SSFR-A')
+
+    # 5. SSFR-B - radiance (350nm - 2200nm)
+    #    - spectral downwelling global
+    #    - spectral upwelling global
+    fname_ssfr_b = process_ssfr_data(date, which_ssfr='SSFR-B')
+
+    # 5. SSFR-B - radiance (350nm - 2200nm)
+    #    - spectral downwelling global
+    #    - spectral upwelling global
+    generate_quicklook_video(date)
+#\----------------------------------------------------------------------------/#
+
+
+if __name__ == '__main__':
+
+    # main_calibration()
 
     dates = [
              # datetime.datetime(2023, 10, 10),
@@ -1356,58 +1404,7 @@ def main_process_data():
              # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
              datetime.datetime(2024, 5, 17), # placeholder for test flight at NASA WFF
             ]
-
     for date in dates:
-
-        # 1. aircraft housekeeping file (need to request data from the P-3 data system)
-        #    - longitude
-        #    - latitude
-        #    - altitude
-        #    - UTC time
-        #    - pitch angle
-        #    - roll angle
-        #    - heading angle
-        fname_hsk  = process_hsk_data(date)
-
-        # 2. active leveling platform
-        #    - longitude
-        #    - latitude
-        #    - altitude
-        #    - UTC time
-        #    - pitch angle
-        #    - roll angle
-        #    - heading angle
-        #    - motor pitch angle
-        #    - motor roll angle
-        fname_alp  = process_alp_data(date)
-
-        # 3. SPNS - irradiance (400nm - 900nm)
-        #    - spectral downwelling diffuse
-        #    - spectral downwelling global/direct (direct=global-diffuse)
-        fname_spns = fname_spns = process_spns_data(date)
-
-        # 4. SSFR-A - irradiance (350nm - 2200nm)
-        #    - spectral downwelling global
-        #    - spectral upwelling global
-        fname_ssfr_a = process_ssfr_data(date, which_ssfr='SSFR-A')
-
-        # 5. SSFR-B - radiance (350nm - 2200nm)
-        #    - spectral downwelling global
-        #    - spectral upwelling global
-        fname_ssfr_b = process_ssfr_data(date, which_ssfr='SSFR-B')
-
-        # 5. SSFR-B - radiance (350nm - 2200nm)
-        #    - spectral downwelling global
-        #    - spectral upwelling global
-        generate_quicklook_video(date)
-#\----------------------------------------------------------------------------/#
-
-
-if __name__ == '__main__':
-
-    # main_calibration()
-
-    # main_process_data()
-
+        main_process_data(date)
 
     pass
