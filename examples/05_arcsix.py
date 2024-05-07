@@ -39,6 +39,8 @@ _fdir_v2_   = 'data/processed'
 
 
 
+# functions for visualization
+#/----------------------------------------------------------------------------\#
 def plot_time_series(date, wvl0=950.0):
 
     date_s = date.strftime('%Y-%m-%d')
@@ -164,13 +166,11 @@ def plot_spectra(date, tmhr0=20.830):
         #\--------------------------------------------------------------/#
         plt.show()
     #\----------------------------------------------------------------------------/#
+#\----------------------------------------------------------------------------/#
 
 
 
-
-
-
-# calibration
+# functions for ssfr calibrations
 #/----------------------------------------------------------------------------\#
 def wvl_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
@@ -311,6 +311,8 @@ def ang_cal(fdir):
 #\----------------------------------------------------------------------------/#
 
 
+# instrument calibrations
+#/----------------------------------------------------------------------------\#
 def main_calibration():
 
     """
@@ -494,10 +496,109 @@ def test_data_b(
     f.close()
 
     return
+#\----------------------------------------------------------------------------/#
 
 
-# functions for processing SPNS
+
+
+# functions for processing HSK and ALP
 #/----------------------------------------------------------------------------\#
+def cdata_hsk_h5(date, fdir_out, fdir_data='/argus/field/camp2ex', run=True):
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_raw  = '%s/hsk' % fdir_data
+    fname  = get_file(fdir_raw, full=True, contains=[date_s])
+
+    data = read_ict(fname)
+
+    fname_hsk   = '%s/hsk_%s.h5' % (fdir_out, date_s)
+    if run:
+        f = h5py.File(fname_hsk, 'w')
+        for vname in data.keys():
+            f[vname] = data[vname]['data']
+        f.close()
+
+    return fname_hsk
+
+def cdata_alp_v0_raw(date, fdir_processed, fdir_data='/argus/field/oracles', run=True):
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_raw  = '%s/raw/alp' % (fdir_data)
+    fnames_alp_raw = sorted(glob.glob('%s/*.plt3' % fdir_raw))
+
+    fname_alp      = '%s/alp_%s_v0-raw.h5' % (fdir_processed, date_s)
+    if run:
+
+        if date.year == 2016:
+            from alp import cu_alp_v2 as cu_alp
+        else:
+            from alp import cu_alp
+
+        # create ALP raw data
+        # ============================================================================
+        alp0 = cu_alp(fnames_alp_raw, date=date)
+        alp0.save_h5(fname_alp)
+        # ============================================================================
+
+    return fname_alp
+
+def cdata_alp_v1_hsk(date, fdir_processed, fdir_data='/argus/field/oracles', run=True):
+
+    date_s = date.strftime('%Y%m%d')
+
+    fname_hsk = get_file(fdir_processed, full=True, contains=['hsk_%s' % date_s, 'v0-hsk', date_s])
+    data_hsk = load_h5(fname_hsk)
+
+    fname_alp = get_file(fdir_processed, full=True, contains=['alp', 'v0-raw', date_s])
+    data_alp  = load_h5(fname_alp)
+
+    time_offset = cal_time_offset(data_hsk['gps_altitude'], interp(data_hsk['tmhr'], data_alp['tmhr'], data_alp['alt']))
+
+    fname_alp = '%s/alp_%s_v1-hsk.h5' % (fdir_processed, date_s)
+    if run:
+
+        f = h5py.File(fname_alp, 'w')
+        f.attrs['description'] = 'v1-hsk: raw data interpolated to HSK time frame; time offset (seconds) was calculated.'
+
+        f['tmhr']        = data_hsk['tmhr'] + time_offset/3600.0
+        f['tmhr_ori']    = data_hsk['tmhr']
+        f['time_offset'] = time_offset
+        for vname in data_alp.keys():
+            if vname not in ['tmhr', 'jday']:
+                f[vname] = interp(data_hsk['tmhr'], data_alp['tmhr'], data_alp[vname])
+        f.close()
+
+    return fname_alp
+
+def cdata_alp_v0(date, fdir_processed, fdir_data='/argus/field/camp2ex', run=True):
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_raw  = '%s/raw/alp' % (fdir_data)
+    fnames_alp_raw = sorted(glob.glob('%s/*.plt3' % fdir_raw))
+
+    fname_alp      = '%s/alp_%s_v0.h5' % (fdir_processed, date_s)
+    if run:
+
+        if date.year == 2016:
+            from alp import cu_alp_v2 as cu_alp
+        else:
+            from alp import cu_alp
+
+        # create ALP V0 data
+        # ============================================================================
+        alp0 = cu_alp(fnames_alp_raw, date=date)
+        alp0.save_h5(fname_alp)
+        # ============================================================================
+
+    return fname_alp
+
+
+
+
+
 def cdata_arcsix_hsk_v0(
         date,
         tmhr_range=[14.0, 24.0],
@@ -561,6 +662,42 @@ def cdata_arcsix_hsk_v0(
 
     return
 
+
+
+
+def cdata_arcsix_alp_v0(
+        date,
+        fdir_out=_fdir_v0_,
+        fdir_data=_fdir_alp_,
+        run=True
+        ):
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_raw  = '%s/raw/alp' % (fdir_data)
+    fnames_alp_raw = sorted(glob.glob('%s/*.plt3' % fdir_raw))
+
+    fname_alp = '%s/alp_%s_v0-raw.h5' % (fdir_out, date_s)
+    if run:
+        if date.year == 2016:
+            from alp import cu_alp_v2 as cu_alp
+        else:
+            from alp import cu_alp
+
+        # create ALP raw data
+        #/----------------------------------------------------------------------------\#
+        alp0 = cu_alp(fnames_alp_raw, date=date)
+        alp0.save_h5(fname_alp)
+        #\----------------------------------------------------------------------------/#
+
+    return fname_alp
+#\----------------------------------------------------------------------------/#
+
+
+
+
+# functions for processing SPNS
+#/----------------------------------------------------------------------------\#
 def cdata_arcsix_spns_v0(
         date,
         fdir_data=_fdir_spns_,
@@ -806,6 +943,7 @@ def process_spns_data(date):
     cdata_arcsix_spns_v1(date)
     cdata_arcsix_spns_v2(date)
 #\----------------------------------------------------------------------------/#
+
 
 
 
@@ -1394,8 +1532,12 @@ if __name__ == '__main__':
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
     sys.exit()
 
+
     # main_calibration()
 
+
+    # data procesing
+    #/----------------------------------------------------------------------------\#
     dates = [
              # datetime.datetime(2023, 10, 10),
              # datetime.datetime(2023, 10, 12),
@@ -1410,5 +1552,6 @@ if __name__ == '__main__':
             ]
     for date in dates:
         main_process_data(date)
+    #\----------------------------------------------------------------------------/#
 
     pass

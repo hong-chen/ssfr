@@ -7,10 +7,16 @@ import h5py
 import numpy as np
 import pysolar
 
-__all__ = ['read_cu_alp', 'cu_alp', \
-           'read_cu_alp_v1', 'cu_alp_v1', \
-           'read_cu_alp_v2', 'cu_alp_v2', \
-           'load_h5', 'cal_heading']
+__all__ = [
+            'read_cu_alp',
+            'cu_alp',
+            'read_cu_alp_v1',
+            'cu_alp_v1',
+            'read_cu_alp_v2',
+            'cu_alp_v2',
+            'load_h5',
+            'cal_heading',
+        ]
 
 
 
