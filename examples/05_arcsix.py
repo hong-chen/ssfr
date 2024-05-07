@@ -679,14 +679,9 @@ def cdata_arcsix_alp_v0(
 
     fname_alp = '%s/alp_%s_v0-raw.h5' % (fdir_out, date_s)
     if run:
-        if date.year == 2016:
-            from alp import cu_alp_v2 as cu_alp
-        else:
-            from alp import cu_alp
-
         # create ALP raw data
         #/----------------------------------------------------------------------------\#
-        alp0 = cu_alp(fnames_alp_raw, date=date)
+        alp0 = ssfr.cu_alp(fnames_alp_raw, date=date)
         alp0.save_h5(fname_alp)
         #\----------------------------------------------------------------------------/#
 
