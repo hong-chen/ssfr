@@ -20,6 +20,7 @@ __all__ = [
         'get_all_files',
         'if_file_exists',
         'cal_julian_day',
+        'cal_heading',
         'cal_solar_angles',
         'prh2za',
         'muslope',
@@ -74,6 +75,16 @@ def cal_julian_day(date, tmhr):
         julian_day[i] = (date - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0 + tmhr0/24.0
 
     return julian_day
+
+def cal_heading(lon, lat):
+
+    dx = lat[1:]-lat[:-1]
+    dy = lon[1:]-lon[:-1]
+
+    heading = np.rad2deg(np.arctan2(dy, dx))
+    heading = np.append(heading[0], heading) % 360.0
+
+    return heading
 
 def cal_solar_angles(julian_day, longitude, latitude, altitude):
 

@@ -564,7 +564,7 @@ def cdata_alp_v1_hsk(date, fdir_processed, fdir_data='/argus/field/oracles', run
 def cdata_arcsix_hsk_v0(
         date,
         tmhr_range=[14.0, 24.0],
-        fdir_data=_fdir_hsk_,
+        fdir_data=None,
         fdir_out=_fdir_v0_,
         ):
 
@@ -632,7 +632,7 @@ def cdata_arcsix_hsk_v0(
 
 def cdata_arcsix_alp_v0(
         date,
-        fdir_data=_fdir_alp_,
+        fdir_data=None,
         fdir_out=_fdir_v0_,
         run=True,
         ):
@@ -644,12 +644,13 @@ def cdata_arcsix_alp_v0(
     date_s = date.strftime('%Y%m%d')
 
     fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
+    print(fnames_alp)
 
     # read ALP raw data
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), date_s)
     if run:
-        alp0 = ssfr.cu_alp(fnames_alp, date=date)
+        alp0 = ssfr.lasp_alp.read_alp(fnames_alp, date=date)
         alp0.save_h5(fname_h5)
     #\----------------------------------------------------------------------------/#
 
@@ -657,7 +658,10 @@ def cdata_arcsix_alp_v0(
 
 def process_alp_data(date, run=True):
 
-    fname_alp = cdata_arcsix_alp_v0(date, run=run)
+    fdir_data = 'data/test/arcsix/2024-Spring/p3/20240517_tf-01/raw/alp'
+    # fdir_data = '/argus/arcsix/2024-Spring/p3/20240517_tf-01/raw/alp'
+    fdir_out  = '.'
+    fname_alp = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
 
     return fname_alp
 #\----------------------------------------------------------------------------/#
@@ -669,7 +673,7 @@ def process_alp_data(date, run=True):
 #/----------------------------------------------------------------------------\#
 def cdata_arcsix_spns_v0(
         date,
-        fdir_data=_fdir_spns_,
+        fdir_data=None,
         fdir_out=_fdir_v0_,
         ):
 
@@ -925,7 +929,7 @@ def process_spns_data(date, run=True):
 #/----------------------------------------------------------------------------\#
 def cdata_arcsix_ssfr_v0(
         date,
-        fdir_data=_fdir_ssfr_,
+        fdir_data=None,
         fdir_out=_fdir_v0_
         ):
 
@@ -1452,8 +1456,15 @@ def process_ssfr_data(date):
 
 
 
+# functions for generating quicklook video
+#/----------------------------------------------------------------------------\#
+def generate_quicklook_video(date):
 
-# data processing
+    pass
+#\----------------------------------------------------------------------------/#
+
+
+# main program
 #/----------------------------------------------------------------------------\#
 def main_process_data(date):
 
@@ -1465,7 +1476,7 @@ def main_process_data(date):
     #    - pitch angle
     #    - roll angle
     #    - heading angle
-    fname_hsk  = process_hsk_data(date)
+    # fname_hsk  = process_hsk_data(date)
 
     # 2. active leveling platform
     #    - longitude
@@ -1478,6 +1489,7 @@ def main_process_data(date):
     #    - motor pitch angle
     #    - motor roll angle
     fname_alp  = process_alp_data(date)
+    sys.exit()
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
@@ -1504,7 +1516,6 @@ def main_process_data(date):
 if __name__ == '__main__':
 
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
-    sys.exit()
 
 
     # main_calibration()
