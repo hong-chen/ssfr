@@ -511,62 +511,13 @@ def test_data_b(
 
 # functions for processing HSK and ALP
 #/----------------------------------------------------------------------------\#
-def cdata_hsk_h5(date, fdir_out, fdir_data='/argus/field/camp2ex', run=True):
-
-    date_s = date.strftime('%Y%m%d')
-
-    fdir_raw  = '%s/hsk' % fdir_data
-    fname  = get_file(fdir_raw, full=True, contains=[date_s])
-
-    data = read_ict(fname)
-
-    fname_hsk   = '%s/hsk_%s.h5' % (fdir_out, date_s)
-    if run:
-        f = h5py.File(fname_hsk, 'w')
-        for vname in data.keys():
-            f[vname] = data[vname]['data']
-        f.close()
-
-    return fname_hsk
-
-def cdata_alp_v1_hsk(date, fdir_processed, fdir_data='/argus/field/oracles', run=True):
-
-    date_s = date.strftime('%Y%m%d')
-
-    fname_hsk = get_file(fdir_processed, full=True, contains=['hsk_%s' % date_s, 'v0-hsk', date_s])
-    data_hsk = load_h5(fname_hsk)
-
-    fname_alp = get_file(fdir_processed, full=True, contains=['alp', 'v0-raw', date_s])
-    data_alp  = load_h5(fname_alp)
-
-    time_offset = cal_time_offset(data_hsk['gps_altitude'], interp(data_hsk['tmhr'], data_alp['tmhr'], data_alp['alt']))
-
-    fname_alp = '%s/alp_%s_v1-hsk.h5' % (fdir_processed, date_s)
-    if run:
-
-        f = h5py.File(fname_alp, 'w')
-        f.attrs['description'] = 'v1-hsk: raw data interpolated to HSK time frame; time offset (seconds) was calculated.'
-
-        f['tmhr']        = data_hsk['tmhr'] + time_offset/3600.0
-        f['tmhr_ori']    = data_hsk['tmhr']
-        f['time_offset'] = time_offset
-        for vname in data_alp.keys():
-            if vname not in ['tmhr', 'jday']:
-                f[vname] = interp(data_hsk['tmhr'], data_alp['tmhr'], data_alp[vname])
-        f.close()
-
-    return fname_alp
-
-
-
-
-
-
+# need to work ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 def cdata_arcsix_hsk_v0(
         date,
         tmhr_range=[14.0, 24.0],
-        fdir_data=None,
+        fdir_data=_fdir_data_,
         fdir_out=_fdir_out_,
+        run=True,
         ):
 
     """
@@ -575,7 +526,22 @@ def cdata_arcsix_hsk_v0(
     Now for skywatch testing, we will use a fixed longitude and latitude
     """
 
-    date_s = date.strftime('%Y-%m-%d')
+    date_s = date.strftime('%Y%m%d')
+
+    # to be modified when we get real hsk file from data system team
+    #/----------------------------------------------------------------------------\#
+    # fdir_raw  = '%s/hsk' % fdir_data
+    # fname  = get_file(fdir_raw, full=True, contains=[date_s])
+
+    # data = read_ict(fname)
+
+    # fname_hsk   = '%s/hsk_%s.h5' % (fdir_out, date_s)
+    # if run:
+    #     f = h5py.File(fname_hsk, 'w')
+    #     for vname in data.keys():
+    #         f[vname] = data[vname]['data']
+    #     f.close()
+    #\----------------------------------------------------------------------------/#
 
     # create data_hsk for skywatch
     #/----------------------------------------------------------------------------\#
@@ -597,39 +563,32 @@ def cdata_arcsix_hsk_v0(
             }
     #\----------------------------------------------------------------------------/#
 
-
     # solar geometries
     #/----------------------------------------------------------------------------\#
     jday0 = ssfr.util.dtime_to_jday(date)
-    jday = jday0 + data_hsk['tmhr']['data']/24.0
+    jday  = jday0 + data_hsk['tmhr']['data']/24.0
     sza, saa = ssfr.util.cal_solar_angles(jday, data_hsk['long']['data'], data_hsk['lat']['data'], data_hsk['palt']['data'])
     #\----------------------------------------------------------------------------/#
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_out, _mission_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _hsk_.upper(), date_s)
 
     f = h5py.File(fname_h5, 'w')
     f['tmhr'] = data_hsk['tmhr']['data']
     f['lon']  = data_hsk['long']['data']
     f['lat']  = data_hsk['lat']['data']
     f['alt']  = data_hsk['palt']['data']
-    f['pit']  = data_hsk['pitch']['data']
-    f['rol']  = data_hsk['roll']['data']
-    f['hed']  = data_hsk['heading']['data']
+    f['ang_pit']  = data_hsk['pitch']['data']
+    f['ang_rol']  = data_hsk['roll']['data']
+    f['ang_hed']  = data_hsk['heading']['data']
     f['jday'] = jday
     f['sza']  = sza
     f['saa']  = saa
     f.close()
     #\----------------------------------------------------------------------------/#
 
-    return
-
-
-
-
-
-
+    return fname_h5
 
 def cdata_arcsix_alp_v0(
         date,
@@ -659,6 +618,40 @@ def cdata_arcsix_alp_v0(
 
     return os.path.abspath(fname_h5)
 
+# need to work ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+def cdata_arcsix_alp_v1(
+        date,
+        fdir_processed,
+        fdir_data='/argus/field/oracles',
+        run=True
+        ):
+
+    date_s = date.strftime('%Y%m%d')
+
+    fname_hsk = get_file(fdir_processed, full=True, contains=['hsk_%s' % date_s, 'v0-hsk', date_s])
+    data_hsk = load_h5(fname_hsk)
+
+    fname_alp = get_file(fdir_processed, full=True, contains=['alp', 'v0-raw', date_s])
+    data_alp  = load_h5(fname_alp)
+
+    # time_offset = cal_time_offset(data_hsk['gps_altitude'], interp(data_hsk['tmhr'], data_alp['tmhr'], data_alp['alt']))
+
+    fname_h5 = '%s/%s-%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), date_s)
+    if run:
+
+        f = h5py.File(fname_h5, 'w')
+        f.attrs['description'] = 'v1: raw data interpolated to HSK time frame; time offset (seconds) was calculated.'
+
+        f['tmhr']        = data_hsk['tmhr'] + time_offset/3600.0
+        f['tmhr_ori']    = data_hsk['tmhr']
+        f['time_offset'] = time_offset
+        for vname in data_alp.keys():
+            if vname not in ['tmhr', 'jday']:
+                f[vname] = interp(data_hsk['tmhr'], data_alp['tmhr'], data_alp[vname])
+        f.close()
+
+    return fname_h5
+
 def process_alp_data(date, run=True):
 
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
@@ -668,7 +661,9 @@ def process_alp_data(date, run=True):
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
+    _fnames_['hsk_v0'] = cdata_arcsix_hsk_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
     _fnames_['alp_v0'] = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
+    _fnames_['alp_v1'] = cdata_arcsix_alp_v1(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
 #\----------------------------------------------------------------------------/#
 
 
