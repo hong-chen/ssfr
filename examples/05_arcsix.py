@@ -37,10 +37,7 @@ _ssfr2_       = 'ssfr-b'
 # _cam_         = 'cam'
 
 _fdir_data_ = 'data/%s/test' % _mission_
-
-_fdir_v0_   = 'data/processed'
-_fdir_v1_   = 'data/processed'
-_fdir_v2_   = 'data/processed'
+_fdir_out_   = 'data/processed'
 #\----------------------------------------------------------------------------/#
 
 
@@ -633,7 +630,7 @@ def cdata_arcsix_hsk_v0(
 def cdata_arcsix_alp_v0(
         date,
         fdir_data=None,
-        fdir_out=_fdir_v0_,
+        fdir_out=_fdir_out_,
         run=True,
         ):
 
@@ -673,7 +670,7 @@ def process_alp_data(date, run=True):
 def cdata_arcsix_spns_v0(
         date,
         fdir_data=None,
-        fdir_out=_fdir_v0_,
+        fdir_out=_fdir_out_,
         ):
 
     """
@@ -729,8 +726,8 @@ def cdata_arcsix_spns_v0(
 def cdata_arcsix_spns_v1(
         date,
         time_offset=0.0,
-        fdir_data=_fdir_v0_,
-        fdir_out=_fdir_v1_,
+        fdir_data=_fdir_out_,
+        fdir_out=_fdir_out_,
         ):
 
     """
@@ -819,8 +816,8 @@ def cdata_arcsix_spns_v1(
 def cdata_arcsix_spns_v2(
         date,
         time_offset=0.0,
-        fdir_data=_fdir_v1_,
-        fdir_out=_fdir_v2_,
+        fdir_data=_fdir_out_,
+        fdir_out=_fdir_out_,
         ):
 
     """
@@ -929,7 +926,7 @@ def process_spns_data(date, run=True):
 def cdata_arcsix_ssfr_v0(
         date,
         fdir_data=None,
-        fdir_out=_fdir_v0_
+        fdir_out=_fdir_out_
         ):
 
     """
@@ -965,8 +962,8 @@ def cdata_arcsix_ssfr_v0(
 
 def cdata_arcsix_ssfr_v1(
         date,
-        fdir_data=_fdir_v0_,
-        fdir_out=_fdir_v1_,
+        fdir_data=_fdir_out_,
+        fdir_out=_fdir_out_,
         ):
 
     """
@@ -1160,8 +1157,8 @@ def cdata_arcsix_ssfr_v1(
 
 def cdata_arcsix_ssfr_v2(
         date,
-        fdir_data=_fdir_v1_,
-        fdir_out=_fdir_v2_,
+        fdir_data=_fdir_out_,
+        fdir_out=_fdir_out_,
         pitch_angle=0.0,
         roll_angle=0.0,
         ):
