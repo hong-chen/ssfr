@@ -36,8 +36,10 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 # _cam_         = 'cam'
 
-_fdir_data_ = 'data/test/%s' % _mission_
+_fdir_data_  = 'data/test/%s' % _mission_
 _fdir_out_   = 'data/processed'
+
+_fnames_ = {}
 #\----------------------------------------------------------------------------/#
 
 
@@ -661,9 +663,7 @@ def process_alp_data(date, run=True):
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    fname_alp = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
-
-    return fname_alp
+    _fnames_['alp_v0'] = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
 #\----------------------------------------------------------------------------/#
 
 
@@ -1476,8 +1476,7 @@ def main_process_data(date):
     #    - pitch angle
     #    - roll angle
     #    - heading angle
-    fname_hsk  = process_hsk_data(date)
-    sys.exit()
+    # fname_hsk  = process_hsk_data(date)
 
     # 2. active leveling platform
     #    - longitude
@@ -1489,7 +1488,9 @@ def main_process_data(date):
     #    - heading angle
     #    - motor pitch angle
     #    - motor roll angle
-    # fname_alp  = process_alp_data(date)
+    process_alp_data(date)
+    print(_fnames_)
+    sys.exit()
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
