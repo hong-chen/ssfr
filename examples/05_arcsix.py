@@ -23,18 +23,25 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import ssfr
 
 
-_mission_   = 'arcsix'
-_spns_      = 'spns-b'
-_ssfr_      = 'ssfr-a'
-_fdir_data_ = 'data/%s/pre-mission' % _mission_
-_fdir_hsk_  = '%s/raw/hsk'
-_fdir_ssfr_ = '%s/raw/%s' % (_fdir_data_, _ssfr_)
-_fdir_spns_ = '%s/raw/%s' % (_fdir_data_, _spns_)
+
+# parameters
+#/----------------------------------------------------------------------------\#
+_mission_     = 'arcsix'
+_platform_    = 'p3b'
+
+_hsk_         = 'hsk'
+_alp_         = 'alp'
+_spns_        = 'spns-a'
+_ssfr1_       = 'ssfr-a'
+_ssfr2_       = 'ssfr-b'
+# _cam_         = 'cam'
+
+_fdir_data_ = 'data/%s/test' % _mission_
+
 _fdir_v0_   = 'data/processed'
 _fdir_v1_   = 'data/processed'
 _fdir_v2_   = 'data/processed'
-
-
+#\----------------------------------------------------------------------------/#
 
 
 
@@ -678,6 +685,7 @@ def cdata_arcsix_alp_v0(
     fnames_alp_raw = sorted(glob.glob('%s/*.plt3' % fdir_raw))
 
     fname_alp = '%s/alp_%s_v0-raw.h5' % (fdir_out, date_s)
+
     if run:
         # create ALP raw data
         #/----------------------------------------------------------------------------\#
