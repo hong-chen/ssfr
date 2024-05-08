@@ -636,14 +636,14 @@ def cdata_arcsix_alp_v1(
         data_hsk = ssfr.util.load_h5(fname_hsk)
         data_alp = ssfr.util.load_h5(fname_v0)
 
+        time_step = 1.0 # 1Hz data
         data_ref = data_hsk['alt']
         data_tar = ssfr.util.interp(data_hsk['jday'], data_alp['jday'], data_alp['alt'])
-        time_offset = ssfr.util.cal_time_offset(data_ref, data_tar)
+        time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar)
         #\----------------------------------------------------------------------------/#
 
         f = h5py.File(fname_h5, 'w')
         f.attrs['description'] = 'v1:\n  1) raw data interpolated to HSK time frame;\n  2) time offset (seconds) was calculated and applied.'
-
 
         f['tmhr']        = data_hsk['tmhr']
         f['jday']        = data_hsk['jday']
@@ -659,6 +659,43 @@ def cdata_arcsix_alp_v1(
 
     return fname_h5
 
+def quicklook_alp(date):
+
+    date_s = date.strftime('%Y%m%d')
+
+    data_hsk_v0 = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
+    data_alp_v0 = ssfr.util.load_h5(_fnames_['%s_alp_v0' % date_s])
+    data_alp_v1 = ssfr.util.load_h5(_fnames_['%s_alp_v1' % date_s])
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        fig.suptitle('ALP Quicklook (%s)' % date_s)
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(data_hsk_v0['tmhr'], data_hsk_v0['alt'], s=2, c='k', lw=0.0)
+        ax1.scatter(data_alp_v0['tmhr'], data_alp_v0['alt'], s=2, c='r', lw=0.0)
+        ax1.scatter(data_alp_v1['tmhr'], data_alp_v1['alt'], s=2, c='g', lw=0.0)
+        # ax1.scatter(data_alp_v0['tmhr'], data_alp_v0['ang_pit_m'], s=2, c='r', lw=0.0)
+        # ax1.scatter(data_alp_v1['tmhr'], data_alp_v1['ang_pit_m'], s=2, c='g', lw=0.0)
+
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s_%s.png' % (_metadata['Function'], date_s), bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
+
 def process_alp_data(date, run=True):
 
     fdir_out = _fdir_out_
@@ -669,11 +706,15 @@ def process_alp_data(date, run=True):
     fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
 
     date_s = date.strftime('%Y%m%d')
-    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_, fdir_out=fdir_out, run=False)
-    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=False)
+    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_, fdir_out=fdir_out, run=run)
+    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
     fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0, fdir_out=fdir_out, run=run)
 
+    _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    _fnames_['%s_alp_v0' % date_s] = fname_alp_v0
+    _fnames_['%s_alp_v1' % date_s] = fname_alp_v1
 
+    # quicklook_alp(date)
 #\----------------------------------------------------------------------------/#
 
 
@@ -1477,17 +1518,8 @@ def generate_quicklook_video(date):
 #/----------------------------------------------------------------------------\#
 def main_process_data(date, run=True):
 
-    # 1. aircraft housekeeping file (need to request data from the P-3 data system)
-    #    - longitude
-    #    - latitude
-    #    - altitude
-    #    - UTC time
-    #    - pitch angle
-    #    - roll angle
-    #    - heading angle
-    # fname_hsk = process_hsk_data(date, run=run)
-
-    # 2. active leveling platform
+    # 1&2. aircraft housekeeping file (need to request data from the P-3 data system)
+    #      active leveling platform
     #    - longitude
     #    - latitude
     #    - altitude
@@ -1497,7 +1529,7 @@ def main_process_data(date, run=True):
     #    - heading angle
     #    - motor pitch angle
     #    - motor roll angle
-    process_alp_data(date)
+    process_alp_data(date, run=False)
     print(_fnames_)
     sys.exit()
 

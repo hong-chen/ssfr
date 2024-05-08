@@ -23,7 +23,7 @@ __all__ = [
         'cal_julian_day',
         'cal_heading',
         'cal_solar_angles',
-        'cal_time_offset',
+        'cal_step_offset',
         'prh2za',
         'muslope',
         'dtime_to_jday',
@@ -138,7 +138,7 @@ def cal_solar_angles(julian_day, longitude, latitude, altitude):
 
     return sza, saa
 
-def cal_time_offset(x_ref, x_target, fill_value=np.nan, offset_range=[-900, 900]):
+def cal_step_offset(x_ref, x_target, fill_value=np.nan, offset_range=[-900, 900]):
 
     from scipy.stats import pearsonr
     from scipy.ndimage import shift
@@ -157,9 +157,9 @@ def cal_time_offset(x_ref, x_target, fill_value=np.nan, offset_range=[-900, 900]
         coef = pearsonr(x_ref[logic], x0[logic])
         cross_corr[i] = coef[0]
 
-    time_offset = offsets[np.argmax(cross_corr)]
+    step_offset = offsets[np.argmax(cross_corr)]
 
-    return time_offset
+    return step_offset
 
 def prh2za(ang_pit, ang_rol, ang_head, is_rad=False):
 
