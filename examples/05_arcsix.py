@@ -644,7 +644,6 @@ def cdata_arcsix_alp_v0(
     date_s = date.strftime('%Y%m%d')
 
     fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
-    print(fnames_alp)
 
     # read ALP raw data
     #/----------------------------------------------------------------------------\#
