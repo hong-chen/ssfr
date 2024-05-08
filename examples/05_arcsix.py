@@ -639,7 +639,6 @@ def cdata_arcsix_alp_v0(
 
     fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
 
-
     # read ALP raw data
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), date_s)
