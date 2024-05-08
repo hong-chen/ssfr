@@ -624,6 +624,12 @@ def cdata_arcsix_hsk_v0(
 
     return
 
+
+
+
+
+
+
 def cdata_arcsix_alp_v0(
         date,
         fdir_data=_fdir_alp_,
@@ -632,7 +638,7 @@ def cdata_arcsix_alp_v0(
         ):
 
     """
-    Read ALP data
+    read ALP data
     """
 
     date_s = date.strftime('%Y%m%d')
@@ -648,6 +654,12 @@ def cdata_arcsix_alp_v0(
     #\----------------------------------------------------------------------------/#
 
     return fname_h5
+
+def process_alp_data(date, run=True):
+
+    fname_alp = cdata_arcsix_alp_v0(date, run=run)
+
+    return fname_alp
 #\----------------------------------------------------------------------------/#
 
 
@@ -893,12 +905,17 @@ def cdata_arcsix_spns_v2(
 
     return
 
-def process_spns_data(date):
+def process_spns_data(date, run=True):
 
-    cdata_arcsix_hsk_v0(date)
-    cdata_arcsix_spns_v0(date)
-    cdata_arcsix_spns_v1(date)
-    cdata_arcsix_spns_v2(date)
+    """
+    v0: raw data directly read out from the data files
+    v1: data collocated/synced to aircraft nav
+    v2: attitude corrected data
+    """
+
+    cdata_arcsix_spns_v0(date, run=run)
+    cdata_arcsix_spns_v1(date, run=run)
+    cdata_arcsix_spns_v2(date, run=run)
 #\----------------------------------------------------------------------------/#
 
 
