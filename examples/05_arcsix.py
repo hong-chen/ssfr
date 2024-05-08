@@ -39,6 +39,8 @@ _ssfr2_       = 'ssfr-b'
 _fdir_data_  = 'data/test/%s' % _mission_
 _fdir_out_   = 'data/processed'
 
+_verbose_ = True
+
 _fnames_ = {}
 #\----------------------------------------------------------------------------/#
 
@@ -631,18 +633,21 @@ def cdata_arcsix_hsk_v0(
 
 def cdata_arcsix_alp_v0(
         date,
-        fdir_data=None,
+        fdir_data=_fdir_data_,
         fdir_out=_fdir_out_,
         run=True,
         ):
 
     """
-    read ALP data
+    read ALP (Active Leveling Platform) data
     """
 
     date_s = date.strftime('%Y%m%d')
 
     fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
+    if _verbose_:
+        msg = '\nProcessing ALP files:\n%s' % '\n'.join(fnames_alp)
+        print(msg)
 
     # read ALP raw data
     #/----------------------------------------------------------------------------\#
@@ -652,7 +657,7 @@ def cdata_arcsix_alp_v0(
         alp0.save_h5(fname_h5)
     #\----------------------------------------------------------------------------/#
 
-    return fname_h5
+    return os.path.abspath(fname_h5)
 
 def process_alp_data(date, run=True):
 
