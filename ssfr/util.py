@@ -18,6 +18,7 @@ import ssfr
 
 __all__ = [
         'get_all_files',
+        'get_all_folders',
         'if_file_exists',
         'cal_julian_day',
         'cal_heading',
@@ -48,6 +49,18 @@ def get_all_files(fdir, pattern='*'):
             if fnmatch.fnmatch(fname_tmp, pattern):
                 fnames.append(os.path.join(fdir_root, fname_tmp))
     return fnames
+
+def get_all_folders(fdir, pattern='*'):
+
+    fnames = get_all_files(fdir)
+
+    folders = []
+    for fname in fnames:
+        folder_tmp = os.path.abspath(os.path.dirname(os.path.relpath(fname)))
+        if (folder_tmp not in folders) and fnmatch.fnmatch(folder_tmp, pattern):
+                folders.append(folder_tmp)
+
+    return folders
 
 def if_file_exists(fname, exitTag=True):
 

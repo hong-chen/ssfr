@@ -36,7 +36,7 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 # _cam_         = 'cam'
 
-_fdir_data_ = 'data/%s/test' % _mission_
+_fdir_data_ = 'data/test/%s' % _mission_
 _fdir_out_   = 'data/processed'
 #\----------------------------------------------------------------------------/#
 
@@ -49,14 +49,14 @@ def plot_time_series(date, wvl0=950.0):
 
     date_s = date.strftime('%Y-%m-%d')
 
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _spns_.upper(), date_s)
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_out_, _mission_.upper(), _spns_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
     tmhr = f['tmhr'][...]
     wvl_ = f['tot/wvl'][...]
     flux_spns_tot = f['tot/flux'][...][:, np.argmin(np.abs(wvl_-wvl0))]
     f.close()
 
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_out_, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
     wvl_ = f['dset0/wvl_zen'][...]
     # flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
@@ -113,14 +113,14 @@ def plot_spectra(date, tmhr0=20.830):
 
     date_s = date.strftime('%Y-%m-%d')
 
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _spns_.upper(), date_s)
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_out_, _mission_.upper(), _spns_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
     tmhr = f['tmhr'][...]
     wvl_spns_tot  = f['tot/wvl'][...]
     flux_spns_tot = f['tot/flux'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
     f.close()
 
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_v2_, _mission_.upper(), _ssfr_.upper(), date_s)
+    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_out_, _mission_.upper(), _ssfr_.upper(), date_s)
     f = h5py.File(fname_h5, 'r')
     # flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
     # flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
@@ -392,8 +392,8 @@ def test_data_a(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
 def test_data_b(
         date,
-        fdir_data=_fdir_v1_,
-        fdir_out=_fdir_v2_,
+        fdir_data=_fdir_out_,
+        fdir_out=_fdir_out_,
         pitch_angle=0.0,
         roll_angle=0.0,
         ):
@@ -562,7 +562,7 @@ def cdata_arcsix_hsk_v0(
         date,
         tmhr_range=[14.0, 24.0],
         fdir_data=None,
-        fdir_out=_fdir_v0_,
+        fdir_out=_fdir_out_,
         ):
 
     """
@@ -654,9 +654,13 @@ def cdata_arcsix_alp_v0(
 
 def process_alp_data(date, run=True):
 
-    fdir_data = 'data/test/arcsix/2024-Spring/p3/20240517_tf-01/raw/alp'
-    # fdir_data = '/argus/arcsix/2024-Spring/p3/20240517_tf-01/raw/alp'
-    fdir_out  = '.'
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
+    fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
+
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
     fname_alp = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
 
     return fname_alp
