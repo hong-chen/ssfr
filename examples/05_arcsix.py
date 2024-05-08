@@ -1476,7 +1476,8 @@ def main_process_data(date):
     #    - pitch angle
     #    - roll angle
     #    - heading angle
-    # fname_hsk  = process_hsk_data(date)
+    fname_hsk  = process_hsk_data(date)
+    sys.exit()
 
     # 2. active leveling platform
     #    - longitude
@@ -1488,8 +1489,7 @@ def main_process_data(date):
     #    - heading angle
     #    - motor pitch angle
     #    - motor roll angle
-    fname_alp  = process_alp_data(date)
-    sys.exit()
+    # fname_alp  = process_alp_data(date)
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
