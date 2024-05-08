@@ -23,6 +23,7 @@ __all__ = [
         'cal_julian_day',
         'cal_heading',
         'cal_solar_angles',
+        'cal_time_offset',
         'prh2za',
         'muslope',
         'dtime_to_jday',
@@ -136,6 +137,29 @@ def cal_solar_angles(julian_day, longitude, latitude, altitude):
         saa[i] = saa_i
 
     return sza, saa
+
+def cal_time_offset(x_ref, x_target, fill_value=np.nan, offset_range=[-900, 900]):
+
+    from scipy.stats import pearsonr
+    from scipy.ndimage import shift
+
+    logic = (np.logical_not(np.isnan(x_ref))) & (np.logical_not(np.isnan(x_target)))
+    x_ref    = x_ref[logic]
+    x_target = x_target[logic]
+    x_ref    = x_ref/x_ref.max()
+    x_target = x_target/x_target.max()
+
+    offsets = np.arange(offset_range[0], offset_range[1], dtype=np.float64)
+    cross_corr = np.zeros_like(offsets)
+    for i, offset in enumerate(offsets):
+        x0 = shift(x_target, offset, cval=fill_value)
+        logic = (np.logical_not(np.isnan(x0))) & (np.logical_not(np.isnan(x_ref)))
+        coef = pearsonr(x_ref[logic], x0[logic])
+        cross_corr[i] = coef[0]
+
+    time_offset = offsets[np.argmax(cross_corr)]
+
+    return time_offset
 
 def prh2za(ang_pit, ang_rol, ang_head, is_rad=False):
 
@@ -255,15 +279,11 @@ def jday_to_dtime(jday):
 
     return dtime
 
-def interp(x, x0, y0):
+def interp(x, x0, y0, mode='linear'):
 
-    f = interpolate.interp1d(x0, y0, bounds_error=False)
+    f = interpolate.interp1d(x0, y0, bounds_error=False, kind=mode)
 
     return f(x)
-
-
-
-
 
 def var_info_ict(line):
 

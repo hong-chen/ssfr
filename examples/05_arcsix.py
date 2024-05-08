@@ -36,8 +36,9 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 # _cam_         = 'cam'
 
+_fdir_hsk_   = 'data/test/arcsix/2024-Spring/p3/aux/hsk'
 _fdir_data_  = 'data/test/%s' % _mission_
-_fdir_out_   = 'data/processed'
+_fdir_out_   = 'data/test/processed'
 
 _verbose_ = True
 
@@ -511,82 +512,81 @@ def test_data_b(
 
 # functions for processing HSK and ALP
 #/----------------------------------------------------------------------------\#
-# need to work ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 def cdata_arcsix_hsk_v0(
         date,
-        tmhr_range=[14.0, 24.0],
         fdir_data=_fdir_data_,
         fdir_out=_fdir_out_,
         run=True,
         ):
 
     """
-    Usually this function is for processing aricraft housekeeping file in the field (also known as cabin file).
+    For processing aricraft housekeeping file
 
-    Now for skywatch testing, we will use a fixed longitude and latitude
+    Notes:
+        The housekeeping data would require some corrections before its release by the
+        data system team, we usually request the raw IWG file (similar data but with a
+        slightly different data formatting) from the team right after each flight to
+        facilitate our data processing in a timely manner.
     """
 
     date_s = date.strftime('%Y%m%d')
 
-    # to be modified when we get real hsk file from data system team
-    #/----------------------------------------------------------------------------\#
-    # fdir_raw  = '%s/hsk' % fdir_data
-    # fname  = get_file(fdir_raw, full=True, contains=[date_s])
+    # this would change if we are processing IWG file
+    #/--------------------------------------------------------------\#
+    fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[0]
+    data_hsk = ssfr.util.read_ict(fname)
 
-    # data = read_ict(fname)
-
-    # fname_hsk   = '%s/hsk_%s.h5' % (fdir_out, date_s)
-    # if run:
-    #     f = h5py.File(fname_hsk, 'w')
-    #     for vname in data.keys():
-    #         f[vname] = data[vname]['data']
-    #     f.close()
-    #\----------------------------------------------------------------------------/#
-
-    # create data_hsk for skywatch
-    #/----------------------------------------------------------------------------\#
-    tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
-    lon0 = -105.24227862207863 # skywatch longitude
-    lat0 =  40.01097849056196  # skywatch latitude
-    alt0 =  4.0                # skywatch altitude
-    pit0 = 0.0
-    rol0 = 0.0
-    hed0 = 0.0
-    data_hsk = {
-            'tmhr': {'data': tmhr, 'units': 'hour'},
-            'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
-            'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
-            'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
-            'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
-            'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
-            'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
+    var_dict = {
+            'lon': 'longitude',
+            'lat': 'latitude',
+            'alt': 'gps_altitude',
+            'tmhr': 'tmhr',
+            'ang_pit': 'pitch_angle',
+            'ang_rol': 'roll_angle',
+            'ang_hed': 'true_heading',
             }
+    #\--------------------------------------------------------------/#
+
+    # fake hsk for skywatch
+    #/----------------------------------------------------------------------------\#
+    # tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
+    # lon0 = -105.24227862207863 # skywatch longitude
+    # lat0 =  40.01097849056196  # skywatch latitude
+    # alt0 =  4.0                # skywatch altitude
+    # pit0 = 0.0
+    # rol0 = 0.0
+    # hed0 = 0.0
+    # data_hsk = {
+    #         'tmhr': {'data': tmhr, 'units': 'hour'},
+    #         'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
+    #         'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
+    #         'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
+    #         'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
+    #         'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
+    #         'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
+    #         }
     #\----------------------------------------------------------------------------/#
 
-    # solar geometries
-    #/----------------------------------------------------------------------------\#
-    jday0 = ssfr.util.dtime_to_jday(date)
-    jday  = jday0 + data_hsk['tmhr']['data']/24.0
-    sza, saa = ssfr.util.cal_solar_angles(jday, data_hsk['long']['data'], data_hsk['lat']['data'], data_hsk['palt']['data'])
-    #\----------------------------------------------------------------------------/#
-
-    # save processed data
-    #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _hsk_.upper(), date_s)
+    if run:
 
-    f = h5py.File(fname_h5, 'w')
-    f['tmhr'] = data_hsk['tmhr']['data']
-    f['lon']  = data_hsk['long']['data']
-    f['lat']  = data_hsk['lat']['data']
-    f['alt']  = data_hsk['palt']['data']
-    f['ang_pit']  = data_hsk['pitch']['data']
-    f['ang_rol']  = data_hsk['roll']['data']
-    f['ang_hed']  = data_hsk['heading']['data']
-    f['jday'] = jday
-    f['sza']  = sza
-    f['saa']  = saa
-    f.close()
-    #\----------------------------------------------------------------------------/#
+        # solar geometries
+        #/----------------------------------------------------------------------------\#
+        jday0 = ssfr.util.dtime_to_jday(date)
+        jday  = jday0 + data_hsk[var_dict['tmhr']]['data']/24.0
+        sza, saa = ssfr.util.cal_solar_angles(jday, data_hsk[var_dict['lon']]['data'], data_hsk[var_dict['lat']]['data'], data_hsk[var_dict['alt']]['data'])
+        #\----------------------------------------------------------------------------/#
+
+        # save processed data
+        #/----------------------------------------------------------------------------\#
+        f = h5py.File(fname_h5, 'w')
+        for var in var_dict.keys():
+            f[var] = data_hsk[var_dict[var]]['data']
+        f['jday'] = jday
+        f['sza']  = sza
+        f['saa']  = saa
+        f.close()
+        #\----------------------------------------------------------------------------/#
 
     return fname_h5
 
@@ -603,67 +603,77 @@ def cdata_arcsix_alp_v0(
 
     date_s = date.strftime('%Y%m%d')
 
-    fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
-    if _verbose_:
-        msg = '\nProcessing ALP files:\n%s' % '\n'.join(fnames_alp)
-        print(msg)
-
     # read ALP raw data
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), date_s)
     if run:
+        fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
+        if _verbose_:
+            msg = '\nProcessing ALP files:\n%s' % '\n'.join(fnames_alp)
+            print(msg)
+
         alp0 = ssfr.lasp_alp.read_alp(fnames_alp, date=date)
         alp0.save_h5(fname_h5)
     #\----------------------------------------------------------------------------/#
 
     return os.path.abspath(fname_h5)
 
-# need to work ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 def cdata_arcsix_alp_v1(
         date,
-        fdir_processed,
-        fdir_data='/argus/field/oracles',
+        fname_v0,
+        fname_hsk,
+        fdir_out=_fdir_out_,
         run=True
         ):
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_hsk = get_file(fdir_processed, full=True, contains=['hsk_%s' % date_s, 'v0-hsk', date_s])
-    data_hsk = load_h5(fname_hsk)
-
-    fname_alp = get_file(fdir_processed, full=True, contains=['alp', 'v0-raw', date_s])
-    data_alp  = load_h5(fname_alp)
-
-    # time_offset = cal_time_offset(data_hsk['gps_altitude'], interp(data_hsk['tmhr'], data_alp['tmhr'], data_alp['alt']))
-
     fname_h5 = '%s/%s-%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), date_s)
     if run:
 
-        f = h5py.File(fname_h5, 'w')
-        f.attrs['description'] = 'v1: raw data interpolated to HSK time frame; time offset (seconds) was calculated.'
+        # calculate time offset
+        #/----------------------------------------------------------------------------\#
+        data_hsk = ssfr.util.load_h5(fname_hsk)
+        data_alp = ssfr.util.load_h5(fname_v0)
 
-        f['tmhr']        = data_hsk['tmhr'] + time_offset/3600.0
-        f['tmhr_ori']    = data_hsk['tmhr']
+        data_ref = data_hsk['alt']
+        data_tar = ssfr.util.interp(data_hsk['jday'], data_alp['jday'], data_alp['alt'])
+        time_offset = ssfr.util.cal_time_offset(data_ref, data_tar)
+        #\----------------------------------------------------------------------------/#
+
+        f = h5py.File(fname_h5, 'w')
+        f.attrs['description'] = 'v1:\n  1) raw data interpolated to HSK time frame;\n  2) time offset (seconds) was calculated and applied.'
+
+
+        f['tmhr']        = data_hsk['tmhr']
+        f['jday']        = data_hsk['jday']
+        f['tmhr_ori']    = data_hsk['tmhr'] - time_offset/3600.0
+        f['jday_ori']    = data_hsk['jday'] - time_offset/86400.0
         f['time_offset'] = time_offset
+
+        jday_corr        = data_alp['jday'] + time_offset/86400.0
         for vname in data_alp.keys():
             if vname not in ['tmhr', 'jday']:
-                f[vname] = interp(data_hsk['tmhr'], data_alp['tmhr'], data_alp[vname])
+                f[vname] = ssfr.util.interp(data_hsk['jday'], jday_corr, data_alp[vname])
         f.close()
 
     return fname_h5
 
 def process_alp_data(date, run=True):
 
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
-    fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
-
     fdir_out = _fdir_out_
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    _fnames_['hsk_v0'] = cdata_arcsix_hsk_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
-    _fnames_['alp_v0'] = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
-    _fnames_['alp_v1'] = cdata_arcsix_alp_v1(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
+    fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
+
+    date_s = date.strftime('%Y%m%d')
+    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_, fdir_out=fdir_out, run=False)
+    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=False)
+    fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0, fdir_out=fdir_out, run=run)
+
+
 #\----------------------------------------------------------------------------/#
 
 
@@ -1465,7 +1475,7 @@ def generate_quicklook_video(date):
 
 # main program
 #/----------------------------------------------------------------------------\#
-def main_process_data(date):
+def main_process_data(date, run=True):
 
     # 1. aircraft housekeeping file (need to request data from the P-3 data system)
     #    - longitude
@@ -1475,7 +1485,7 @@ def main_process_data(date):
     #    - pitch angle
     #    - roll angle
     #    - heading angle
-    # fname_hsk  = process_hsk_data(date)
+    # fname_hsk = process_hsk_data(date, run=run)
 
     # 2. active leveling platform
     #    - longitude
