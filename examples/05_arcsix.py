@@ -528,29 +528,6 @@ def cdata_hsk_h5(date, fdir_out, fdir_data='/argus/field/camp2ex', run=True):
 
     return fname_hsk
 
-def cdata_alp_v0_raw(date, fdir_processed, fdir_data='/argus/field/oracles', run=True):
-
-    date_s = date.strftime('%Y%m%d')
-
-    fdir_raw  = '%s/raw/alp' % (fdir_data)
-    fnames_alp_raw = sorted(glob.glob('%s/*.plt3' % fdir_raw))
-
-    fname_alp      = '%s/alp_%s_v0-raw.h5' % (fdir_processed, date_s)
-    if run:
-
-        if date.year == 2016:
-            from alp import cu_alp_v2 as cu_alp
-        else:
-            from alp import cu_alp
-
-        # create ALP raw data
-        # ============================================================================
-        alp0 = cu_alp(fnames_alp_raw, date=date)
-        alp0.save_h5(fname_alp)
-        # ============================================================================
-
-    return fname_alp
-
 def cdata_alp_v1_hsk(date, fdir_processed, fdir_data='/argus/field/oracles', run=True):
 
     date_s = date.strftime('%Y%m%d')
@@ -579,28 +556,6 @@ def cdata_alp_v1_hsk(date, fdir_processed, fdir_data='/argus/field/oracles', run
 
     return fname_alp
 
-def cdata_alp_v0(date, fdir_processed, fdir_data='/argus/field/camp2ex', run=True):
-
-    date_s = date.strftime('%Y%m%d')
-
-    fdir_raw  = '%s/raw/alp' % (fdir_data)
-    fnames_alp_raw = sorted(glob.glob('%s/*.plt3' % fdir_raw))
-
-    fname_alp      = '%s/alp_%s_v0.h5' % (fdir_processed, date_s)
-    if run:
-
-        if date.year == 2016:
-            from alp import cu_alp_v2 as cu_alp
-        else:
-            from alp import cu_alp
-
-        # create ALP V0 data
-        # ============================================================================
-        alp0 = cu_alp(fnames_alp_raw, date=date)
-        alp0.save_h5(fname_alp)
-        # ============================================================================
-
-    return fname_alp
 
 
 
@@ -669,31 +624,31 @@ def cdata_arcsix_hsk_v0(
 
     return
 
-
-
-
 def cdata_arcsix_alp_v0(
         date,
-        fdir_out=_fdir_v0_,
         fdir_data=_fdir_alp_,
-        run=True
+        fdir_out=_fdir_v0_,
+        run=True,
         ):
+
+    """
+    Read ALP data
+    """
 
     date_s = date.strftime('%Y%m%d')
 
-    fdir_raw  = '%s/raw/alp' % (fdir_data)
-    fnames_alp_raw = sorted(glob.glob('%s/*.plt3' % fdir_raw))
+    fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
 
-    fname_alp = '%s/alp_%s_v0-raw.h5' % (fdir_out, date_s)
 
+    # read ALP raw data
+    #/----------------------------------------------------------------------------\#
+    fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), date_s)
     if run:
-        # create ALP raw data
-        #/----------------------------------------------------------------------------\#
-        alp0 = ssfr.cu_alp(fnames_alp_raw, date=date)
-        alp0.save_h5(fname_alp)
-        #\----------------------------------------------------------------------------/#
+        alp0 = ssfr.cu_alp(fnames_alp, date=date)
+        alp0.save_h5(fname_h5)
+    #\----------------------------------------------------------------------------/#
 
-    return fname_alp
+    return fname_h5
 #\----------------------------------------------------------------------------/#
 
 
