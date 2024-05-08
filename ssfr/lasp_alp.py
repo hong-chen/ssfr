@@ -2,6 +2,7 @@ import os
 import sys
 import struct
 import datetime
+import warnings
 import h5py
 import numpy as np
 from ssfr.util import load_h5, cal_heading, cal_julian_day
@@ -19,9 +20,11 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
         iterN    = fileSize // dataLen
         residual = fileSize %  dataLen
         if residual != 0:
-            print('Warning [read_alp_raw]: \'%s\' has invalid data size.' % fname)
+            msg = '\nWarning [read_alp_raw]: <%s> has invalid data size.' % fname
+            warnings.warn(msg)
     else:
-        sys.exit('Error   [read_alp_raw]: \'%s\' has invalid file size.' % fname)
+        msg = '\nError [read_alp_raw]: \'%s\' has invalid file size.' % fname
+        raise OSError(msg)
 
     vnames_dict  = {                    \
                     'Computer_Hour':0,  \
@@ -68,7 +71,7 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
     f = open(fname, 'rb')
     if verbose:
         print('++++++++++++++++++++++++++++++++++++++++++++++++++')
-        print('Reading %s...' % fname.split('/')[-1])
+        print('Reading <%s> ...' % fname.split('/')[-1])
 
     # read data record
     for i in range(iterN):
@@ -85,9 +88,20 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
     return dataAll
 
+
 class read_alp:
 
-    def __init__(self, fnames, date=None, tmhr_range=None, Ndata=15000, time_add_offset=0.0, verbose=False):
+    ID = 'CU LASP ALP'
+
+    def __init__(
+            self,
+            fnames,
+            date=None,
+            tmhr_range=None,
+            Ndata=15000,
+            time_offset=0.0,
+            verbose=False
+            ):
 
         if len(fnames) == 0:
             msg = '\nError [read_alp]: No files are found in <fnames>.'
@@ -119,7 +133,7 @@ class read_alp:
         dataAll   = dataAll[:Nend, ...]
 
         index_tmhr= 0
-        tmhr = (dataAll[:, index_tmhr] + time_add_offset) / 3600.0
+        tmhr = (dataAll[:, index_tmhr] + time_offset) / 3600.0
         tmhr_int = np.int_(tmhr)
         tmhr_unique, counts = np.unique(tmhr_int, return_counts=True)
         tmhrRef = tmhr_unique[np.argmax(counts)]
