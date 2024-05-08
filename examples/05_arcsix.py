@@ -673,25 +673,23 @@ def process_alp_data(date, run=True):
 #/----------------------------------------------------------------------------\#
 def cdata_arcsix_spns_v0(
         date,
-        fdir_data=None,
+        fdir_data=_fdir_data_,
         fdir_out=_fdir_out_,
+        run=True,
         ):
 
     """
     Process raw SPN-S data
     """
 
-    date_s = date.strftime('%Y-%m-%d')
+    date_s = date.strftime('%Y%m%d')
 
     # read spn-s raw data
     #/----------------------------------------------------------------------------\#
-    fdir = '%s/%s' % (fdir_data, date_s)
-
-    print(fdir)
-    fname_dif = sorted(glob.glob('%s/Diffuse.txt' % fdir))[0]
+    fname_dif = ssfr.util.get_all_files(fdir_data, pattern='*Diffuse.txt')[-1]
     data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
 
-    fname_tot = sorted(glob.glob('%s/Total.txt' % fdir))[0]
+    fname_dif = ssfr.util.get_all_files(fdir_data, pattern='*Total.txt')[-1]
     data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
     #/----------------------------------------------------------------------------\#
 
@@ -709,41 +707,42 @@ def cdata_arcsix_spns_v0(
     #/----------------------------------------------------------------------------\#
     fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
 
-    f = h5py.File(fname_h5, 'w')
+    if run:
+        f = h5py.File(fname_h5, 'w')
 
-    g1 = f.create_group('dif')
-    g1['tmhr']  = data0_dif.data['tmhr']
-    g1['wvl']   = data0_dif.data['wavelength']
-    g1['flux']  = data0_dif.data['flux']
+        g1 = f.create_group('dif')
+        g1['tmhr']  = data0_dif.data['tmhr']
+        g1['wvl']   = data0_dif.data['wavelength']
+        g1['flux']  = data0_dif.data['flux']
 
-    g2 = f.create_group('tot')
-    g2['tmhr']  = data0_tot.data['tmhr']
-    g2['wvl']   = data0_tot.data['wavelength']
-    g2['flux']  = data0_tot.data['flux']
-    g2['toa0']  = f_dn_sol_tot
+        g2 = f.create_group('tot')
+        g2['tmhr']  = data0_tot.data['tmhr']
+        g2['wvl']   = data0_tot.data['wavelength']
+        g2['flux']  = data0_tot.data['flux']
+        g2['toa0']  = f_dn_sol_tot
 
-    f.close()
+        f.close()
     #\----------------------------------------------------------------------------/#
 
-    return
+    return fname_h5
 
 def cdata_arcsix_spns_v1(
         date,
         time_offset=0.0,
         fdir_data=_fdir_out_,
         fdir_out=_fdir_out_,
+        run=True,
         ):
 
     """
     Check for time offset and merge SPN-S data with aircraft data
     """
 
-    date_s = date.strftime('%Y-%m-%d')
+    date_s = date.strftime('%Y%m%d')
 
     # read hsk v0
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_data, _mission_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
+    f = h5py.File(_fnames_['hsk_v0'], 'r')
     jday = f['jday'][...]
     sza  = f['sza'][...]
     saa  = f['saa'][...]
@@ -751,21 +750,19 @@ def cdata_arcsix_spns_v1(
     lon  = f['lon'][...]
     lat  = f['lat'][...]
     alt  = f['alt'][...]
-    pit  = f['pit'][...]
-    rol  = f['rol'][...]
-    hed  = f['hed'][...]
+    ang_pit  = f['ang_pit'][...]
+    ang_rol  = f['ang_rol'][...]
+    ang_hed  = f['ang_hed'][...]
     f.close()
     #\----------------------------------------------------------------------------/#
 
 
     # read spn-s v0
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _spns_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
+    f = h5py.File(_fnames_['spns_v0'], 'r')
     f_dn_dif  = f['dif/flux'][...]
     wvl_dif   = f['dif/wvl'][...]
     tmhr_dif  = f['dif/tmhr'][...]
-
     f_dn_tot  = f['tot/flux'][...]
     wvl_tot   = f['tot/wvl'][...]
     tmhr_tot  = f['tot/tmhr'][...]
@@ -788,40 +785,42 @@ def cdata_arcsix_spns_v1(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
+    fname_h5 = _fnames_['spns_v0'].replace('v0', 'v1')
 
-    f = h5py.File(fname_h5, 'w')
+    if run:
+        f = h5py.File(fname_h5, 'w')
 
-    f['jday'] = jday
-    f['tmhr'] = tmhr
-    f['lon']  = lon
-    f['lat']  = lat
-    f['alt']  = alt
-    f['sza']  = sza
-    f['saa']  = saa
-    f['pit']  = pit
-    f['rol']  = rol
-    f['hed']  = hed
+        f['jday'] = jday
+        f['tmhr'] = tmhr
+        f['lon']  = lon
+        f['lat']  = lat
+        f['alt']  = alt
+        f['sza']  = sza
+        f['saa']  = saa
+        f['ang_pit']  = ang_pit
+        f['ang_rol']  = ang_rol
+        f['ang_hed']  = ang_hed
 
-    g1 = f.create_group('dif')
-    g1['wvl']   = wvl_dif
-    g1['flux']  = flux_dif
+        g1 = f.create_group('dif')
+        g1['wvl']   = wvl_dif
+        g1['flux']  = flux_dif
 
-    g2 = f.create_group('tot')
-    g2['wvl']   = wvl_tot
-    g2['flux']  = flux_tot
-    g2['toa0']  = f_dn_tot_toa0
+        g2 = f.create_group('tot')
+        g2['wvl']   = wvl_tot
+        g2['flux']  = flux_tot
+        g2['toa0']  = f_dn_tot_toa0
 
-    f.close()
+        f.close()
     #\----------------------------------------------------------------------------/#
 
-    return
+    return fname_h5
 
 def cdata_arcsix_spns_v2(
         date,
         time_offset=0.0,
         fdir_data=_fdir_out_,
         fdir_out=_fdir_out_,
+        run=True,
         ):
 
     """
@@ -832,8 +831,7 @@ def cdata_arcsix_spns_v2(
 
     # read spn-s v1
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
+    f = h5py.File(_fnames_['spns_v1'], 'r')
     f_dn_dif  = f['dif/flux'][...]
     wvl_dif   = f['dif/wvl'][...]
 
@@ -849,9 +847,9 @@ def cdata_arcsix_spns_v2(
     sza  = f['sza'][...]
     saa  = f['saa'][...]
 
-    pit = f['pit'][...]
-    rol = f['rol'][...]
-    hed = f['hed'][...]
+    ang_pit = f['ang_pit'][...]
+    ang_rol = f['ang_rol'][...]
+    ang_hed = f['ang_hed'][...]
 
     f.close()
     #/----------------------------------------------------------------------------\#
@@ -861,7 +859,7 @@ def cdata_arcsix_spns_v2(
     #/----------------------------------------------------------------------------\#
     mu = np.cos(np.deg2rad(sza))
 
-    iza, iaa = ssfr.util.prh2za(pit, rol, hed)
+    iza, iaa = ssfr.util.prh2za(ang_pit, ang_rol, ang_hed)
     dc = ssfr.util.muslope(sza, saa, iza, iaa)
 
     factors = mu / dc
@@ -881,33 +879,34 @@ def cdata_arcsix_spns_v2(
 
     # save processed data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
+    fname_h5 = _fnames_['spns_v1'].replace('v1', 'v2')
 
-    f = h5py.File(fname_h5, 'w')
+    if run:
+        f = h5py.File(fname_h5, 'w')
 
-    f['jday'] = jday
-    f['tmhr'] = tmhr
-    f['lon']  = lon
-    f['lat']  = lat
-    f['alt']  = alt
-    f['sza']  = sza
-    f['dc']   = dc
+        f['jday'] = jday
+        f['tmhr'] = tmhr
+        f['lon']  = lon
+        f['lat']  = lat
+        f['alt']  = alt
+        f['sza']  = sza
+        f['dc']   = dc
 
-    g1 = f.create_group('dif')
-    g1['wvl']   = wvl_dif
-    g1['flux']  = f_dn_dif
+        g1 = f.create_group('dif')
+        g1['wvl']   = wvl_dif
+        g1['flux']  = f_dn_dif
 
-    g2 = f.create_group('tot')
-    g2['wvl']   = wvl_tot
-    g2['flux']  = f_dn_tot_corr
-    g2['toa0']  = f_dn_toa0
+        g2 = f.create_group('tot')
+        g2['wvl']   = wvl_tot
+        g2['flux']  = f_dn_tot_corr
+        g2['toa0']  = f_dn_toa0
 
-    f.close()
+        f.close()
     #\----------------------------------------------------------------------------/#
 
-    ssfr.vis.quicklook_bokeh_spns(fname_h5, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
+    # ssfr.vis.quicklook_bokeh_spns(fname_h5, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 
-    return
+    return fname_h5
 
 def process_spns_data(date, run=True):
 
@@ -917,9 +916,9 @@ def process_spns_data(date, run=True):
     v2: attitude corrected data
     """
 
-    cdata_arcsix_spns_v0(date, run=run)
-    cdata_arcsix_spns_v1(date, run=run)
-    cdata_arcsix_spns_v2(date, run=run)
+    _fnames_['spns_v0'] = cdata_arcsix_spns_v0(date, run=run)
+    _fnames_['spns_v1'] = cdata_arcsix_spns_v1(date, run=run)
+    _fnames_['spns_v2'] = cdata_arcsix_spns_v2(date, run=run)
 #\----------------------------------------------------------------------------/#
 
 
@@ -1518,9 +1517,7 @@ if __name__ == '__main__':
 
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
 
-
     # main_calibration()
-
 
     # data procesing
     #/----------------------------------------------------------------------------\#
