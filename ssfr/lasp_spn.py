@@ -25,7 +25,7 @@ class read_spns:
             self.data['general_info']: python dictionary
             self.data['tmhr']      : numpy array (Ndata,)
             self.data['jday']      : numpy array (Ndata,)
-            self.data['wavelength']: numpy array (Nwvl,)
+            self.data['wvl']: numpy array (Nwvl,)
             self.data['flux']      : numpy array (Ndata, Nwvl)
     """
 
@@ -55,7 +55,7 @@ class read_spns:
         #/----------------------------------------------------------------------------\#
         try:
             wvl = np.float_(np.array(lines[info_line-1].strip().split('\t')[1:]))
-            self.data['wavelength'] = wvl
+            self.data['wvl'] = wvl
         except:
             msg = '\nError [read_spns]: Cannot interpret the following header line:\n%s' % lines[info_line-1]
             raise OSError(msg)

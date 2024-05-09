@@ -608,7 +608,7 @@ def cdata_arcsix_spns_v0(
         #/----------------------------------------------------------------------------\#
         flux_toa = ssfr.util.get_solar_kurudz()
 
-        wvl_tot = data0_tot.data['wavelength']
+        wvl_tot = data0_tot.data['wvl']
         f_dn_sol_tot = np.zeros_like(wvl_tot)
         for i, wvl0 in enumerate(wvl_tot):
             f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])
@@ -617,17 +617,17 @@ def cdata_arcsix_spns_v0(
         f = h5py.File(fname_h5, 'w')
 
         g1 = f.create_group('dif')
-        g1['tmhr']  = data0_dif.data['tmhr']
-        g1['jday']  = data0_dif.data['jday']
-        g1['wvl']   = data0_dif.data['wavelength']
-        g1['flux']  = data0_dif.data['flux']
+        for key in data0_dif.data.keys():
+            if key in ['tmhr', 'jday', 'wvl', 'flux']:
+                # dset0 = g1.create_dataset(key, data=data0_dif.data[key], compression='lzf')
+                dset0 = g1.create_dataset(key, data=data0_dif.data[key], compression='gzip', compression_opts=9)
 
         g2 = f.create_group('tot')
-        g2['tmhr']  = data0_tot.data['tmhr']
-        g2['jday']  = data0_tot.data['jday']
-        g2['wvl']   = data0_tot.data['wavelength']
-        g2['flux']  = data0_tot.data['flux']
-        g2['toa0']  = f_dn_sol_tot
+        for key in data0_tot.data.keys():
+            if key in ['tmhr', 'jday', 'wvl', 'flux']:
+                # dset0 = g2.create_dataset(key, data=data0_tot.data[key], compression='lzf')
+                dset0 = g2.create_dataset(key, data=data0_tot.data[key], compression='gzip', compression_opts=9)
+        g2['toa0'] = f_dn_sol_tot
 
         f.close()
 
@@ -729,12 +729,14 @@ def cdata_arcsix_spns_v1(
 
         g1 = f.create_group('dif')
         g1['wvl']   = data_spns_v0['dif/wvl']
-        g1['flux']  = flux_dif
+        # dset0 = g1.create_dataset('flux', data=flux_dif, compression='lzf')
+        dset0 = g1.create_dataset('flux', data=flux_dif, compression='gzip', compression_opts=9)
 
         g2 = f.create_group('tot')
         g2['wvl']   = data_spns_v0['tot/wvl']
-        g2['flux']  = flux_tot
         g2['toa0']  = data_spns_v0['tot/toa0']
+        # dset0 = g2.create_dataset('flux', data=flux_tot, compression='lzf')
+        dset0 = g2.create_dataset('flux', data=flux_tot, compression='gzip', compression_opts=9)
 
         f.close()
 
@@ -804,12 +806,14 @@ def cdata_arcsix_spns_v2(
 
         g1 = f.create_group('dif')
         g1['wvl']   = data_spns_v1['dif/wvl']
-        g1['flux']  = data_spns_v1['dif/flux']
+        # dset0 = g1.create_dataset('flux', data=data_spns_v1['dif/flux'], compression='lzf')
+        dset0 = g1.create_dataset('flux', data=data_spns_v1['dif/flux'], compression='gzip', compression_opts=9)
 
         g2 = f.create_group('tot')
         g2['wvl']   = data_spns_v1['tot/wvl']
-        g2['flux']  = f_dn_tot_corr
         g2['toa0']  = data_spns_v1['tot/toa0']
+        # dset0 = g2.create_dataset('flux', data=f_dn_tot_corr, compression='lzf')
+        dset0 = g2.create_dataset('flux', data=f_dn_tot_corr, compression='gzip', compression_opts=9)
 
         f.close()
 
@@ -885,7 +889,8 @@ def cdata_arcsix_ssfr_v0(
             g = f.create_group(dset_s)
             for key in data.keys():
                 if key != 'info':
-                    g[key] = data[key]
+                    # dset0 = g.create_dataset(key, data=data[key], compression='lzf')
+                    dset0 = g.create_dataset(key, data=data[key], compression='gzip', compression_opts=9)
 
         f.close()
         #\----------------------------------------------------------------------------/#
@@ -1632,15 +1637,15 @@ def main_process_data(date, run=True):
     #    - heading angle
     #    - motor pitch angle
     #    - motor roll angle
-    process_alp_data(date, run=False)
+    process_alp_data(date, run=True)
     # quicklook_alp(date)
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=False)
-    # quicklook_spns(date)
-    # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
+    process_spns_data(date, run=True)
+    quicklook_spns(date)
+    ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global

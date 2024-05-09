@@ -49,7 +49,7 @@ def get_all_files(fdir, pattern='*'):
         for fname_tmp in fnames_tmp:
             if fnmatch.fnmatch(fname_tmp, pattern):
                 fnames.append(os.path.join(fdir_root, fname_tmp))
-    return fnames
+    return sorted(fnames)
 
 def get_all_folders(fdir, pattern='*'):
 
