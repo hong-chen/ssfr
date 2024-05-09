@@ -784,11 +784,13 @@ def cdata_arcsix_spns_v0(
 
         g1 = f.create_group('dif')
         g1['tmhr']  = data0_dif.data['tmhr']
+        g1['jday']  = data0_dif.data['jday']
         g1['wvl']   = data0_dif.data['wavelength']
         g1['flux']  = data0_dif.data['flux']
 
         g2 = f.create_group('tot')
         g2['tmhr']  = data0_tot.data['tmhr']
+        g2['jday']  = data0_tot.data['jday']
         g2['wvl']   = data0_tot.data['wavelength']
         g2['flux']  = data0_tot.data['flux']
         g2['toa0']  = f_dn_sol_tot
