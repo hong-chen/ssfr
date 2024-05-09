@@ -691,7 +691,7 @@ def quicklook_alp(date):
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(12, 6))
-        fig.suptitle('ALP Quicklook (%s)' % date_s)
+        fig.suptitle('%s Quicklook (%s)' % (_alp_.upper(), date_s))
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
@@ -991,7 +991,7 @@ def quicklook_spns(date):
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(12, 6))
-        fig.suptitle('ALP Quicklook (%s)' % date_s)
+        fig.suptitle('%s Quicklook (%s)' % (_spns_.upper(), date_s))
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
@@ -1038,8 +1038,6 @@ def process_spns_data(date, run=True):
     _fnames_['%s_spns_v0' % date_s] = fname_spns_v0
     _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
     _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
-
-    quicklook_spns(date)
 #\----------------------------------------------------------------------------/#
 
 
@@ -1608,6 +1606,7 @@ def main_process_data(date, run=True):
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
     process_spns_data(date, run=False)
+    # quicklook_spns(date)
     # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
     sys.exit()
 
