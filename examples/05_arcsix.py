@@ -925,8 +925,6 @@ def cdata_arcsix_spns_v2(
 
         f.close()
 
-    # ssfr.vis.quicklook_bokeh_spns(fname_h5, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
-
     return fname_h5
 
 def process_spns_data(date, run=True):
@@ -953,6 +951,8 @@ def process_spns_data(date, run=True):
     _fnames_['%s_spns_v0' % date_s] = fname_spns_v0
     _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
     _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
+
+    ssfr.vis.quicklook_bokeh_spns(fname_spns_v2, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 #\----------------------------------------------------------------------------/#
 
 
@@ -1517,7 +1517,7 @@ def main_process_data(date, run=True):
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=run)
+    process_spns_data(date, run=False)
     sys.exit()
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
