@@ -650,8 +650,6 @@ def cdata_arcsix_alp_v1(
         #/----------------------------------------------------------------------------\#
         data_hsk = ssfr.util.load_h5(fname_hsk)
         data_alp = ssfr.util.load_h5(fname_v0)
-        print(data_hsk.keys())
-        print(data_alp.keys())
 
         time_step = 1.0 # 1Hz data
         data_ref = data_hsk['alt']
@@ -956,41 +954,7 @@ def process_spns_data(date, run=True):
     _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
     _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
 
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        f = h5py.File(fname_spns_v0, 'r')
-        tmhr = f['tot/tmhr'][...]
-        f_tot = f['tot/flux'][...]
-        wvl   = f['tot/wvl'][...]
-        f.close()
-        plt.close('all')
-        fig = plt.figure(figsize=(8, 6))
-        # fig.suptitle('Figure')
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(tmhr, f_tot[:, np.argmin(np.abs(wvl-555.0))], s=6, c='k', lw=0.0)
-        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        #\--------------------------------------------------------------/#
-        # save figure
-        #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
-    #\----------------------------------------------------------------------------/#
-    # ssfr.vis.quicklook_bokeh_spns(fname_spns_v2, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
+    ssfr.vis.quicklook_bokeh_spns(fname_spns_v2, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 #\----------------------------------------------------------------------------/#
 
 
