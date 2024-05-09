@@ -912,191 +912,90 @@ def cdata_arcsix_ssfr_v1(
     """
     version 1: 1) check for time offset and merge SSFR data with aircraft housekeeping data
                2) interpolate raw SSFR data into the time frame of the housekeeping data
+               3) apply primary and secondary calibration to convert counts to fluxes
     """
 
     date_s = date.strftime('%Y%m%d')
 
-    tmhr_offsets = {
-            'ssfr-a': 3.3364,
-            'ssfr-b': 4.3470,
-            }
+    fname_h5 = '%s/%s-%s_%s_v1.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
 
-    # read hsk v0
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_HSK_%s_v0.h5' % (fdir_data, _mission_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
-    jday = f['jday'][...]
-    sza  = f['sza'][...]
-    saa  = f['saa'][...]
-    tmhr = f['tmhr'][...]
-    lon  = f['lon'][...]
-    lat  = f['lat'][...]
-    alt  = f['alt'][...]
-    pit  = f['pit'][...]
-    rol  = f['rol'][...]
-    hed  = f['hed'][...]
-    f.close()
-    #\----------------------------------------------------------------------------/#
+    if run:
 
-    # read in spn-s data (later for calculating diffuse-to-global ratio, `diff_ratio`)
-    #/----------------------------------------------------------------------------\#
-    # fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
-
-    # f = h5py.File(fname_h5, 'r')
-
-    # f['jday'] = jday
-    # f['tmhr'] = tmhr
-    # f['lon']  = lon
-    # f['lat']  = lat
-    # f['alt']  = alt
-    # f['sza']  = sza
-    # f['dc']   = dc
-
-    # g1 = f.create_group('dif')
-    # g1['wvl']   = wvl_dif
-    # g1['flux']  = f_dn_dif
-
-    # g2 = f.create_group('tot')
-    # g2['wvl']   = wvl_tot
-    # g2['flux']  = f_dn_tot_corr
-    # g2['toa0']  = f_dn_toa0
-
-    # dif_flux0 = data_spns['dif_flux']
-    # dif_tmhr0 = data_spns['dif_tmhr']
-    # dif_wvl0  = data_spns['dif_wvl']
-
-    # f.close()
-
-    # dif_flux1 = np.zeros((ssfr_v0.tmhr.size, dif_wvl0.size), dtype=np.float64); dif_flux1[...] = np.nan
-    # for i in range(dif_wvl0.size):
-    #     dif_flux1[:, i] = interp(ssfr_v0.tmhr, dif_tmhr0, dif_flux0[:, i])
-
-    # dif_flux = np.zeros_like(ssfr_v0.zen_cnt); dif_flux[...] = np.nan
-    # for i in range(ssfr_v0.tmhr.size):
-    #     dif_flux[i, :] = interp(ssfr_v0.zen_wvl, dif_wvl0, dif_flux1[i, :])
-
-
-    # tot_flux0 = data_spns['tot_flux']
-    # tot_tmhr0 = data_spns['tot_tmhr']
-    # tot_wvl0  = data_spns['tot_wvl']
-
-    # tot_flux1 = np.zeros((ssfr_v0.tmhr.size, tot_wvl0.size), dtype=np.float64); tot_flux1[...] = np.nan
-    # for i in range(dif_wvl0.size):
-    #     tot_flux1[:, i] = interp(ssfr_v0.tmhr, tot_tmhr0, tot_flux0[:, i])
-
-    # tot_flux = np.zeros_like(ssfr_v0.zen_cnt); tot_flux[...] = np.nan
-    # for i in range(ssfr_v0.tmhr.size):
-    #     tot_flux[i, :] = interp(ssfr_v0.zen_wvl, tot_wvl0, tot_flux1[i, :])
-
-    # diff_ratio0 = dif_flux / tot_flux
-    # diff_ratio  = np.zeros_like(ssfr_v0.zen_cnt)  ; diff_ratio[...] = np.nan
-    # coefs       = np.zeros((ssfr_v0.tmhr.size, 3)); coefs[...] = np.nan
-    # qual_flag   = np.repeat(0, ssfr_v0.tmhr.size)
-
-    # for i in tqdm(range(diff_ratio.shape[0])):
-
-    #     logic = (diff_ratio0[i, :]>=0.0) & (diff_ratio0[i, :]<=1.0) & (ssfr_v0.zen_wvl>=400.0) & (ssfr_v0.zen_wvl<=750.0)
-    #     if logic.sum() > 20:
-
-    #         x = ssfr_v0.zen_wvl[logic]
-    #         y = diff_ratio0[i, logic]
-    #         popt, pcov = fit_diff_ratio(x, y)
-
-    #         diff_ratio[i, :] = func_diff_ratio(ssfr_v0.zen_wvl, *popt)
-    #         diff_ratio[i, diff_ratio[i, :]>1.0] = 1.0
-    #         diff_ratio[i, diff_ratio[i, :]<0.0] = 0.0
-
-    #         coefs[i, :] = popt
-    #         qual_flag[i] = 1
-
-    # print(np.isnan(diff_ratio).sum())
-
-    # for i in range(diff_ratio.shape[1]):
-    #     logic_nan = np.isnan(diff_ratio[:, i])
-    #     logic     = np.logical_not(logic_nan)
-
-    #     f_interp  = interpolate.interp1d(ssfr_v0.tmhr[logic], diff_ratio[:, i][logic], bounds_error=None, fill_value='extrapolate')
-    #     diff_ratio[logic_nan, i] = f_interp(ssfr_v0.tmhr[logic_nan])
-    #     diff_ratio[diff_ratio[:, i]>1.0, i] = 1.0
-    #     diff_ratio[diff_ratio[:, i]<0.0, i] = 0.0
-
-    # print(np.isnan(diff_ratio).sum())
-
-    # if run:
-    #     fname = '%s/ssfr_%s_aux.h5' % (fdir_processed, date_s)
-    #     f = h5py.File(fname, 'w')
-    #     f['tmhr'] = ssfr_v0.tmhr
-    #     f['alt']  = alt
-    #     f['lon']  = lon
-    #     f['lat']  = lat
-    #     f['sza']  = sza
-    #     f['saa']  = saa
-    #     f['diff_ratio_x']         = ssfr_v0.zen_wvl
-    #     f['diff_ratio_coef']      = coefs
-    #     f['diff_ratio_qual_flag'] = qual_flag
-    #     f['diff_ratio']           = diff_ratio
-    #     f['diff_ratio_ori']       = diff_ratio0
-    #     f.close()
-    #\----------------------------------------------------------------------------/#
-
-
-
-    # save processed data
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
-    f = h5py.File(fname_h5, 'w')
-
-    f['jday'] = jday
-    f['tmhr'] = tmhr
-    f['lon']  = lon
-    f['lat']  = lat
-    f['alt']  = alt
-    f['sza']  = sza
-    f['saa']  = saa
-    f['pit']  = pit
-    f['rol']  = rol
-    f['hed']  = hed
-
-    # read ssfr v0
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
-    f_ = h5py.File(fname_h5, 'r')
-
-    for dset_s in f_.keys():
-
-        cnt_zen_ = f_['%s/cnt_zen' % dset_s][...]
-        wvl_zen  = f_['%s/wvl_zen' % dset_s][...]
-        tmhr_zen = f_['%s/tmhr'    % dset_s][...] + tmhr_offsets[_ssfr_]
-
-        cnt_nad_ = f_['%s/cnt_nad' % dset_s][...]
-        wvl_nad  = f_['%s/wvl_nad' % dset_s][...]
-        tmhr_nad = f_['%s/tmhr'    % dset_s][...] + tmhr_offsets[_ssfr_]
-
-        # interpolate ssfr data to hsk time frame
+        # load ssfr v0 data
         #/----------------------------------------------------------------------------\#
-        cnt_zen = np.zeros((tmhr.size, wvl_zen.size), dtype=np.float64)
-        for i in range(wvl_zen.size):
-            cnt_zen[:, i] = ssfr.util.interp(tmhr, tmhr_zen, cnt_zen_[:, i])
-
-        cnt_nad = np.zeros((tmhr.size, wvl_nad.size), dtype=np.float64)
-        for i in range(wvl_nad.size):
-            cnt_nad[:, i] = ssfr.util.interp(tmhr, tmhr_nad, cnt_nad_[:, i])
+        data_ssfr_v0 = ssfr.util.load_h5(fname_ssfr_v0)
+        print(data_ssfr_v0.keys())
         #\----------------------------------------------------------------------------/#
 
-        g = f.create_group(dset_s)
 
-        g['wvl_zen'] = wvl_zen
-        g['cnt_zen'] = cnt_zen
-        g['wvl_nad'] = wvl_nad
-        g['cnt_nad'] = cnt_nad
+        # load hsk
+        #/----------------------------------------------------------------------------\#
+        data_hsk = ssfr.util.load_h5(fname_hsk)
+        print(data_hsk.keys())
+        #\----------------------------------------------------------------------------/#
 
-    f_.close()
-    #/----------------------------------------------------------------------------\#
 
-    f.close()
-    #\----------------------------------------------------------------------------/#
+        # manually adjust time offset
+        #/----------------------------------------------------------------------------\#
+        if _test_mode_:
+            time_offset = 3.3364 * 3600.0
+        #\----------------------------------------------------------------------------/#
+        sys.exit()
 
-    return
+
+
+        # save processed data
+        #/----------------------------------------------------------------------------\#
+        f = h5py.File(fname_h5, 'w')
+
+        f['jday'] = jday
+        f['tmhr'] = tmhr
+        f['lon']  = lon
+        f['lat']  = lat
+        f['alt']  = alt
+        f['sza']  = sza
+        f['saa']  = saa
+        f['pit']  = pit
+        f['rol']  = rol
+        f['hed']  = hed
+
+        f_ = h5py.File(fname_h5, 'r')
+
+        for dset_s in f_.keys():
+
+            cnt_zen_ = f_['%s/cnt_zen' % dset_s][...]
+            wvl_zen  = f_['%s/wvl_zen' % dset_s][...]
+            tmhr_zen = f_['%s/tmhr'    % dset_s][...] + tmhr_offsets[_ssfr_]
+
+            cnt_nad_ = f_['%s/cnt_nad' % dset_s][...]
+            wvl_nad  = f_['%s/wvl_nad' % dset_s][...]
+            tmhr_nad = f_['%s/tmhr'    % dset_s][...] + tmhr_offsets[_ssfr_]
+
+            # interpolate ssfr data to hsk time frame
+            #/----------------------------------------------------------------------------\#
+            cnt_zen = np.zeros((tmhr.size, wvl_zen.size), dtype=np.float64)
+            for i in range(wvl_zen.size):
+                cnt_zen[:, i] = ssfr.util.interp(tmhr, tmhr_zen, cnt_zen_[:, i])
+
+            cnt_nad = np.zeros((tmhr.size, wvl_nad.size), dtype=np.float64)
+            for i in range(wvl_nad.size):
+                cnt_nad[:, i] = ssfr.util.interp(tmhr, tmhr_nad, cnt_nad_[:, i])
+            #\----------------------------------------------------------------------------/#
+
+            g = f.create_group(dset_s)
+
+            g['wvl_zen'] = wvl_zen
+            g['cnt_zen'] = cnt_zen
+            g['wvl_nad'] = wvl_nad
+            g['cnt_nad'] = cnt_nad
+
+        f_.close()
+        #/----------------------------------------------------------------------------\#
+
+        f.close()
+        #\----------------------------------------------------------------------------/#
+
+    return fname_h5
 
 def cdata_arcsix_ssfr_v2(
         date,
@@ -1263,6 +1162,106 @@ def cdata_arcsix_ssfr_v2(
 
     # diffuse ratio
     #/--------------------------------------------------------------\#
+    # read in spn-s data (later for calculating diffuse-to-global ratio, `diff_ratio`)
+    #/----------------------------------------------------------------------------\#
+    # fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
+
+    # f = h5py.File(fname_h5, 'r')
+
+    # f['jday'] = jday
+    # f['tmhr'] = tmhr
+    # f['lon']  = lon
+    # f['lat']  = lat
+    # f['alt']  = alt
+    # f['sza']  = sza
+    # f['dc']   = dc
+
+    # g1 = f.create_group('dif')
+    # g1['wvl']   = wvl_dif
+    # g1['flux']  = f_dn_dif
+
+    # g2 = f.create_group('tot')
+    # g2['wvl']   = wvl_tot
+    # g2['flux']  = f_dn_tot_corr
+    # g2['toa0']  = f_dn_toa0
+
+    # dif_flux0 = data_spns['dif_flux']
+    # dif_tmhr0 = data_spns['dif_tmhr']
+    # dif_wvl0  = data_spns['dif_wvl']
+
+    # f.close()
+
+    # dif_flux1 = np.zeros((ssfr_v0.tmhr.size, dif_wvl0.size), dtype=np.float64); dif_flux1[...] = np.nan
+    # for i in range(dif_wvl0.size):
+    #     dif_flux1[:, i] = interp(ssfr_v0.tmhr, dif_tmhr0, dif_flux0[:, i])
+
+    # dif_flux = np.zeros_like(ssfr_v0.zen_cnt); dif_flux[...] = np.nan
+    # for i in range(ssfr_v0.tmhr.size):
+    #     dif_flux[i, :] = interp(ssfr_v0.zen_wvl, dif_wvl0, dif_flux1[i, :])
+
+
+    # tot_flux0 = data_spns['tot_flux']
+    # tot_tmhr0 = data_spns['tot_tmhr']
+    # tot_wvl0  = data_spns['tot_wvl']
+
+    # tot_flux1 = np.zeros((ssfr_v0.tmhr.size, tot_wvl0.size), dtype=np.float64); tot_flux1[...] = np.nan
+    # for i in range(dif_wvl0.size):
+    #     tot_flux1[:, i] = interp(ssfr_v0.tmhr, tot_tmhr0, tot_flux0[:, i])
+
+    # tot_flux = np.zeros_like(ssfr_v0.zen_cnt); tot_flux[...] = np.nan
+    # for i in range(ssfr_v0.tmhr.size):
+    #     tot_flux[i, :] = interp(ssfr_v0.zen_wvl, tot_wvl0, tot_flux1[i, :])
+
+    # diff_ratio0 = dif_flux / tot_flux
+    # diff_ratio  = np.zeros_like(ssfr_v0.zen_cnt)  ; diff_ratio[...] = np.nan
+    # coefs       = np.zeros((ssfr_v0.tmhr.size, 3)); coefs[...] = np.nan
+    # qual_flag   = np.repeat(0, ssfr_v0.tmhr.size)
+
+    # for i in tqdm(range(diff_ratio.shape[0])):
+
+    #     logic = (diff_ratio0[i, :]>=0.0) & (diff_ratio0[i, :]<=1.0) & (ssfr_v0.zen_wvl>=400.0) & (ssfr_v0.zen_wvl<=750.0)
+    #     if logic.sum() > 20:
+
+    #         x = ssfr_v0.zen_wvl[logic]
+    #         y = diff_ratio0[i, logic]
+    #         popt, pcov = fit_diff_ratio(x, y)
+
+    #         diff_ratio[i, :] = func_diff_ratio(ssfr_v0.zen_wvl, *popt)
+    #         diff_ratio[i, diff_ratio[i, :]>1.0] = 1.0
+    #         diff_ratio[i, diff_ratio[i, :]<0.0] = 0.0
+
+    #         coefs[i, :] = popt
+    #         qual_flag[i] = 1
+
+    # print(np.isnan(diff_ratio).sum())
+
+    # for i in range(diff_ratio.shape[1]):
+    #     logic_nan = np.isnan(diff_ratio[:, i])
+    #     logic     = np.logical_not(logic_nan)
+
+    #     f_interp  = interpolate.interp1d(ssfr_v0.tmhr[logic], diff_ratio[:, i][logic], bounds_error=None, fill_value='extrapolate')
+    #     diff_ratio[logic_nan, i] = f_interp(ssfr_v0.tmhr[logic_nan])
+    #     diff_ratio[diff_ratio[:, i]>1.0, i] = 1.0
+    #     diff_ratio[diff_ratio[:, i]<0.0, i] = 0.0
+
+    # print(np.isnan(diff_ratio).sum())
+
+    # if run:
+    #     fname = '%s/ssfr_%s_aux.h5' % (fdir_processed, date_s)
+    #     f = h5py.File(fname, 'w')
+    #     f['tmhr'] = ssfr_v0.tmhr
+    #     f['alt']  = alt
+    #     f['lon']  = lon
+    #     f['lat']  = lat
+    #     f['sza']  = sza
+    #     f['saa']  = saa
+    #     f['diff_ratio_x']         = ssfr_v0.zen_wvl
+    #     f['diff_ratio_coef']      = coefs
+    #     f['diff_ratio_qual_flag'] = qual_flag
+    #     f['diff_ratio']           = diff_ratio
+    #     f['diff_ratio_ori']       = diff_ratio0
+    #     f.close()
+    #\----------------------------------------------------------------------------/#
     #\--------------------------------------------------------------/#
 
     # angles = {}
@@ -1396,7 +1395,7 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data                          , which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data                          , which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s], which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
 
     # cdata_arcsix_ssfr_v0(date)
@@ -1621,6 +1620,9 @@ def plot_spectra(date, tmhr0=20.830):
 #/----------------------------------------------------------------------------\#
 def generate_quicklook_video(date):
 
+    # quicklook_alp(date)
+    # quicklook_spns(date)
+    # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
     pass
 #\----------------------------------------------------------------------------/#
 
@@ -1645,25 +1647,22 @@ def main_process_data(date, run=True):
     #    - motor pitch angle
     #    - motor roll angle
     process_alp_data(date, run=False)
-    # quicklook_alp(date)
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
     process_spns_data(date, run=False)
-    # quicklook_spns(date)
-    # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    fname_ssfr_a = process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
     sys.exit()
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    fname_ssfr_b = process_ssfr_data(date, which_ssfr='ssfr-b')
+    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
