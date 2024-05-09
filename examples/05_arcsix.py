@@ -849,8 +849,10 @@ def process_spns_data(date, run=True):
 #/----------------------------------------------------------------------------\#
 def cdata_arcsix_ssfr_v0(
         date,
-        fdir_data=None,
-        fdir_out=_fdir_out_
+        which_ssfr='ssfr-a',
+        fdir_data=_fdir_data_,
+        fdir_out=_fdir_out_,
+        run=True,
         ):
 
     """
@@ -858,31 +860,37 @@ def cdata_arcsix_ssfr_v0(
     """
 
     date_s = date.strftime('%Y-%m-%d')
-    fnames = sorted(glob.glob('%s/%s/*.SKS' % (fdir_data, date_s)))
 
-    ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp', which_ssfr='lasp|%s' % _ssfr_.lower())
+    fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
 
-    # data that are useful
-    #   wvl_zen [nm]
-    #   cnt_zen [counts/ms]
-    #   wvl_nad [nm]
-    #   cnt_nad [counts/ms]
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
-    f = h5py.File(fname_h5, 'w')
+    if run:
+        fnames_ssfr = ssfr.util.get_all_files(fdir_data, pattern='*.SKS')
+        if _verbose_:
+            msg = '\nProcessing %s files:\n%s' % (which_ssfr.upper(), '\n'.join(fnames_ssfr))
+            print(msg)
 
-    for i in range(ssfr0.Ndset):
-        dset_s = 'dset%d' % i
-        data = getattr(ssfr0, dset_s)
-        g = f.create_group(dset_s)
-        for key in data.keys():
-            if key != 'info':
-                g[key] = data[key]
+        ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames_ssfr, dark_corr_mode='interp', which_ssfr='lasp|%s' % which_ssfr.lower())
 
-    f.close()
-    #\----------------------------------------------------------------------------/#
+        # data that are useful
+        #   wvl_zen [nm]
+        #   cnt_zen [counts/ms]
+        #   wvl_nad [nm]
+        #   cnt_nad [counts/ms]
+        #/----------------------------------------------------------------------------\#
+        f = h5py.File(fname_h5, 'w')
 
-    return
+        for i in range(ssfr0.Ndset):
+            dset_s = 'dset%d' % i
+            data = getattr(ssfr0, dset_s)
+            g = f.create_group(dset_s)
+            for key in data.keys():
+                if key != 'info':
+                    g[key] = data[key]
+
+        f.close()
+        #\----------------------------------------------------------------------------/#
+
+    return fname_h5
 
 def cdata_arcsix_ssfr_v1(
         date,
@@ -1366,7 +1374,7 @@ def cdata_arcsix_ssfr_hsk():
 
     return
 
-def process_ssfr_data(date):
+def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
 
     fdir_out = _fdir_out_
     if not os.path.exists(fdir_out):
@@ -1374,9 +1382,10 @@ def process_ssfr_data(date):
 
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr1_))
     fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
-    print(fdir_data)
 
     date_s = date.strftime('%Y%m%d')
+
+    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, which_ssfr=which_ssfr, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
 
     # cdata_arcsix_ssfr_v0(date)
     # cdata_arcsix_ssfr_v1(date)
