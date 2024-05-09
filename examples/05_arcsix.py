@@ -754,30 +754,32 @@ def cdata_arcsix_spns_v0(
 
     date_s = date.strftime('%Y%m%d')
 
-    # read spn-s raw data
-    #/----------------------------------------------------------------------------\#
-    fname_dif = ssfr.util.get_all_files(fdir_data, pattern='*Diffuse.txt')[-1]
-    data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
-
-    fname_dif = ssfr.util.get_all_files(fdir_data, pattern='*Total.txt')[-1]
-    data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
-    #/----------------------------------------------------------------------------\#
-
-    # read wavelengths and calculate toa downwelling solar flux
-    #/----------------------------------------------------------------------------\#
-    flux_toa = ssfr.util.get_solar_kurudz()
-
-    wvl_tot = data0_tot.data['wavelength']
-    f_dn_sol_tot = np.zeros_like(wvl_tot)
-    for i, wvl0 in enumerate(wvl_tot):
-        f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])
-    #\----------------------------------------------------------------------------/#
-
-    # save processed data
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
 
     if run:
+
+        # read spn-s raw data
+        #/----------------------------------------------------------------------------\#
+        fname_dif = ssfr.util.get_all_files(fdir_data, pattern='*Diffuse.txt')[-1]
+        data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
+
+        fname_tot = ssfr.util.get_all_files(fdir_data, pattern='*Total.txt')[-1]
+        data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
+
+        msg = 'Processing %s data:\n%s\n%s\n' % (_spns_.upper(), fname_dif, fname_tot)
+        print(msg)
+        #/----------------------------------------------------------------------------\#
+
+        # read wavelengths and calculate toa downwelling solar flux
+        #/----------------------------------------------------------------------------\#
+        flux_toa = ssfr.util.get_solar_kurudz()
+
+        wvl_tot = data0_tot.data['wavelength']
+        f_dn_sol_tot = np.zeros_like(wvl_tot)
+        for i, wvl0 in enumerate(wvl_tot):
+            f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])
+        #\----------------------------------------------------------------------------/#
+
         f = h5py.File(fname_h5, 'w')
 
         g1 = f.create_group('dif')
@@ -792,7 +794,6 @@ def cdata_arcsix_spns_v0(
         g2['toa0']  = f_dn_sol_tot
 
         f.close()
-    #\----------------------------------------------------------------------------/#
 
     return fname_h5
 
@@ -986,9 +987,18 @@ def process_spns_data(date, run=True):
     v2: attitude corrected data
     """
 
-    fname_spns_v0 = cdata_arcsix_spns_v0(date, run=run)
-    fname_spns_v1 = cdata_arcsix_spns_v1(date, run=run)
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, run=run)
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
+    fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
+
+    date_s = date.strftime('%Y%m%d')
+
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
+    # fname_spns_v1 = cdata_arcsix_spns_v1(date, run=run)
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, run=run)
 #\----------------------------------------------------------------------------/#
 
 
