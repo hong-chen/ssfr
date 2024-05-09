@@ -40,7 +40,8 @@ _fdir_hsk_   = 'data/test/arcsix/2024-Spring/p3/aux/hsk'
 _fdir_data_  = 'data/test/%s' % _mission_
 _fdir_out_   = 'data/test/processed'
 
-_verbose_ = True
+_verbose_   = True
+_test_mode_ = True
 
 _fnames_ = {}
 #\----------------------------------------------------------------------------/#
@@ -671,7 +672,8 @@ def cdata_arcsix_spns_v1(
         diff_ratio = data_tar_/data_tar
         data_tar[(diff_ratio>0.1)|(diff_ratio<0.0)] = 0.0
         # time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar, offset_range=[-6000, -3000])
-        time_offset = -3520.0
+        if _test_mode_:
+            time_offset = -3520.0
         # figure
         #/----------------------------------------------------------------------------\#
         if False:
@@ -899,8 +901,11 @@ def cdata_arcsix_ssfr_v0(
 
 def cdata_arcsix_ssfr_v1(
         date,
-        fdir_data=_fdir_out_,
+        fname_ssfr_v0,
+        fname_hsk,
         fdir_out=_fdir_out_,
+        time_offset=0.0,
+        run=True,
         ):
 
     """
@@ -1294,7 +1299,7 @@ def cdata_arcsix_ssfr_v2(
 
     return
 
-def cdata_arcsix_ssfr_hsk():
+def cdata_arcsix_ssfr_archive():
 
     # header
     #/----------------------------------------------------------------------------\#
