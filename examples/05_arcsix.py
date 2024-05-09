@@ -855,9 +855,9 @@ def process_spns_data(date, run=True):
 #/----------------------------------------------------------------------------\#
 def cdata_arcsix_ssfr_v0(
         date,
-        which_ssfr='ssfr-a',
         fdir_data=_fdir_data_,
         fdir_out=_fdir_out_,
+        which_ssfr='ssfr-a',
         run=True,
         ):
 
@@ -865,7 +865,7 @@ def cdata_arcsix_ssfr_v0(
     version 0: counts after dark correction
     """
 
-    date_s = date.strftime('%Y-%m-%d')
+    date_s = date.strftime('%Y%m%d')
 
     fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
 
@@ -905,6 +905,7 @@ def cdata_arcsix_ssfr_v1(
         fname_hsk,
         fdir_out=_fdir_out_,
         time_offset=0.0,
+        which_ssfr='ssfr-a',
         run=True,
         ):
 
@@ -913,7 +914,7 @@ def cdata_arcsix_ssfr_v1(
                2) interpolate raw SSFR data into the time frame of the housekeeping data
     """
 
-    date_s = date.strftime('%Y-%m-%d')
+    date_s = date.strftime('%Y%m%d')
 
     tmhr_offsets = {
             'ssfr-a': 3.3364,
@@ -1395,7 +1396,8 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, which_ssfr=which_ssfr, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
+    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data                          , which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+    fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s], which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
 
     # cdata_arcsix_ssfr_v0(date)
     # cdata_arcsix_ssfr_v1(date)
@@ -1642,26 +1644,26 @@ def main_process_data(date, run=True):
     #    - heading angle
     #    - motor pitch angle
     #    - motor roll angle
-    process_alp_data(date, run=True)
+    process_alp_data(date, run=False)
     # quicklook_alp(date)
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=True)
-    quicklook_spns(date)
-    ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
+    process_spns_data(date, run=False)
+    # quicklook_spns(date)
+    # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    fname_ssfr_a = process_ssfr_data(date, which_ssfr='SSFR-A', run=True)
+    fname_ssfr_a = process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
     sys.exit()
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    fname_ssfr_b = process_ssfr_data(date, which_ssfr='SSFR-B')
+    fname_ssfr_b = process_ssfr_data(date, which_ssfr='ssfr-b')
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
