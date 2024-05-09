@@ -801,9 +801,10 @@ def cdata_arcsix_spns_v0(
 
 def cdata_arcsix_spns_v1(
         date,
-        time_offset=0.0,
-        fdir_data=_fdir_out_,
+        fname_spns_v0,
+        fname_hsk_v0,
         fdir_out=_fdir_out_,
+        time_offset=0.0,
         run=True,
         ):
 
@@ -813,85 +814,52 @@ def cdata_arcsix_spns_v1(
 
     date_s = date.strftime('%Y%m%d')
 
-    # read hsk v0
-    #/----------------------------------------------------------------------------\#
-    f = h5py.File(_fnames_['hsk_v0'], 'r')
-    jday = f['jday'][...]
-    sza  = f['sza'][...]
-    saa  = f['saa'][...]
-    tmhr = f['tmhr'][...]
-    lon  = f['lon'][...]
-    lat  = f['lat'][...]
-    alt  = f['alt'][...]
-    ang_pit  = f['ang_pit'][...]
-    ang_rol  = f['ang_rol'][...]
-    ang_hed  = f['ang_hed'][...]
-    f.close()
-    #\----------------------------------------------------------------------------/#
-
-
-    # read spn-s v0
-    #/----------------------------------------------------------------------------\#
-    f = h5py.File(_fnames_['spns_v0'], 'r')
-    f_dn_dif  = f['dif/flux'][...]
-    wvl_dif   = f['dif/wvl'][...]
-    tmhr_dif  = f['dif/tmhr'][...]
-    f_dn_tot  = f['tot/flux'][...]
-    wvl_tot   = f['tot/wvl'][...]
-    tmhr_tot  = f['tot/tmhr'][...]
-    f_dn_tot_toa0 = f['tot/toa0'][...]
-    f.close()
-    #/----------------------------------------------------------------------------\#
-
-
-    # interpolate spn-s data to hsk time frame
-    #/----------------------------------------------------------------------------\#
-    flux_dif = np.zeros((tmhr.size, wvl_dif.size), dtype=np.float64)
-    for i in range(wvl_dif.size):
-        flux_dif[:, i] = ssfr.util.interp(tmhr, tmhr_dif, f_dn_dif[:, i])
-
-    flux_tot = np.zeros((tmhr.size, wvl_tot.size), dtype=np.float64)
-    for i in range(wvl_tot.size):
-        flux_tot[:, i] = ssfr.util.interp(tmhr, tmhr_tot, f_dn_tot[:, i])
-    #\----------------------------------------------------------------------------/#
-
-
-    # save processed data
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = _fnames_['spns_v0'].replace('v0', 'v1')
+    fname_h5 = '%s/%s-%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
 
     if run:
+        # read spn-s v0
+        #/----------------------------------------------------------------------------\#
+        data_spns_v0 = ssfr.util.load_h5(fname_spns_v0)
+        #/----------------------------------------------------------------------------\#
+
+        # read hsk v0
+        #/----------------------------------------------------------------------------\#
+        data_hsk_v0 = ssfr.util.load_h5(fname_hsk_v0)
+        #\----------------------------------------------------------------------------/#
+
+        # interpolate spn-s data to hsk time frame
+        #/----------------------------------------------------------------------------\#
+        flux_dif = np.zeros((data_hsk_v0['jday'].size, data_spns_v0['dif/wvl'].size), dtype=np.float64)
+        for i in range(flux_dif.shape[-1]):
+            flux_dif[:, i] = ssfr.util.interp(data_hsk_v0['jday'], data_spns_v0['dif/jday']+time_offset/86400.0, data_spns_v0['dif/flux'][:, i])
+
+        flux_tot = np.zeros((data_hsk_v0['jday'].size, data_spns_v0['tot/wvl'].size), dtype=np.float64)
+        for i in range(flux_tot.shape[-1]):
+            flux_tot[:, i] = ssfr.util.interp(data_hsk_v0['jday'], data_spns_v0['tot/jday']+time_offset/86400.0, data_spns_v0['tot/flux'][:, i])
+        #\----------------------------------------------------------------------------/#
+
         f = h5py.File(fname_h5, 'w')
 
-        f['jday'] = jday
-        f['tmhr'] = tmhr
-        f['lon']  = lon
-        f['lat']  = lat
-        f['alt']  = alt
-        f['sza']  = sza
-        f['saa']  = saa
-        f['ang_pit']  = ang_pit
-        f['ang_rol']  = ang_rol
-        f['ang_hed']  = ang_hed
+        for key in data_hsk_v0.keys():
+            f[key] = data_hsk_v0[key]
 
         g1 = f.create_group('dif')
-        g1['wvl']   = wvl_dif
+        g1['wvl']   = data_spns_v0['dif/wvl']
         g1['flux']  = flux_dif
 
         g2 = f.create_group('tot')
-        g2['wvl']   = wvl_tot
+        g2['wvl']   = data_spns_v0['tot/wvl']
         g2['flux']  = flux_tot
-        g2['toa0']  = f_dn_tot_toa0
+        g2['toa0']  = data_spns_v0['tot/toa0']
 
         f.close()
-    #\----------------------------------------------------------------------------/#
 
     return fname_h5
 
 def cdata_arcsix_spns_v2(
         date,
-        time_offset=0.0,
-        fdir_data=_fdir_out_,
+        fname_spns_v1,
+        fname_hsk_v0,
         fdir_out=_fdir_out_,
         run=True,
         ):
@@ -900,82 +868,62 @@ def cdata_arcsix_spns_v2(
     Apply attitude correction to account for pitch and roll
     """
 
-    date_s = date.strftime('%Y-%m-%d')
+    date_s = date.strftime('%Y%m%d')
 
-    # read spn-s v1
-    #/----------------------------------------------------------------------------\#
-    f = h5py.File(_fnames_['spns_v1'], 'r')
-    f_dn_dif  = f['dif/flux'][...]
-    wvl_dif   = f['dif/wvl'][...]
-
-    f_dn_tot  = f['tot/flux'][...]
-    wvl_tot   = f['tot/wvl'][...]
-    f_dn_toa0 = f['tot/toa0'][...]
-
-    jday = f['jday'][...]
-    tmhr = f['tmhr'][...]
-    lon = f['lon'][...]
-    lat = f['lat'][...]
-    alt = f['alt'][...]
-    sza  = f['sza'][...]
-    saa  = f['saa'][...]
-
-    ang_pit = f['ang_pit'][...]
-    ang_rol = f['ang_rol'][...]
-    ang_hed = f['ang_hed'][...]
-
-    f.close()
-    #/----------------------------------------------------------------------------\#
-
-
-    # correction factor
-    #/----------------------------------------------------------------------------\#
-    mu = np.cos(np.deg2rad(sza))
-
-    iza, iaa = ssfr.util.prh2za(ang_pit, ang_rol, ang_hed)
-    dc = ssfr.util.muslope(sza, saa, iza, iaa)
-
-    factors = mu / dc
-    #\----------------------------------------------------------------------------/#
-
-
-    # attitude correction
-    #/----------------------------------------------------------------------------\#
-    f_dn_dir = f_dn_tot - f_dn_dif
-    f_dn_dir_corr = np.zeros_like(f_dn_dir)
-    f_dn_tot_corr = np.zeros_like(f_dn_tot)
-    for iwvl in range(wvl_tot.size):
-        f_dn_dir_corr[..., iwvl] = f_dn_dir[..., iwvl]*factors
-        f_dn_tot_corr[..., iwvl] = f_dn_dir_corr[..., iwvl] + f_dn_dif[..., iwvl]
-    #\----------------------------------------------------------------------------/#
-
-
-    # save processed data
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = _fnames_['spns_v1'].replace('v1', 'v2')
+    fname_h5 = '%s/%s-%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
 
     if run:
+
+        # read spn-s v1
+        #/----------------------------------------------------------------------------\#
+        data_spns_v1 = ssfr.util.load_h5(fname_spns_v1)
+        #/----------------------------------------------------------------------------\#
+
+        # read hsk v0
+        #/----------------------------------------------------------------------------\#
+        data_hsk_v0 = ssfr.util.load_h5(fname_hsk_v0)
+        #/----------------------------------------------------------------------------\#
+
+        # correction factor
+        #/----------------------------------------------------------------------------\#
+        mu = np.cos(np.deg2rad(data_hsk_v0['sza']))
+
+        iza, iaa = ssfr.util.prh2za(data_hsk_v0['ang_pit'], data_hsk_v0['ang_rol'], data_hsk_v0['ang_hed'])
+        dc = ssfr.util.muslope(data_hsk_v0['sza'], data_hsk_v0['saa'], iza, iaa)
+
+        factors = mu / dc
+        #\----------------------------------------------------------------------------/#
+
+        # attitude correction
+        #/----------------------------------------------------------------------------\#
+        f_dn_dir = data_spns_v1['tot/flux'] - data_spns_v1['dif/flux']
+        f_dn_dir_corr = np.zeros_like(f_dn_dir)
+        f_dn_tot_corr = np.zeros_like(f_dn_dir)
+        for iwvl in range(data_spns_v1['tot/wvl'].size):
+            f_dn_dir_corr[..., iwvl] = f_dn_dir[..., iwvl]*factors
+            f_dn_tot_corr[..., iwvl] = f_dn_dir_corr[..., iwvl] + data_spns_v1['dif/flux'][..., iwvl]
+        #\----------------------------------------------------------------------------/#
+
         f = h5py.File(fname_h5, 'w')
 
-        f['jday'] = jday
-        f['tmhr'] = tmhr
-        f['lon']  = lon
-        f['lat']  = lat
-        f['alt']  = alt
-        f['sza']  = sza
-        f['dc']   = dc
+        for key in data_hsk_v0.keys():
+            f[key] = data_hsk_v0[key]
+
+        g0 = f.create_group('att_corr')
+        g0['mu'] = mu
+        g0['dc'] = dc
+        g0['factors'] = factors
 
         g1 = f.create_group('dif')
-        g1['wvl']   = wvl_dif
-        g1['flux']  = f_dn_dif
+        g1['wvl']   = data_spns_v1['dif/wvl']
+        g1['flux']  = data_spns_v1['dif/flux']
 
         g2 = f.create_group('tot')
-        g2['wvl']   = wvl_tot
+        g2['wvl']   = data_spns_v1['tot/wvl']
         g2['flux']  = f_dn_tot_corr
-        g2['toa0']  = f_dn_toa0
+        g2['toa0']  = data_spns_v1['tot/toa0']
 
         f.close()
-    #\----------------------------------------------------------------------------/#
 
     # ssfr.vis.quicklook_bokeh_spns(fname_h5, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 
@@ -999,8 +947,12 @@ def process_spns_data(date, run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
-    # fname_spns_v1 = cdata_arcsix_spns_v1(date, run=run)
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, run=run)
+    fname_spns_v1 = cdata_arcsix_spns_v1(date, fname_spns_v0, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_spns_v0' % date_s] = fname_spns_v0
+    _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
+    _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
 #\----------------------------------------------------------------------------/#
 
 
