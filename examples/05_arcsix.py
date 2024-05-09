@@ -613,7 +613,7 @@ def cdata_arcsix_alp_v0(
     if run:
         fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
         if _verbose_:
-            msg = '\nProcessing ALP files:\n%s' % '\n'.join(fnames_alp)
+            msg = '\nProcessing %s files:\n%s' % (_alp_.upper(), '\n'.join(fnames_alp))
             print(msg)
 
         alp0 = ssfr.lasp_alp.read_alp(fnames_alp, date=date)
@@ -656,7 +656,7 @@ def cdata_arcsix_alp_v1(
         data_tar = ssfr.util.interp(data_hsk['jday'], data_alp['jday'], data_alp['alt'])
         time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar)
 
-        print('Find a time offset of %.2f seconds between ALP and HSK.' % time_offset)
+        print('Find a time offset of %.2f seconds between %s and %s.' % (time_offset, _alp_.upper(), _hsk_.upper()))
         #\----------------------------------------------------------------------------/#
 
         f = h5py.File(fname_h5, 'w')
@@ -725,15 +725,13 @@ def process_alp_data(date, run=True):
     fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
 
     date_s = date.strftime('%Y%m%d')
-    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_, fdir_out=fdir_out, run=run)
-    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
+    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_      , fdir_out=fdir_out, run=run)
+    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data       , fdir_out=fdir_out, run=run)
     fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0, fdir_out=fdir_out, run=run)
 
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     _fnames_['%s_alp_v0' % date_s] = fname_alp_v0
     _fnames_['%s_alp_v1' % date_s] = fname_alp_v1
-
-    # quicklook_alp(date)
 #\----------------------------------------------------------------------------/#
 
 
@@ -870,7 +868,7 @@ def cdata_arcsix_spns_v1(
             sys.exit()
         #\----------------------------------------------------------------------------/#
 
-        print('Find a time offset of %.2f seconds between %s and HSK.' % (time_offset, _spns_.upper()))
+        print('Find a time offset of %.2f seconds between %s and %s.' % (time_offset, _spns_.upper(), _hsk_.upper()))
         #\----------------------------------------------------------------------------/#
 
         # interpolate spn-s data to hsk time frame
@@ -915,7 +913,7 @@ def cdata_arcsix_spns_v2(
         ):
 
     """
-    Apply attitude correction to account for pitch and roll
+    Apply attitude correction to account for aircraft attitude (pitch, roll, heading)
     """
 
     date_s = date.strftime('%Y%m%d')
@@ -998,10 +996,10 @@ def process_spns_data(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data                          , fdir_out=fdir_out, run=run)
     fname_spns_v1 = cdata_arcsix_spns_v1(date, fname_spns_v0, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
     fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_alp_v1' % date_s], fdir_out=fdir_out, run=run)
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
 
     _fnames_['%s_spns_v0' % date_s] = fname_spns_v0
     _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
@@ -1566,11 +1564,13 @@ def main_process_data(date, run=True):
     #    - motor pitch angle
     #    - motor roll angle
     process_alp_data(date, run=False)
+    # quicklook_alp(date)
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
     process_spns_data(date, run=False)
+    # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
@@ -1587,8 +1587,6 @@ def main_process_data(date, run=True):
     #    - spectral downwelling global
     #    - spectral upwelling global
     generate_quicklook_video(date)
-
-    # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 #\----------------------------------------------------------------------------/#
 
 
