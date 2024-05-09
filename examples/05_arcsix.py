@@ -924,22 +924,35 @@ def cdata_arcsix_ssfr_v1(
         # load ssfr v0 data
         #/----------------------------------------------------------------------------\#
         data_ssfr_v0 = ssfr.util.load_h5(fname_ssfr_v0)
-        print(data_ssfr_v0.keys())
         #\----------------------------------------------------------------------------/#
 
 
         # load hsk
         #/----------------------------------------------------------------------------\#
         data_hsk = ssfr.util.load_h5(fname_hsk)
-        print(data_hsk.keys())
         #\----------------------------------------------------------------------------/#
 
 
         # manually adjust time offset
         #/----------------------------------------------------------------------------\#
         if _test_mode_:
-            time_offset = 3.3364 * 3600.0
+            time_offset = (data_hsk['jday'][0] - data_ssfr_v0['dset0/jday'][0]) * 86400.0
         #\----------------------------------------------------------------------------/#
+
+
+        # read wavelengths and calculate toa downwelling solar flux
+        #/----------------------------------------------------------------------------\#
+        flux_toa = ssfr.util.get_solar_kurudz()
+
+        wvl_zen = data_ssfr_v0['dset0/wvl_zen']
+        f_dn_sol_zen = np.zeros_like(wvl_zen)
+        for i, wvl0 in enumerate(wvl_zen):
+            f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])
+        #\----------------------------------------------------------------------------/#
+
+
+
+
         sys.exit()
 
 
@@ -948,16 +961,12 @@ def cdata_arcsix_ssfr_v1(
         #/----------------------------------------------------------------------------\#
         f = h5py.File(fname_h5, 'w')
 
-        f['jday'] = jday
-        f['tmhr'] = tmhr
-        f['lon']  = lon
-        f['lat']  = lat
-        f['alt']  = alt
-        f['sza']  = sza
-        f['saa']  = saa
-        f['pit']  = pit
-        f['rol']  = rol
-        f['hed']  = hed
+        for key in data_hsk.keys():
+            f[key] = data_hsk[key]
+
+        f['time_offset'] = time_offset
+        f['tmhr_ori'] = data_hsk['tmhr'] - time_offset/3600.0
+        f['jday_ori'] = data_hsk['jday'] - time_offset/86400.0
 
         f_ = h5py.File(fname_h5, 'r')
 
