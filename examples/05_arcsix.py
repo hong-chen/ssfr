@@ -979,6 +979,40 @@ def cdata_arcsix_spns_v2(
 
     return fname_h5
 
+def quicklook_spns(date):
+
+    date_s = date.strftime('%Y%m%d')
+
+    data_spns_v1 = ssfr.util.load_h5(_fnames_['%s_spns_v1' % date_s])
+    data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        fig.suptitle('ALP Quicklook (%s)' % date_s)
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(data_spns_v1['tmhr'], data_spns_v1['tot/flux'][:, 100]-data_spns_v1['dif/flux'][:, 100], s=2, c='r', lw=0.0)
+        ax1.scatter(data_spns_v2['tmhr'], data_spns_v2['tot/flux'][:, 100]-data_spns_v2['dif/flux'][:, 100], s=2, c='b', lw=0.0)
+
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s_%s.png' % (_metadata['Function'], date_s), bbox_inches='tight', metadata=_metadata)
+        plt.show()
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
+
 def process_spns_data(date, run=True):
 
     """
@@ -1004,6 +1038,8 @@ def process_spns_data(date, run=True):
     _fnames_['%s_spns_v0' % date_s] = fname_spns_v0
     _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
     _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
+
+    quicklook_spns(date)
 #\----------------------------------------------------------------------------/#
 
 
@@ -1552,6 +1588,8 @@ def generate_quicklook_video(date):
 #/----------------------------------------------------------------------------\#
 def main_process_data(date, run=True):
 
+    date_s = date.strftime('%Y%m%d')
+
     # 1&2. aircraft housekeeping file (need to request data from the P-3 data system)
     #      active leveling platform
     #    - longitude
@@ -1571,6 +1609,7 @@ def main_process_data(date, run=True):
     #    - spectral downwelling global/direct (direct=global-diffuse)
     process_spns_data(date, run=False)
     # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
+    sys.exit()
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
