@@ -667,6 +667,8 @@ def cdata_arcsix_alp_v1(
         f['tmhr_ori']    = data_hsk['tmhr'] - time_offset/3600.0
         f['jday_ori']    = data_hsk['jday'] - time_offset/86400.0
         f['time_offset'] = time_offset
+        f['sza']         = data_hsk['sza']
+        f['saa']         = data_hsk['saa']
 
         jday_corr        = data_alp['jday'] + time_offset/86400.0
         for vname in data_alp.keys():
@@ -800,7 +802,7 @@ def cdata_arcsix_spns_v0(
 def cdata_arcsix_spns_v1(
         date,
         fname_spns_v0,
-        fname_hsk_v0,
+        fname_hsk,
         fdir_out=_fdir_out_,
         time_offset=0.0,
         run=True,
@@ -822,18 +824,20 @@ def cdata_arcsix_spns_v1(
 
         # read hsk v0
         #/----------------------------------------------------------------------------\#
-        data_hsk_v0 = ssfr.util.load_h5(fname_hsk_v0)
+        data_hsk= ssfr.util.load_h5(fname_hsk)
         #\----------------------------------------------------------------------------/#
 
         # calculate time offset
         #/----------------------------------------------------------------------------\#
         time_step = 1.0 # 1Hz data
         index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
-        data_ref = data_spns_v0['tot/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk_v0['sza']))
-        data_tar  = ssfr.util.interp(data_hsk_v0['jday'], data_spns_v0['tot/jday'], data_spns_v0['tot/flux'][:, index_wvl])
-        data_tar_ = ssfr.util.interp(data_hsk_v0['jday'], data_spns_v0['dif/jday'], data_spns_v0['dif/flux'][:, index_wvl])
+        data_ref = data_spns_v0['tot/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
+        data_tar  = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday'], data_spns_v0['tot/flux'][:, index_wvl])
+        data_tar_ = ssfr.util.interp(data_hsk['jday'], data_spns_v0['dif/jday'], data_spns_v0['dif/flux'][:, index_wvl])
         diff_ratio = data_tar_/data_tar
         data_tar[(diff_ratio>0.1)|(diff_ratio<0.0)] = 0.0
+        # time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar, offset_range=[-6000, -3000])
+        time_offset = -3520.0
         # figure
         #/----------------------------------------------------------------------------\#
         if False:
@@ -866,60 +870,28 @@ def cdata_arcsix_spns_v1(
             sys.exit()
         #\----------------------------------------------------------------------------/#
 
-        # time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar, offset_range=[-3000, -2000])
-        time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar, offset_range=[-6000, -3000])
-
         print('Find a time offset of %.2f seconds between %s and HSK.' % (time_offset, _spns_.upper()))
-        #\----------------------------------------------------------------------------/#
-
-        # figure
-        #/----------------------------------------------------------------------------\#
-        if True:
-            plt.close('all')
-            fig = plt.figure(figsize=(8, 6))
-            # fig.suptitle('Figure')
-            # plot
-            #/--------------------------------------------------------------\#
-            ax1 = fig.add_subplot(111)
-            ax1.scatter(data_hsk_v0['tmhr'], data_ref, s=6, c='k', lw=0.0)
-            ax1.scatter(data_spns_v0['tot/tmhr']+time_offset/3600.0, data_spns_v0['tot/flux'][:, index_wvl], s=6, c='r', lw=0.0)
-            # ax1.scatter(data_hsk_v0['tmhr']-time_offset/3600.0, data_tar, s=6, c='r', lw=0.0)
-            # ax1.scatter(data_hsk_v0['tmhr'], data_tar, s=6, c='g', lw=0.0)
-            # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-            # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-            # ax1.set_xlim(())
-            # ax1.set_ylim(())
-            # ax1.set_xlabel('')
-            # ax1.set_ylabel('')
-            # ax1.set_title('')
-            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            #\--------------------------------------------------------------/#
-            # save figure
-            #/--------------------------------------------------------------\#
-            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-            #\--------------------------------------------------------------/#
-            plt.show()
-            sys.exit()
         #\----------------------------------------------------------------------------/#
 
         # interpolate spn-s data to hsk time frame
         #/----------------------------------------------------------------------------\#
-        flux_dif = np.zeros((data_hsk_v0['jday'].size, data_spns_v0['dif/wvl'].size), dtype=np.float64)
+        flux_dif = np.zeros((data_hsk['jday'].size, data_spns_v0['dif/wvl'].size), dtype=np.float64)
         for i in range(flux_dif.shape[-1]):
-            flux_dif[:, i] = ssfr.util.interp(data_hsk_v0['jday'], data_spns_v0['dif/jday']+time_offset/86400.0, data_spns_v0['dif/flux'][:, i])
+            flux_dif[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['dif/jday']+time_offset/86400.0, data_spns_v0['dif/flux'][:, i])
 
-        flux_tot = np.zeros((data_hsk_v0['jday'].size, data_spns_v0['tot/wvl'].size), dtype=np.float64)
+        flux_tot = np.zeros((data_hsk['jday'].size, data_spns_v0['tot/wvl'].size), dtype=np.float64)
         for i in range(flux_tot.shape[-1]):
-            flux_tot[:, i] = ssfr.util.interp(data_hsk_v0['jday'], data_spns_v0['tot/jday']+time_offset/86400.0, data_spns_v0['tot/flux'][:, i])
+            flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday']+time_offset/86400.0, data_spns_v0['tot/flux'][:, i])
         #\----------------------------------------------------------------------------/#
 
         f = h5py.File(fname_h5, 'w')
 
-        for key in data_hsk_v0.keys():
-            f[key] = data_hsk_v0[key]
+        for key in data_hsk.keys():
+            f[key] = data_hsk[key]
+
+        f['time_offset'] = time_offset
+        f['tmhr_ori'] = data_hsk['tmhr'] - time_offset/3600.0
+        f['jday_ori'] = data_hsk['jday'] - time_offset/86400.0
 
         g1 = f.create_group('dif')
         g1['wvl']   = data_spns_v0['dif/wvl']
@@ -937,7 +909,7 @@ def cdata_arcsix_spns_v1(
 def cdata_arcsix_spns_v2(
         date,
         fname_spns_v1,
-        fname_hsk_v0,
+        fname_hsk, # interchangable with fname_alp_v1
         fdir_out=_fdir_out_,
         run=True,
         ):
@@ -959,15 +931,19 @@ def cdata_arcsix_spns_v2(
 
         # read hsk v0
         #/----------------------------------------------------------------------------\#
-        data_hsk_v0 = ssfr.util.load_h5(fname_hsk_v0)
+        data_hsk = ssfr.util.load_h5(fname_hsk)
         #/----------------------------------------------------------------------------\#
 
         # correction factor
         #/----------------------------------------------------------------------------\#
-        mu = np.cos(np.deg2rad(data_hsk_v0['sza']))
+        mu = np.cos(np.deg2rad(data_hsk['sza']))
 
-        iza, iaa = ssfr.util.prh2za(data_hsk_v0['ang_pit'], data_hsk_v0['ang_rol'], data_hsk_v0['ang_hed'])
-        dc = ssfr.util.muslope(data_hsk_v0['sza'], data_hsk_v0['saa'], iza, iaa)
+        try:
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_a'], data_hsk['ang_rol_a'], data_hsk['ang_hed'])
+        except Exception as error:
+            print(error)
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit'], data_hsk['ang_rol'], data_hsk['ang_hed'])
+        dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
 
         factors = mu / dc
         #\----------------------------------------------------------------------------/#
@@ -984,8 +960,8 @@ def cdata_arcsix_spns_v2(
 
         f = h5py.File(fname_h5, 'w')
 
-        for key in data_hsk_v0.keys():
-            f[key] = data_hsk_v0[key]
+        for key in data_hsk.keys():
+            f[key] = data_hsk[key]
 
         g0 = f.create_group('att_corr')
         g0['mu'] = mu
@@ -1023,14 +999,13 @@ def process_spns_data(date, run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
-    fname_spns_v1 = cdata_arcsix_spns_v1(date, fname_spns_v0, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=True)
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
+    fname_spns_v1 = cdata_arcsix_spns_v1(date, fname_spns_v0, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_alp_v1' % date_s], fdir_out=fdir_out, run=run)
 
     _fnames_['%s_spns_v0' % date_s] = fname_spns_v0
     _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
     _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
-
-    ssfr.vis.quicklook_bokeh_spns(fname_spns_v2, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 #\----------------------------------------------------------------------------/#
 
 
@@ -1596,12 +1571,12 @@ def main_process_data(date, run=True):
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
     process_spns_data(date, run=False)
-    sys.exit()
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
     fname_ssfr_a = process_ssfr_data(date, which_ssfr='SSFR-A')
+    sys.exit()
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
@@ -1612,6 +1587,8 @@ def main_process_data(date, run=True):
     #    - spectral downwelling global
     #    - spectral upwelling global
     generate_quicklook_video(date)
+
+    # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
 #\----------------------------------------------------------------------------/#
 
 
