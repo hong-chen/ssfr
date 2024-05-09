@@ -598,7 +598,11 @@ def cdata_arcsix_alp_v0(
         ):
 
     """
-    read ALP (Active Leveling Platform) data
+    v0: directly read raw ALP (Active Leveling Platform) data
+
+    Notes:
+        ALP raw data has a finer temporal resolution than 1Hz and a higher measurement
+        precision (or sensitivity) of the aircraft attitude.
     """
 
     date_s = date.strftime('%Y%m%d')
@@ -626,6 +630,17 @@ def cdata_arcsix_alp_v1(
         run=True
         ):
 
+    """
+    v1:
+    1) calculate time offset (seconds) between aircraft housekeeping data and ALP raw data
+       (referencing to aircraft housekeeping)
+    2) interpolate raw alp data to aircraft housekeeping time
+
+    Notes:
+        ALP raw data has a finer temporal resolution than 1Hz and a higher measurement
+        precision (or sensitivity) of the aircraft attitude.
+    """
+
     date_s = date.strftime('%Y%m%d')
 
     fname_h5 = '%s/%s-%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), date_s)
@@ -640,6 +655,8 @@ def cdata_arcsix_alp_v1(
         data_ref = data_hsk['alt']
         data_tar = ssfr.util.interp(data_hsk['jday'], data_alp['jday'], data_alp['alt'])
         time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar)
+
+        print('Find a time offset of %.2f seconds between ALP and HSK.' % time_offset)
         #\----------------------------------------------------------------------------/#
 
         f = h5py.File(fname_h5, 'w')
@@ -708,7 +725,7 @@ def process_alp_data(date, run=True):
     date_s = date.strftime('%Y%m%d')
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_, fdir_out=fdir_out, run=run)
     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
-    fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0, fdir_out=fdir_out, run=run)
+    fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0, fdir_out=fdir_out, run=True)
 
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     _fnames_['%s_alp_v0' % date_s] = fname_alp_v0
