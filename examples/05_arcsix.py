@@ -650,6 +650,8 @@ def cdata_arcsix_alp_v1(
         #/----------------------------------------------------------------------------\#
         data_hsk = ssfr.util.load_h5(fname_hsk)
         data_alp = ssfr.util.load_h5(fname_v0)
+        print(data_hsk.keys())
+        print(data_alp.keys())
 
         time_step = 1.0 # 1Hz data
         data_ref = data_hsk['alt']
@@ -725,7 +727,7 @@ def process_alp_data(date, run=True):
     date_s = date.strftime('%Y%m%d')
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_, fdir_out=fdir_out, run=run)
     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data, fdir_out=fdir_out, run=run)
-    fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0, fdir_out=fdir_out, run=True)
+    fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0, fdir_out=fdir_out, run=run)
 
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     _fnames_['%s_alp_v0' % date_s] = fname_alp_v0
@@ -984,9 +986,9 @@ def process_spns_data(date, run=True):
     v2: attitude corrected data
     """
 
-    _fnames_['spns_v0'] = cdata_arcsix_spns_v0(date, run=run)
-    _fnames_['spns_v1'] = cdata_arcsix_spns_v1(date, run=run)
-    _fnames_['spns_v2'] = cdata_arcsix_spns_v2(date, run=run)
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, run=run)
+    fname_spns_v1 = cdata_arcsix_spns_v1(date, run=run)
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, run=run)
 #\----------------------------------------------------------------------------/#
 
 
@@ -1547,13 +1549,12 @@ def main_process_data(date, run=True):
     #    - motor pitch angle
     #    - motor roll angle
     process_alp_data(date, run=False)
-    print(_fnames_)
-    sys.exit()
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    fname_spns = fname_spns = process_spns_data(date)
+    process_spns_data(date, run=run)
+    sys.exit()
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global

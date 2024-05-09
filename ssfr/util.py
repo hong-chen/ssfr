@@ -218,10 +218,33 @@ def muslope(sza, saa, iza, iaa, is_rad=False):
 
 def load_h5(fname):
 
+    def get_variable_names(obj, prefix=''):
+
+        """
+        Purpose: Walk through the file and extract information of data groups and data variables
+
+        Input: h5py file object <f>, e.g., f = h5py.File('file.h5', 'r')
+
+        Outputs:
+            data variable path in the format of <['group1/variable1']> to
+            mimic the style of accessing HDF5 data variables using h5py, e.g.,
+            <f['group1/variable1']>
+        """
+
+        for key in obj.keys():
+
+            item = obj[key]
+            path = '{prefix}/{key}'.format(prefix=prefix, key=key)
+            if isinstance(item, h5py.Dataset):
+                yield path
+            elif isinstance(item, h5py.Group):
+                yield from get_variable_names(item, prefix=path)
+
     data = {}
     f = h5py.File(fname, 'r')
-    for key in f.keys():
-        data[key] = f[key][...]
+    keys = get_variable_names(f)
+    for key in keys:
+        data[key[1:]] = f[key[1:]][...]
     f.close()
     return data
 
