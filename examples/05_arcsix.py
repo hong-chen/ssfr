@@ -559,7 +559,7 @@ def process_alp_data(date, run=True):
         os.makedirs(fdir_out)
 
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
-    fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
+    fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
 
     date_s = date.strftime('%Y%m%d')
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_      , fdir_out=fdir_out, run=run)
@@ -836,7 +836,7 @@ def process_spns_data(date, run=True):
         os.makedirs(fdir_out)
 
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
-    fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
+    fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
 
     date_s = date.strftime('%Y%m%d')
 
@@ -960,88 +960,52 @@ def cdata_arcsix_ssfr_v1(
         #/----------------------------------------------------------------------------\#
         for dset_s in ['dset0', 'dset1']:
 
-            jday_ssfr_v0 = data_ssfr_v0['%s/jday' % dset_s] + time_offset/86400.0
+            # select calibration file
+            #/----------------------------------------------------------------------------\#
+            fdir_cal = 'data/test/arcsix/cal/rad-cal'
+
+            fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+            data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+
+            fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+            data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+            #\----------------------------------------------------------------------------/#
+
 
             # interpolate ssfr data to hsk time frame
+            # and convert counts to flux
             #/----------------------------------------------------------------------------\#
-            wvl_zen = data_ssfr_v0['%s/wvl_zen' % dset_s]
-            cnt_zen = np.zeros((data_hsk['jday'].size, wvl_zen.size), dtype=np.float64)
+            jday_ssfr_v0 = data_ssfr_v0['%s/jday' % dset_s] + time_offset/86400.0
+
+            wvl_zen  = data_ssfr_v0['%s/wvl_zen' % dset_s]
+            cnt_zen  = np.zeros((data_hsk['jday'].size, wvl_zen.size), dtype=np.float64)
+            flux_zen = np.zeros_like(cnt_zen)
             for i in range(wvl_zen.size):
-                cnt_zen[:, i] = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_zen' % dset_s][:, i])
+                cnt_zen[:, i]  = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_zen' % dset_s][:, i])
+                flux_zen[:, i] = cnt_zen[:, i] / data_cal_zen['sec_resp'][i]
 
-            wvl_nad = data_ssfr_v0['%s/wvl_nad' % dset_s]
-            cnt_nad = np.zeros((data_hsk['jday'].size, wvl_nad.size), dtype=np.float64)
+            wvl_nad  = data_ssfr_v0['%s/wvl_nad' % dset_s]
+            cnt_nad  = np.zeros((data_hsk['jday'].size, wvl_nad.size), dtype=np.float64)
+            flux_nad = np.zeros_like(cnt_nad)
             for i in range(wvl_nad.size):
-                cnt_nad[:, i] = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_nad' % dset_s][:, i])
+                cnt_nad[:, i]  = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_nad' % dset_s][:, i])
+                flux_nad[:, i] = cnt_nad[:, i] / data_cal_nad['sec_resp'][i]
             #\----------------------------------------------------------------------------/#
 
-
-            # radiometric response
-            #/----------------------------------------------------------------------------\#
-
-
-            # primary response
-            #/--------------------------------------------------------------\#
-            #\--------------------------------------------------------------/#
-
-
-            # transfer
-            #/--------------------------------------------------------------\#
-            #\--------------------------------------------------------------/#
-
-
-            # secondary response
-            #/--------------------------------------------------------------\#
-            #\--------------------------------------------------------------/#
-
-
-            # counts to flux
-            #/--------------------------------------------------------------\#
-            #\--------------------------------------------------------------/#
-
-            # figure
-            #/----------------------------------------------------------------------------\#
-            if True:
-                plt.close('all')
-                fig = plt.figure(figsize=(8, 6))
-                # fig.suptitle('Figure')
-                # plot
-                #/--------------------------------------------------------------\#
-                ax1 = fig.add_subplot(111)
-                # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-                # ax1.scatter(wvl_zen, cnt_zen[1000, :], s=6, c='k', lw=0.0)
-                ax1.scatter(data_hsk['jday'], cnt_zen[:, 100], s=6, c='k', lw=0.0)
-                ax1.scatter(data_hsk['jday'], data_hsk['alt'], s=6, c='r', lw=0.0)
-                # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-                # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-                # ax1.set_xlim(())
-                # ax1.set_ylim(())
-                # ax1.set_xlabel('')
-                # ax1.set_ylabel('')
-                # ax1.set_title('')
-                # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-                # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-                #\--------------------------------------------------------------/#
-                # save figure
-                #/--------------------------------------------------------------\#
-                # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-                # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-                # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-                #\--------------------------------------------------------------/#
-                plt.show()
-                sys.exit()
-            #\----------------------------------------------------------------------------/#
             #\----------------------------------------------------------------------------/#
 
 
             # save processed data
             #/----------------------------------------------------------------------------\#
             g = f.create_group(dset_s)
-            dset0 = g.create_dataset('wvl_zen', data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('cnt_zen', data=cnt_zen     , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('wvl_nad', data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('cnt_nad', data=cnt_nad     , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('toa0'   , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('wvl_zen' , data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('cnt_zen' , data=cnt_zen     , compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('flux_zen', data=flux_zen    , compression='gzip', compression_opts=9, chunks=True)
+
+            dset0 = g.create_dataset('wvl_nad' , data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('cnt_nad' , data=cnt_nad     , compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('flux_nad', data=flux_nad    , compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('toa0'    , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
             #\----------------------------------------------------------------------------/#
 
         #\----------------------------------------------------------------------------/#
@@ -1458,11 +1422,11 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
         os.makedirs(fdir_out)
 
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr1_))
-    fdir_data = sorted(fdirs, key=os.path.getmtime)[0]
+    fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data                          , which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data                          , which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s], which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
 
     # cdata_arcsix_ssfr_v0(date)
