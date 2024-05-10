@@ -951,56 +951,53 @@ def cdata_arcsix_ssfr_v1(
         #\----------------------------------------------------------------------------/#
 
 
-        # use spectra_dark-corr for further processing
+        f = h5py.File(fname_h5, 'w')
+
+        # interpolate counts to HSK time
+        #/----------------------------------------------------------------------------\#
+        for dset_s in ['dset0', 'dset1']:
+
+            jday_ssfr_v0 = data_ssfr_v0['%s/jday' % dset_s] + time_offset/86400.0
+
+            # interpolate ssfr data to hsk time frame
+            #/----------------------------------------------------------------------------\#
+            wvl_zen = data_ssfr_v0['%s/wvl_zen' % dset_s]
+            cnt_zen = np.zeros((data_hsk['jday'].size, wvl_zen.size), dtype=np.float64)
+            for i in range(wvl_zen.size):
+                cnt_zen[:, i] = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_zen' % dset_s][:, i])
+
+            wvl_nad = data_ssfr_v0['%s/wvl_nad' % dset_s]
+            cnt_nad = np.zeros((data_hsk['jday'].size, wvl_nad.size), dtype=np.float64)
+            for i in range(wvl_nad.size):
+                cnt_nad[:, i] = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_nad' % dset_s][:, i])
+            #\----------------------------------------------------------------------------/#
 
 
-        sys.exit()
+            # primary response
+            #/----------------------------------------------------------------------------\#
+            #\----------------------------------------------------------------------------/#
+
+            # save processed data
+            #/----------------------------------------------------------------------------\#
+            g = f.create_group(dset_s)
+            dset0 = g.create_dataset('wvl_zen', data=wvl_zen, compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('cnt_zen', data=cnt_zen, compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('wvl_nad', data=wvl_nad, compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('cnt_nad', data=cnt_nad, compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('toa0'   , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
+            #\----------------------------------------------------------------------------/#
+        #\----------------------------------------------------------------------------/#
 
 
 
         # save processed data
         #/----------------------------------------------------------------------------\#
-        f = h5py.File(fname_h5, 'w')
-
         for key in data_hsk.keys():
             f[key] = data_hsk[key]
 
         f['time_offset'] = time_offset
         f['tmhr_ori'] = data_hsk['tmhr'] - time_offset/3600.0
         f['jday_ori'] = data_hsk['jday'] - time_offset/86400.0
-
-        f_ = h5py.File(fname_h5, 'r')
-
-        for dset_s in f_.keys():
-
-            cnt_zen_ = f_['%s/cnt_zen' % dset_s][...]
-            wvl_zen  = f_['%s/wvl_zen' % dset_s][...]
-            tmhr_zen = f_['%s/tmhr'    % dset_s][...] + tmhr_offsets[_ssfr_]
-
-            cnt_nad_ = f_['%s/cnt_nad' % dset_s][...]
-            wvl_nad  = f_['%s/wvl_nad' % dset_s][...]
-            tmhr_nad = f_['%s/tmhr'    % dset_s][...] + tmhr_offsets[_ssfr_]
-
-            # interpolate ssfr data to hsk time frame
-            #/----------------------------------------------------------------------------\#
-            cnt_zen = np.zeros((tmhr.size, wvl_zen.size), dtype=np.float64)
-            for i in range(wvl_zen.size):
-                cnt_zen[:, i] = ssfr.util.interp(tmhr, tmhr_zen, cnt_zen_[:, i])
-
-            cnt_nad = np.zeros((tmhr.size, wvl_nad.size), dtype=np.float64)
-            for i in range(wvl_nad.size):
-                cnt_nad[:, i] = ssfr.util.interp(tmhr, tmhr_nad, cnt_nad_[:, i])
-            #\----------------------------------------------------------------------------/#
-
-            g = f.create_group(dset_s)
-
-            g['wvl_zen'] = wvl_zen
-            g['cnt_zen'] = cnt_zen
-            g['wvl_nad'] = wvl_nad
-            g['cnt_nad'] = cnt_nad
-
-        f_.close()
-        #/----------------------------------------------------------------------------\#
 
         f.close()
         #\----------------------------------------------------------------------------/#
