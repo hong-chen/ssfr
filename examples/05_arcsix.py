@@ -973,7 +973,7 @@ def cdata_arcsix_ssfr_v1(
             #\----------------------------------------------------------------------------/#
 
 
-            # primary response
+            # radiometric response
             #/----------------------------------------------------------------------------\#
             #\----------------------------------------------------------------------------/#
 
@@ -986,6 +986,7 @@ def cdata_arcsix_ssfr_v1(
             dset0 = g.create_dataset('cnt_nad', data=cnt_nad, compression='gzip', compression_opts=9, chunks=True)
             dset0 = g.create_dataset('toa0'   , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
             #\----------------------------------------------------------------------------/#
+
         #\----------------------------------------------------------------------------/#
 
 
