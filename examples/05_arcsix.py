@@ -293,7 +293,7 @@ def test_data_b(
             #/----------------------------------------------------------------------------\#
             wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
             wvl_start = 350.0
-            wvl_end   = 2100.0
+            wvl_end   = 2200.0
             wvl_join  = 950.0
 
             # zenith wavelength
@@ -1137,7 +1137,7 @@ def cdata_arcsix_ssfr_v2(
             #/----------------------------------------------------------------------------\#
             wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|%s' % _ssfr_.lower())
             wvl_start = 350.0
-            wvl_end   = 2100.0
+            wvl_end   = 2200.0
             wvl_join  = 950.0
 
             # zenith wavelength
@@ -1462,7 +1462,7 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data                          , which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
+    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data                          , which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s], which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
 
     # cdata_arcsix_ssfr_v0(date)

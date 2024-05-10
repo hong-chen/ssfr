@@ -385,7 +385,7 @@ class read_ssfr:
             self,
             which_ssfr,
             wvl_start=350.0,
-            wvl_end=2100.0,
+            wvl_end=2200.0,
             wvl_join=950.0,
             ):
 
