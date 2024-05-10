@@ -975,15 +975,49 @@ def cdata_arcsix_ssfr_v1(
 
             # radiometric response
             #/----------------------------------------------------------------------------\#
+
+            # figure
+            #/----------------------------------------------------------------------------\#
+            if True:
+                plt.close('all')
+                fig = plt.figure(figsize=(8, 6))
+                # fig.suptitle('Figure')
+                # plot
+                #/--------------------------------------------------------------\#
+                ax1 = fig.add_subplot(111)
+                # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+                # ax1.scatter(wvl_zen, cnt_zen[1000, :], s=6, c='k', lw=0.0)
+                ax1.scatter(data_hsk['jday'], cnt_zen[:, 100], s=6, c='k', lw=0.0)
+                ax1.scatter(data_hsk['jday'], data_hsk['alt'], s=6, c='r', lw=0.0)
+                # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+                # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+                # ax1.set_xlim(())
+                # ax1.set_ylim(())
+                # ax1.set_xlabel('')
+                # ax1.set_ylabel('')
+                # ax1.set_title('')
+                # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+                # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+                #\--------------------------------------------------------------/#
+                # save figure
+                #/--------------------------------------------------------------\#
+                # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+                # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+                # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+                #\--------------------------------------------------------------/#
+                plt.show()
+                sys.exit()
             #\----------------------------------------------------------------------------/#
+            #\----------------------------------------------------------------------------/#
+
 
             # save processed data
             #/----------------------------------------------------------------------------\#
             g = f.create_group(dset_s)
-            dset0 = g.create_dataset('wvl_zen', data=wvl_zen, compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('cnt_zen', data=cnt_zen, compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('wvl_nad', data=wvl_nad, compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('cnt_nad', data=cnt_nad, compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('wvl_zen', data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('cnt_zen', data=cnt_zen     , compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('wvl_nad', data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('cnt_nad', data=cnt_nad     , compression='gzip', compression_opts=9, chunks=True)
             dset0 = g.create_dataset('toa0'   , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
             #\----------------------------------------------------------------------------/#
 
