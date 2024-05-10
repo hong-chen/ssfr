@@ -200,7 +200,7 @@ class read_ssfr:
             light_extend=2,
             which_ssfr=None,
             wvl_s=350.0,
-            wvl_e=2100.0,
+            wvl_e=2200.0,
             wvl_j=950.0,
             verbose=False,
             ):
