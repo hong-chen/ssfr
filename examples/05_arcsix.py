@@ -1064,10 +1064,12 @@ def cdata_arcsix_ssfr_v1(
 
 def cdata_arcsix_ssfr_v2(
         date,
-        fdir_data=_fdir_out_,
+        fname_ssfr_v1,
+        fname_alp_v1,
+        fname_spns_v2,
         fdir_out=_fdir_out_,
-        pitch_angle=0.0,
-        roll_angle=0.0,
+        ang_pit_offset=0.0,
+        ang_rol_offset=0.0,
         ):
 
     """
