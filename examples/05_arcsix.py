@@ -1001,11 +1001,11 @@ def cdata_arcsix_ssfr_v1(
             dset0 = g.create_dataset('wvl_zen' , data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
             dset0 = g.create_dataset('cnt_zen' , data=cnt_zen     , compression='gzip', compression_opts=9, chunks=True)
             dset0 = g.create_dataset('flux_zen', data=flux_zen    , compression='gzip', compression_opts=9, chunks=True)
+            dset0 = g.create_dataset('toa0'    , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
 
             dset0 = g.create_dataset('wvl_nad' , data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
             dset0 = g.create_dataset('cnt_nad' , data=cnt_nad     , compression='gzip', compression_opts=9, chunks=True)
             dset0 = g.create_dataset('flux_nad', data=flux_nad    , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('toa0'    , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
             #\----------------------------------------------------------------------------/#
 
         #\----------------------------------------------------------------------------/#
