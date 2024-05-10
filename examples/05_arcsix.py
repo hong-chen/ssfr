@@ -1031,9 +1031,11 @@ def cdata_arcsix_ssfr_v2(
         fname_ssfr_v1,
         fname_alp_v1,
         fname_spns_v2,
+        which_ssfr='ssfr-a',
         fdir_out=_fdir_out_,
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
+        run=True,
         ):
 
     """
@@ -1046,39 +1048,27 @@ def cdata_arcsix_ssfr_v2(
 
     date_s = date.strftime('%Y%m%d')
 
+    fname_h5 = '%s/%s-%s_%s_v2.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
+
+    if run:
+
+        data_ssfr_v1 = ssfr.util.load_h5(fname_ssfr_v1)
+
+        data_alp_v1  = ssfr.util.load_h5(fname_alp_v1)
+
+        data_spns_v2 = ssfr.util.load_h5(fname_spns_v2)
+
+        # calculate diffuse/global ratio from SPNS data
+        #/----------------------------------------------------------------------------\#
+        diff_ratio = np.zeros_like(data_ssfr_v1['dset0/flux_zen'])
+        diff_ratio[...] = np.nan
+        #\----------------------------------------------------------------------------/#
+        sys.exit()
+
+
     # calculate cosine correction factors
     #/----------------------------------------------------------------------------\#
 
-    # diffuse ratio
-    #/--------------------------------------------------------------\#
-    # read in spn-s data (later for calculating diffuse-to-global ratio, `diff_ratio`)
-    #/----------------------------------------------------------------------------\#
-    # fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
-
-    # f = h5py.File(fname_h5, 'r')
-
-    # f['jday'] = jday
-    # f['tmhr'] = tmhr
-    # f['lon']  = lon
-    # f['lat']  = lat
-    # f['alt']  = alt
-    # f['sza']  = sza
-    # f['dc']   = dc
-
-    # g1 = f.create_group('dif')
-    # g1['wvl']   = wvl_dif
-    # g1['flux']  = f_dn_dif
-
-    # g2 = f.create_group('tot')
-    # g2['wvl']   = wvl_tot
-    # g2['flux']  = f_dn_tot_corr
-    # g2['toa0']  = f_dn_toa0
-
-    # dif_flux0 = data_spns['dif_flux']
-    # dif_tmhr0 = data_spns['dif_tmhr']
-    # dif_wvl0  = data_spns['dif_wvl']
-
-    # f.close()
 
     # dif_flux1 = np.zeros((ssfr_v0.tmhr.size, dif_wvl0.size), dtype=np.float64); dif_flux1[...] = np.nan
     # for i in range(dif_wvl0.size):
@@ -1186,7 +1176,7 @@ def cdata_arcsix_ssfr_v2(
     # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
     #\----------------------------------------------------------------------------/#
 
-    return
+    return fname_h5
 
 def cdata_arcsix_ssfr_archive():
 
@@ -1284,12 +1274,13 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data                          , which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
-    fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s], which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+    fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data,
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
+    fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
+    fname_ssfr_v2 = cdata_arcsix_ssfr_v2(date, fname_ssfr_v1, _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
 
-    # cdata_arcsix_ssfr_v0(date)
-    # cdata_arcsix_ssfr_v1(date)
-    # cdata_arcsix_ssfr_v2(date)
     pass
 #\----------------------------------------------------------------------------/#
 
