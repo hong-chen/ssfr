@@ -748,6 +748,8 @@ def cdata_arcsix_spns_v2(
         date,
         fname_spns_v1,
         fname_hsk, # interchangable with fname_alp_v1
+        ang_pit_offset=0.0,
+        ang_rol_offset=0.0,
         fdir_out=_fdir_out_,
         run=True,
         ):
@@ -777,10 +779,10 @@ def cdata_arcsix_spns_v2(
         mu = np.cos(np.deg2rad(data_hsk['sza']))
 
         try:
-            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_a'], data_hsk['ang_rol_a'], data_hsk['ang_hed'])
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_a']+ang_pit_offset, data_hsk['ang_rol_a']+ang_rol_offset, data_hsk['ang_hed'])
         except Exception as error:
             print(error)
-            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit'], data_hsk['ang_rol'], data_hsk['ang_hed'])
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit']+ang_pit_offset, data_hsk['ang_rol']+ang_rol_offset, data_hsk['ang_hed'])
         dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
 
         factors = mu / dc
