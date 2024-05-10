@@ -910,9 +910,9 @@ def cdata_arcsix_ssfr_v1(
         ):
 
     """
-    version 1: 1) check for time offset and merge SSFR data with aircraft housekeeping data
-               2) interpolate raw SSFR data into the time frame of the housekeeping data
-               3) apply primary and secondary calibration to convert counts to fluxes
+    version 1: 1) time adjustment          : check for time offset and merge SSFR data with aircraft housekeeping data
+               2) time synchronization     : interpolate raw SSFR data into the time frame of the housekeeping data
+               3) counts-to-flux conversion: apply primary and secondary calibration to convert counts to fluxes
     """
 
     date_s = date.strftime('%Y%m%d')
@@ -933,7 +933,7 @@ def cdata_arcsix_ssfr_v1(
         #\----------------------------------------------------------------------------/#
 
 
-        # manually adjust time offset
+        # time offset (currently we do it manually)
         #/----------------------------------------------------------------------------\#
         if _test_mode_:
             time_offset = (data_hsk['jday'][0] - data_ssfr_v0['dset0/jday'][0]) * 86400.0
@@ -953,7 +953,8 @@ def cdata_arcsix_ssfr_v1(
 
         f = h5py.File(fname_h5, 'w')
 
-        # interpolate counts to HSK time
+        # processing data - since we have dual integration times, SSFR data with different
+        # integration time will be processed seperately
         #/----------------------------------------------------------------------------\#
         for dset_s in ['dset0', 'dset1']:
 
@@ -975,6 +976,26 @@ def cdata_arcsix_ssfr_v1(
 
             # radiometric response
             #/----------------------------------------------------------------------------\#
+
+
+            # primary response
+            #/--------------------------------------------------------------\#
+            #\--------------------------------------------------------------/#
+
+
+            # transfer
+            #/--------------------------------------------------------------\#
+            #\--------------------------------------------------------------/#
+
+
+            # secondary response
+            #/--------------------------------------------------------------\#
+            #\--------------------------------------------------------------/#
+
+
+            # counts to flux
+            #/--------------------------------------------------------------\#
+            #\--------------------------------------------------------------/#
 
             # figure
             #/----------------------------------------------------------------------------\#
