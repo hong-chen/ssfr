@@ -1218,7 +1218,7 @@ def cdata_arcsix_ssfr_archive():
 
     # create hsk file for ssfr (nasa data archive)
     #/----------------------------------------------------------------------------\#
-    # fname_ssfr = '%s/ssfr_%s_hsk.h5' % (fdir_processed, date_s)
+    fname_ssfr = '%s/ssfr_%s_hsk.h5' % (fdir_processed, date_s)
     # f = h5py.File(fname_ssfr, 'w')
 
     # dset = f.create_dataset('comments', data=comments)
@@ -1278,7 +1278,7 @@ def cdata_arcsix_ssfr_archive():
     # f.close()
     #\----------------------------------------------------------------------------/#
 
-    return
+    return fname_ssfr
 
 def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
 
