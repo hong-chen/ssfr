@@ -1,8 +1,22 @@
+"""
+Code for processing data collected by "radiation instruments" during NASA ARCSIX 2024.
+
+
+Acknowledgements:
+    Instrument engineering:
+        Jeffery Drouet, Sebastian Schmidt
+    Pre-mission calibration and analysis:
+        Hong Chen, Yu-Wen Chen, Ken Hirata, Bruce Kindel, Sebastian Schmidt
+    In-field calibration and on-flight operation:
+        Arabella Chamberlain, Vikas Nataraja, Sebastian Schmidt
+"""
+
 import os
 import sys
 import glob
 import datetime
 import warnings
+from tqdm import tqdm
 import h5py
 import numpy as np
 from scipy import interpolate
@@ -21,7 +35,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # mpl.use('TkAgg')
 
 
-from tqdm import tqdm
 import ssfr
 
 
