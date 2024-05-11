@@ -1153,6 +1153,7 @@ def cdata_arcsix_ssfr_v2(
         diff_ratio = data_aux['diff_ratio']
         #\----------------------------------------------------------------------------/#
 
+
         # angles
         #/----------------------------------------------------------------------------\#
         angles = {}
@@ -1172,14 +1173,12 @@ def cdata_arcsix_ssfr_v2(
         #/----------------------------------------------------------------------------\#
         # fdir_ang_cal = '%s/ang-cal' % fdir_cal
         # fnames_ang_cal = get_ang_cal_camp2ex(date, fdir_ang_cal)
-        # factors = cos_corr(fnames_ang_cal, angles, diff_ratio=ssfr_aux['diff_ratio'])
+        # factors = ssfr.corr.cos_corr(fnames_ang_cal, angles, diff_ratio=diff_ratio)
         #\----------------------------------------------------------------------------/#
 
         # apply cosine correction
         # ssfr_v0.zen_cnt = ssfr_v0.zen_cnt*factors['zenith']
         # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
-
-
 
     return fname_h5
 
