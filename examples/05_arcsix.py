@@ -7,6 +7,7 @@ import h5py
 import numpy as np
 from scipy import interpolate
 from scipy.io import readsav
+from scipy.optimize import curve_fit
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.path as mpl_path
@@ -1036,6 +1037,7 @@ def cdata_arcsix_ssfr_v2(
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         run=True,
+        run_aux=True,
         ):
 
     """
@@ -1046,6 +1048,16 @@ def cdata_arcsix_ssfr_v2(
                diffuse and direct seperation is guided by the diffuse ratio measured by SPNS
     """
 
+    def func_diff_ratio(x, a, b, c):
+
+        return a * (x/500.0)**(b) + c
+
+    def fit_diff_ratio(wavelength, ratio):
+
+        popt, pcov = curve_fit(func_diff_ratio, wavelength, ratio, maxfev=1000000, bounds=(np.array([0.0, -np.inf, 0.0]), np.array([np.inf, 0.0, np.inf])))
+
+        return popt, pcov
+
     date_s = date.strftime('%Y%m%d')
 
     fname_h5 = '%s/%s-%s_%s_v2.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
@@ -1054,127 +1066,118 @@ def cdata_arcsix_ssfr_v2(
 
         data_ssfr_v1 = ssfr.util.load_h5(fname_ssfr_v1)
 
-        data_alp_v1  = ssfr.util.load_h5(fname_alp_v1)
+        fname_aux = '%s/%s-%s_%s_v2-aux.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
 
-        data_spns_v2 = ssfr.util.load_h5(fname_spns_v2)
+        if run_aux:
 
-        # calculate diffuse/global ratio from SPNS data
-        #/----------------------------------------------------------------------------\#
-        diff_ratio = np.zeros_like(data_ssfr_v1['dset0/flux_zen'])
-        diff_ratio[...] = np.nan
-        #\----------------------------------------------------------------------------/#
-        sys.exit()
+            # calculate diffuse/global ratio from SPNS data
+            #/----------------------------------------------------------------------------\#
+            data_spns_v2 = ssfr.util.load_h5(fname_spns_v2)
+
+            f_ = h5py.File(fname_aux, 'w')
+            for key in data_alp_v1.keys():
+                f_.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
+
+            wvl_ssfr_zen = data_ssfr_v1['dset0/wvl_zen']
+            wvl_spns     = data_spns_v2['tot/wvl']
+
+            Nt, Nwvl = data_ssfr_v1['dset0/flux_zen'].shape
+
+            diff_ratio = np.zeros((Nt, Nwvl), dtype=np.float64)
+            diff_ratio[...] = np.nan
+
+            poly_coefs = np.zeros((Nt, 3), dtype=np.float64)
+            poly_coefs[...] = np.nan
+
+            qual_flag = np.repeat(0, Nt)
+
+            # do spectral fit based on 400 nm - 750 nm observations
+            #/--------------------------------------------------------------\#
+            for i in range(Nt):
+
+                diff_ratio0_spns = data_spns_v2['dif/flux'][i, :] / data_spns_v2['tot/flux'][i, :]
+                logic_valid = (~np.isnan(diff_ratio0_spns)) & (diff_ratio0_spns>=0.0) & (diff_ratio0_spns<=1.0) & (wvl_spns>=400.0) & (wvl_spns<=750.0)
+                if logic_valid.sum() > 20:
+
+                    x = data_spns_v2['tot/wvl'][logic_valid]
+                    y = diff_ratio0_spns[logic_valid]
+                    popt, pcov = fit_diff_ratio(x, y)
+
+                    diff_ratio[i, :] = func_diff_ratio(wvl_ssfr_zen, *popt)
+                    poly_coefs[i, :] = popt
+
+                    qual_flag[i] = 1
+
+            diff_ratio[diff_ratio<0.0] = 0.0
+            diff_ratio[diff_ratio>1.0] = 1.0
+            #\--------------------------------------------------------------/#
+
+            # fill in nan values in time space
+            #/--------------------------------------------------------------\#
+            for i in range(Nwvl):
+
+                logic_nan   = np.isnan(diff_ratio[:, i])
+                logic_valid = ~logic_nan
+                f_interp = interpolate.interp1d(data_ssfr_v1['tmhr'][logic_valid], diff_ratio[:, i][logic_valid], bounds_error=None, fill_value='extrapolate')
+                diff_ratio[logic_nan, i] = f_interp(data_ssfr_v1['tmhr'][logic_nan])
+
+            diff_ratio[diff_ratio<0.0] = 0.0
+            diff_ratio[diff_ratio>1.0] = 1.0
+            #\--------------------------------------------------------------/#
+
+            # save data
+            #/--------------------------------------------------------------\#
+            f_.create_dataset('diff_ratio', data=diff_ratio  , compression='gzip', compression_opts=9, chunks=True)
+            g_ = f_.create_group('diff_ratio')
+            g_.create_dataset('wvl'       , data=wvl_ssfr_zen, compression='gzip', compression_opts=9, chunks=True)
+            g_.create_dataset('coef'      , data=poly_coefs  , compression='gzip', compression_opts=9, chunks=True)
+            g_.create_dataset('qual_flag' , data=qual_flag   , compression='gzip', compression_opts=9, chunks=True)
+            #\--------------------------------------------------------------/#
+            #\----------------------------------------------------------------------------/#
 
 
-    # calculate cosine correction factors
-    #/----------------------------------------------------------------------------\#
+            # calculate cosine correction factors
+            #/----------------------------------------------------------------------------\#
+            # data_alp_v1  = ssfr.util.load_h5(fname_alp_v1)
+
+            #\--------------------------------------------------------------/#
+            # angles = {}
+            # angles['solar_zenith']  = ssfr_aux['sza']
+            # angles['solar_azimuth'] = ssfr_aux['saa']
+            # if date < datetime.datetime(2019, 8, 24):
+            #     fname_alp = get_file(fdir_processed, full=True, contains=['alp_%s_v0' % date_s])
+            #     data_alp = load_h5(fname_alp)
+            #     angles['pitch']        = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_pit_s'])
+            #     angles['roll']         = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_rol_s'])
+            #     angles['heading']      = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['true_heading'])
+            #     angles['pitch_motor']  = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_pit_m'])
+            #     angles['roll_motor']   = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_rol_m'])
+            #     angles['pitch_motor'][np.isnan(angles['pitch_motor'])] = 0.0
+            #     angles['roll_motor'][np.isnan(angles['roll_motor'])]   = 0.0
+            #     angles['pitch_offset']  = pitch_angle
+            #     angles['roll_offset']   = roll_angle
+            # else:
+            #     angles['pitch']         = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['pitch_angle'])
+            #     angles['roll']          = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['roll_angle'])
+            #     angles['heading']       = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['true_heading'])
+            #     angles['pitch_motor']   = np.repeat(0.0, ssfr_v0.tmhr.size)
+            #     angles['roll_motor']    = np.repeat(0.0, ssfr_v0.tmhr.size)
+            #     angles['pitch_offset']  = pitch_angle
+            #     angles['roll_offset']   = roll_angle
+
+            # fdir_ang_cal = '%s/ang-cal' % fdir_cal
+            # fnames_ang_cal = get_ang_cal_camp2ex(date, fdir_ang_cal)
+            # factors = cos_corr(fnames_ang_cal, angles, diff_ratio=ssfr_aux['diff_ratio'])
+
+            # # apply cosine correction
+            # ssfr_v0.zen_cnt = ssfr_v0.zen_cnt*factors['zenith']
+            # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
+            #\----------------------------------------------------------------------------/#
+
+            f_.close()
 
 
-    # dif_flux1 = np.zeros((ssfr_v0.tmhr.size, dif_wvl0.size), dtype=np.float64); dif_flux1[...] = np.nan
-    # for i in range(dif_wvl0.size):
-    #     dif_flux1[:, i] = interp(ssfr_v0.tmhr, dif_tmhr0, dif_flux0[:, i])
 
-    # dif_flux = np.zeros_like(ssfr_v0.zen_cnt); dif_flux[...] = np.nan
-    # for i in range(ssfr_v0.tmhr.size):
-    #     dif_flux[i, :] = interp(ssfr_v0.zen_wvl, dif_wvl0, dif_flux1[i, :])
-
-
-    # tot_flux0 = data_spns['tot_flux']
-    # tot_tmhr0 = data_spns['tot_tmhr']
-    # tot_wvl0  = data_spns['tot_wvl']
-
-    # tot_flux1 = np.zeros((ssfr_v0.tmhr.size, tot_wvl0.size), dtype=np.float64); tot_flux1[...] = np.nan
-    # for i in range(dif_wvl0.size):
-    #     tot_flux1[:, i] = interp(ssfr_v0.tmhr, tot_tmhr0, tot_flux0[:, i])
-
-    # tot_flux = np.zeros_like(ssfr_v0.zen_cnt); tot_flux[...] = np.nan
-    # for i in range(ssfr_v0.tmhr.size):
-    #     tot_flux[i, :] = interp(ssfr_v0.zen_wvl, tot_wvl0, tot_flux1[i, :])
-
-    # diff_ratio0 = dif_flux / tot_flux
-    # diff_ratio  = np.zeros_like(ssfr_v0.zen_cnt)  ; diff_ratio[...] = np.nan
-    # coefs       = np.zeros((ssfr_v0.tmhr.size, 3)); coefs[...] = np.nan
-    # qual_flag   = np.repeat(0, ssfr_v0.tmhr.size)
-
-    # for i in tqdm(range(diff_ratio.shape[0])):
-
-    #     logic = (diff_ratio0[i, :]>=0.0) & (diff_ratio0[i, :]<=1.0) & (ssfr_v0.zen_wvl>=400.0) & (ssfr_v0.zen_wvl<=750.0)
-    #     if logic.sum() > 20:
-
-    #         x = ssfr_v0.zen_wvl[logic]
-    #         y = diff_ratio0[i, logic]
-    #         popt, pcov = fit_diff_ratio(x, y)
-
-    #         diff_ratio[i, :] = func_diff_ratio(ssfr_v0.zen_wvl, *popt)
-    #         diff_ratio[i, diff_ratio[i, :]>1.0] = 1.0
-    #         diff_ratio[i, diff_ratio[i, :]<0.0] = 0.0
-
-    #         coefs[i, :] = popt
-    #         qual_flag[i] = 1
-
-    # print(np.isnan(diff_ratio).sum())
-
-    # for i in range(diff_ratio.shape[1]):
-    #     logic_nan = np.isnan(diff_ratio[:, i])
-    #     logic     = np.logical_not(logic_nan)
-
-    #     f_interp  = interpolate.interp1d(ssfr_v0.tmhr[logic], diff_ratio[:, i][logic], bounds_error=None, fill_value='extrapolate')
-    #     diff_ratio[logic_nan, i] = f_interp(ssfr_v0.tmhr[logic_nan])
-    #     diff_ratio[diff_ratio[:, i]>1.0, i] = 1.0
-    #     diff_ratio[diff_ratio[:, i]<0.0, i] = 0.0
-
-    # print(np.isnan(diff_ratio).sum())
-
-    # if run:
-    #     fname = '%s/ssfr_%s_aux.h5' % (fdir_processed, date_s)
-    #     f = h5py.File(fname, 'w')
-    #     f['tmhr'] = ssfr_v0.tmhr
-    #     f['alt']  = alt
-    #     f['lon']  = lon
-    #     f['lat']  = lat
-    #     f['sza']  = sza
-    #     f['saa']  = saa
-    #     f['diff_ratio_x']         = ssfr_v0.zen_wvl
-    #     f['diff_ratio_coef']      = coefs
-    #     f['diff_ratio_qual_flag'] = qual_flag
-    #     f['diff_ratio']           = diff_ratio
-    #     f['diff_ratio_ori']       = diff_ratio0
-    #     f.close()
-    #\----------------------------------------------------------------------------/#
-    #\--------------------------------------------------------------/#
-
-    # angles = {}
-    # angles['solar_zenith']  = ssfr_aux['sza']
-    # angles['solar_azimuth'] = ssfr_aux['saa']
-    # if date < datetime.datetime(2019, 8, 24):
-    #     fname_alp = get_file(fdir_processed, full=True, contains=['alp_%s_v0' % date_s])
-    #     data_alp = load_h5(fname_alp)
-    #     angles['pitch']        = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_pit_s'])
-    #     angles['roll']         = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_rol_s'])
-    #     angles['heading']      = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['true_heading'])
-    #     angles['pitch_motor']  = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_pit_m'])
-    #     angles['roll_motor']   = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_rol_m'])
-    #     angles['pitch_motor'][np.isnan(angles['pitch_motor'])] = 0.0
-    #     angles['roll_motor'][np.isnan(angles['roll_motor'])]   = 0.0
-    #     angles['pitch_offset']  = pitch_angle
-    #     angles['roll_offset']   = roll_angle
-    # else:
-    #     angles['pitch']         = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['pitch_angle'])
-    #     angles['roll']          = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['roll_angle'])
-    #     angles['heading']       = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['true_heading'])
-    #     angles['pitch_motor']   = np.repeat(0.0, ssfr_v0.tmhr.size)
-    #     angles['roll_motor']    = np.repeat(0.0, ssfr_v0.tmhr.size)
-    #     angles['pitch_offset']  = pitch_angle
-    #     angles['roll_offset']   = roll_angle
-
-    # fdir_ang_cal = '%s/ang-cal' % fdir_cal
-    # fnames_ang_cal = get_ang_cal_camp2ex(date, fdir_ang_cal)
-    # factors = cos_corr(fnames_ang_cal, angles, diff_ratio=ssfr_aux['diff_ratio'])
-
-    # # apply cosine correction
-    # ssfr_v0.zen_cnt = ssfr_v0.zen_cnt*factors['zenith']
-    # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
-    #\----------------------------------------------------------------------------/#
 
     return fname_h5
 
