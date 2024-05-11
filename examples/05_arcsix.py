@@ -1038,7 +1038,7 @@ def cdata_arcsix_ssfr_v2(
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         run=True,
-        run_aux=True,
+        run_aux=False,
         ):
 
     """
@@ -1153,6 +1153,36 @@ def cdata_arcsix_ssfr_v2(
         diff_ratio = data_aux['diff_ratio']
         #\----------------------------------------------------------------------------/#
 
+        # figure
+        #/----------------------------------------------------------------------------\#
+        if True:
+            plt.close('all')
+            fig = plt.figure(figsize=(8, 6))
+            # fig.suptitle('Figure')
+            # plot
+            #/--------------------------------------------------------------\#
+            ax1 = fig.add_subplot(111)
+            # ax1.scatter(data_aux['tmhr'], diff_ratio[:, 100], s=6, c='k', lw=0.0)
+            ax1.scatter(data_aux['diff_ratio_aux/wvl'], diff_ratio[2000, :], s=6, c='k', lw=0.0)
+            # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+            # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+            # ax1.set_xlim(())
+            # ax1.set_ylim(())
+            # ax1.set_xlabel('')
+            # ax1.set_ylabel('')
+            # ax1.set_title('')
+            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            #\--------------------------------------------------------------/#
+            # save figure
+            #/--------------------------------------------------------------\#
+            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+            #\--------------------------------------------------------------/#
+            plt.show()
+            sys.exit()
+        #\----------------------------------------------------------------------------/#
 
         # angles
         #/----------------------------------------------------------------------------\#
