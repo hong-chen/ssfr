@@ -1138,7 +1138,10 @@ def cdata_arcsix_ssfr_v2(
             #/----------------------------------------------------------------------------\#
             data_alp_v1  = ssfr.util.load_h5(fname_alp_v1)
             for key in data_alp_v1.keys():
-                f_.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
+                try:
+                    f_.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
+                except TypeError:
+                    f_[key] = data_alp_v1[key]
             f_.close()
             #\----------------------------------------------------------------------------/#
 
