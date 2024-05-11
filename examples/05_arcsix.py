@@ -1180,6 +1180,19 @@ def cdata_arcsix_ssfr_v2(
         # ssfr_v0.zen_cnt = ssfr_v0.zen_cnt*factors['zenith']
         # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
 
+        # save data
+        #/----------------------------------------------------------------------------\#
+        # f = h5py.File(fname_h5, 'w')
+        # for key in ['tmhr', 'jday', 'lon', 'lat', 'alt', 'sza', 'saa', 'ang_pit', 'ang_rol', 'ang_hed', 'ang_pit_m', 'ang_rol_m']:
+        #     f.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
+
+        # g = f.create_group('att_corr')
+        # g.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
+        # g.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+
+        # f.close()
+        #\----------------------------------------------------------------------------/#
+
     return fname_h5
 
 def cdata_arcsix_ssfr_archive():
