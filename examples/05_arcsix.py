@@ -21,6 +21,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # mpl.use('TkAgg')
 
 
+from tqdm import tqdm
 import ssfr
 
 
@@ -1091,7 +1092,7 @@ def cdata_arcsix_ssfr_v2(
 
             # do spectral fit based on 400 nm - 750 nm observations
             #/--------------------------------------------------------------\#
-            for i in range(Nt):
+            for i in tqdm(range(Nt)):
 
                 diff_ratio0_spns = data_spns_v2['dif/flux'][i, :] / data_spns_v2['tot/flux'][i, :]
                 logic_valid = (~np.isnan(diff_ratio0_spns)) & (diff_ratio0_spns>=0.0) & (diff_ratio0_spns<=1.0) & (wvl_spns>=400.0) & (wvl_spns<=750.0)
@@ -1156,13 +1157,13 @@ def cdata_arcsix_ssfr_v2(
         # angles
         #/----------------------------------------------------------------------------\#
         angles = {}
-        angles['solar_zenith']  = ssfr_aux['sza']
-        angles['solar_azimuth'] = ssfr_aux['saa']
-        angles['pitch']         = ssfr_aux['ang_pit_s'] # pitch angle from SPAN-CPT
-        angles['roll']          = ssfr_aux['ang_rol_s'] # roll angle from SPAN-CPT
-        angles['heading']       = ssfr_aux['ang_hed']
-        angles['pitch_motor']   = ssfr_aux['ang_pit_m']
-        angles['roll_motor']    = ssfr_aux['ang_rol_m']
+        angles['solar_zenith']  = data_aux['sza']
+        angles['solar_azimuth'] = data_aux['saa']
+        angles['pitch']         = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
+        angles['roll']          = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
+        angles['heading']       = data_aux['ang_hed']
+        angles['pitch_motor']   = data_aux['ang_pit_m']
+        angles['roll_motor']    = data_aux['ang_rol_m']
         angles['pitch_motor'][np.isnan(angles['pitch_motor'])] = 0.0
         angles['roll_motor'][np.isnan(angles['roll_motor'])]   = 0.0
         angles['pitch_offset']  = ang_pit_offset
