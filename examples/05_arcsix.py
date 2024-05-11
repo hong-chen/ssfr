@@ -622,13 +622,11 @@ def cdata_arcsix_spns_v0(
         g1 = f.create_group('dif')
         for key in data0_dif.data.keys():
             if key in ['tmhr', 'jday', 'wvl', 'flux']:
-                # dset0 = g1.create_dataset(key, data=data0_dif.data[key], compression='lzf')
                 dset0 = g1.create_dataset(key, data=data0_dif.data[key], compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('tot')
         for key in data0_tot.data.keys():
             if key in ['tmhr', 'jday', 'wvl', 'flux']:
-                # dset0 = g2.create_dataset(key, data=data0_tot.data[key], compression='lzf')
                 dset0 = g2.create_dataset(key, data=data0_tot.data[key], compression='gzip', compression_opts=9, chunks=True)
         g2['toa0'] = f_dn_sol_tot
 
@@ -733,13 +731,11 @@ def cdata_arcsix_spns_v1(
 
         g1 = f.create_group('dif')
         g1['wvl']   = data_spns_v0['dif/wvl']
-        # dset0 = g1.create_dataset('flux', data=flux_dif, compression='lzf')
         dset0 = g1.create_dataset('flux', data=flux_dif, compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('tot')
         g2['wvl']   = data_spns_v0['tot/wvl']
         g2['toa0']  = data_spns_v0['tot/toa0']
-        # dset0 = g2.create_dataset('flux', data=flux_tot, compression='lzf')
         dset0 = g2.create_dataset('flux', data=flux_tot, compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
@@ -812,13 +808,11 @@ def cdata_arcsix_spns_v2(
 
         g1 = f.create_group('dif')
         g1['wvl']   = data_spns_v1['dif/wvl']
-        # dset0 = g1.create_dataset('flux', data=data_spns_v1['dif/flux'], compression='lzf')
         dset0 = g1.create_dataset('flux', data=data_spns_v1['dif/flux'], compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('tot')
         g2['wvl']   = data_spns_v1['tot/wvl']
         g2['toa0']  = data_spns_v1['tot/toa0']
-        # dset0 = g2.create_dataset('flux', data=f_dn_tot_corr, compression='lzf')
         dset0 = g2.create_dataset('flux', data=f_dn_tot_corr, compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
@@ -842,10 +836,14 @@ def process_spns_data(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data                          , fdir_out=fdir_out, run=run)
-    fname_spns_v1 = cdata_arcsix_spns_v1(date, fname_spns_v0, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_alp_v1' % date_s], fdir_out=fdir_out, run=run)
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s], fdir_out=fdir_out, run=run)
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data,
+            fdir_out=fdir_out, run=run)
+    fname_spns_v1 = cdata_arcsix_spns_v1(date, fname_spns_v0, _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_alp_v1' % date_s],
+            fdir_out=fdir_out, run=run)
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s],
+    #         fdir_out=fdir_out, run=run)
 
     _fnames_['%s_spns_v0' % date_s] = fname_spns_v0
     _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
@@ -895,7 +893,6 @@ def cdata_arcsix_ssfr_v0(
             g = f.create_group(dset_s)
             for key in data.keys():
                 if key != 'info':
-                    # dset0 = g.create_dataset(key, data=data[key], compression='lzf')
                     dset0 = g.create_dataset(key, data=data[key], compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
