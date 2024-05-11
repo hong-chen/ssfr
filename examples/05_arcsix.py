@@ -1134,36 +1134,38 @@ def cdata_arcsix_ssfr_v2(
             #\----------------------------------------------------------------------------/#
 
 
-            # calculate cosine correction factors
+            # alp
             #/----------------------------------------------------------------------------\#
-            # data_alp_v1  = ssfr.util.load_h5(fname_alp_v1)
-            # for key in data_alp_v1.keys():
-            #     f_.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
+            data_alp_v1  = ssfr.util.load_h5(fname_alp_v1)
+            for key in data_alp_v1.keys():
+                f_.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
+            f_.close()
+            #\----------------------------------------------------------------------------/#
 
-            #\--------------------------------------------------------------/#
-            # angles = {}
-            # angles['solar_zenith']  = ssfr_aux['sza']
-            # angles['solar_azimuth'] = ssfr_aux['saa']
-            # if date < datetime.datetime(2019, 8, 24):
-            #     fname_alp = get_file(fdir_processed, full=True, contains=['alp_%s_v0' % date_s])
-            #     data_alp = load_h5(fname_alp)
-            #     angles['pitch']        = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_pit_s'])
-            #     angles['roll']         = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_rol_s'])
-            #     angles['heading']      = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['true_heading'])
-            #     angles['pitch_motor']  = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_pit_m'])
-            #     angles['roll_motor']   = interp(ssfr_v0.tmhr, data_alp['tmhr'], data_alp['ang_rol_m'])
-            #     angles['pitch_motor'][np.isnan(angles['pitch_motor'])] = 0.0
-            #     angles['roll_motor'][np.isnan(angles['roll_motor'])]   = 0.0
-            #     angles['pitch_offset']  = pitch_angle
-            #     angles['roll_offset']   = roll_angle
-            # else:
-            #     angles['pitch']         = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['pitch_angle'])
-            #     angles['roll']          = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['roll_angle'])
-            #     angles['heading']       = interp(ssfr_v0.tmhr, data_hsk['tmhr'], data_hsk['true_heading'])
-            #     angles['pitch_motor']   = np.repeat(0.0, ssfr_v0.tmhr.size)
-            #     angles['roll_motor']    = np.repeat(0.0, ssfr_v0.tmhr.size)
-            #     angles['pitch_offset']  = pitch_angle
-            #     angles['roll_offset']   = roll_angle
+        data_aux = ssfr.util.load_h5(fname_aux)
+
+        # diffuse ratio
+        #/----------------------------------------------------------------------------\#
+        diff_ratio = data_aux['diff_ratio']
+        #\----------------------------------------------------------------------------/#
+
+
+        # angles
+        #/----------------------------------------------------------------------------\#
+        angles = {}
+        angles['solar_zenith']  = ssfr_aux['sza']
+        angles['solar_azimuth'] = ssfr_aux['saa']
+        angles['pitch']         = ssfr_aux['ang_pit_s'] # pitch angle from SPAN-CPT
+        angles['roll']          = ssfr_aux['ang_rol_s'] # roll angle from SPAN-CPT
+        angles['heading']       = ssfr_aux['ang_hed']
+        angles['pitch_motor']   = ssfr_aux['ang_pit_m']
+        angles['roll_motor']    = ssfr_aux['ang_rol_m']
+        angles['pitch_motor'][np.isnan(angles['pitch_motor'])] = 0.0
+        angles['roll_motor'][np.isnan(angles['roll_motor'])]   = 0.0
+        angles['pitch_offset']  = ang_pit_offset
+        angles['roll_offset']   = ang_rol_offset
+        #\----------------------------------------------------------------------------/#
+
 
             # fdir_ang_cal = '%s/ang-cal' % fdir_cal
             # fnames_ang_cal = get_ang_cal_camp2ex(date, fdir_ang_cal)
@@ -1173,9 +1175,6 @@ def cdata_arcsix_ssfr_v2(
             # ssfr_v0.zen_cnt = ssfr_v0.zen_cnt*factors['zenith']
             # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
             #\----------------------------------------------------------------------------/#
-
-            f_.close()
-
 
 
 
