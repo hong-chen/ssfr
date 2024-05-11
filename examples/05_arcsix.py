@@ -1153,37 +1153,6 @@ def cdata_arcsix_ssfr_v2(
         diff_ratio = data_aux['diff_ratio']
         #\----------------------------------------------------------------------------/#
 
-        # figure
-        #/----------------------------------------------------------------------------\#
-        if True:
-            plt.close('all')
-            fig = plt.figure(figsize=(8, 6))
-            # fig.suptitle('Figure')
-            # plot
-            #/--------------------------------------------------------------\#
-            ax1 = fig.add_subplot(111)
-            # ax1.scatter(data_aux['tmhr'], diff_ratio[:, 100], s=6, c='k', lw=0.0)
-            ax1.scatter(data_aux['diff_ratio_aux/wvl'], diff_ratio[2000, :], s=6, c='k', lw=0.0)
-            # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-            # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-            # ax1.set_xlim(())
-            # ax1.set_ylim(())
-            # ax1.set_xlabel('')
-            # ax1.set_ylabel('')
-            # ax1.set_title('')
-            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            #\--------------------------------------------------------------/#
-            # save figure
-            #/--------------------------------------------------------------\#
-            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-            #\--------------------------------------------------------------/#
-            plt.show()
-            sys.exit()
-        #\----------------------------------------------------------------------------/#
-
         # angles
         #/----------------------------------------------------------------------------\#
         angles = {}
@@ -1194,21 +1163,21 @@ def cdata_arcsix_ssfr_v2(
         angles['heading']       = data_aux['ang_hed']
         angles['pitch_motor']   = data_aux['ang_pit_m']
         angles['roll_motor']    = data_aux['ang_rol_m']
-        angles['pitch_motor'][np.isnan(angles['pitch_motor'])] = 0.0
-        angles['roll_motor'][np.isnan(angles['roll_motor'])]   = 0.0
         angles['pitch_offset']  = ang_pit_offset
         angles['roll_offset']   = ang_rol_offset
         #\----------------------------------------------------------------------------/#
 
 
-            # fdir_ang_cal = '%s/ang-cal' % fdir_cal
-            # fnames_ang_cal = get_ang_cal_camp2ex(date, fdir_ang_cal)
-            # factors = cos_corr(fnames_ang_cal, angles, diff_ratio=ssfr_aux['diff_ratio'])
+        # attitude correction
+        #/----------------------------------------------------------------------------\#
+        # fdir_ang_cal = '%s/ang-cal' % fdir_cal
+        # fnames_ang_cal = get_ang_cal_camp2ex(date, fdir_ang_cal)
+        # factors = cos_corr(fnames_ang_cal, angles, diff_ratio=ssfr_aux['diff_ratio'])
+        #\----------------------------------------------------------------------------/#
 
-            # # apply cosine correction
-            # ssfr_v0.zen_cnt = ssfr_v0.zen_cnt*factors['zenith']
-            # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
-            #\----------------------------------------------------------------------------/#
+        # apply cosine correction
+        # ssfr_v0.zen_cnt = ssfr_v0.zen_cnt*factors['zenith']
+        # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
 
 
 
