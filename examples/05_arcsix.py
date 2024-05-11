@@ -1075,8 +1075,6 @@ def cdata_arcsix_ssfr_v2(
             data_spns_v2 = ssfr.util.load_h5(fname_spns_v2)
 
             f_ = h5py.File(fname_aux, 'w')
-            for key in data_alp_v1.keys():
-                f_.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
 
             wvl_ssfr_zen = data_ssfr_v1['dset0/wvl_zen']
             wvl_spns     = data_spns_v2['tot/wvl']
@@ -1128,7 +1126,7 @@ def cdata_arcsix_ssfr_v2(
             # save data
             #/--------------------------------------------------------------\#
             f_.create_dataset('diff_ratio', data=diff_ratio  , compression='gzip', compression_opts=9, chunks=True)
-            g_ = f_.create_group('diff_ratio')
+            g_ = f_.create_group('diff_ratio_aux')
             g_.create_dataset('wvl'       , data=wvl_ssfr_zen, compression='gzip', compression_opts=9, chunks=True)
             g_.create_dataset('coef'      , data=poly_coefs  , compression='gzip', compression_opts=9, chunks=True)
             g_.create_dataset('qual_flag' , data=qual_flag   , compression='gzip', compression_opts=9, chunks=True)
@@ -1139,6 +1137,8 @@ def cdata_arcsix_ssfr_v2(
             # calculate cosine correction factors
             #/----------------------------------------------------------------------------\#
             # data_alp_v1  = ssfr.util.load_h5(fname_alp_v1)
+            # for key in data_alp_v1.keys():
+            #     f_.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
 
             #\--------------------------------------------------------------/#
             # angles = {}
