@@ -1157,15 +1157,15 @@ def cdata_arcsix_ssfr_v2(
         # angles
         #/----------------------------------------------------------------------------\#
         angles = {}
-        angles['solar_zenith']  = data_aux['sza']
-        angles['solar_azimuth'] = data_aux['saa']
-        angles['pitch']         = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
-        angles['roll']          = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
-        angles['heading']       = data_aux['ang_hed']
-        angles['pitch_motor']   = data_aux['ang_pit_m']
-        angles['roll_motor']    = data_aux['ang_rol_m']
-        angles['pitch_offset']  = ang_pit_offset
-        angles['roll_offset']   = ang_rol_offset
+        angles['sza'] = data_aux['sza']
+        angles['saa'] = data_aux['saa']
+        angles['ang_pit_s']      = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
+        angles['ang_rol_s']      = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
+        angles['ang_hed']        = data_aux['ang_hed']
+        angles['ang_pit_m']      = data_aux['ang_pit_m']
+        angles['ang_rol_m']      = data_aux['ang_rol_m']
+        angles['ang_pit_offset'] = ang_pit_offset
+        angles['ang_pit_offset'] = ang_rol_offset
         #\----------------------------------------------------------------------------/#
 
 
