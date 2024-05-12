@@ -14,7 +14,7 @@ import ssfr.corr
 
 
 
-__all__ = ['cal_cos_resp', 'cdata_cos_resp', 'load_cos_resp_h5']
+__all__ = ['cal_cos_resp', 'cdata_cos_resp']
 
 
 
@@ -325,18 +325,6 @@ def cdata_cos_resp(
 
 
     return fname_out
-
-
-
-def load_cos_resp_h5(fname):
-
-    resp = {}
-    f = h5py.File(fname, 'r')
-    for key in f.keys():
-        resp[key] = f[key][...]
-    f.close()
-
-    return resp
 
 
 

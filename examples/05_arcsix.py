@@ -6,9 +6,9 @@ Acknowledgements:
     Instrument engineering:
         Jeffery Drouet, Sebastian Schmidt
     Pre-mission calibration and analysis:
-        Hong Chen, Yu-Wen Chen, Ken Hirata, Bruce Kindel, Sebastian Schmidt
+        Hong Chen, Yu-Wen Chen, Ken Hirata, Sebastian Schmidt, Bruce Kindel
     In-field calibration and on-flight operation:
-        Arabella Chamberlain, Vikas Nataraja, Sebastian Schmidt
+        Arabella Chamberlain, Vikas Nataraja, Ken Hirata, Sebastian Schmidt
 """
 
 import os

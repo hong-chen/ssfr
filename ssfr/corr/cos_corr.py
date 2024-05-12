@@ -71,7 +71,7 @@ def cos_corr(fnames,
     #     factors = factors_dir*(1-diff_ratio) + factors_dif*diff_ratio
     # if `diff_ratio` is not provided,
     #     factors = factors_dir
-    cos_resp     = ssfr.cal.load_cos_resp_h5(fnames['zen'])
+    cos_resp     = ssfr.util.load_h5(fnames['zen'])
     wvl          = cos_resp['wvl']
     factors_dir  = np.zeros((dc.size, wvl.size), dtype=np.float64)
     for i, index in enumerate(indices):
@@ -92,7 +92,7 @@ def cos_corr(fnames,
     # nadir
     #/----------------------------------------------------------------------------\#
     # use `cos_resp_int` for diffuse correction
-    cos_resp     = ssfr.cal.load_cos_resp_h5(fnames['nad'])
+    cos_resp     = ssfr.util.load_h5(fnames['nad'])
     wvl          = cos_resp['wvl']
     factors_dif  = np.zeros((dc.size, wvl.size), dtype=np.float64)
     for i in range(wvl.size):
