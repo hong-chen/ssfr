@@ -190,7 +190,7 @@ def fig_alvin_darks_si():
 if __name__ == '__main__':
 
     # fig_belana_darks_si()
-    fig_alvin_darks_si()
-    # fnames = sorted(glob.glob('data/*cos-resp*.h5'))
-    # for fname in [fnames[-1]]:
-    #     fig_cos_resp(fname)
+    # fig_alvin_darks_si()
+    fnames = sorted(glob.glob('data/*cos-resp*.h5'))
+    for fname in [fnames[-1]]:
+        fig_cos_resp(fname)

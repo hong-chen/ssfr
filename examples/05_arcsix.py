@@ -177,9 +177,9 @@ def ang_cal(fdir):
         angles
     """
 
-    date_cal_s, ssfr_tag, lc_tag, vaa_tag, lamp_tag = os.path.basename(fdir).split('_')
-
-    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+    # date_cal_s, ssfr_tag, lc_tag, cal_tag, vaa_tag, lamp_tag, si_tag, in_tag = os.path.basename(fdir).split('_')
+    # date_cal_s, ssfr_tag, lc_tag, cal_tag, vaa_tag, lamp_tag, si_tag, in_tag = os.path.basename(fdir).split('_')
+    tags = os.path.basename(fdir).split('_')
 
     # get angles
     #/----------------------------------------------------------------------------\#
@@ -196,6 +196,10 @@ def ang_cal(fdir):
             }
     #\----------------------------------------------------------------------------/#
 
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
 
     ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
     for i in range(ssfr_.Ndset):
@@ -203,8 +207,9 @@ def ang_cal(fdir):
         dset_ = getattr(ssfr_, dset_tag)
         int_time = dset_['info']['int_time']
 
-        filename_tag = '%s|%s|%s|%s' % (date_cal_s, date_today_s, vaa_tag, dset_tag.lower())
-        ssfr.cal.cdata_cos_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
 #\----------------------------------------------------------------------------/#
 
 
@@ -240,13 +245,12 @@ def main_calibration():
     # angular calibration
     #/----------------------------------------------------------------------------\#
     fdirs = [
-            'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen_vaa-180_507',
-            'data/arcsix/cal/ang-cal/2024-03-16_SSFR-A_zen_vaa-180_507',
-            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-180_507',
-            'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad_vaa-300_507',
-            'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_nad_vaa-060_507',
-            'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen_vaa-060_507',
-            'data/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen_vaa-300_507',
+            '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
+            '/argus/field/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
+            '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
+            '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
+            '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
+            '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
             ]
     for fdir in fdirs:
         ang_cal(fdir)
@@ -1585,7 +1589,8 @@ if __name__ == '__main__':
 
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
 
-    # main_calibration()
+    main_calibration()
+    sys.exit()
 
     # data procesing
     #/----------------------------------------------------------------------------\#
