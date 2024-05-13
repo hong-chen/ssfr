@@ -54,6 +54,8 @@ _ssfr2_       = 'ssfr-b'
 _fdir_hsk_   = 'data/test/arcsix/2024-Spring/p3/aux/hsk'
 _fdir_data_  = 'data/test/%s' % _mission_
 _fdir_out_   = 'data/test/processed'
+_fdir_cal_   = 'data/test/arcsix/cal'
+
 
 _verbose_   = True
 _test_mode_ = True
@@ -975,8 +977,7 @@ def cdata_arcsix_ssfr_v1(
 
             # select calibration file
             #/----------------------------------------------------------------------------\#
-            fdir_cal = 'data/test/arcsix/cal/rad-cal'
-
+            fdir_cal = '%s/rad-cal' % _fdir_cal_
             fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
             data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
@@ -1171,39 +1172,52 @@ def cdata_arcsix_ssfr_v2(
         angles = {}
         angles['sza'] = data_aux['sza']
         angles['saa'] = data_aux['saa']
-        angles['ang_pit_s']      = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
-        angles['ang_rol_s']      = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
+        angles['ang_pit']        = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
+        angles['ang_rol']        = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
         angles['ang_hed']        = data_aux['ang_hed']
         angles['ang_pit_m']      = data_aux['ang_pit_m']
         angles['ang_rol_m']      = data_aux['ang_rol_m']
         angles['ang_pit_offset'] = ang_pit_offset
-        angles['ang_pit_offset'] = ang_rol_offset
+        angles['ang_rol_offset'] = ang_rol_offset
         #\----------------------------------------------------------------------------/#
-
-
-        # attitude correction
-        #/----------------------------------------------------------------------------\#
-        # fdir_ang_cal = '%s/ang-cal' % fdir_cal
-        # fnames_ang_cal = get_ang_cal_camp2ex(date, fdir_ang_cal)
-        # factors = ssfr.corr.cos_corr(fnames_ang_cal, angles, diff_ratio=diff_ratio)
-        #\----------------------------------------------------------------------------/#
-
-        # apply cosine correction
-        # ssfr_v0.zen_cnt = ssfr_v0.zen_cnt*factors['zenith']
-        # ssfr_v0.nad_cnt = ssfr_v0.nad_cnt*factors['nadir']
 
         # save data
         #/----------------------------------------------------------------------------\#
-        # f = h5py.File(fname_h5, 'w')
-        # for key in ['tmhr', 'jday', 'lon', 'lat', 'alt', 'sza', 'saa', 'ang_pit', 'ang_rol', 'ang_hed', 'ang_pit_m', 'ang_rol_m']:
-        #     f.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
+        f = h5py.File(fname_h5, 'w')
+        for key in ['tmhr', 'jday', 'lon', 'lat', 'alt', 'sza', 'saa', 'ang_pit_s', 'ang_rol_s', 'ang_hed', 'ang_pit_m', 'ang_rol_m']:
+            f.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
 
-        # g = f.create_group('att_corr')
-        # g.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
-        # g.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+        for dset_s in ['dset0', 'dset1']:
 
-        # f.close()
-        #\----------------------------------------------------------------------------/#
+            g = f.create_group(dset_s)
+
+            # select calibration file for attitude correction
+            #/----------------------------------------------------------------------------\#
+            fdir_cal = '%s/ang-cal' % _fdir_cal_
+            fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+            fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+            #\----------------------------------------------------------------------------/#
+
+            # calculate attitude correction factors
+            #/----------------------------------------------------------------------------\#
+            fnames_cal = {
+                    'zen': fname_cal_zen,
+                    'nad': fname_cal_nad,
+                    }
+            factors = ssfr.corr.att_corr(fnames_cal, angles, diff_ratio=diff_ratio)
+            #\----------------------------------------------------------------------------/#
+
+            g1 = g.create_group('att_corr')
+            g1.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
+            g1.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+
+            # apply attitude correction
+            #/----------------------------------------------------------------------------\#
+            g.create_dataset('flux_zen', data=data_ssfr_v1['%s/flux_zen' % dset_s]*factors['zen'], compression='gzip', compression_opts=9, chunks=True)
+            g.create_dataset('flux_nad', data=data_ssfr_v1['%s/flux_nad' % dset_s]*factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+            #\----------------------------------------------------------------------------/#
+
+        f.close()
 
     return fname_h5
 
