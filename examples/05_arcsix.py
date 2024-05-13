@@ -1207,9 +1207,9 @@ def cdata_arcsix_ssfr_v2(
             factors = ssfr.corr.att_corr(fnames_cal, angles, diff_ratio=diff_ratio)
             #\----------------------------------------------------------------------------/#
 
-            g1 = g.create_group('att_corr')
-            g1.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
-            g1.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+            # g1 = g.create_group('att_corr')
+            # g1.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
+            # g1.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
 
             # apply attitude correction
             #/----------------------------------------------------------------------------\#
