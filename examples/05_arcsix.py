@@ -177,9 +177,9 @@ def ang_cal(fdir):
         angles
     """
 
-    # date_cal_s, ssfr_tag, lc_tag, cal_tag, vaa_tag, lamp_tag, si_tag, in_tag = os.path.basename(fdir).split('_')
-    # date_cal_s, ssfr_tag, lc_tag, cal_tag, vaa_tag, lamp_tag, si_tag, in_tag = os.path.basename(fdir).split('_')
     tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
 
     # get angles
     #/----------------------------------------------------------------------------\#
@@ -197,9 +197,6 @@ def ang_cal(fdir):
     #\----------------------------------------------------------------------------/#
 
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
-
-    ssfr_tag = tags[1]
-    lc_tag   = tags[2]
 
     ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
     for i in range(ssfr_.Ndset):
@@ -1589,8 +1586,7 @@ if __name__ == '__main__':
 
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
 
-    main_calibration()
-    sys.exit()
+    # main_calibration()
 
     # data procesing
     #/----------------------------------------------------------------------------\#
