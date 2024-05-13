@@ -7,11 +7,11 @@ import ssfr
 
 
 
-__all__ = ['cos_corr']
+__all__ = ['att_corr']
 
 
 
-def cos_corr(fnames,
+def att_corr(fnames,
              angles,
              diff_ratio=None):
 
@@ -21,7 +21,7 @@ def cos_corr(fnames,
     Based on the `dc` factor, the angular response is selected and then the spectral response is calculated from the polynomial coefficients.
 
     Input:
-        `fnames`: Python dictionary, angular calibration file processed through `ssfr.cal.cdata_cos_resp`
+        `fnames`: Python dictionary, angular calibration file processed through `ssfr.cal.cdata_ang_resp`
             ['zen']
             ['nad']
 
@@ -62,41 +62,41 @@ def cos_corr(fnames,
     #/----------------------------------------------------------------------------\#
     # zenith attitude correction contains two parts:
     #    1) correction for diffuse radiation (e.g., rayleigh scattering by atmospheric gases) -
-    #       this will use angularly integrated cosine response
+    #       this will use angularly integrated angular response
     #    2) correction for direct radiation -
-    #       this will use cosine response at given angle (cosine response is measured in the lab)
+    #       this will use angular response at given angle (angular response is measured in the lab)
     #       *Notes: attitude correction is also done in the spectral space via polynomial fitting
     # if `diff_ratio` is provided,
     #     in addition to `factors_dir`, calculate `factors_dif`
     #     factors = factors_dir*(1-diff_ratio) + factors_dif*diff_ratio
     # if `diff_ratio` is not provided,
     #     factors = factors_dir
-    cos_resp     = ssfr.util.load_h5(fnames['zen'])
-    wvl          = cos_resp['wvl']
+    ang_resp     = ssfr.util.load_h5(fnames['zen'])
+    wvl          = ang_resp['wvl']
     factors_dir  = np.zeros((dc.size, wvl.size), dtype=np.float64)
     for i, index in enumerate(indices):
-        f = np.poly1d(cos_resp['poly_coef'][index, :])
+        f = np.poly1d(ang_resp['poly_coef'][index, :])
         resp = f(wvl)
         resp[resp<1e-8] = 1e-8
-        factors_dir[i, :] = cos_resp['mu'][index] / resp
+        factors_dir[i, :] = ang_resp['mu'][index] / resp
 
     if diff_ratio is None:
         corr_factors['zen'] = factors_dir
     else:
         factors_dif  = np.zeros((dc.size, wvl.size), dtype=np.float64)
         for i in range(wvl.size):
-            factors_dif[:, i] = 0.5 / cos_resp['cos_resp_int'][i]
+            factors_dif[:, i] = 0.5 / ang_resp['ang_resp_int'][i]
         corr_factors['zen'] = factors_dif*diff_ratio + factors_dir*(1.0-diff_ratio)
     #\----------------------------------------------------------------------------/#
 
     # nadir
     #/----------------------------------------------------------------------------\#
-    # use `cos_resp_int` for diffuse correction
-    cos_resp     = ssfr.util.load_h5(fnames['nad'])
-    wvl          = cos_resp['wvl']
+    # use `ang_resp_int` for diffuse correction
+    ang_resp     = ssfr.util.load_h5(fnames['nad'])
+    wvl          = ang_resp['wvl']
     factors_dif  = np.zeros((dc.size, wvl.size), dtype=np.float64)
     for i in range(wvl.size):
-        factors_dif[:, i] = 0.5 / cos_resp['cos_resp_int'][i]
+        factors_dif[:, i] = 0.5 / ang_resp['ang_resp_int'][i]
     corr_factors['nad'] = factors_dif
     #\----------------------------------------------------------------------------/#
 

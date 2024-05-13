@@ -1,2 +1,2 @@
 from .dark_corr import *
-from .cos_corr import *
+from .att_corr import *
