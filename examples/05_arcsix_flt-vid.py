@@ -1111,7 +1111,7 @@ def main_pre(
 
     # create data directory (for storing data) if the directory does not exist
     #/--------------------------------------------------------------\#
-    date_s = date.strftime('%Y-%m-%d')
+    date_s = date.strftime('%Y%m%d_flt-vid')
 
     fdir = os.path.abspath('%s/%s' % (_fdir_main_, date_s))
     if not os.path.exists(fdir):
@@ -1414,9 +1414,6 @@ def figure_arcsix_sat_img_hc(
 
 if __name__ == '__main__':
 
-    fname = 'data/test/ref_geo-data.h5'
-    figure_arcsix_sat_img_hc(fname)
-    sys.exit()
 
     dates = [
             datetime.datetime(2024, 5, 17), # placeholder for ARCSIX test flight
@@ -1426,7 +1423,7 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        # main_pre(date)
+        main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
