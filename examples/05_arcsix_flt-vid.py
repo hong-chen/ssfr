@@ -311,10 +311,10 @@ def download_geo_sat_img(
         dtime_e = datetime.datetime(date_s.year, date_s.month, date_s.day, 23, 59, date_s.second)
 
     while dtime_s <= dtime_e:
-        fname_img = er3t.dev.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=False)
+        fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=False)
         if not os.path.exists(fname_img):
             print(fname_img)
-            fname_img = er3t.dev.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=True)
+            fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=True)
         dtime_s += datetime.timedelta(minutes=10.0)
 
 def download_polar_sat_img(
@@ -327,9 +327,9 @@ def download_polar_sat_img(
 
     for imager in imagers:
         instrument, satellite = imager.split('|')
-        fname_img = er3t.dev.download_worldview_image(date, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=False)
+        fname_img = er3t.util.download_worldview_image(date, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=False)
         if not os.path.exists(fname_img):
-            fname_img = er3t.dev.download_worldview_image(date, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=True)
+            fname_img = er3t.util.download_worldview_image(date, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=True)
 
 def get_jday_sat_img(fnames):
 
@@ -1111,8 +1111,9 @@ def main_pre(
         date,
         wvl0=_wavelength_,
         run_rtm=False,
-        tmhr_step=1,
-        wvl_step=5,
+        time_step=5,
+        wvl_step_spns=10,
+        wvl_step_ssfr=5,
         ):
 
 
@@ -1130,8 +1131,8 @@ def main_pre(
     #/----------------------------------------------------------------------------\#
 
     # read in aircraft hsk data
-    #/----------------------------------------------------------------------------\#
-    fname_flt = '%s/%s-%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), date_s)
+    #/--------------------------------------------------------------\#
+    fname_flt = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
 
     f_flt = h5py.File(fname_flt, 'r')
     jday   = f_flt['jday'][...]
@@ -1144,29 +1145,59 @@ def main_pre(
              check_continuity(lon) & \
              check_continuity(lat)
 
-    jday = jday[logic0]
-    sza  = sza[logic0]
-    lon  = lon[logic0]
-    lat  = lat[logic0]
+    jday = jday[logic0][::time_step]
+    sza  = sza[logic0][::time_step]
+    lon  = lon[logic0][::time_step]
+    lat  = lat[logic0][::time_step]
 
-    tmhr   = f_flt['tmhr'][...][logic0]
-    alt    = f_flt['alt'][...][logic0]
+    tmhr   = f_flt['tmhr'][...][logic0][::time_step]
+    alt    = f_flt['alt'][...][logic0][::time_step]
 
     f_flt.close()
-    #\----------------------------------------------------------------------------/#
-    print(tmhr)
-    print(alt)
-    sys.exit()
 
+    print(jday.shape)
+    print(sza.shape)
+    print(lon.shape)
+    print(lat.shape)
+    print(tmhr.shape)
+    print(alt.shape)
+    #\--------------------------------------------------------------/#
 
 
     # read in spns data
-    #/----------------------------------------------------------------------------\#
-    #\----------------------------------------------------------------------------/#
-    tot_flux = f_flt['tot/flux'][...][logic0, :]
-    tot_wvl  = f_flt['tot/wvl'][...]
-    dif_flux = f_flt['dif/flux'][...][logic0, :]
-    dif_wvl  = f_flt['dif/wvl'][...]
+    #/--------------------------------------------------------------\#
+    fname_spns = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
+    f_spns = h5py.File(fname_spns, 'r')
+    spns_tot_flux = f_spns['tot/flux'][...][logic0, :][::time_step, ::wvl_step_spns]
+    spns_tot_wvl  = f_spns['tot/wvl'][...][::wvl_step_spns]
+    spns_dif_flux = f_spns['dif/flux'][...][logic0, :][::time_step, ::wvl_step_spns]
+    spns_dif_wvl  = f_spns['dif/wvl'][...][::wvl_step_spns]
+    f_spns.close()
+
+    print(spns_tot_flux.shape)
+    print(spns_tot_wvl.shape)
+    print(spns_dif_flux.shape)
+    print(spns_dif_wvl.shape)
+    #\--------------------------------------------------------------/#
+
+
+    # read in ssfr data
+    #/--------------------------------------------------------------\#
+    fname_ssfr = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _ssfr_.upper(), _platform_.upper(), date_s)
+    which_dset = 'dset1'
+    f_ssfr = h5py.File(fname_ssfr, 'r')
+    ssfr_zen_flux = f_ssfr['%s/flux_zen' % which_dset][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    ssfr_zen_wvl  = f_ssfr['%s/wvl_zen'  % which_dset][...][::wvl_step_ssfr]
+    ssfr_nad_flux = f_ssfr['%s/flux_nad' % which_dset][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    ssfr_nad_wvl  = f_ssfr['%s/wvl_nad'  % which_dset][...][::wvl_step_ssfr]
+    f_ssfr.close()
+
+    print(ssfr_zen_flux.shape)
+    print(ssfr_zen_wvl.shape)
+    print(ssfr_nad_flux.shape)
+    print(ssfr_nad_wvl.shape)
+    #\--------------------------------------------------------------/#
+
     #\----------------------------------------------------------------------------/#
 
 
@@ -1178,12 +1209,12 @@ def main_pre(
     dtime_e = er3t.util.jday_to_dtime(jday[-1])
 
     if True:
-        download_geo_sat_img(
-            dtime_s,
-            dtime_e=dtime_e,
-            extent=extent,
-            fdir_out=_fdir_sat_img_,
-            )
+        # download_geo_sat_img(
+        #     dtime_s,
+        #     dtime_e=dtime_e,
+        #     extent=extent,
+        #     fdir_out=_fdir_sat_img_,
+        #     )
 
         download_polar_sat_img(
             dtime_s,
@@ -1205,6 +1236,8 @@ def main_pre(
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
         fnames_sat.append(fname0)
     #\----------------------------------------------------------------------------/#
+
+    sys.exit()
 
 
     # pre-process the aircraft and satellite data
@@ -1437,7 +1470,8 @@ if __name__ == '__main__':
 
 
     dates = [
-            datetime.datetime(2024, 5, 17), # placeholder for ARCSIX test flight
+            # datetime.datetime(2024, 5, 17), # placeholder for ARCSIX test flight
+            datetime.datetime(2018, 9, 30), # for test only
         ]
 
     for date in dates[::-1]:

@@ -1217,7 +1217,10 @@ def cdata_arcsix_ssfr_v2(
             # apply attitude correction
             #/----------------------------------------------------------------------------\#
             g.create_dataset('flux_zen', data=data_ssfr_v1['%s/flux_zen' % dset_s]*factors['zen'], compression='gzip', compression_opts=9, chunks=True)
+            g.create_dataset('wvl_zen' , data=data_ssfr_v1['%s/wvl_zen' % dset_s]                , compression='gzip', compression_opts=9, chunks=True)
+
             g.create_dataset('flux_nad', data=data_ssfr_v1['%s/flux_nad' % dset_s]*factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+            g.create_dataset('wvl_nad' , data=data_ssfr_v1['%s/wvl_nad' % dset_s]                , compression='gzip', compression_opts=9, chunks=True)
             #\----------------------------------------------------------------------------/#
 
         f.close()
@@ -1325,7 +1328,7 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     fname_ssfr_v2 = cdata_arcsix_ssfr_v2(date, fname_ssfr_v1, _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=True)
 
     pass
 #\----------------------------------------------------------------------------/#
@@ -1557,7 +1560,7 @@ def generate_quicklook_video(date):
 
 # main program
 #/----------------------------------------------------------------------------\#
-def main_process_data(date, run=True):
+def main_process_data(date, run=False):
 
     date_s = date.strftime('%Y%m%d')
 
