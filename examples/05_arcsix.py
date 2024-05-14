@@ -1053,7 +1053,7 @@ def cdata_arcsix_ssfr_v2(
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         run=True,
-        run_aux=False,
+        run_aux=True,
         ):
 
     """
@@ -1572,28 +1572,23 @@ def main_process_data(date, run=True):
     #    - heading angle
     #    - motor pitch angle
     #    - motor roll angle
-    process_alp_data(date, run=False)
+    process_alp_data(date, run=run)
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=False)
+    process_spns_data(date, run=run)
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-a', run=run)
     sys.exit()
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
-
-    # 5. SSFR-B - radiance (350nm - 2200nm)
-    #    - spectral downwelling global
-    #    - spectral upwelling global
-    generate_quicklook_video(date)
+    # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
 #\----------------------------------------------------------------------------/#
 
 
