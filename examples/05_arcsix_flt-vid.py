@@ -130,9 +130,14 @@ def partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0):
             flt_trk_segment = {}
 
             for key in flt_trk.keys():
-                flt_trk_segment[key]     = flt_trk[key][logic]
-                if key in ['jday', 'tmhr', 'lon', 'lat', 'alt', 'sza']:
-                    flt_trk_segment[key+'0'] = np.nanmean(flt_trk_segment[key])
+
+                if flt_trk['jday'].size in flt_trk[key].shape:
+                    flt_trk_segment[key] = flt_trk[key][logic, ...]
+                    if key in ['jday', 'tmhr', 'lon', 'lat', 'alt', 'sza']:
+                        flt_trk_segment[key+'0'] = np.nanmean(flt_trk_segment[key])
+                else:
+                    flt_trk_segment[key] = flt_trk[key]
+
 
             flt_trk_segment['extent'] = np.array([np.nanmin(flt_trk_segment['lon'])-margin_x, \
                                                   np.nanmax(flt_trk_segment['lon'])+margin_x, \
@@ -313,7 +318,6 @@ def download_geo_sat_img(
     while dtime_s <= dtime_e:
         fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=False)
         if not os.path.exists(fname_img):
-            print(fname_img)
             fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=True)
         dtime_s += datetime.timedelta(minutes=10.0)
 
@@ -1154,14 +1158,13 @@ def main_pre(
     alt    = f_flt['alt'][...][logic0][::time_step]
 
     f_flt.close()
-
-    print(jday.shape)
-    print(sza.shape)
-    print(lon.shape)
-    print(lat.shape)
-    print(tmhr.shape)
-    print(alt.shape)
     #\--------------------------------------------------------------/#
+    # print(jday.shape)
+    # print(sza.shape)
+    # print(lon.shape)
+    # print(lat.shape)
+    # print(tmhr.shape)
+    # print(alt.shape)
 
 
     # read in spns data
@@ -1173,12 +1176,11 @@ def main_pre(
     spns_dif_flux = f_spns['dif/flux'][...][logic0, :][::time_step, ::wvl_step_spns]
     spns_dif_wvl  = f_spns['dif/wvl'][...][::wvl_step_spns]
     f_spns.close()
-
-    print(spns_tot_flux.shape)
-    print(spns_tot_wvl.shape)
-    print(spns_dif_flux.shape)
-    print(spns_dif_wvl.shape)
     #\--------------------------------------------------------------/#
+    # print(spns_tot_flux.shape)
+    # print(spns_tot_wvl.shape)
+    # print(spns_dif_flux.shape)
+    # print(spns_dif_wvl.shape)
 
 
     # read in ssfr data
@@ -1191,24 +1193,23 @@ def main_pre(
     ssfr_nad_flux = f_ssfr['%s/flux_nad' % which_dset][...][logic0, :][::time_step, ::wvl_step_ssfr]
     ssfr_nad_wvl  = f_ssfr['%s/wvl_nad'  % which_dset][...][::wvl_step_ssfr]
     f_ssfr.close()
-
-    print(ssfr_zen_flux.shape)
-    print(ssfr_zen_wvl.shape)
-    print(ssfr_nad_flux.shape)
-    print(ssfr_nad_wvl.shape)
     #\--------------------------------------------------------------/#
+    # print(ssfr_zen_flux.shape)
+    # print(ssfr_zen_wvl.shape)
+    # print(ssfr_nad_flux.shape)
+    # print(ssfr_nad_wvl.shape)
 
     #\----------------------------------------------------------------------------/#
 
 
-    # download satellite imagery
+    # process satellite imagery
     #/----------------------------------------------------------------------------\#
     extent = get_extent(lon, lat, margin=0.2)
 
     dtime_s = er3t.util.jday_to_dtime(jday[0])
     dtime_e = er3t.util.jday_to_dtime(jday[-1])
 
-    if True:
+    if False:
         # download_geo_sat_img(
         #     dtime_s,
         #     dtime_e=dtime_e,
@@ -1223,7 +1224,8 @@ def main_pre(
             )
 
     # get the avaiable satellite data and calculate the time in hour for each file
-    fnames_sat_ = sorted(glob.glob('%s/*%sT*Z*.png' % (_fdir_sat_img_, date_s)))
+    date_sat_s  = date.strftime('%Y-%m-%d')
+    fnames_sat_ = sorted(glob.glob('%s/*%sT*Z*.png' % (_fdir_sat_img_, date_sat_s)))
     jday_sat_ = get_jday_sat_img(fnames_sat_)
 
     jday_sat = np.sort(np.unique(jday_sat_))
@@ -1236,8 +1238,8 @@ def main_pre(
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
         fnames_sat.append(fname0)
     #\----------------------------------------------------------------------------/#
-
-    sys.exit()
+    # print(jday_sat)
+    # print(fnames_sat)
 
 
     # pre-process the aircraft and satellite data
@@ -1261,19 +1263,29 @@ def main_pre(
     flt_trk['tmhr'] = tmhr[logic]
     flt_trk['alt']  = alt[logic]/1000.0
 
-    flt_trk['f-down-total_spns']   = tot_flux[logic, np.argmin(np.abs(tot_wvl-wvl0))]
-    flt_trk['f-down-diffuse_spns'] = dif_flux[logic, np.argmin(np.abs(dif_wvl-wvl0))]
+    # flt_trk['f-down-total_spns0']   = spns_tot_flux[logic, np.argmin(np.abs(spns_tot_wvl-wvl0))]
+    # flt_trk['f-down-diffuse_spns0'] = spns_dif_flux[logic, np.argmin(np.abs(spns_dif_wvl-wvl0))]
+    # flt_trk['f-down-direct_spns0']  = flt_trk['f-down-total_spns0'] - flt_trk['f-down-diffuse_spns0']
+
+    flt_trk['f-down-total_spns']   = spns_tot_flux[logic, :]
+    flt_trk['f-down-diffuse_spns'] = spns_dif_flux[logic, :]
     flt_trk['f-down-direct_spns']  = flt_trk['f-down-total_spns'] - flt_trk['f-down-diffuse_spns']
+    flt_trk['wvl_spns'] = spns_tot_wvl
+
+    flt_trk['f-down_ssfr']  = ssfr_zen_flux[logic, :]
+    flt_trk['f-up_ssfr']    = ssfr_nad_flux[logic, :]
+    flt_trk['wvl_ssfr_zen'] = ssfr_zen_wvl
+    flt_trk['wvl_ssfr_nad'] = ssfr_nad_wvl
 
     # partition the flight track into multiple mini flight track segments
     flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)
     #\----------------------------------------------------------------------------/#
 
-
-    # process satellite imagery
+    # process imagery
     #/----------------------------------------------------------------------------\#
 
     # create python dictionary to store corresponding satellite imagery data info
+    #/--------------------------------------------------------------\#
     sat_imgs = []
     for i in range(len(flt_trks)):
         sat_img = {}
@@ -1286,49 +1298,11 @@ def main_pre(
         sat_img['tmhr'] = 24.0*(jday_sat[index0]-int(jday_sat[index0]))
 
         sat_imgs.append(sat_img)
-    #\----------------------------------------------------------------------------/#
-
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if False:
-        plt.close('all')
-        fig = plt.figure(figsize=(8, 6))
-        # fig.suptitle('Figure')
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        for sat_img in sat_imgs:
-            ax1.axvline(sat_img['tmhr'], lw=1.5, ls='--', color='k')
-
-        for flt_trk in flt_trks:
-            ax1.scatter(flt_trk['tmhr'], flt_trk['alt'])
-        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-        # ax1.scatter(x, y, s=6, c='k', lw=0.0)
-        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        #\--------------------------------------------------------------/#
-        # save figure
-        #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
-    #\----------------------------------------------------------------------------/#
-
+    #\--------------------------------------------------------------/#
 
     # generate flt-sat combined file
     #/----------------------------------------------------------------------------\#
-    fname='%s/flt_sim_%09.4fnm_%s.pk' % (_fdir_main_, wvl0, date_s)
+    fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
     sim0 = flt_sim(
             date=date,
             wavelength=wvl0,
@@ -1342,15 +1316,17 @@ def main_pre(
 
 def main_vid(date, wvl0=_wavelength_):
 
-    date_s = date.strftime('%Y-%m-%d')
+    date_s = date.strftime('%Y%m%d')
 
     fdir = 'tmp-graph'
     if os.path.exists(fdir):
         os.system('rm -rf %s' % fdir)
     os.makedirs(fdir)
 
-    fname='%s/flt_sim_%09.4fnm_%s.pk' % (_fdir_main_, wvl0, date_s)
+    fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
+
+    sys.exit()
 
     Ntrk        = len(flt_sim0.flt_trks)
     indices_trk = np.array([], dtype=np.int32)
@@ -1478,7 +1454,7 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        # main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
@@ -1491,12 +1467,12 @@ if __name__ == '__main__':
 
     # test
     #/----------------------------------------------------------------------------\#
-    # date = dates[-1]
-    # date_s = date.strftime('%Y-%m-%d')
-    # fname='%s/flt_sim_%09.4fnm_%s.pk' % (_fdir_main_, _wavelength_, date_s)
-    # flt_sim0 = flt_sim(fname=fname, overwrite=False)
-    # statements = (flt_sim0, 15, 0, 100)
-    # plot_video_frame(statements, test=True)
+    date = dates[-1]
+    date_s = date.strftime('%Y%m%d')
+    fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
+    flt_sim0 = flt_sim(fname=fname, overwrite=False)
+    statements = (flt_sim0, 15, 0, 100)
+    plot_video_frame(statements, test=True)
     #\----------------------------------------------------------------------------/#
 
     pass
