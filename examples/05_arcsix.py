@@ -459,7 +459,7 @@ def cdata_arcsix_hsk_v0(
     #         }
     #\----------------------------------------------------------------------------/#
 
-    fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _hsk_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
     if run:
 
         # solar geometries
@@ -501,7 +501,7 @@ def cdata_arcsix_alp_v0(
 
     # read ALP raw data
     #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
     if run:
         fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
         if _verbose_:
@@ -535,7 +535,7 @@ def cdata_arcsix_alp_v1(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
     if run:
 
         # calculate time offset
@@ -580,9 +580,12 @@ def process_alp_data(date, run=True):
     fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
 
     date_s = date.strftime('%Y%m%d')
-    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_      , fdir_out=fdir_out, run=run)
-    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data       , fdir_out=fdir_out, run=run)
-    fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0, fdir_out=fdir_out, run=run)
+    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+            fdir_out=fdir_out, run=run)
+    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data,
+            fdir_out=fdir_out, run=run)
+    fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0,
+            fdir_out=fdir_out, run=run)
 
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     _fnames_['%s_alp_v0' % date_s] = fname_alp_v0
@@ -607,7 +610,7 @@ def cdata_arcsix_spns_v0(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
 
     if run:
 
@@ -665,7 +668,7 @@ def cdata_arcsix_spns_v1(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
 
     if run:
         # read spn-s v0
@@ -774,7 +777,7 @@ def cdata_arcsix_spns_v2(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
 
     if run:
 
@@ -885,7 +888,7 @@ def cdata_arcsix_ssfr_v0(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_v0.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), _platform_.upper(), date_s)
 
     if run:
         fnames_ssfr = ssfr.util.get_all_files(fdir_data, pattern='*.SKS')
@@ -934,7 +937,7 @@ def cdata_arcsix_ssfr_v1(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_v1.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), _platform_.upper(), date_s)
 
     if run:
 
@@ -1073,7 +1076,7 @@ def cdata_arcsix_ssfr_v2(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_v2.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), _platform_.upper(), date_s)
 
     if run:
 
@@ -1318,9 +1321,9 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data,
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     fname_ssfr_v2 = cdata_arcsix_ssfr_v2(date, fname_ssfr_v1, _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
 

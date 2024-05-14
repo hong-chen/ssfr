@@ -50,14 +50,19 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import er3t
 
-_fdir_main_ = 'data/test/arcsix'
-_fdir_sat_img_ = '%s/sat-img' % _fdir_main_
-_wavelength_ = 745.0
+_mission_      = 'ARCSIX'
+_platform_     = 'p3b'
 
-_fdir_data_ = 'data/test/arcsix'
-_fdir_v0_  = 'data/test/processed'
-_fdir_v1_  = 'data/test/processed'
-_fdir_v2_  = 'data/test/processed'
+_hsk_          = 'hsk'
+_spns_         = 'spns-a'
+_ssfr_         = 'ssfr-a'
+_cam_          = 'cam'
+
+_fdir_main_    = 'data/test/arcsix/flt-vid'
+_fdir_sat_img_ = 'data/test/arcsix/sat-img'
+_wavelength_   = 745.0
+
+_fdir_data_ = 'data/test/processed'
 
 
 # global variables
@@ -1106,22 +1111,28 @@ def main_pre(
         date,
         wvl0=_wavelength_,
         run_rtm=False,
+        tmhr_step=1,
+        wvl_step=5,
         ):
 
 
     # create data directory (for storing data) if the directory does not exist
-    #/--------------------------------------------------------------\#
-    date_s = date.strftime('%Y%m%d_flt-vid')
+    #/----------------------------------------------------------------------------\#
+    date_s = date.strftime('%Y%m%d')
 
     fdir = os.path.abspath('%s/%s' % (_fdir_main_, date_s))
     if not os.path.exists(fdir):
         os.makedirs(fdir)
-    #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
 
 
-    # read flight data
+    # read data
     #/----------------------------------------------------------------------------\#
-    fname_flt = '%s/MAGPIE_SPN-S_%s_v2.h5' % (_fdir_v2_, date_s)
+
+    # read in aircraft hsk data
+    #/----------------------------------------------------------------------------\#
+    fname_flt = '%s/%s-%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), date_s)
+
     f_flt = h5py.File(fname_flt, 'r')
     jday   = f_flt['jday'][...]
     sza    = f_flt['sza'][...]
@@ -1141,11 +1152,21 @@ def main_pre(
     tmhr   = f_flt['tmhr'][...][logic0]
     alt    = f_flt['alt'][...][logic0]
 
+    f_flt.close()
+    #\----------------------------------------------------------------------------/#
+    print(tmhr)
+    print(alt)
+    sys.exit()
+
+
+
+    # read in spns data
+    #/----------------------------------------------------------------------------\#
+    #\----------------------------------------------------------------------------/#
     tot_flux = f_flt['tot/flux'][...][logic0, :]
     tot_wvl  = f_flt['tot/wvl'][...]
     dif_flux = f_flt['dif/flux'][...][logic0, :]
     dif_wvl  = f_flt['dif/wvl'][...]
-    f_flt.close()
     #\----------------------------------------------------------------------------/#
 
 
