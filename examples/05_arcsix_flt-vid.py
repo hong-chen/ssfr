@@ -45,19 +45,19 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
 
-_fdir_main_ = 'data/magpie'
+_fdir_main_ = 'data/test/arcsix'
 _fdir_sat_img_ = '%s/sat-img' % _fdir_main_
 _wavelength_ = 745.0
 
-_fdir_data_ = '/argus/field'
-_fdir_v0_  = '/argus/field/magpie/2023/dhc6/processed'
-_fdir_v1_  = '/argus/field/magpie/2023/dhc6/processed'
-_fdir_v2_  = '/argus/field/magpie/2023/dhc6/processed'
+_fdir_data_ = 'data/test/arcsix'
+_fdir_v0_  = 'data/test/processed'
+_fdir_v1_  = 'data/test/processed'
+_fdir_v2_  = 'data/test/processed'
 
 
 # global variables
@@ -1323,7 +1323,100 @@ def main_vid(date, wvl0=_wavelength_):
     os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "tmp-graph/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p magpie_%s.mp4' % date_s)
 
 
+
+def figure_arcsix_sat_img_hc(
+        fname,
+        tag='A2024134.1445',
+        ):
+
+    r_wvl = 650
+    g_wvl = 555
+    b_wvl = 470
+
+    f = h5py.File(fname, 'r')
+    lon_1d = f['%s/lon_1d' % tag][...]
+    lat_1d = f['%s/lat_1d' % tag][...]
+
+    r = f['%s/ref_%d' % (tag, r_wvl)][...]
+    g = f['%s/ref_%d' % (tag, r_wvl)][...]
+    b = f['%s/ref_%d' % (tag, r_wvl)][...]
+
+    f.close()
+
+    # lon, lat = np.meshgrid(lon_1d, lat_1d)
+
+    # rgb = np.zeros((lat_1d.size, lon_1d.size, 3), dtype=r.dtype)
+    # rgb[..., 0] = r
+    # rgb[..., 1] = g
+    # rgb[..., 2] = b
+    # rgb = rgb[:-1, :-1, :]
+    # print(lon_1d.shape)
+    # print(lat_1d.shape)
+    # print(rgb.shape)
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # cs = ax1.imshow(rgb, zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+        # cs = ax1.pcolormesh(lon, lat, rgb, zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+        cs = ax1.pcolor(lon_1d, lat_1d, r[:-1, :-1], zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+        # ax1.axis('off')
+
+
+
+        # assume you have the following variables parsed for each imager
+        #/----------------------------------------------------------------------------\#
+        satellite_id = 'Aqua'      # or Terra or SNPP or VJ1
+        imager_id    = 'MODIS'     # or VIIRS
+        layer_name   = 'TrueColor' # or you name it for distinguishing your image product
+        #\----------------------------------------------------------------------------/#
+
+        # retrieve time
+        #/----------------------------------------------------------------------------\#
+        vartag = 'A2024134.1445' # this is a tag from your HDF5 data
+        dtime0 = datetime.datetime.strptime(vartag[1:], '%Y%j.%H%M')
+        #\----------------------------------------------------------------------------/#
+
+
+        # assume you have your plotting ax <ax1>
+        # add the following lines after your plotting commands
+        #/----------------------------------------------------------------------------\#
+        extent = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax1.get_ylim()[0], ax1.get_ylim()[1]]
+        ax1.axis('off')
+        #\----------------------------------------------------------------------------/#
+
+
+        # save figure
+        #/----------------------------------------------------------------------------\#
+        fname_png = '%s-%s_%s_%s_(%.2f,%.2f,%.2f,%.2f).png' % (imager_id, satellite_id, layer_name, dtime0.strftime('%Y-%m-%dT%H:%M:%SZ'), *extent)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig(fname_png, pad_inches=0.0, bbox_inches='tight', metadata=_metadata)
+        #\----------------------------------------------------------------------------/#
+
+
+        #\----------------------------------------------------------------------------/#
+
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+
 if __name__ == '__main__':
+
+    fname = 'data/test/ref_geo-data.h5'
+    figure_arcsix_sat_img_hc(fname)
+    sys.exit()
 
     dates = [
             datetime.datetime(2024, 5, 17), # placeholder for ARCSIX test flight
