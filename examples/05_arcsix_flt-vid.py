@@ -577,10 +577,10 @@ def plot_video_frame(statements, test=False):
             'vname':'f-down-diffuse_spns',
             'color':'springgreen',
             }
-    # vars_plot['SPNS Dir.↓']   = {
-    #         'vname':'f-down-direct_spns',
-    #         'color':'orange',
-    #         }
+    vars_plot['TOA↓']   = {
+            'vname':'f-down_toa',
+            'color':'black',
+            }
     vars_plot['Altitude']   = {
             'vname':'alt',
             'color':'orange',
@@ -769,6 +769,10 @@ def plot_video_frame(statements, test=False):
                     wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_nad']-flt_sim0.wvl))
                     ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
                     ax_wvl.axvline(flt_trk['wvl_ssfr_nad'][wvl_index], color=vars_plot[vname_plot]['color'], ls='-', lw=1.0, alpha=0.5, zorder=0)
+                elif var_plot['vname'].lower() in ['f-down_toa']:
+                    ax_wvl.scatter(flt_trk['wvl_ssfr_zen'], flt_trk[var_plot['vname']]*np.cos(np.deg2rad(sza_current)), c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
+                    wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl))
+                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], np.cos(np.deg2rad(flt_trk['sza'][:index_pnt+1]))*flt_trk[var_plot['vname']][wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
                 else:
                     ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1], c=vars_plot[vname_plot]['color'] , s=2, lw=0.0, zorder=4)
 
@@ -796,10 +800,12 @@ def plot_video_frame(statements, test=False):
                     elif var_plot['vname'].lower() in ['f-down_ssfr']:
                         wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl))
                         ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']][:, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
-
                     elif var_plot['vname'].lower() in ['f-up_ssfr']:
                         wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_nad']-flt_sim0.wvl))
                         ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']][:, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
+                    elif var_plot['vname'].lower() in ['f-down_toa']:
+                        wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl))
+                        ax_tms.scatter(flt_trk['tmhr'], np.cos(np.deg2rad(flt_trk['sza']))*flt_trk[var_plot['vname']][wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
                     else:
                         ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']], c=vars_plot[vname_plot]['color'] , s=2, lw=0.0, zorder=4)
 
@@ -1056,14 +1062,13 @@ def main_pre(
     ssfr_zen_wvl  = f_ssfr['%s/wvl_zen'  % which_dset][...][::wvl_step_ssfr]
     ssfr_nad_flux = f_ssfr['%s/flux_nad' % which_dset][...][logic0, :][::time_step, ::wvl_step_ssfr]
     ssfr_nad_wvl  = f_ssfr['%s/wvl_nad'  % which_dset][...][::wvl_step_ssfr]
+    ssfr_zen_toa  = f_ssfr['%s/toa0'     % which_dset][...][::wvl_step_ssfr]
     f_ssfr.close()
     #\--------------------------------------------------------------/#
     # print(ssfr_zen_flux.shape)
     # print(ssfr_zen_wvl.shape)
     # print(ssfr_nad_flux.shape)
     # print(ssfr_nad_wvl.shape)
-
-    #\----------------------------------------------------------------------------/#
 
 
     # process camera imagery
@@ -1141,10 +1146,6 @@ def main_pre(
     flt_trk['ang_pit_m'] = ang_pit_m[logic]
     flt_trk['ang_rol_m'] = ang_rol_m[logic]
 
-    # flt_trk['f-down-total_spns0']   = spns_tot_flux[logic, np.argmin(np.abs(spns_tot_wvl-wvl0))]
-    # flt_trk['f-down-diffuse_spns0'] = spns_dif_flux[logic, np.argmin(np.abs(spns_dif_wvl-wvl0))]
-    # flt_trk['f-down-direct_spns0']  = flt_trk['f-down-total_spns0'] - flt_trk['f-down-diffuse_spns0']
-
     flt_trk['f-down-total_spns']   = spns_tot_flux[logic, :]
     flt_trk['f-down-diffuse_spns'] = spns_dif_flux[logic, :]
     flt_trk['f-down-direct_spns']  = flt_trk['f-down-total_spns'] - flt_trk['f-down-diffuse_spns']
@@ -1154,6 +1155,7 @@ def main_pre(
     flt_trk['f-up_ssfr']    = ssfr_nad_flux[logic, :]
     flt_trk['wvl_ssfr_zen'] = ssfr_zen_wvl
     flt_trk['wvl_ssfr_nad'] = ssfr_nad_wvl
+    flt_trk['f-down_toa']   = ssfr_zen_toa
 
     # partition the flight track into multiple mini flight track segments
     flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)

@@ -1225,6 +1225,7 @@ def cdata_arcsix_ssfr_v2(
             #/----------------------------------------------------------------------------\#
             g.create_dataset('flux_zen', data=data_ssfr_v1['%s/flux_zen' % dset_s]*factors['zen'], compression='gzip', compression_opts=9, chunks=True)
             g.create_dataset('wvl_zen' , data=data_ssfr_v1['%s/wvl_zen' % dset_s]                , compression='gzip', compression_opts=9, chunks=True)
+            g.create_dataset('toa0'    , data=data_ssfr_v1['%s/toa0' % dset_s]                   , compression='gzip', compression_opts=9, chunks=True)
 
             g.create_dataset('flux_nad', data=data_ssfr_v1['%s/flux_nad' % dset_s]*factors['nad'], compression='gzip', compression_opts=9, chunks=True)
             g.create_dataset('wvl_nad' , data=data_ssfr_v1['%s/wvl_nad' % dset_s]                , compression='gzip', compression_opts=9, chunks=True)
@@ -1587,12 +1588,12 @@ def main_process_data(date, run=False):
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=True)
+    process_spns_data(date, run=run)
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-a', run=run)
+    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
     sys.exit()
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
