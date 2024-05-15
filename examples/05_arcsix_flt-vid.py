@@ -770,9 +770,9 @@ def plot_video_frame(statements, test=False):
                     ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
                     ax_wvl.axvline(flt_trk['wvl_ssfr_nad'][wvl_index], color=vars_plot[vname_plot]['color'], ls='-', lw=1.0, alpha=0.5, zorder=0)
                 elif var_plot['vname'].lower() in ['f-down_toa']:
-                    ax_wvl.scatter(flt_trk['wvl_ssfr_zen'], flt_trk[var_plot['vname']]*np.cos(np.deg2rad(sza_current)), c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
+                    ax_wvl.scatter(flt_trk['wvl_ssfr_zen'], flt_trk[var_plot['vname']]*np.cos(np.deg2rad(sza_current)), c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=1, alpha=0.6)
                     wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl))
-                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], np.cos(np.deg2rad(flt_trk['sza'][:index_pnt+1]))*flt_trk[var_plot['vname']][wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
+                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], np.cos(np.deg2rad(flt_trk['sza'][:index_pnt+1]))*flt_trk[var_plot['vname']][wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=1, alpha=0.6)
                 else:
                     ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1], c=vars_plot[vname_plot]['color'] , s=2, lw=0.0, zorder=4)
 
@@ -805,7 +805,7 @@ def plot_video_frame(statements, test=False):
                         ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']][:, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
                     elif var_plot['vname'].lower() in ['f-down_toa']:
                         wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl))
-                        ax_tms.scatter(flt_trk['tmhr'], np.cos(np.deg2rad(flt_trk['sza']))*flt_trk[var_plot['vname']][wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
+                        ax_tms.scatter(flt_trk['tmhr'], np.cos(np.deg2rad(flt_trk['sza']))*flt_trk[var_plot['vname']][wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=1, alpha=0.6)
                     else:
                         ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']], c=vars_plot[vname_plot]['color'] , s=2, lw=0.0, zorder=4)
 
@@ -1062,7 +1062,7 @@ def main_pre(
     ssfr_zen_wvl  = f_ssfr['%s/wvl_zen'  % which_dset][...][::wvl_step_ssfr]
     ssfr_nad_flux = f_ssfr['%s/flux_nad' % which_dset][...][logic0, :][::time_step, ::wvl_step_ssfr]
     ssfr_nad_wvl  = f_ssfr['%s/wvl_nad'  % which_dset][...][::wvl_step_ssfr]
-    ssfr_zen_toa  = f_ssfr['%s/toa0'     % which_dset][...][::wvl_step_ssfr]*er3t.util.cal_sol_factor(date)
+    ssfr_zen_toa  = f_ssfr['%s/toa0'     % which_dset][...][::wvl_step_ssfr]*er3t.util.cal_sol_fac(date)
     f_ssfr.close()
     #\--------------------------------------------------------------/#
     # print(ssfr_zen_flux.shape)
