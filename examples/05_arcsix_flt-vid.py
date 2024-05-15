@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -687,9 +687,14 @@ def plot_video_frame(statements, test=False):
                 region = sat_img['extent_img']
 
             if ('cam' in vnames_sat):
+                ang_cam_offset = -152.0
                 fname_cam = sat_img['cam'][index_pnt]
                 img = mpl_img.imread(fname_cam)[200:, 550:-650, :]
-                img = ndimage.rotate(img, -152.0)[320:-320, 320:-320, :]
+                if ('ang_hed' in vnames_flt):
+                    ang_hed0   = flt_trk['ang_hed'][index_pnt]
+                else:
+                    ang_hed0 = 0.0
+                img = ndimage.rotate(img, -ang_hed0+ang_cam_offset)[320:-320, 320:-320]
                 ax_img.imshow(img, origin='upper', aspect='auto', zorder=0)
 
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
@@ -733,14 +738,13 @@ def plot_video_frame(statements, test=False):
 
                     ang_pit_offset = 4.444537204377897
                     ang_rol_offset = -0.5463839481366073
+
                     slope1  = np.tan(np.deg2rad(ang_rol0-ang_rol_m0+ang_rol_offset))
                     offset1 = -(ang_pit0-ang_pit_m0+ang_pit_offset)
                     y1 = slope1*x + offset1
 
                     ax_nav.plot(x[25:-25], y1[25:-25], lw=2.0, color='green', zorder=2, alpha=0.5)
 
-            if ('ang_hed' in vnames_flt):
-                ang_hed0   = flt_trk['ang_hed'][index_pnt]
 
             for vname_plot in vars_plot.keys():
                 var_plot = vars_plot[vname_plot]
@@ -1327,12 +1331,12 @@ if __name__ == '__main__':
 
         # generate video frames
         #/----------------------------------------------------------------------------\#
-        # main_vid(date, wvl0=_wavelength_)
+        main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    # sys.exit()
+    sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
@@ -1340,7 +1344,8 @@ if __name__ == '__main__':
     date_s = date.strftime('%Y%m%d')
     fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
-    statements = (flt_sim0, 0, 233, 1730)
+    # statements = (flt_sim0, 0, 243, 1730)
+    statements = (flt_sim0, 1, 443, 1730)
     plot_video_frame(statements, test=True)
     #\----------------------------------------------------------------------------/#
 
