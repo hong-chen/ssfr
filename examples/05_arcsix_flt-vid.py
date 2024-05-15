@@ -657,6 +657,8 @@ def plot_video_frame(statements, test=False):
     ax_map0 = fig.add_subplot(gs[:5, 9:13])
     ax_img  = fig.add_subplot(gs[:5, 13:])
 
+    ax_nav  = fig.add_subplot(gs[:2, 7:9])
+
     ax_wvl  = fig.add_subplot(gs[5:8, 9:])
 
     ax_tms = fig.add_subplot(gs[9:, :])
@@ -812,6 +814,14 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
+    # navigation plot settings
+    #/----------------------------------------------------------------------------\#
+    ax_nav.set_xlim((-1.0, 1.0))
+    ax_nav.set_ylim((-1.0, 1.0))
+    ax_nav.axis('off')
+    #\----------------------------------------------------------------------------/#
+
+
     # specta plot setting
     #/----------------------------------------------------------------------------\#
     ax_wvl.set_xlim((200, 2200))
@@ -857,6 +867,7 @@ def plot_video_frame(statements, test=False):
 
     # main time series plot settings
     #/----------------------------------------------------------------------------\#
+    ax_tms.grid()
     ax_tms.set_xlim((tmhr_past-0.0000001, tmhr_current+0.0000001))
     ax_tms.xaxis.set_major_locator(FixedLocator([tmhr_past, tmhr_current-0.5*tmhr_length, tmhr_current]))
     ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
