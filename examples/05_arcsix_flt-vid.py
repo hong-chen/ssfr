@@ -55,6 +55,7 @@ _mission_      = 'ARCSIX'
 _platform_     = 'p3b'
 
 _hsk_          = 'hsk'
+_alp_          = 'alp'
 _spns_         = 'spns-a'
 _ssfr_         = 'ssfr-a'
 _cam_          = 'camera'
@@ -712,6 +713,9 @@ def plot_video_frame(statements, test=False):
             ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
             ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
 
+            ax_nav.axvline(0.0, lw=0.5, color='gray', zorder=1)
+            ax_nav.axhline(0.0, lw=0.5, color='gray', zorder=1)
+
             for vname_plot in vars_plot.keys():
                 var_plot = vars_plot[vname_plot]
                 if vname_plot.lower() == 'altitude':
@@ -968,6 +972,19 @@ def main_pre(
     # print(alt.shape)
 
 
+    # read in nav data
+    #/--------------------------------------------------------------\#
+    fname_nav = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
+    f_nav = h5py.File(fname_nav, 'r')
+    ang_hed = f_nav['ang_hed'][...][logic0][::time_step]
+    ang_pit = f_nav['ang_pit_s'][...][logic0][::time_step]
+    ang_rol = f_nav['ang_rol_s'][...][logic0][::time_step]
+    ang_pit_m = f_nav['ang_pit_m'][...][logic0][::time_step]
+    ang_rol_m = f_nav['ang_rol_m'][...][logic0][::time_step]
+    f_nav.close()
+    #\--------------------------------------------------------------/#
+
+
     # read in spns data
     #/--------------------------------------------------------------\#
     fname_spns = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
@@ -1072,6 +1089,11 @@ def main_pre(
     flt_trk['sza']  = sza[logic]
     flt_trk['tmhr'] = tmhr[logic]
     flt_trk['alt']  = alt[logic]/1000.0
+    flt_trk['ang_hed'] = ang_hed[logic]
+    flt_trk['ang_pit'] = ang_pit[logic]
+    flt_trk['ang_rol'] = ang_rol[logic]
+    flt_trk['ang_pit_m'] = ang_pit_m[logic]
+    flt_trk['ang_rol_m'] = ang_rol_m[logic]
 
     # flt_trk['f-down-total_spns0']   = spns_tot_flux[logic, np.argmin(np.abs(spns_tot_wvl-wvl0))]
     # flt_trk['f-down-diffuse_spns0'] = spns_dif_flux[logic, np.argmin(np.abs(spns_dif_wvl-wvl0))]
@@ -1274,7 +1296,7 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        # main_pre(date)
+        main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
@@ -1284,6 +1306,7 @@ if __name__ == '__main__':
 
         pass
 
+    sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
