@@ -966,7 +966,7 @@ def main_pre(
         date,
         wvl0=_wavelength_,
         run_rtm=False,
-        time_step=5,
+        time_step=1,
         wvl_step_spns=10,
         wvl_step_ssfr=5,
         ):
@@ -1222,17 +1222,12 @@ def main_vid(
     Npnt        = indices_trk.size
     indices     = np.arange(Npnt)
 
-    interval = 10
+    interval = 5
     indices_trk = indices_trk[::interval]
     indices_pnt = indices_pnt[::interval]
     indices     = indices[::interval]
 
     statements = zip([flt_sim0]*indices_trk.size, indices_trk, indices_pnt, indices)
-    # for statement in statements:
-    #     print(statement)
-    # print(statements)
-    # sys.exit()
-
 
     with mp.Pool(processes=15) as pool:
         r = list(tqdm(pool.imap(plot_video_frame, statements), total=indices_trk.size))
@@ -1342,7 +1337,7 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        # main_pre(date)
+        main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
