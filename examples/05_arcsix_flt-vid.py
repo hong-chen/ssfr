@@ -619,7 +619,7 @@ def plot_video_frame_old(statements, test=False):
                 # ax_map.text(flt_trk['lon'][index_pnt], flt_trk['lat'][index_pnt]-0.28, 'COT %.2f' % cot0, color=colors['COT'], ha='center', va='center', fontsize=12, zorder=4)
                 # ax_cot.fill_between(flt_trk['tmhr'][:index_pnt+1], flt_trk['cot'][:index_pnt+1], facecolor=colors['COT'], alpha=0.25, lw=0.0, zorder=1)
             else:
-                ax_map.scatter(flt_trk['lon'][index_pnt], flt_trk['lat'][index_pnt], c=flt_trk['alt'][index_pnt], s=40, lw=1.5, facecolor='none', zorder=3, alpha=0.7, vmin=0.0, vmax=4.0, cmap='jet')
+                ax_map.scatter(flt_trk['lon'][index_pnt], flt_trk['lat'][index_pnt], c=flt_trk['alt'][index_pnt], s=40, lw=1.5, facecolor='none', zorder=3, alpha=0.7, vmin=0.0, vmax=6.0, cmap='jet')
 
             # if 'f-up_mca-ipa' in vnames_flt:
             #     ax_fup.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-up_mca-ipa'][:index_pnt+1], c=colors['RTM IPA'], s=4, lw=0.0, zorder=1)
@@ -635,8 +635,8 @@ def plot_video_frame_old(statements, test=False):
 
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
             logic_trans = np.logical_not(logic_solid)
-            ax_map.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
-            ax_map.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
+            ax_map.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+            ax_map.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
 
             # ssfr
             #/----------------------------------------------------------------------------\#
@@ -732,8 +732,8 @@ def plot_video_frame_old(statements, test=False):
 
             logic_solid = logic.copy()
             logic_trans = np.logical_not(logic_solid)
-            ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
-            ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
+            ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+            ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
 
     # ax_fup.axvline(flt_trk['tmhr'][index_pnt], lw=1.0, color='gray')
     # ax_fdn.axvline(flt_trk['tmhr'][index_pnt], lw=1.0, color='gray')
@@ -919,7 +919,7 @@ def plot_video_frame(statements, test=False):
     # flight direction
     #/----------------------------------------------------------------------------\#
     alt_cmap = mpl.cm.get_cmap('jet')
-    alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=4.0)
+    alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=6.0)
 
     dlon = flt_sim0.sat_imgs[index_trk]['extent_img'][1] - flt_sim0.sat_imgs[index_trk]['extent_img'][0]
     Nscale = int(dlon/1.3155229999999989 * 15)
@@ -994,27 +994,37 @@ def plot_video_frame(statements, test=False):
                 ax_map.imshow(img, extent=sat_img['extent_img'], origin='upper', aspect='auto', zorder=0)
                 rect = mpatches.Rectangle((lon_current-0.25, lat_current-0.25), 0.5, 0.5, lw=1.0, ec='r', fc='none')
                 ax_map.add_patch(rect)
-                ax_map0.imshow(img, extent=sat_img['extent_img'], origin='upper', aspect='equal', zorder=0)
+                ax_map0.imshow(img, extent=sat_img['extent_img'], origin='upper', aspect='auto', zorder=0)
                 region = sat_img['extent_img']
+
+            if True:
+                fname_cam = 'data/test/processed/ARCSIX-CAMERA_P3B_20180930_v1/2018_09_30__12_08_45_8_1.jpg'
+                dtime_cam = datetime.datetime.strptime(os.path.basename(fname_cam)[:20], '%Y_%m_%d__%H_%M_%S')
+                print(dtime_cam)
+                img = mpl_img.imread(fname_cam)
+                ax_img.imshow(img[200:, 550:-650, :], origin='upper', aspect='auto', zorder=0)
+
 
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
             logic_trans = np.logical_not(logic_solid)
-            ax_map.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
-            ax_map.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
-            ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
-            ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
+            ax_map.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+            ax_map.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
+            ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+            ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
 
             if not plot_arrow:
-                ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=40, lw=1.0, zorder=3, alpha=0.6)
-                ax_map.scatter(lon_current, lat_current, c=alt_current, s=40, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=4.0, cmap='jet')
-                ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=40, lw=1.0, zorder=3, alpha=0.6)
-                ax_map0.scatter(lon_current, lat_current, c=alt_current, s=40, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=4.0, cmap='jet')
+                ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
+                ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
+                # ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
+                # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
             else:
                 color0 = alt_cmap(alt_norm(alt_current))
                 arrow_prop['facecolor'] = color0
                 arrow_prop['relpos'] = (lon_current, lat_current)
                 ax_map.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
-                ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
+                # ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
+            ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
+            ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
 
             for vname_plot in vars_plot.keys():
                 var_plot = vars_plot[vname_plot]
@@ -1039,10 +1049,10 @@ def plot_video_frame(statements, test=False):
 
             logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<tmhr_current)
             logic_trans = np.logical_not(logic_solid)
-            ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
-            ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
-            ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
-            ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
+            ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+            ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
+            ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+            ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
 
             if logic_solid.sum() > 0:
 
@@ -1103,7 +1113,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     ax_img.axis('off')
 
-    title_img = 'Camera at %s UTC' % (er3t.util.jday_to_dtime(flt_sim0.sat_imgs[index_trk]['jday']).strftime('%H:%M:%S'))
+    title_img = 'Camera at %s UTC' % (dtime_cam.strftime('%H:%M:%S'))
     ax_img.set_title(title_img)
     #\----------------------------------------------------------------------------/#
 
@@ -1556,7 +1566,7 @@ if __name__ == '__main__':
     date_s = date.strftime('%Y%m%d')
     fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
-    statements = (flt_sim0, 1, 433, 1730)
+    statements = (flt_sim0, 0, 233, 1730)
     plot_video_frame(statements, test=True)
     #\----------------------------------------------------------------------------/#
 
