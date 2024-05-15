@@ -49,7 +49,7 @@ _alp_         = 'alp'
 _spns_        = 'spns-a'
 _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
-# _cam_         = 'cam'
+_cam_         = 'nac'
 
 _fdir_hsk_   = 'data/test/arcsix/2024-Spring/p3/aux/hsk'
 _fdir_data_  = 'data/test/%s' % _mission_

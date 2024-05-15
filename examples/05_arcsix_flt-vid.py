@@ -58,7 +58,7 @@ _hsk_          = 'hsk'
 _alp_          = 'alp'
 _spns_         = 'spns-a'
 _ssfr_         = 'ssfr-a'
-_cam_          = 'camera'
+_cam_          = 'nac'
 
 _fdir_main_    = 'data/test/arcsix/flt-vid'
 _fdir_sat_img_ = 'data/test/arcsix/sat-img'
