@@ -653,15 +653,18 @@ def plot_video_frame_old(statements, test=False):
             if 'f-down-diffuse_spns' in vnames_flt:
                 # ax_fup.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-diffuse_spns'][:index_pnt+1]  , c=colors['SPN-S Diffuse'] , s=2, lw=0.0, zorder=4)
                 # ax_fdn.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-diffuse_spns'][:index_pnt+1]  , c=colors['SPN-S Diffuse'] , s=2, lw=0.0, zorder=4)
-                ax_all.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-diffuse_spns'][:index_pnt+1]  , c=colors['Diffuse↓'] , s=2, lw=0.0, zorder=4)
+                # ax_all.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-diffuse_spns'][:index_pnt+1]  , c=colors['Diffuse↓'] , s=2, lw=0.0, zorder=4)
+                pass
             if 'f-down-direct_spns' in vnames_flt:
                 # ax_fup.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-direct_spns'][:index_pnt+1]  , c=colors['SPN-S Direct'] , s=2, lw=0.0, zorder=4)
                 # ax_fdn.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-direct_spns'][:index_pnt+1]  , c=colors['SPN-S Direct'] , s=2, lw=0.0, zorder=4)
-                ax_all.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-direct_spns'][:index_pnt+1]  , c=colors['Direct↓'] , s=2, lw=0.0, zorder=4)
+                # ax_all.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-direct_spns'][:index_pnt+1]  , c=colors['Direct↓'] , s=2, lw=0.0, zorder=4)
+                pass
             if 'f-down-total_spns' in vnames_flt:
                 # ax_fup.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-total_spns'][:index_pnt+1]  , c=colors['SPN-S Total'] , s=2, lw=0.0, zorder=4)
                 # ax_fdn.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-total_spns'][:index_pnt+1]  , c=colors['SPN-S Total'] , s=2, lw=0.0, zorder=4)
-                ax_all.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-total_spns'][:index_pnt+1]  , c=colors['Total↓'] , s=2, lw=0.0, zorder=4)
+                # ax_all.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk['f-down-total_spns'][:index_pnt+1]  , c=colors['Total↓'] , s=2, lw=0.0, zorder=4)
+                pass
             #\----------------------------------------------------------------------------/#
 
             ax_alt.fill_between(flt_trk['tmhr'][:index_pnt+1], flt_trk['alt'][:index_pnt+1], facecolor=colors['Altitude'], alpha=0.35, lw=1.0, zorder=0)
@@ -711,15 +714,18 @@ def plot_video_frame_old(statements, test=False):
                 if 'f-down-diffuse_spns' in vnames_flt:
                     # ax_fup.scatter(flt_trk['tmhr'], flt_trk['f-down-diffuse_spns']  , c=colors['SPN-S Diffuse'] , s=2, lw=0.0, zorder=4)
                     # ax_fdn.scatter(flt_trk['tmhr'], flt_trk['f-down-diffuse_spns']  , c=colors['SPN-S Diffuse'] , s=2, lw=0.0, zorder=4)
-                    ax_all.scatter(flt_trk['tmhr'], flt_trk['f-down-diffuse_spns']  , c=colors['Diffuse↓'] , s=2, lw=0.0, zorder=4)
+                    # ax_all.scatter(flt_trk['tmhr'], flt_trk['f-down-diffuse_spns']  , c=colors['Diffuse↓'] , s=2, lw=0.0, zorder=4)
+                    pass
                 if 'f-down-direct_spns' in vnames_flt:
                     # ax_fup.scatter(flt_trk['tmhr'], flt_trk['f-down-direct_spns']  , c=colors['SPN-S Direct'] , s=2, lw=0.0, zorder=4)
                     # ax_fdn.scatter(flt_trk['tmhr'], flt_trk['f-down-direct_spns']  , c=colors['SPN-S Direct'] , s=2, lw=0.0, zorder=4)
-                    ax_all.scatter(flt_trk['tmhr'], flt_trk['f-down-direct_spns']  , c=colors['Direct↓'] , s=2, lw=0.0, zorder=4)
+                    # ax_all.scatter(flt_trk['tmhr'], flt_trk['f-down-direct_spns']  , c=colors['Direct↓'] , s=2, lw=0.0, zorder=4)
+                    pass
                 if 'f-down-total_spns' in vnames_flt:
                     # ax_fup.scatter(flt_trk['tmhr'], flt_trk['f-down-total_spns']  , c=colors['SPN-S Total'] , s=2, lw=0.0, zorder=4)
                     # ax_fdn.scatter(flt_trk['tmhr'], flt_trk['f-down-total_spns']  , c=colors['SPN-S Total'] , s=2, lw=0.0, zorder=4)
-                    ax_all.scatter(flt_trk['tmhr'], flt_trk['f-down-total_spns']  , c=colors['Total↓'] , s=2, lw=0.0, zorder=4)
+                    # ax_all.scatter(flt_trk['tmhr'], flt_trk['f-down-total_spns']  , c=colors['Total↓'] , s=2, lw=0.0, zorder=4)
+                    pass
                 #\----------------------------------------------------------------------------/#
 
                 ax_alt.fill_between(flt_trk['tmhr'], flt_trk['alt'], facecolor=colors['Altitude'], alpha=0.35, lw=1.0, zorder=0)
@@ -868,18 +874,26 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     vars_plot = OrderedDict()
 
-    vars_plot['Total↓']   = {
-            'vname':'f-down-total_spns',
-            'color':'black',
-            }
-    vars_plot['Diffuse↓']   = {
-            'vname':'f-down-diffuse_spns',
-            'color':'blue',
-            }
-    vars_plot['Direct↓']   = {
-            'vname':'f-down-direct_spns',
+    vars_plot['SSFR↑']   = {
+            'vname':'f-up_ssfr',
             'color':'red',
             }
+    vars_plot['SSFR↓']   = {
+            'vname':'f-down_ssfr',
+            'color':'blue',
+            }
+    vars_plot['SPNS Total↓']   = {
+            'vname':'f-down-total_spns',
+            'color':'green',
+            }
+    vars_plot['SPNS Diffuse↓']   = {
+            'vname':'f-down-diffuse_spns',
+            'color':'lightgreen',
+            }
+    # vars_plot['SPNS Dir.↓']   = {
+    #         'vname':'f-down-direct_spns',
+    #         'color':'orange',
+    #         }
     vars_plot['Altitude']   = {
             'vname':'alt',
             'color':'orange',
@@ -908,7 +922,7 @@ def plot_video_frame(statements, test=False):
     alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=4.0)
 
     dlon = flt_sim0.sat_imgs[index_trk]['extent_img'][1] - flt_sim0.sat_imgs[index_trk]['extent_img'][0]
-    Nscale = int(dlon/1.3155229999999989 * 100)
+    Nscale = int(dlon/1.3155229999999989 * 30)
 
     arrow_prop = dict(
             arrowstyle='fancy,head_width=0.6,head_length=0.8',
@@ -943,21 +957,26 @@ def plot_video_frame(statements, test=False):
 
     # figure setup
     #/----------------------------------------------------------------------------\#
-    fig = plt.figure(figsize=(16, 5))
+    fig = plt.figure(figsize=(16, 9))
 
-    gs = gridspec.GridSpec(2, 14)
+    gs = gridspec.GridSpec(10, 16)
 
     ax = fig.add_subplot(gs[:, :])
     ax.axis('off')
 
-    ax_map = fig.add_subplot(gs[:, :6])
+    ax_map = fig.add_subplot(gs[:7, :8], aspect='auto')
     divider = make_axes_locatable(ax_map)
     ax_sza = divider.append_axes('right', size='5%', pad=0.0)
 
-    ax_all = fig.add_subplot(gs[:, 7:])
-    ax_alt = ax_all.twinx()
+    ax_map0 = fig.add_subplot(gs[:4, 8:12])
+    ax_img  = fig.add_subplot(gs[:4, 12:])
 
-    fig.subplots_adjust(hspace=0.0, wspace=1.0)
+    ax_wvl  = fig.add_subplot(gs[4:7, 8:])
+
+    ax_tms = fig.add_subplot(gs[7:, :])
+    ax_alt = ax_tms.twinx()
+
+    fig.subplots_adjust(hspace=10.0, wspace=10.0)
     #\----------------------------------------------------------------------------/#
 
     for itrk in range(index_trk+1):
@@ -993,9 +1012,14 @@ def plot_video_frame(statements, test=False):
                 var_plot = vars_plot[vname_plot]
                 if vname_plot.lower() == 'altitude':
                     ax_alt.fill_between(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1], facecolor=vars_plot[vname_plot]['color'], alpha=0.25, lw=0.0, zorder=0)
-                else:
-                    if var_plot['vname'] in vnames_flt:
-                        ax_all.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1], c=vars_plot[vname_plot]['color'], s=2, lw=0.0, zorder=4)
+                elif var_plot['vname'].lower() in ['f-down-total_spns', 'f-down-diffuse_spns']:
+                    ax_wvl.scatter(flt_trk['wvl_spns'], flt_trk[var_plot['vname']][index_pnt, :], c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
+                elif var_plot['vname'].lower() in ['f-down_ssfr']:
+                    ax_wvl.scatter(flt_trk['wvl_ssfr_zen'], flt_trk[var_plot['vname']][index_pnt, :], c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
+                elif var_plot['vname'].lower() in ['f-up_ssfr']:
+                    ax_wvl.scatter(flt_trk['wvl_ssfr_nad'], flt_trk[var_plot['vname']][index_pnt, :], c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
+
+                    # ax_wvl.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1], c=vars_plot[vname_plot]['color'], s=2, lw=0.0, zorder=4)
 
         else:
 
@@ -1012,13 +1036,13 @@ def plot_video_frame(statements, test=False):
                         ax_alt.fill_between(flt_trk['tmhr'], flt_trk[var_plot['vname']], facecolor=vars_plot[vname_plot]['color'], alpha=0.25, lw=0.0, zorder=0)
                     else:
                         if var_plot['vname'] in vnames_flt:
-                            ax_all.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']], c=vars_plot[vname_plot]['color'] , s=2, lw=0.0, zorder=4)
+                            ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']], c=vars_plot[vname_plot]['color'] , s=2, lw=0.0, zorder=4)
 
 
     # figure settings
     #/----------------------------------------------------------------------------\#
-    title_fig = '%s UTC (SPN-S at %d nm)' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'), flt_sim0.wvl)
-    fig.suptitle(title_fig, y=1.02, fontsize=20)
+    title_fig = '%s UTC' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'))
+    fig.suptitle(title_fig, y=0.96, fontsize=20)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1026,8 +1050,8 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     ax_map.set_xlim(region[:2])
     ax_map.set_ylim(region[2:])
-    ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 0.5)))
-    ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 0.5)))
+    ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 2.0)))
+    ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 2.0)))
     ax_map.set_xlabel('Longitude [$^\circ$]')
     ax_map.set_ylabel('Latitude [$^\circ$]')
 
@@ -1037,6 +1061,47 @@ def plot_video_frame(statements, test=False):
         ax_map.set_title(title_map, color='red')
     else:
         ax_map.set_title(title_map)
+    #\----------------------------------------------------------------------------/#
+
+
+    # map0 plot settings
+    #/----------------------------------------------------------------------------\#
+    ax_map0.set_xlim(region[:2])
+    ax_map0.set_ylim(region[2:])
+    ax_map0.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 2.0)))
+    ax_map0.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 2.0)))
+    ax_map0.set_xlabel('Longitude [$^\circ$]')
+    ax_map0.set_ylabel('Latitude [$^\circ$]')
+
+    title_map0 = 'False Color'
+    time_diff = np.abs(flt_sim0.sat_imgs[index_trk]['tmhr']-tmhr_current)*3600.0
+    if time_diff > 301.0:
+        ax_map0.set_title(title_map0, color='red')
+    else:
+        ax_map0.set_title(title_map0)
+    #\----------------------------------------------------------------------------/#
+
+
+    # camera image plot settings
+    #/----------------------------------------------------------------------------\#
+    ax_img.axis('off')
+
+    title_img = 'Camera at %s UTC' % (er3t.util.jday_to_dtime(flt_sim0.sat_imgs[index_trk]['jday']).strftime('%H:%M:%S'))
+    ax_img.set_title(title_img)
+    #\----------------------------------------------------------------------------/#
+
+
+    # specta plot setting
+    #/----------------------------------------------------------------------------\#
+    ax_wvl.set_xlim((200, 2200))
+    ax_wvl.set_ylim((0.0, 2.0))
+    ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
+    ax_wvl.set_xlabel('Wavelength [nm]')
+    ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
+    ax_wvl.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
+
+    # title_img = 'Spec' % (er3t.util.jday_to_dtime(flt_sim0.sat_imgs[index_trk]['jday']).strftime('%H:%M:%S'))
+    # ax_wvl.set_title(title_img)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1054,7 +1119,8 @@ def plot_video_frame(statements, test=False):
 
     # altitude plot settings
     #/----------------------------------------------------------------------------\#
-    ax_alt.set_ylim((0.0, 6.0))
+    ax_alt.set_ylim((0.0, 8.0))
+    ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 2.0)))
     ax_alt.yaxis.tick_right()
     ax_alt.yaxis.set_label_position('right')
     ax_alt.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
@@ -1070,24 +1136,24 @@ def plot_video_frame(statements, test=False):
 
     # main time series plot settings
     #/----------------------------------------------------------------------------\#
-    ax_all.set_xlim((tmhr_past-0.0000001, tmhr_current+0.0000001))
-    ax_all.xaxis.set_major_locator(FixedLocator([tmhr_past, tmhr_current-0.5*tmhr_length, tmhr_current]))
-    ax_all.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
-    ax_all.set_xlabel('Time [hour]')
+    ax_tms.set_xlim((tmhr_past-0.0000001, tmhr_current+0.0000001))
+    ax_tms.xaxis.set_major_locator(FixedLocator([tmhr_past, tmhr_current-0.5*tmhr_length, tmhr_current]))
+    ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
+    ax_tms.set_xlabel('Time [hour]')
 
-    ax_all.set_ylim((0.0, 2.0))
-    ax_all.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
-    ax_all.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+    ax_tms.set_ylim((0.0, 2.0))
+    ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
+    ax_tms.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
 
     if alt_current < 1.0:
-        title_all = 'Longitude %9.4f$^\circ$, Latitude %8.4f$^\circ$, Altitude %6.1f  m' % (lon_current, lat_current, alt_current*1000.0)
+        title_all = 'Longitude %9.4f$^\circ$, Latitude %8.4f$^\circ$, Altitude %6.1f  m (Wavelength %.1f nm)' % (lon_current, lat_current, alt_current*1000.0, flt_sim0.wvl)
     else:
-        title_all = 'Longitude %9.4f$^\circ$, Latitude %8.4f$^\circ$, Altitude %6.4f km' % (lon_current, lat_current, alt_current)
-    ax_all.set_title(title_all)
+        title_all = 'Longitude %9.4f$^\circ$, Latitude %8.4f$^\circ$, Altitude %6.4f km (Wavelength %.1f nm)' % (lon_current, lat_current, alt_current, flt_sim0.wvl)
+    ax_tms.set_title(title_all)
 
-    ax_all.spines['right'].set_visible(False)
-    ax_all.set_zorder(ax_alt.get_zorder()+1)
-    ax_all.patch.set_visible(False)
+    ax_tms.spines['right'].set_visible(False)
+    ax_tms.set_zorder(ax_alt.get_zorder()+1)
+    ax_tms.patch.set_visible(False)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1097,7 +1163,7 @@ def plot_video_frame(statements, test=False):
     for key in vars_plot.keys():
         if key.lower() != 'altitude':
             patches_legend.append(mpatches.Patch(color=vars_plot[key]['color'], label=key))
-    ax_all.legend(handles=patches_legend, bbox_to_anchor=(0.03, 0.89, 0.94, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=14)
+    ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 0.75, 0.94, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=14)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1326,8 +1392,6 @@ def main_vid(date, wvl0=_wavelength_):
     fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
 
-    sys.exit()
-
     Ntrk        = len(flt_sim0.flt_trks)
     indices_trk = np.array([], dtype=np.int32)
     indices_pnt = np.array([], dtype=np.int32)
@@ -1344,6 +1408,10 @@ def main_vid(date, wvl0=_wavelength_):
     indices     = indices[::interval]
 
     statements = zip([flt_sim0]*indices_trk.size, indices_trk, indices_pnt, indices)
+    # for statement in statements:
+    #     print(statement)
+    # print(statements)
+    # sys.exit()
 
 
     with mp.Pool(processes=15) as pool:
@@ -1471,7 +1539,7 @@ if __name__ == '__main__':
     date_s = date.strftime('%Y%m%d')
     fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
-    statements = (flt_sim0, 15, 0, 100)
+    statements = (flt_sim0, 1, 633, 1730)
     plot_video_frame(statements, test=True)
     #\----------------------------------------------------------------------------/#
 
