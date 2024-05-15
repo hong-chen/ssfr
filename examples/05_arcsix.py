@@ -765,6 +765,7 @@ def cdata_arcsix_spns_v2(
         date,
         fname_spns_v1,
         fname_hsk, # interchangable with fname_alp_v1
+        wvl_range=[350.0, 900.0],
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         fdir_out=_fdir_out_,
@@ -825,14 +826,20 @@ def cdata_arcsix_spns_v2(
         g0['dc'] = dc
         g0['factors'] = factors
 
+        if wvl_range is None:
+            wvl_range = [0.0, 2200.0]
+
+        logic_wvl_dif = (data_spns_v1['dif/wvl']>=wvl_range[0]) & (data_spns_v1['dif/wvl']<=wvl_range[1])
+        logic_wvl_tot = (data_spns_v1['tot/wvl']>=wvl_range[0]) & (data_spns_v1['tot/wvl']<=wvl_range[1])
+
         g1 = f.create_group('dif')
-        g1['wvl']   = data_spns_v1['dif/wvl']
-        dset0 = g1.create_dataset('flux', data=data_spns_v1['dif/flux'], compression='gzip', compression_opts=9, chunks=True)
+        g1['wvl']   = data_spns_v1['dif/wvl'][logic_wvl_dif]
+        dset0 = g1.create_dataset('flux', data=data_spns_v1['dif/flux'][:, logic_wvl_dif], compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('tot')
-        g2['wvl']   = data_spns_v1['tot/wvl']
-        g2['toa0']  = data_spns_v1['tot/toa0']
-        dset0 = g2.create_dataset('flux', data=f_dn_tot_corr, compression='gzip', compression_opts=9, chunks=True)
+        g2['wvl']   = data_spns_v1['tot/wvl'][logic_wvl_tot]
+        g2['toa0']  = data_spns_v1['tot/toa0'][logic_wvl_tot]
+        dset0 = g2.create_dataset('flux', data=f_dn_tot_corr[:, logic_wvl_tot], compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
 
@@ -1328,7 +1335,7 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     fname_ssfr_v2 = cdata_arcsix_ssfr_v2(date, fname_ssfr_v1, _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=True)
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
 
     pass
 #\----------------------------------------------------------------------------/#
@@ -1580,7 +1587,7 @@ def main_process_data(date, run=False):
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=run)
+    process_spns_data(date, run=True)
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
