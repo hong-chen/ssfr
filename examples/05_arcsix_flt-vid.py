@@ -1022,12 +1022,18 @@ def plot_video_frame(statements, test=False):
                     ax_alt.fill_between(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1], facecolor=vars_plot[vname_plot]['color'], alpha=0.25, lw=0.0, zorder=0)
                 elif var_plot['vname'].lower() in ['f-down-total_spns', 'f-down-diffuse_spns']:
                     ax_wvl.scatter(flt_trk['wvl_spns'], flt_trk[var_plot['vname']][index_pnt, :], c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
+                    wvl_index = np.argmin(np.abs(flt_trk['wvl_spns']-flt_sim0.wvl))
+                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
+
                 elif var_plot['vname'].lower() in ['f-down_ssfr']:
                     ax_wvl.scatter(flt_trk['wvl_ssfr_zen'], flt_trk[var_plot['vname']][index_pnt, :], c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
+                    wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl))
+                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
+
                 elif var_plot['vname'].lower() in ['f-up_ssfr']:
                     ax_wvl.scatter(flt_trk['wvl_ssfr_nad'], flt_trk[var_plot['vname']][index_pnt, :], c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
-
-                    # ax_wvl.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1], c=vars_plot[vname_plot]['color'], s=2, lw=0.0, zorder=4)
+                    wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_nad']-flt_sim0.wvl))
+                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
 
         else:
 
