@@ -728,7 +728,7 @@ def plot_video_frame(statements, test=False):
 
                 x  = np.linspace(-10.0, 10.0, 101)
 
-                slope0  = np.tan(np.deg2rad(ang_rol0))
+                slope0  = np.tan(np.deg2rad(-ang_rol0))
                 offset0 = -ang_pit0
                 y0 = slope0*x + offset0
                 ax_nav.fill_between(x, y0, y2=-10.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
@@ -1233,7 +1233,8 @@ def main_vid(
         r = list(tqdm(pool.imap(plot_video_frame, statements), total=indices_trk.size))
 
     # make video
-    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "tmp-graph/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p magpie_%s.mp4' % date_s)
+    fname_mp4 = '%s/%s-FLT-VID_%s_%s.mp4' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
+    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "tmp-graph/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s.mp4' % fname_mp4)
 
 
 
