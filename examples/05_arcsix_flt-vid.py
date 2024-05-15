@@ -686,7 +686,7 @@ def plot_video_frame(statements, test=False):
                 ax_map0.imshow(img, extent=sat_img['extent_img'], origin='upper', aspect='auto', zorder=0)
                 region = sat_img['extent_img']
 
-            if ('cam' in sat_img.keys()):
+            if ('cam' in vnames_sat):
                 fname_cam = sat_img['cam'][index_pnt]
                 img = mpl_img.imread(fname_cam)[200:, 550:-650, :]
                 img = ndimage.rotate(img, -152.0)[320:-320, 320:-320, :]
@@ -715,6 +715,32 @@ def plot_video_frame(statements, test=False):
 
             ax_nav.axvline(0.0, lw=0.5, color='gray', zorder=1)
             ax_nav.axhline(0.0, lw=0.5, color='gray', zorder=1)
+            if ('ang_pit' in vnames_flt) and ('ang_rol' in vnames_flt):
+                ang_pit0   = flt_trk['ang_pit'][index_pnt]
+                ang_rol0   = flt_trk['ang_rol'][index_pnt]
+
+                x  = np.linspace(-10.0, 10.0, 101)
+
+                slope0  = np.tan(np.deg2rad(ang_rol0))
+                offset0 = -ang_pit0
+                y0 = slope0*x + offset0
+                ax_nav.fill_between(x, y0, y2=-10.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
+                ax_nav.fill_between(x, 10.0, y2=y0, lw=0.0, color='blue', zorder=0, alpha=0.3)
+
+                if ('ang_pit_m' in vnames_flt) and ('ang_rol_m' in vnames_flt):
+                    ang_pit_m0 = flt_trk['ang_pit_m'][index_pnt]
+                    ang_rol_m0 = flt_trk['ang_rol_m'][index_pnt]
+
+                    ang_pit_offset = 4.444537204377897
+                    ang_rol_offset = -0.5463839481366073
+                    slope1  = np.tan(np.deg2rad(ang_rol0-ang_rol_m0+ang_rol_offset))
+                    offset1 = -(ang_pit0-ang_pit_m0+ang_pit_offset)
+                    y1 = slope1*x + offset1
+
+                    ax_nav.plot(x[25:-25], y1[25:-25], lw=2.0, color='green', zorder=2, alpha=0.5)
+
+            if ('ang_hed' in vnames_flt):
+                ang_hed0   = flt_trk['ang_hed'][index_pnt]
 
             for vname_plot in vars_plot.keys():
                 var_plot = vars_plot[vname_plot]
@@ -820,8 +846,8 @@ def plot_video_frame(statements, test=False):
 
     # navigation plot settings
     #/----------------------------------------------------------------------------\#
-    ax_nav.set_xlim((-1.0, 1.0))
-    ax_nav.set_ylim((-1.0, 1.0))
+    ax_nav.set_xlim((-10.0, 10.0))
+    ax_nav.set_ylim((-10.0, 10.0))
     ax_nav.axis('off')
     #\----------------------------------------------------------------------------/#
 
@@ -1296,7 +1322,7 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        # main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
@@ -1306,7 +1332,7 @@ if __name__ == '__main__':
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
