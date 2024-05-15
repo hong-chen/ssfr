@@ -690,10 +690,10 @@ def plot_video_frame(statements, test=False):
                 ang_cam_offset = -152.0
                 fname_cam = sat_img['cam'][index_pnt]
                 img = mpl_img.imread(fname_cam)[200:, 550:-650, :]
-                if ('ang_hed' in vnames_flt):
-                    ang_hed0   = flt_trk['ang_hed'][index_pnt]
-                else:
-                    ang_hed0 = 0.0
+                # if ('ang_hed' in vnames_flt):
+                #     ang_hed0   = flt_trk['ang_hed'][index_pnt]
+                # else:
+                #     ang_hed0 = 0.0
                 img = ndimage.rotate(img, -ang_hed0+ang_cam_offset)[320:-320, 320:-320]
                 ax_img.imshow(img, origin='upper', aspect='auto', zorder=0)
 
