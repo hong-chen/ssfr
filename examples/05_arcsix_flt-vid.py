@@ -1556,7 +1556,7 @@ if __name__ == '__main__':
     date_s = date.strftime('%Y%m%d')
     fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
-    statements = (flt_sim0, 1, 633, 1730)
+    statements = (flt_sim0, 1, 433, 1730)
     plot_video_frame(statements, test=True)
     #\----------------------------------------------------------------------------/#
 
