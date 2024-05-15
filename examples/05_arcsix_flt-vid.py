@@ -728,7 +728,7 @@ def plot_video_frame(statements, test=False):
 
                 x  = np.linspace(-10.0, 10.0, 101)
 
-                slope0  = np.tan(np.deg2rad(-ang_rol0))
+                slope0  = -np.tan(np.deg2rad(ang_rol0))
                 offset0 = -ang_pit0
                 y0 = slope0*x + offset0
                 ax_nav.fill_between(x, y0, y2=-10.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
@@ -741,7 +741,7 @@ def plot_video_frame(statements, test=False):
                     ang_pit_offset = 4.444537204377897
                     ang_rol_offset = -0.5463839481366073
 
-                    slope1  = np.tan(np.deg2rad(ang_rol0-ang_rol_m0+ang_rol_offset))
+                    slope1  = -np.tan(np.deg2rad(ang_rol0-ang_rol_m0+ang_rol_offset))
                     offset1 = -(ang_pit0-ang_pit_m0+ang_pit_offset)
                     y1 = slope1*x + offset1
 
