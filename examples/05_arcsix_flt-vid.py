@@ -687,7 +687,7 @@ def plot_video_frame(statements, test=False):
                 region = sat_img['extent_img']
 
             if ('cam' in vnames_sat):
-                ang_cam_offset = -152.0
+                # ang_cam_offset = -152.0
                 fname_cam = sat_img['cam'][index_pnt]
                 img = mpl_img.imread(fname_cam)[200:, 550:-650, :]
                 # if ('ang_hed' in vnames_flt):
@@ -696,7 +696,7 @@ def plot_video_frame(statements, test=False):
                 #     ang_hed0 = 0.0
                 # img = ndimage.rotate(img, -ang_hed0+ang_cam_offset)[320:-320, 320:-320]
 
-                img = ndimage.rotate(img, ang_cam_offset)[320:-320, 320:-320]
+                # img = ndimage.rotate(img, ang_cam_offset)[320:-320, 320:-320]
                 ax_img.imshow(img, origin='upper', aspect='auto', zorder=0)
 
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
@@ -1235,8 +1235,8 @@ def main_vid(
         r = list(tqdm(pool.imap(plot_video_frame, statements), total=indices_trk.size))
 
     # make video
-    fname_mp4 = '%s/%s-FLT-VID_%s_%s.mp4' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
-    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "tmp-graph/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s.mp4' % fname_mp4)
+    fname_mp4 = '%s-FLT-VID_%s_%s.mp4' % (_mission_.upper(), _platform_.upper(), date_s)
+    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "tmp-graph/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % fname_mp4)
 
 
 
