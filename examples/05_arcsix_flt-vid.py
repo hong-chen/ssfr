@@ -922,7 +922,7 @@ def plot_video_frame(statements, test=False):
     alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=4.0)
 
     dlon = flt_sim0.sat_imgs[index_trk]['extent_img'][1] - flt_sim0.sat_imgs[index_trk]['extent_img'][0]
-    Nscale = int(dlon/1.3155229999999989 * 30)
+    Nscale = int(dlon/1.3155229999999989 * 15)
 
     arrow_prop = dict(
             arrowstyle='fancy,head_width=0.6,head_length=0.8',
@@ -959,21 +959,21 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     fig = plt.figure(figsize=(16, 9))
 
-    gs = gridspec.GridSpec(10, 16)
+    gs = gridspec.GridSpec(12, 17)
 
     ax = fig.add_subplot(gs[:, :])
     ax.axis('off')
 
-    ax_map = fig.add_subplot(gs[:7, :8], aspect='auto')
+    ax_map = fig.add_subplot(gs[:8, :8], aspect='auto')
     divider = make_axes_locatable(ax_map)
     ax_sza = divider.append_axes('right', size='5%', pad=0.0)
 
-    ax_map0 = fig.add_subplot(gs[:4, 8:12])
-    ax_img  = fig.add_subplot(gs[:4, 12:])
+    ax_map0 = fig.add_subplot(gs[:5, 9:13])
+    ax_img  = fig.add_subplot(gs[:5, 13:])
 
-    ax_wvl  = fig.add_subplot(gs[4:7, 8:])
+    ax_wvl  = fig.add_subplot(gs[5:8, 9:])
 
-    ax_tms = fig.add_subplot(gs[7:, :])
+    ax_tms = fig.add_subplot(gs[9:, :])
     ax_alt = ax_tms.twinx()
 
     fig.subplots_adjust(hspace=10.0, wspace=10.0)
@@ -991,22 +991,30 @@ def plot_video_frame(statements, test=False):
 
             if ('fname_img' in vnames_sat) and ('extent_img' in vnames_sat):
                 img = mpl_img.imread(sat_img['fname_img'])
-                ax_map.imshow(img, extent=sat_img['extent_img'], origin='upper', aspect='equal', zorder=0)
+                ax_map.imshow(img, extent=sat_img['extent_img'], origin='upper', aspect='auto', zorder=0)
+                rect = mpatches.Rectangle((lon_current-0.25, lat_current-0.25), 0.5, 0.5, lw=1.0, ec='r', fc='none')
+                ax_map.add_patch(rect)
+                ax_map0.imshow(img, extent=sat_img['extent_img'], origin='upper', aspect='equal', zorder=0)
                 region = sat_img['extent_img']
 
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
             logic_trans = np.logical_not(logic_solid)
             ax_map.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
             ax_map.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
+            ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
+            ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
 
             if not plot_arrow:
                 ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=40, lw=1.0, zorder=3, alpha=0.6)
                 ax_map.scatter(lon_current, lat_current, c=alt_current, s=40, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=4.0, cmap='jet')
+                ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=40, lw=1.0, zorder=3, alpha=0.6)
+                ax_map0.scatter(lon_current, lat_current, c=alt_current, s=40, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=4.0, cmap='jet')
             else:
                 color0 = alt_cmap(alt_norm(alt_current))
                 arrow_prop['facecolor'] = color0
                 arrow_prop['relpos'] = (lon_current, lat_current)
                 ax_map.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
+                ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
 
             for vname_plot in vars_plot.keys():
                 var_plot = vars_plot[vname_plot]
@@ -1027,6 +1035,8 @@ def plot_video_frame(statements, test=False):
             logic_trans = np.logical_not(logic_solid)
             ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
             ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
+            ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=4.0, cmap='jet', alpha=0.1)
+            ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=4.0, cmap='jet')
 
             if logic_solid.sum() > 0:
 
@@ -1066,12 +1076,13 @@ def plot_video_frame(statements, test=False):
 
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
-    ax_map0.set_xlim(region[:2])
-    ax_map0.set_ylim(region[2:])
-    ax_map0.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 2.0)))
-    ax_map0.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 2.0)))
-    ax_map0.set_xlabel('Longitude [$^\circ$]')
-    ax_map0.set_ylabel('Latitude [$^\circ$]')
+    ax_map0.set_xlim((lon_current-0.25, lon_current+0.25))
+    ax_map0.set_ylim((lat_current-0.25, lat_current+0.25))
+    # ax_map0.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 2.0)))
+    # ax_map0.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 2.0)))
+    # ax_map0.set_xlabel('Longitude [$^\circ$]')
+    # ax_map0.set_ylabel('Latitude [$^\circ$]')
+    ax_map0.axis('off')
 
     title_map0 = 'False Color'
     time_diff = np.abs(flt_sim0.sat_imgs[index_trk]['tmhr']-tmhr_current)*3600.0
@@ -1163,7 +1174,7 @@ def plot_video_frame(statements, test=False):
     for key in vars_plot.keys():
         if key.lower() != 'altitude':
             patches_legend.append(mpatches.Patch(color=vars_plot[key]['color'], label=key))
-    ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 0.75, 0.94, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=14)
+    ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 1.23, 0.94, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=14)
     #\----------------------------------------------------------------------------/#
 
 
