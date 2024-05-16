@@ -10,7 +10,7 @@ with open(os.path.join(current_dir, 'README.rst'), encoding='utf-8') as f:
 setup(
      name = 'ssfr',
      version = '0.0.1',
-     description = 'Python package for processing SSFR (Solar Spectrum Flux Radiometer) data',
+     description = 'SSFR Software Package',
      long_description = long_description,
      classifiers = [
         'Development Status :: 2 - Pre-Alpha',
@@ -18,10 +18,10 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Topic :: Scientific/Engineering :: Atmospheric Science',
         ],
-     keywords = 'SSFR data processing',
+     keywords = 'SSFR',
      url = 'https://github.com/hong-chen/ssfr',
      author = 'Hong Chen',
-     author_email = 'hong.chen@lasp.colorado.edu, sebastian.schmidt@lasp.colorado.edu',
+     author_email = 'hong.chen@lasp.colorado.edu, sebastian.schmidt@lasp.colorado.edu, yu-wen.chen@colorado.edu, ken.hirata@colorado.edu',
      license = 'MIT',
      packages = find_packages(),
      install_requires = [
@@ -32,7 +32,7 @@ setup(
          'pysolar',
          ],
      python_requires = '~=3.9',
-     scripts = ['bin/sks2h5', 'bin/sks2txt'],
+     scripts = ['bin/sks2h5', 'bin/sks2txt', 'bin/fits2jpg'],
      include_package_data = True,
      zip_safe = False
      )
