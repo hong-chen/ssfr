@@ -733,8 +733,8 @@ def plot_video_frame(statements, test=False):
                 offset0 = ang_pit0
                 y0 = slope0*x + offset0
 
-                ax_nav.plot(x[15:-15], y0[15:-15], lw=2.0, color='red', zorder=1, alpha=0.6)
-                ax_nav.scatter(x[50], y0[50], lw=0.0, s=60, c='red', zorder=1, alpha=0.6)
+                ax_nav.plot(x[15:-15], y0[15:-15], lw=1.0, color='red', zorder=1, alpha=0.6)
+                ax_nav.scatter(x[50], y0[50], lw=0.0, s=40, c='red', zorder=1, alpha=0.6)
 
                 # ax_nav.fill_between(x, y0, y2=-10.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
                 # ax_nav.fill_between(x, 10.0, y2=y0, lw=0.0, color='blue', zorder=0, alpha=0.3)
