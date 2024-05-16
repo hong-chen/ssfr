@@ -668,7 +668,8 @@ def plot_video_frame(statements, test=False):
     fig.subplots_adjust(hspace=10.0, wspace=10.0)
     #\----------------------------------------------------------------------------/#
 
-    for itrk in range(max([0, index_trk-3]), index_trk+1):
+    # for itrk in range(max([0, index_trk-3]), index_trk+1):
+    for itrk in range(index_trk+1):
 
         flt_trk      = flt_sim0.flt_trks[itrk]
         sat_img      = flt_sim0.sat_imgs[itrk]
