@@ -732,8 +732,14 @@ def plot_video_frame(statements, test=False):
                 slope0  = -np.tan(np.deg2rad(ang_rol0))
                 offset0 = ang_pit0
                 y0 = slope0*x + offset0
-                ax_nav.fill_between(x, y0, y2=-10.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
-                ax_nav.fill_between(x, 10.0, y2=y0, lw=0.0, color='blue', zorder=0, alpha=0.3)
+
+                ax_nav.plot(x[15:-15], y0[15:-15], lw=2.0, color='red', zorder=1, alpha=0.6)
+                ax_nav.scatter(x[50], y0[50], lw=0.0, s=60, c='red', zorder=1, alpha=0.6)
+
+                # ax_nav.fill_between(x, y0, y2=-10.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
+                # ax_nav.fill_between(x, 10.0, y2=y0, lw=0.0, color='blue', zorder=0, alpha=0.3)
+                ax_nav.axhspan(-10.0, 0.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
+                ax_nav.axhspan(0.0,  10.0, lw=0.0, color='deepskyblue', zorder=0, alpha=0.3)
 
                 if ('ang_pit_m' in vnames_flt) and ('ang_rol_m' in vnames_flt):
                     ang_pit_m0 = flt_trk['ang_pit_m'][index_pnt]
@@ -746,7 +752,7 @@ def plot_video_frame(statements, test=False):
                     offset1 = (ang_pit0-ang_pit_m0+ang_pit_offset)
                     y1 = slope1*x + offset1
 
-                    ax_nav.plot(x[25:-25], y1[25:-25], lw=2.0, color='green', zorder=2, alpha=0.5)
+                    ax_nav.plot(x[25:-25], y1[25:-25], lw=2.0, color='green', zorder=2, alpha=0.7)
 
 
             for vname_plot in vars_plot.keys():
