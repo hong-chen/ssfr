@@ -1137,7 +1137,9 @@ def main_pre(
     jday_edges = np.append(jday_sat[0]-half_interval, jday_sat[1:]-(jday_sat[1:]-jday_sat[:-1])/2.0)
     jday_edges = np.append(jday_edges, jday_sat[-1]+half_interval)
 
-    logic = (jday>=jday_edges[0]) & (jday<=jday_edges[-1])
+    jday_s = ((jday_edges[0]  * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
+    jday_e = ((jday_edges[-1] * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
+    logic = (jday>=jday_s) & (jday<=jday_e)
 
     # create python dictionary to store valid flight data
     flt_trk = {}
@@ -1347,7 +1349,7 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        # main_pre(date)
+        main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
