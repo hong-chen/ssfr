@@ -668,7 +668,7 @@ def plot_video_frame(statements, test=False):
     fig.subplots_adjust(hspace=10.0, wspace=10.0)
     #\----------------------------------------------------------------------------/#
 
-    for itrk in range(index_trk+1):
+    for itrk in range(max([0, index_trk-3]), index_trk+1):
 
         flt_trk      = flt_sim0.flt_trks[itrk]
         sat_img      = flt_sim0.sat_imgs[itrk]
@@ -1137,15 +1137,12 @@ def main_pre(
     # jday_edges = np.append(jday_sat[0]-half_interval, jday_sat[1:]-(jday_sat[1:]-jday_sat[:-1])/2.0)
     # jday_edges = np.append(jday_edges, jday_sat[-1]+half_interval)
 
-    jday_s = ((jday_sat[0]  * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
-    jday_e = ((jday_sat[-1] * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
+    # jday_s = ((jday_sat[0]  * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
+    # jday_e = ((jday_sat[-1] * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
+    jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
+    jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
 
-    # print(jday_edges)
-    # print((jday_edges[1:]-jday_edges[:-1])*86400.0)
     jday_edges = np.arange(jday_s, jday_e+half_interval, half_interval*2.0)
-    # print(jday_edges)
-    # print((jday_edges[1:]-jday_edges[:-1])*86400.0)
-    # sys.exit()
 
     logic = (jday>=jday_s) & (jday<=jday_e)
 
