@@ -34,7 +34,7 @@ def process(fname,
         y_c=1141, # height, 2080, descending order
         y_half=939,
         x_half=939,
-        crop=True,
+        crop=False,
         fdir_out=None,
         resolution='medium',
         ):
