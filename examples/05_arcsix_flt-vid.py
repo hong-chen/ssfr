@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -689,14 +689,15 @@ def plot_video_frame(statements, test=False):
             if ('cam' in vnames_sat):
                 ang_cam_offset = -152.0
                 fname_cam = sat_img['cam'][index_pnt]
-                img = mpl_img.imread(fname_cam)[200:, 550:-650, :]
+                img = mpl_img.imread(fname_cam)[210:, 550:-650, :]
+
                 # if ('ang_hed' in vnames_flt):
                 #     ang_hed0   = flt_trk['ang_hed'][index_pnt]
                 # else:
                 #     ang_hed0 = 0.0
-                # img = ndimage.rotate(img, -ang_hed0+ang_cam_offset)[320:-320, 320:-320]
+                # img = ndimage.rotate(img, -ang_hed0+ang_cam_offset, reshape=False)[320:-320, 320:-320]
 
-                img = ndimage.rotate(img, ang_cam_offset)[320:-320, 320:-320]
+                img = ndimage.rotate(img, ang_cam_offset, reshape=False)
                 ax_img.imshow(img, origin='upper', aspect='auto', zorder=0)
 
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
@@ -1340,17 +1341,17 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        # main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
         #/----------------------------------------------------------------------------\#
-        main_vid(date, wvl0=_wavelength_)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
