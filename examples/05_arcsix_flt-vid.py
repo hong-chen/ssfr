@@ -707,7 +707,7 @@ def plot_video_frame(statements, test=False):
                 img_plot[:, :, 2] = np.int_(img[:, :, 2]/img[:, :, 2].max()*255)
                 img_plot[img_plot>=255] = 255
                 img_plot = np.int_(img_plot)
-                ax_img.imshow(img_plot, origin='upper', aspect='auto', zorder=0, extent=[10, 255*4.0, 0.0, 0.12])
+                ax_img.imshow(img_plot, origin='upper', aspect='auto', zorder=0, extent=[5, 255*4.0, 0.0, 0.12])
 
                 ax_img_hist.hist(img[:, :, 0].ravel(), bins=20, histtype='step', lw=0.5, alpha=0.9, density=True, color='r')
                 ax_img_hist.hist(img[:, :, 1].ravel(), bins=20, histtype='step', lw=0.5, alpha=0.9, density=True, color='g')
@@ -888,7 +888,7 @@ def plot_video_frame(statements, test=False):
 
     ax_img.axis('off')
 
-    ax_img_hist.set_xlim((10, 255*4.0))
+    ax_img_hist.set_xlim((5, 255*4.0))
     ax_img_hist.set_ylim((0.0, 0.12))
     ax_img_hist.axis('off')
 
@@ -1392,7 +1392,7 @@ if __name__ == '__main__':
 
         pass
 
-    # sys.exit()
+    sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
