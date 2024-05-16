@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -656,7 +656,9 @@ def plot_video_frame(statements, test=False):
     ax_sza = divider.append_axes('right', size='5%', pad=0.0)
 
     ax_map0 = fig.add_subplot(gs[:5, 9:13])
+
     ax_img  = fig.add_subplot(gs[:5, 13:])
+    ax_img_hist = ax_img.twinx()
 
     ax_nav  = fig.add_subplot(gs[:2, 7:9])
 
@@ -699,7 +701,14 @@ def plot_video_frame(statements, test=False):
                 # img = ndimage.rotate(img, -ang_hed0+ang_cam_offset, reshape=False)[320:-320, 320:-320]
 
                 img = ndimage.rotate(img, ang_cam_offset, reshape=False)
-                ax_img.imshow(img, origin='upper', aspect='auto', zorder=0)
+                img_plot = img*1.1
+                img_plot[img_plot>=255] = 255
+                img_plot = np.int_(img_plot)
+                ax_img.imshow(img_plot, origin='upper', aspect='auto', zorder=0, extent=[40, 255*4.0, 0.0, 0.1])
+
+                ax_img_hist.hist(img[:, :, 0].ravel(), bins=40, histtype='step', lw=1.0, alpha=0.9, density=True, color='r')
+                ax_img_hist.hist(img[:, :, 1].ravel(), bins=40, histtype='step', lw=1.0, alpha=0.9, density=True, color='g')
+                ax_img_hist.hist(img[:, :, 2].ravel(), bins=40, histtype='step', lw=1.0, alpha=0.9, density=True, color='b')
 
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
             logic_trans = np.logical_not(logic_solid)
@@ -873,6 +882,12 @@ def plot_video_frame(statements, test=False):
         ax_img.set_title(title_img, color='red')
     else:
         ax_img.set_title(title_img)
+
+    ax_img.axis('off')
+
+    ax_img_hist.set_xlim((40, 255*4.0))
+    ax_img_hist.set_ylim((0.0, 0.1))
+    ax_img_hist.axis('off')
 
     ax_img.axis('off')
     #\----------------------------------------------------------------------------/#
@@ -1362,17 +1377,17 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        # main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
         #/----------------------------------------------------------------------------\#
-        main_vid(date, wvl0=_wavelength_)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
