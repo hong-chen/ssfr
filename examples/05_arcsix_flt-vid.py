@@ -712,6 +712,7 @@ def plot_video_frame(statements, test=False):
                 ax_img_hist.hist(img[:, :, 0].ravel(), bins=20, histtype='step', lw=0.5, alpha=0.9, density=True, color='r')
                 ax_img_hist.hist(img[:, :, 1].ravel(), bins=20, histtype='step', lw=0.5, alpha=0.9, density=True, color='g')
                 ax_img_hist.hist(img[:, :, 2].ravel(), bins=20, histtype='step', lw=0.5, alpha=0.9, density=True, color='b')
+                ax_img.plot([255, 255], [0, 0.005], color='gray', lw=1.0, ls='-')
 
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
             logic_trans = np.logical_not(logic_solid)
