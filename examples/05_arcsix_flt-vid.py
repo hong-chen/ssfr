@@ -701,7 +701,10 @@ def plot_video_frame(statements, test=False):
                 # img = ndimage.rotate(img, -ang_hed0+ang_cam_offset, reshape=False)[320:-320, 320:-320]
 
                 img = ndimage.rotate(img, ang_cam_offset, reshape=False)
-                img_plot = img*1.1
+                img_plot = img.copy()
+                img_plot[:, :, 0] = np.int_(img[:, :, 0]/img[:, :, 0].max()*255)
+                img_plot[:, :, 1] = np.int_(img[:, :, 1]/img[:, :, 1].max()*255)
+                img_plot[:, :, 2] = np.int_(img[:, :, 2]/img[:, :, 2].max()*255)
                 img_plot[img_plot>=255] = 255
                 img_plot = np.int_(img_plot)
                 ax_img.imshow(img_plot, origin='upper', aspect='auto', zorder=0, extent=[10, 255*4.0, 0.0, 0.12])
