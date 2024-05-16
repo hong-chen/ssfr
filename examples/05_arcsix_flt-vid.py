@@ -1134,11 +1134,19 @@ def main_pre(
     tmhr_interval = 10.0/60.0
     half_interval = tmhr_interval/48.0
 
-    jday_edges = np.append(jday_sat[0]-half_interval, jday_sat[1:]-(jday_sat[1:]-jday_sat[:-1])/2.0)
-    jday_edges = np.append(jday_edges, jday_sat[-1]+half_interval)
+    # jday_edges = np.append(jday_sat[0]-half_interval, jday_sat[1:]-(jday_sat[1:]-jday_sat[:-1])/2.0)
+    # jday_edges = np.append(jday_edges, jday_sat[-1]+half_interval)
 
-    jday_s = ((jday_edges[0]  * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
-    jday_e = ((jday_edges[-1] * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
+    jday_s = ((jday_sat[0]  * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
+    jday_e = ((jday_sat[-1] * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
+
+    # print(jday_edges)
+    # print((jday_edges[1:]-jday_edges[:-1])*86400.0)
+    jday_edges = np.arange(jday_s, jday_e+half_interval, half_interval*2.0)
+    # print(jday_edges)
+    # print((jday_edges[1:]-jday_edges[:-1])*86400.0)
+    # sys.exit()
+
     logic = (jday>=jday_s) & (jday<=jday_e)
 
     # create python dictionary to store valid flight data
