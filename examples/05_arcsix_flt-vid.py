@@ -704,11 +704,11 @@ def plot_video_frame(statements, test=False):
                 img_plot = img*1.1
                 img_plot[img_plot>=255] = 255
                 img_plot = np.int_(img_plot)
-                ax_img.imshow(img_plot, origin='upper', aspect='auto', zorder=0, extent=[40, 255*4.0, 0.0, 0.1])
+                ax_img.imshow(img_plot, origin='upper', aspect='auto', zorder=0, extent=[10, 255*4.0, 0.0, 0.12])
 
-                ax_img_hist.hist(img[:, :, 0].ravel(), bins=40, histtype='step', lw=1.0, alpha=0.9, density=True, color='r')
-                ax_img_hist.hist(img[:, :, 1].ravel(), bins=40, histtype='step', lw=1.0, alpha=0.9, density=True, color='g')
-                ax_img_hist.hist(img[:, :, 2].ravel(), bins=40, histtype='step', lw=1.0, alpha=0.9, density=True, color='b')
+                ax_img_hist.hist(img[:, :, 0].ravel(), bins=20, histtype='step', lw=0.5, alpha=0.9, density=True, color='r')
+                ax_img_hist.hist(img[:, :, 1].ravel(), bins=20, histtype='step', lw=0.5, alpha=0.9, density=True, color='g')
+                ax_img_hist.hist(img[:, :, 2].ravel(), bins=20, histtype='step', lw=0.5, alpha=0.9, density=True, color='b')
 
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
             logic_trans = np.logical_not(logic_solid)
@@ -885,8 +885,8 @@ def plot_video_frame(statements, test=False):
 
     ax_img.axis('off')
 
-    ax_img_hist.set_xlim((40, 255*4.0))
-    ax_img_hist.set_ylim((0.0, 0.1))
+    ax_img_hist.set_xlim((10, 255*4.0))
+    ax_img_hist.set_ylim((0.0, 0.12))
     ax_img_hist.axis('off')
 
     ax_img.axis('off')
@@ -906,6 +906,7 @@ def plot_video_frame(statements, test=False):
     ax_wvl.set_xlim((200, 2200))
     ax_wvl.set_ylim((0.0, 2.0))
     ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
+    ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
     ax_wvl.set_xlabel('Wavelength [nm]')
     ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
     ax_wvl.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
@@ -949,6 +950,7 @@ def plot_video_frame(statements, test=False):
     ax_tms.grid()
     ax_tms.set_xlim((tmhr_past-0.0000001, tmhr_current+0.0000001))
     ax_tms.xaxis.set_major_locator(FixedLocator([tmhr_past, tmhr_current-0.5*tmhr_length, tmhr_current]))
+    ax_tms.xaxis.set_minor_locator(FixedLocator(np.arange(tmhr_past, tmhr_current+0.001, 5.0/60.0)))
     ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
     ax_tms.set_xlabel('Time [hour]')
 
