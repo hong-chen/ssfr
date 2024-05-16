@@ -363,7 +363,7 @@ def get_jday_sat_img(fnames):
 
 def get_extent(lon, lat, margin=0.2):
 
-    logic = check_continuity(lon, threshold=0.2) & check_continuity(lat, threshold=0.2)
+    logic = check_continuity(lon, threshold=1.0) & check_continuity(lat, threshold=1.0)
     lon = lon[logic]
     lat = lat[logic]
 
@@ -1011,13 +1011,13 @@ def main_pre(
 
     logic0 = (~np.isnan(jday) & ~np.isinf(jday))  & \
              (~np.isnan(sza)  & ~np.isinf(sza))   & \
-             check_continuity(lon, threshold=0.2) & \
-             check_continuity(lat, threshold=0.2)
+             check_continuity(lon, threshold=1.0) & \
+             check_continuity(lat, threshold=1.0)
 
-    print(jday[~logic0])
-    print(sza[~logic0])
-    print(lon[~logic0])
-    print(lat[~logic0])
+    # print(jday[~logic0])
+    # print(sza[~logic0])
+    # print(lon[~logic0])
+    # print(lat[~logic0])
 
     jday = jday[logic0][::time_step]
     sza  = sza[logic0][::time_step]
