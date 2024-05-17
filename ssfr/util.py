@@ -23,6 +23,7 @@ __all__ = [
         'cal_julian_day',
         'cal_heading',
         'cal_solar_angles',
+        'cal_solar_factor',
         'cal_step_offset',
         'prh2za',
         'muslope',
@@ -137,6 +138,24 @@ def cal_solar_angles(julian_day, longitude, latitude, altitude):
         saa[i] = saa_i
 
     return sza, saa
+
+def cal_solar_factor(dtime):
+
+    """
+    Calculate solar factor that accounts for Sun-Earth distance
+    Input:
+        dtime: datetime.datetime object
+    Output:
+        solfac: solar factor
+    """
+
+    doy = dtime.timetuple().tm_yday
+    eps = 0.0167086
+    perh= 4.0
+    rsun = (1.0 - eps*np.cos(0.017202124161707175*(doy-perh)))
+    solfac = 1.0/(rsun**2)
+
+    return solfac
 
 def cal_step_offset(x_ref, x_target, fill_value=np.nan, offset_range=[-900, 900]):
 
