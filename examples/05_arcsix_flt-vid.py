@@ -511,6 +511,11 @@ def plot_video_frame_old(statements, test=False):
             logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
             logic_trans = np.logical_not(logic_solid)
 
+            if itrk == index_trk:
+                alpha_trans = 0.0
+            else:
+                alpha_trans = 0.1
+
             if has_sat_img:
                 img = mpl_img.imread(flt_img['fname_sat_img'])
                 ax_map.imshow(img, extent=flt_img['extent_sat_img'], origin='upper', aspect='auto', zorder=0)
@@ -518,14 +523,14 @@ def plot_video_frame_old(statements, test=False):
                 rect = mpatches.Rectangle((lon_current-0.25, lat_current-0.25), 0.5, 0.5, lw=1.0, ec='k', fc='none')
                 ax_map.add_patch(rect)
 
-                ax_map.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+                ax_map.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans)
                 ax_map.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
 
             if has_sat_img0:
                 img = mpl_img.imread(flt_img['fname_sat_img0'])
                 ax_map0.imshow(img, extent=flt_img['extent_sat_img0'], origin='upper', aspect='auto', zorder=0)
 
-                ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+                ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans)
                 ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
 
             if has_cam_img:
@@ -1139,10 +1144,15 @@ def plot_video_frame(statements, test=False):
         logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<=tmhr_current)
         logic_trans = np.logical_not(logic_solid)
 
-        ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+        if itrk == index_trk:
+            alpha_trans = 0.0
+        else:
+            alpha_trans = 0.1
+
+        ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans)
         ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
 
-        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
+        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans)
         ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
 
 
@@ -1192,8 +1202,8 @@ def plot_video_frame(statements, test=False):
     # map plot settings
     #/----------------------------------------------------------------------------\#
     if has_sat_img:
-        ax_map.set_xlim(flt_img['extent_sat_img'][:2])
-        ax_map.set_ylim(flt_img['extent_sat_img'][2:])
+        ax_map.set_xlim(flt_img0['extent_sat_img'][:2])
+        ax_map.set_ylim(flt_img0['extent_sat_img'][2:])
 
         title_map = '%s at %s UTC' % (flt_img0['imager'], er3t.util.jday_to_dtime(flt_img0['jday']).strftime('%H:%M'))
         time_diff = np.abs(flt_img0['jday']-jday_current)*86400.0
@@ -1236,7 +1246,7 @@ def plot_video_frame(statements, test=False):
     # camera image plot settings
     #/----------------------------------------------------------------------------\#
     if has_cam_img:
-        jday_cam  = flt_sim0.flt_imgs[index_trk]['jday_cam_img'][index_pnt]
+        jday_cam  = flt_img0['jday_cam_img'][index_pnt]
         dtime_cam = er3t.util.jday_to_dtime(jday_cam)
 
         title_img = 'Camera at %s UTC' % (dtime_cam.strftime('%H:%M:%S'))
@@ -1585,10 +1595,11 @@ def main_pre(
         flt_img['tmhr'] = 24.0*(jday_sat[index0]-int(jday_sat[index0]))
 
         flt_img['fnames_cam_img'] = []
+        flt_img['jday_cam_img'] = np.array([], dtype=np.float64)
         for j in range(flt_trks[i]['jday'].size):
             index_cam = np.argmin(np.abs(jday_cam-flt_trks[i]['jday'][j]))
             flt_img['fnames_cam_img'].append(fnames_cam[index_cam])
-        flt_img['jday_cam_img'] = jday_cam
+            flt_img['jday_cam_img'] = np.append(flt_img['jday_cam_img'], jday_cam[index_cam])
 
         flt_imgs.append(flt_img)
     #\--------------------------------------------------------------/#
