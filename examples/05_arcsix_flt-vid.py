@@ -49,6 +49,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # mpl.use('Agg')
 
 
+import ssfr
 import er3t
 
 _mission_      = 'ARCSIX'
@@ -191,7 +192,7 @@ def get_jday_sat_img(fnames):
         dtime_s  = strings[2]
 
         dtime0 = datetime.datetime.strptime(dtime_s, '%Y-%m-%dT%H:%M:%SZ')
-        jday0 = er3t.util.dtime_to_jday(dtime0)
+        jday0 = ssfr.util.dtime_to_jday(dtime0)
         jday.append(jday0)
 
     return np.array(jday)
@@ -242,7 +243,7 @@ def get_jday_cam_img(fnames):
         dtime_s = filename[:20]
 
         dtime0 = datetime.datetime.strptime(dtime_s, '%Y_%m_%d__%H_%M_%S')
-        jday0 = er3t.util.dtime_to_jday(dtime0)
+        jday0 = ssfr.util.dtime_to_jday(dtime0)
         jday.append(jday0)
 
     return np.array(jday)
@@ -364,16 +365,18 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
-
     # param settings
     #/----------------------------------------------------------------------------\#
-    tmhr_current = flt_sim0.flt_trks[index_trk]['tmhr'][index_pnt]
-    jday_current= flt_sim0.flt_trks[index_trk]['jday'][index_pnt]
-    lon_current = flt_sim0.flt_trks[index_trk]['lon'][index_pnt]
-    lat_current = flt_sim0.flt_trks[index_trk]['lat'][index_pnt]
-    alt_current = flt_sim0.flt_trks[index_trk]['alt'][index_pnt]
-    sza_current = flt_sim0.flt_trks[index_trk]['sza'][index_pnt]
-    dtime_current = er3t.util.jday_to_dtime(jday_current)
+    flt_trk0 = flt_sim0.flt_trks[index_trk]
+    flt_img0 = flt_sim0.flt_imgs[index_trk]
+
+    tmhr_current = flt_trk0['tmhr'][index_pnt]
+    jday_current = flt_trk0['jday'][index_pnt]
+    lon_current  = flt_trk0['lon'][index_pnt]
+    lat_current  = flt_trk0['lat'][index_pnt]
+    alt_current  = flt_trk0['alt'][index_pnt]
+    sza_current  = flt_trk0['sza'][index_pnt]
+    dtime_current = ssfr.util.jday_to_dtime(jday_current)
 
     tmhr_length  = 0.5 # half an hour
     tmhr_past    = tmhr_current-tmhr_length
@@ -646,7 +649,7 @@ def plot_video_frame(statements, test=False):
     ax_map.set_xlabel('Longitude [$^\circ$]')
     ax_map.set_ylabel('Latitude [$^\circ$]')
 
-    title_map = '%s at %s UTC' % (flt_sim0.flt_imgs[index_trk]['imager'], er3t.util.jday_to_dtime(flt_sim0.flt_imgs[index_trk]['jday']).strftime('%H:%M'))
+    title_map = '%s at %s UTC' % (flt_sim0.flt_imgs[index_trk]['imager'], ssfr.util.jday_to_dtime(flt_sim0.flt_imgs[index_trk]['jday']).strftime('%H:%M'))
     time_diff = np.abs(flt_sim0.flt_imgs[index_trk]['tmhr']-tmhr_current)*3600.0
     if time_diff > 301.0:
         ax_map.set_title(title_map, color='gray')
@@ -681,7 +684,7 @@ def plot_video_frame(statements, test=False):
     # camera image plot settings
     #/----------------------------------------------------------------------------\#
     jday_cam  = flt_sim0.flt_imgs[index_trk]['jday_cam_img'][index_pnt]
-    dtime_cam = er3t.util.jday_to_dtime(jday_cam)
+    dtime_cam = ssfr.util.jday_to_dtime(jday_cam)
 
     title_img = 'Camera at %s UTC' % (dtime_cam.strftime('%H:%M:%S'))
     time_diff = np.abs(jday_current-jday_cam)*86400.0
@@ -902,7 +905,7 @@ def main_pre(
     ssfr_zen_wvl  = f_ssfr['%s/wvl_zen'  % which_dset][...][::wvl_step_ssfr]
     ssfr_nad_flux = f_ssfr['%s/flux_nad' % which_dset][...][logic0, :][::time_step, ::wvl_step_ssfr]
     ssfr_nad_wvl  = f_ssfr['%s/wvl_nad'  % which_dset][...][::wvl_step_ssfr]
-    ssfr_zen_toa  = f_ssfr['%s/toa0'     % which_dset][...][::wvl_step_ssfr]*er3t.util.cal_sol_fac(date)
+    ssfr_zen_toa  = f_ssfr['%s/toa0'     % which_dset][...][::wvl_step_ssfr]
     f_ssfr.close()
     #\--------------------------------------------------------------/#
     # print(ssfr_zen_flux.shape)
@@ -924,8 +927,8 @@ def main_pre(
     #/----------------------------------------------------------------------------\#
     extent = get_extent(lon, lat, margin=0.2)
 
-    dtime_s = er3t.util.jday_to_dtime(jday[0])
-    dtime_e = er3t.util.jday_to_dtime(jday[-1])
+    dtime_s = ssfr.util.jday_to_dtime(jday[0])
+    dtime_e = ssfr.util.jday_to_dtime(jday[-1])
 
     if False:
         # download_geo_sat_img(

@@ -633,7 +633,7 @@ def cdata_arcsix_spns_v0(
         wvl_tot = data0_tot.data['wvl']
         f_dn_sol_tot = np.zeros_like(wvl_tot)
         for i, wvl0 in enumerate(wvl_tot):
-            f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])
+            f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
         #\----------------------------------------------------------------------------/#
 
         f = h5py.File(fname_h5, 'w')
@@ -974,7 +974,7 @@ def cdata_arcsix_ssfr_v1(
         wvl_zen = data_ssfr_v0['dset0/wvl_zen']
         f_dn_sol_zen = np.zeros_like(wvl_zen)
         for i, wvl0 in enumerate(wvl_zen):
-            f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])
+            f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
         #\----------------------------------------------------------------------------/#
 
 
@@ -1568,7 +1568,7 @@ def generate_quicklook_video(date):
 
 # main program
 #/----------------------------------------------------------------------------\#
-def main_process_data(date, run=False):
+def main_process_data(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
@@ -1593,7 +1593,7 @@ def main_process_data(date, run=False):
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-a', run=run)
     sys.exit()
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
