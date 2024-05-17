@@ -684,7 +684,7 @@ def plot_video_frame(statements, test=False):
     title_img = 'Camera at %s UTC' % (dtime_cam.strftime('%H:%M:%S'))
     time_diff = np.abs(jday_current-jday_cam)*86400.0
     if time_diff > 301.0:
-        ax_img.set_title(title_img, color='red')
+        ax_img.set_title(title_img, color='gray')
     else:
         ax_img.set_title(title_img)
     ax_img.axis('off')
