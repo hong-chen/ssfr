@@ -364,6 +364,7 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
+
     # param settings
     #/----------------------------------------------------------------------------\#
     tmhr_current = flt_sim0.flt_trks[index_trk]['tmhr'][index_pnt]
@@ -598,6 +599,7 @@ def plot_video_frame(statements, test=False):
 
             logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<tmhr_current)
             logic_trans = np.logical_not(logic_solid)
+
             ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
             ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
             ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
