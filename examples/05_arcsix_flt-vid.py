@@ -1147,7 +1147,7 @@ def plot_video_frame(statements, test=False):
         if itrk == index_trk:
             alpha_trans = 0.0
         else:
-            alpha_trans = 0.1
+            alpha_trans = 0.06
 
         ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans)
         ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
