@@ -977,21 +977,19 @@ def plot_video_frame(statements, test=False):
 
     # acknowledgements
     #/----------------------------------------------------------------------------\#
-    text1 = 'Acknowledgements:\n \
-instruments engineered by Jeffery Drouet and Sebastian Schmidt\n \
-instruments calibrated by Hong Chen, Yu-Wen Chen, and Ken Hirata\n \
-instrument data collected by Arabella Chamberlain\n \
-'
+    text1 = 'Acknowledgements:\n\
+instruments engineered by Jeffery Drouet and Sebastian Schmidt\n\
+instruments calibrated by Hong Chen, Yu-Wen Chen, and Ken Hirata\n\
+instrument data collected by Arabella Chamberlain'
     ax.annotate(text1, xy=(0.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='left', va='top')
 
-    text2 = 'Acknowledgements:\n \
-satellite imagery processed by Vikas Nataraja\n \
-instrument data processed by Hong Chen, Yu-Wen Chen, and Ken Hirata\n \
-video created by Hong Chen\n \
-'
+    text2 = 'Acknowledgements:\n\
+satellite imagery processed by Vikas Nataraja\n\
+instrument data processed by Hong Chen\n\
+video created by Hong Chen'
     ax.annotate(text2, xy=(1.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='right', va='top')
 
-    ax.annotate('presented by ARCSIX SSFR Team', xy=(0.5, 0.25), fontsize=16, color='gray', xycoords='axes fraction', ha='center', va='center')
+    # ax.annotate('by\nARCSIX SSFR Team', xy=(0.5, 0.30), fontsize=14, color='gray', xycoords='axes fraction', ha='center', va='top')
     #\----------------------------------------------------------------------------/#
 
 
