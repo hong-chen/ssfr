@@ -975,6 +975,8 @@ def plot_video_frame(statements, test=False):
     ax_tms.patch.set_visible(False)
     #\----------------------------------------------------------------------------/#
 
+    # acknowledgements
+    #/----------------------------------------------------------------------------\#
     text1 = 'Acknowledgements:\n \
 instruments engineered by Jeffery Drouet and Sebastian Schmidt\n \
 instruments calibrated by Hong Chen, Yu-Wen Chen, and Ken Hirata\n \
@@ -988,6 +990,8 @@ instrument data processed by Hong Chen, Yu-Wen Chen, and Ken Hirata\n \
 video created by Hong Chen\n \
 '
     ax.annotate(text2, xy=(1.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='right', va='top')
+
+    ax.annotate('presented by ARCSIX SSFR Team', xy=(0.5, 0.25), fontsize=16, color='gray', xycoords='axes fraction', ha='center', va='center')
     #\----------------------------------------------------------------------------/#
 
 
