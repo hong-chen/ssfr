@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -975,6 +975,21 @@ def plot_video_frame(statements, test=False):
     ax_tms.patch.set_visible(False)
     #\----------------------------------------------------------------------------/#
 
+    text1 = 'Acknowledgements:\n \
+instruments engineered by Jeffery Drouet and Sebastian Schmidt\n \
+instruments calibrated by Hong Chen, Yu-Wen Chen, and Ken Hirata\n \
+instrument data collected by Arabella Chamberlain\n \
+'
+    ax.annotate(text1, xy=(0.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='left', va='top')
+
+    text2 = 'Acknowledgements:\n \
+satellite imagery processed by Vikas Nataraja\n \
+instrument data processed by Hong Chen, Yu-Wen Chen, and Ken Hirata\n \
+video created by Hong Chen\n \
+'
+    ax.annotate(text2, xy=(1.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='right', va='top')
+    #\----------------------------------------------------------------------------/#
+
 
     # legend plot settings
     #/----------------------------------------------------------------------------\#
@@ -1383,17 +1398,17 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        # main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
         #/----------------------------------------------------------------------------\#
-        main_vid(date, wvl0=_wavelength_)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
