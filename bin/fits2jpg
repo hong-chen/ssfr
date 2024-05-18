@@ -22,6 +22,7 @@ from tqdm import tqdm
 import warnings
 import numpy as np
 import datetime
+import multiprocessing as mp
 from astropy.io import fits
 import matplotlib.pyplot as plt
 
@@ -39,56 +40,59 @@ def process(fname,
         resolution='medium',
         ):
 
-    filename = os.path.basename(fname)
+    try:
+        filename = os.path.basename(fname)
 
-    with fits.open(fname) as f:
+        with fits.open(fname) as f:
 
-        data = f[0].data.copy()
-        # for key in f[0].header.keys():
-        #     print(key, f[0].header[key])
-        x_max = f[0].header['NAXIS1']
-        y_max = f[0].header['NAXIS2']
-        Nbit  = f[0].header['BITPIX']
+            data = f[0].data.copy()
+            # for key in f[0].header.keys():
+            #     print(key, f[0].header[key])
+            x_max = f[0].header['NAXIS1']
+            y_max = f[0].header['NAXIS2']
+            Nbit  = f[0].header['BITPIX']
 
-    # arrange the array to (height[descending order], width[ascending order], channel)
-    rgb = np.swapaxes(data[:, ::-1, :].T, 0, 1) / (2.0**Nbit)
+        # arrange the array to (height[descending order], width[ascending order], channel)
+        rgb = np.swapaxes(data[:, ::-1, :].T, 0, 1) / (2.0**Nbit)
 
-    # crop the image
-    #/----------------------------------------------------------------------------\#
-    if crop:
-        x_s = max([x_c - x_half, 0])
-        x_e = min([x_c + x_half, x_max])
-        y_s = max([y_c - y_half, 0])
-        y_e = min([y_c + y_half, y_max])
-        rgb = rgb[y_s:y_e, x_s:x_e, :]
-    #\----------------------------------------------------------------------------/#
+        # crop the image
+        #/----------------------------------------------------------------------------\#
+        if crop:
+            x_s = max([x_c - x_half, 0])
+            x_e = min([x_c + x_half, x_max])
+            y_s = max([y_c - y_half, 0])
+            y_e = min([y_c + y_half, y_max])
+            rgb = rgb[y_s:y_e, x_s:x_e, :]
+        #\----------------------------------------------------------------------------/#
 
-    if fdir_out is None:
-        fdir_out = os.getcwd()
-        msg = '\nWarning [fits2jpg]: <fdir_out> was not specified, outputting JPEG files to\n    <%s>' % (fdir_out)
-        warnings.warn(msg)
+        if fdir_out is None:
+            fdir_out = os.getcwd()
+            msg = '\nWarning [fits2jpg]: <fdir_out> was not specified, outputting JPEG files to\n    <%s>' % (fdir_out)
+            warnings.warn(msg)
 
-    fname_jpg = os.path.join(fdir_out, filename.replace('.fits', '.jpg'))
+        fname_jpg = os.path.join(fdir_out, filename.replace('.fits', '.jpg'))
 
-    dpi = {
-            'low'   : 100,
-            'medium': 200,
-            'high'  : 300,
-            }
+        dpi = {
+                'low'   : 100,
+                'medium': 200,
+                'high'  : 300,
+                }
 
-    plt.imsave(fname_jpg, rgb, format='jpg', dpi=dpi[resolution])
+        plt.imsave(fname_jpg, rgb, format='jpg', dpi=dpi[resolution])
 
+        msg = '\nMessage [fits2jpg]: <%s> has been converted to jpg --\n--> and saved at <%s>.' % (os.path.basename(fname), fdir_out)
+    except Exception as error:
+        msg = '\nError [fits2jpg]: <%s> failed in conversion --\n--> %s' % (fname, error)
+
+    print(msg)
+    return
 
 def main(fnames, fdir_out=None):
 
-    for fname in tqdm(fnames):
-        try:
-            process(fname, fdir_out=fdir_out)
-            msg = '\nMessage [fits2jpg]: <%s> has been converted to jpg --\n--> and saved at <%s>.' % (os.path.basename(fname), fdir_out)
-        except Exception as error:
-            msg = '\nError [fits2jpg]: <%s> failed in conversion --\n--> %s' % (fname, error)
-        print(msg)
-
+    with mp.Pool(processes=8) as pool:
+        r = list(tqdm(pool.imap(process, fnames), total=len(fnames)))
+        pool.close()
+        pool.join()
 
 if __name__ == '__main__':
 
