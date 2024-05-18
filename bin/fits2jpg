@@ -30,16 +30,17 @@ import matplotlib.pyplot as plt
 import ssfr
 
 
-def process(fname,
+def process(
+        arguments,
         x_c=1501, # width , 3096, ascending order
         y_c=1141, # height, 2080, descending order
         y_half=939,
         x_half=939,
         crop=False,
-        fdir_out=None,
         resolution='medium',
         ):
 
+    fname, fdir_out = arguments
     try:
         filename = os.path.basename(fname)
 
@@ -90,7 +91,7 @@ def process(fname,
 def main(fnames, fdir_out=None):
 
     with mp.Pool(processes=8) as pool:
-        r = list(tqdm(pool.imap(process, fnames), total=len(fnames)))
+        r = list(tqdm(pool.imap(process, zip(fnames, [fdir_out]*len(fnames))), total=len(fnames)))
         pool.close()
         pool.join()
 
