@@ -46,15 +46,16 @@ _platform_    = 'p3b'
 
 _hsk_         = 'hsk'
 _alp_         = 'alp'
-_spns_        = 'spns-a'
+_spns_        = 'spns'
 _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
 
-_fdir_hsk_   = '/argus/field/arcsix/2024-Spring/p3/aux/hsk'
-_fdir_data_  = 'data/test/%s' % _mission_
-_fdir_out_   = 'data/test/processed'
-_fdir_cal_   = 'data/test/arcsix/cal'
+_fdir_hsk_   = 'data/%s/2024-Spring/p3/aux/hsk' % _mission_
+_fdir_cal_   = 'data/%s/cal' % _mission_
+
+_fdir_data_  = 'data/%s' % _mission_
+_fdir_out_   = 'data/processed'
 
 
 _verbose_   = True

@@ -60,11 +60,11 @@ _spns_         = 'spns-a'
 _ssfr_         = 'ssfr-a'
 _cam_          = 'nac'
 
-_fdir_main_    = 'data/test/arcsix/flt-vid'
-_fdir_sat_img_ = 'data/test/arcsix/sat-img'
+_fdir_main_    = 'data/arcsix/flt-vid'
+_fdir_sat_img_ = 'data/arcsix/sat-img'
 _wavelength_   = 745.0
 
-_fdir_data_ = 'data/test/processed'
+_fdir_data_ = 'data/processed'
 
 
 
