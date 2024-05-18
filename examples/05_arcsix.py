@@ -46,7 +46,7 @@ _platform_    = 'p3b'
 
 _hsk_         = 'hsk'
 _alp_         = 'alp'
-_spns_        = 'spns'
+_spns_        = 'spns-a'
 _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
@@ -59,9 +59,13 @@ _fdir_out_   = 'data/processed'
 
 
 _verbose_   = True
-_test_mode_ = True
+_test_mode_ = False
 
 _fnames_ = {}
+
+_alp_time_offset_ = {
+        '20240517': -5.0*86400.0+5.2,
+        }
 #\----------------------------------------------------------------------------/#
 
 
@@ -548,20 +552,48 @@ def cdata_arcsix_alp_v1(
     date_s = date.strftime('%Y%m%d')
 
     fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
-    if run:
+
+    if _test_mode_:
 
         # calculate time offset
         #/----------------------------------------------------------------------------\#
         data_hsk = ssfr.util.load_h5(fname_hsk)
         data_alp = ssfr.util.load_h5(fname_v0)
 
-        time_step = 1.0 # 1Hz data
-        data_ref = data_hsk['alt']
-        data_tar = ssfr.util.interp(data_hsk['jday'], data_alp['jday'], data_alp['alt'])
-        time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar)
+        # time_step = 1.0 # 1Hz data
+        # data_ref = data_hsk['alt']
+        # data_tar = ssfr.util.interp(data_hsk['jday'], data_alp['jday'], data_alp['alt'])
+        # time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar)
 
-        print('Find a time offset of %.2f seconds between %s and %s.' % (time_offset, _alp_.upper(), _hsk_.upper()))
+        # print('Find a time offset of %.2f seconds between %s and %s.' % (time_offset, _alp_.upper(), _hsk_.upper()))
+
+        # figure
+        #/----------------------------------------------------------------------------\#
+        if True:
+            plt.close('all')
+            fig = plt.figure(figsize=(8, 6))
+            # fig.suptitle('Figure')
+            # plot
+            #/--------------------------------------------------------------\#
+            ax1 = fig.add_subplot(111)
+            ax1.scatter(data_hsk['jday'], data_hsk['alt'], s=6, c='k', lw=0.0)
+            ax1.scatter(data_alp['jday'], data_alp['alt'], s=6, c='r', lw=0.0)
+            ax1.scatter(data_alp['jday']+_alp_time_offset_[date_s]/86400.0, data_alp['alt'], s=6, c='g', lw=0.0)
+            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            #\--------------------------------------------------------------/#
+            # save figure
+            #/--------------------------------------------------------------\#
+            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+            #\--------------------------------------------------------------/#
+            plt.show()
+            sys.exit()
         #\----------------------------------------------------------------------------/#
+        #\----------------------------------------------------------------------------/#
+
+        time_offset = _alp_time_offset_[date_s]
 
         f = h5py.File(fname_h5, 'w')
         f.attrs['description'] = 'v1:\n  1) raw data interpolated to HSK time frame;\n  2) time offset (seconds) was calculated and applied.'
@@ -590,16 +622,17 @@ def process_alp_data(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=run)
-    sys.exit()
+            fdir_out=fdir_out, run=False)
 
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
     fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
 
     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data,
-            fdir_out=fdir_out, run=run)
+            fdir_out=fdir_out, run=False)
+
     fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0,
             fdir_out=fdir_out, run=run)
+    sys.exit()
 
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     _fnames_['%s_alp_v0' % date_s] = fname_alp_v0

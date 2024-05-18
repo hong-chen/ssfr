@@ -15,17 +15,6 @@ __all__ = [
 
 def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
-    fileSize = os.path.getsize(fname)
-    if fileSize > dataLen:
-        iterN    = fileSize // dataLen
-        residual = fileSize %  dataLen
-        if residual != 0:
-            msg = '\nWarning [read_alp_raw]: <%s> has invalid data size.' % fname
-            warnings.warn(msg)
-    else:
-        msg = '\nError [read_alp_raw]: \'%s\' has invalid file size.' % fname
-        raise OSError(msg)
-
     vnames_dict  = {                    \
                     'Computer_Hour':0,  \
                   'Computer_Minute':1,  \
@@ -59,6 +48,24 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
                    'Reference_Roll':29, \
                   'Reference_Pitch':30  \
                   }
+
+
+    fileSize = os.path.getsize(fname)
+    if fileSize > dataLen:
+        iterN    = fileSize // dataLen
+        residual = fileSize %  dataLen
+        if residual != 0:
+            msg = '\nWarning [read_alp_raw]: <%s> has invalid data size.' % fname
+            warnings.warn(msg)
+    else:
+        msg = '\nWarning [read_alp_raw]: \'%s\' has invalid file size.' % fname
+        warnings.warn(msg)
+        iterN = 0
+        if vnames == None:
+            dataAll = np.zeros((iterN, len(vnames_dict)), dtype=np.float64)
+        else:
+            dataAll = np.zeros((iterN, len(vnames)), dtype=np.float64)
+        return dataAll
 
     if vnames == None:
         dataAll = np.zeros((iterN, len(vnames_dict)), dtype=np.float64)
