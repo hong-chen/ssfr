@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -503,10 +503,6 @@ def plot_video_frame(statements, test=False):
     # a secondary map
     ax_map0 = fig.add_subplot(gs[:5, 9:13])
 
-    # solar zenith/elevation angle next to the map
-    divider = make_axes_locatable(ax_map0)
-    ax_sza = divider.append_axes('left', size='5%', pad=0.0)
-
     # camera imagery
     ax_img  = fig.add_subplot(gs[:5, 13:])
     ax_img_hist = ax_img.twinx()
@@ -761,32 +757,20 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
-    # sun elevation plot settings
-    #/----------------------------------------------------------------------------\#
-    ax_sza.axhline(90.0-sza_current, lw=1.5, color='r')
-
-    ax_sza.set_ylim((0.0, 90.0))
-    ax_sza.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 90.1, 30.0)))
-    ax_sza.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 90.1, 10.0)))
-    ax_sza.xaxis.set_ticks([])
-    ax_sza.yaxis.tick_left()
-    ax_sza.yaxis.set_label_position('left')
-    ax_sza.set_ylabel('Sun Elevation [$^\circ$]')
-    #\----------------------------------------------------------------------------/#
-
-
     # altitude plot settings
     #/----------------------------------------------------------------------------\#
-    color0 = alt_cmap(alt_norm(alt_current))
-    ax_alt.axhline(alt_current, lw=1.5, color=color0)
+    ax_alt.axhspan(0, (90.0-sza_current)/10.0, color='gray', lw=0.0, zorder=0, alpha=0.3)
 
-    ax_alt.set_ylim((0.0, 8.0))
-    ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 2.0)))
-    ax_alt.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 8.1, 1.0)))
+    color0 = alt_cmap(alt_norm(alt_current))
+    ax_alt.axhline(alt_current, lw=2.0, color=color0, zorder=1)
+
+    ax_alt.set_ylim((0.0, 9.0))
+    ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 3.0)))
+    ax_alt.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
     ax_alt.xaxis.set_ticks([])
     ax_alt.yaxis.tick_right()
     ax_alt.yaxis.set_label_position('right')
-    ax_alt.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18)
+    ax_alt.set_ylabel('Sun Elevation [$\\times 10^\circ$] / Altitude [km]', rotation=270.0, labelpad=18)
     #\----------------------------------------------------------------------------/#
 
 
@@ -834,17 +818,16 @@ def plot_video_frame(statements, test=False):
     # acknowledgements
     #/----------------------------------------------------------------------------\#
     ax.axis('off')
-    text1 = 'Acknowledgements:\n\
-instruments calibrated and prepared by H. Chen, Y.-W. Chen, K. Hirata, A. Chamberlain, K. Dong\n\
-instruments installed and maintained by J. Drouet, S. Schmidt\n\
-instruments checked and operated by A. Chamberlain, V. Nataraja'
-    ax.annotate(text1, xy=(0.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='left', va='top')
+    text1 = '\
+presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hirata, Arabella Chamberlain, Katey Dong, Jeffery Drouet, and Sebastian Schmidt\n\
+'
+    ax.annotate(text1, xy=(0.5, 0.24), fontsize=8, color='gray', xycoords='axes fraction', ha='center', va='center')
 
-    text2 = 'Acknowledgements:\n\
-satellite imagery processed by V. Nataraja\n\
-instrument data processed by H. Chen\n\
-video created by H. Chen'
-    ax.annotate(text2, xy=(1.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='right', va='top')
+#     text2 = 'Acknowledgements:\n\
+# satellite imagery processed by V. Nataraja\n\
+# instrument data processed by H. Chen\n\
+# video created by H. Chen'
+#     ax.annotate(text2, xy=(1.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='right', va='top')
 
     # ax.annotate('by\nARCSIX SSFR Team', xy=(0.5, 0.30), fontsize=14, color='gray', xycoords='axes fraction', ha='center', va='top')
     #\----------------------------------------------------------------------------/#
@@ -1376,17 +1359,17 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        # main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
         #/----------------------------------------------------------------------------\#
-        main_vid(date, wvl0=_wavelength_)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
