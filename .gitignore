@@ -41,3 +41,4 @@ future_dev/*
 !ssfr/data
 !ssfr/data/*.dat
 !ssfr/data/cal/*.h5
+*flt-vid*
