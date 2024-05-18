@@ -55,7 +55,7 @@ _fdir_hsk_   = 'data/%s/2024-Spring/p3/aux/hsk' % _mission_
 _fdir_cal_   = 'data/%s/cal' % _mission_
 
 _fdir_data_  = 'data/%s' % _mission_
-_fdir_out_   = 'data/processed'
+_fdir_out_   = '%s/processed' % _fdir_data_
 
 
 _verbose_   = True
@@ -65,6 +65,9 @@ _fnames_ = {}
 
 _alp_time_offset_ = {
         '20240517': -5.0*86400.0+5.2,
+        }
+_spns_time_offset_ = {
+        '20240517': 0.0,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -553,13 +556,13 @@ def cdata_arcsix_alp_v1(
 
     fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
 
-    if _test_mode_:
+    if run:
 
-        # calculate time offset
-        #/----------------------------------------------------------------------------\#
         data_hsk = ssfr.util.load_h5(fname_hsk)
         data_alp = ssfr.util.load_h5(fname_v0)
 
+        # calculate time offset
+        #/----------------------------------------------------------------------------\#
         # time_step = 1.0 # 1Hz data
         # data_ref = data_hsk['alt']
         # data_tar = ssfr.util.interp(data_hsk['jday'], data_alp['jday'], data_alp['alt'])
@@ -569,7 +572,7 @@ def cdata_arcsix_alp_v1(
 
         # figure
         #/----------------------------------------------------------------------------\#
-        if True:
+        if _test_mode_:
             plt.close('all')
             fig = plt.figure(figsize=(8, 6))
             # fig.suptitle('Figure')
@@ -622,17 +625,16 @@ def process_alp_data(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=False)
+            fdir_out=fdir_out, run=run)
 
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
     fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
 
     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data,
-            fdir_out=fdir_out, run=False)
+            fdir_out=fdir_out, run=run)
 
     fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0,
             fdir_out=fdir_out, run=run)
-    sys.exit()
 
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     _fnames_['%s_alp_v0' % date_s] = fname_alp_v0
@@ -728,21 +730,13 @@ def cdata_arcsix_spns_v1(
         data_hsk= ssfr.util.load_h5(fname_hsk)
         #\----------------------------------------------------------------------------/#
 
-        # calculate time offset
+        # check time offset
         #/----------------------------------------------------------------------------\#
-        time_step = 1.0 # 1Hz data
-        index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
-        data_ref = data_spns_v0['tot/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
-        data_tar  = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday'], data_spns_v0['tot/flux'][:, index_wvl])
-        data_tar_ = ssfr.util.interp(data_hsk['jday'], data_spns_v0['dif/jday'], data_spns_v0['dif/flux'][:, index_wvl])
-        diff_ratio = data_tar_/data_tar
-        data_tar[(diff_ratio>0.1)|(diff_ratio<0.0)] = 0.0
-        # time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar, offset_range=[-6000, -3000])
         if _test_mode_:
-            time_offset = -3520.0
-        # figure
-        #/----------------------------------------------------------------------------\#
-        if False:
+            index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
+            data_ref = data_spns_v0['tot/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
+            data_tar  = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday'], data_spns_v0['tot/flux'][:, index_wvl])
+
             plt.close('all')
             fig = plt.figure(figsize=(8, 6))
             # fig.suptitle('Figure')
@@ -772,8 +766,7 @@ def cdata_arcsix_spns_v1(
             sys.exit()
         #\----------------------------------------------------------------------------/#
 
-        print('Find a time offset of %.2f seconds between %s and %s.' % (time_offset, _spns_.upper(), _hsk_.upper()))
-        #\----------------------------------------------------------------------------/#
+        time_offset = _spns_time_offset_[date_s]
 
         # interpolate spn-s data to hsk time frame
         #/----------------------------------------------------------------------------\#
@@ -844,7 +837,7 @@ def cdata_arcsix_spns_v2(
         mu = np.cos(np.deg2rad(data_hsk['sza']))
 
         try:
-            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_a']+ang_pit_offset, data_hsk['ang_rol_a']+ang_rol_offset, data_hsk['ang_hed'])
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_s']+ang_pit_offset, data_hsk['ang_rol_s']+ang_rol_offset, data_hsk['ang_hed'])
         except Exception as error:
             print(error)
             iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit']+ang_pit_offset, data_hsk['ang_rol']+ang_rol_offset, data_hsk['ang_hed'])
@@ -913,10 +906,10 @@ def process_spns_data(date, run=True):
             fdir_out=fdir_out, run=run)
     fname_spns_v1 = cdata_arcsix_spns_v1(date, fname_spns_v0, _fnames_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_alp_v1' % date_s],
-            fdir_out=fdir_out, run=run)
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s],
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=run)
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
 
     _fnames_['%s_spns_v0' % date_s] = fname_spns_v0
     _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
@@ -1379,9 +1372,10 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data,
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+    sys.exit()
     fname_ssfr_v2 = cdata_arcsix_ssfr_v2(date, fname_ssfr_v1, _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
 
@@ -1630,12 +1624,12 @@ def main_process_data(date, run=True):
     #    - heading angle
     #    - motor pitch angle
     #    - motor roll angle
-    process_alp_data(date, run=run)
+    process_alp_data(date, run=False)
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=run)
+    process_spns_data(date, run=False)
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
