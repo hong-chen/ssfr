@@ -757,7 +757,7 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
-    # altitude plot settings
+    # altitude/sza plot settings
     #/----------------------------------------------------------------------------\#
     ax_alt.axhspan(0, (90.0-sza_current)/10.0, color='gray', lw=0.0, zorder=0, alpha=0.3)
 
@@ -818,22 +818,24 @@ def plot_video_frame(statements, test=False):
 
     # acknowledgements
     #/----------------------------------------------------------------------------\#
-    ax.axis('off')
     text1 = '\
 presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hirata, Arabella Chamberlain, Katey Dong, Jeffery Drouet, and Sebastian Schmidt\n\
 '
     ax.annotate(text1, xy=(0.5, 0.24), fontsize=8, color='gray', xycoords='axes fraction', ha='center', va='center')
+    ax.axis('off')
     #\----------------------------------------------------------------------------/#
 
 
     # legend plot settings
     #/----------------------------------------------------------------------------\#
     patches_legend = []
-    for key in vars_plot.keys():
-        if key.lower() != 'altitude':
-            patches_legend.append(mpatches.Patch(color=vars_plot[key]['color'], label=key))
-    # ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 1.23, 0.94, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=14)
-    ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=10)
+    for vname in vars_plot.keys():
+        var_plot = vars_plot[vname]
+        if vname.lower() != 'altitude' and var_plot['plot?']:
+            patches_legend.append(mpatches.Patch(color=var_plot['color'], label=vname))
+    if len(patches_legend) > 0:
+        ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=10)
+        # ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 1.23, 0.94, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=14)
     #\----------------------------------------------------------------------------/#
 
 
