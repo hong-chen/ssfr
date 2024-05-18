@@ -326,531 +326,6 @@ class flt_sim:
 
 
 
-def plot_video_frame_old(statements, test=False):
-
-    # extract arguments
-    #/----------------------------------------------------------------------------\#
-    flt_sim0, index_trk, index_pnt, n = statements
-
-    flt_trk0 = flt_sim0.flt_trks[index_trk]
-    flt_img0 = flt_sim0.flt_imgs[index_trk]
-    vnames_trk = flt_trk0.keys()
-    vnames_img = flt_img0.keys()
-    #\----------------------------------------------------------------------------/#
-
-
-    # general plot settings
-    #/----------------------------------------------------------------------------\#
-    vars_plot = OrderedDict()
-
-    vars_plot['SSFR↑']   = {
-            'vname':'f-up_ssfr',
-            'color':'red',
-            }
-    vars_plot['SSFR↓']   = {
-            'vname':'f-down_ssfr',
-            'color':'blue',
-            }
-    vars_plot['SPNS Total↓']   = {
-            'vname':'f-down-total_spns',
-            'color':'green',
-            }
-    vars_plot['SPNS Diffuse↓']   = {
-            'vname':'f-down-diffuse_spns',
-            'color':'springgreen',
-            }
-    vars_plot['TOA↓']   = {
-            'vname':'f-down_toa',
-            'color':'black',
-            }
-    vars_plot['Altitude']   = {
-            'vname':'alt',
-            'color':'orange',
-            }
-
-    for vname in vars_plot.keys():
-        vname_ori = vars_plot[vname]['vname']
-        if vname_ori in vnames_trk:
-            vars_plot[vname]['plot?'] = True
-        else:
-            vars_plot[vname]['plot?'] = False
-        if ('_ssfr' in vname_ori) or ('_spns' in vname_ori) or ('_toa' in vname_ori):
-            vars_plot[vname]['spectra?'] = True
-        else:
-            vars_plot[vname]['spectra?'] = False
-    #\----------------------------------------------------------------------------/#
-
-
-    # check data
-    #/----------------------------------------------------------------------------\#
-    has_trk = True
-
-    if ('ang_pit' in vnames_trk) and ('ang_rol' in vnames_trk):
-        has_att = True
-    else:
-        has_att = False
-
-    if ('ang_pit_m' in vnames_trk) and ('ang_rol_m' in vnames_trk):
-        has_att_corr = True
-    else:
-        has_att_corr = False
-
-    if ('fname_sat_img' in vnames_img) and ('extent_sat_img' in vnames_img):
-        has_sat_img = True
-    else:
-        has_sat_img = False
-
-    if ('fname_sat_img0' in vnames_img) and ('extent_sat_img0' in vnames_img):
-        has_sat_img0 = True
-    else:
-        has_sat_img0 = False
-
-    if ('fnames_cam_img' in vnames_img):
-        has_cam_img = True
-    else:
-        has_cam_img = False
-    #\----------------------------------------------------------------------------/#
-
-
-    # param settings
-    #/----------------------------------------------------------------------------\#
-    tmhr_current = flt_trk0['tmhr'][index_pnt]
-    jday_current = flt_trk0['jday'][index_pnt]
-    lon_current  = flt_trk0['lon'][index_pnt]
-    lat_current  = flt_trk0['lat'][index_pnt]
-    alt_current  = flt_trk0['alt'][index_pnt]
-    sza_current  = flt_trk0['sza'][index_pnt]
-    dtime_current = er3t.util.jday_to_dtime(jday_current)
-
-    tmhr_length  = 0.5 # half an hour
-    tmhr_past    = tmhr_current-tmhr_length
-    #\----------------------------------------------------------------------------/#
-
-
-    # flight direction
-    #/----------------------------------------------------------------------------\#
-    alt_cmap = mpl.cm.get_cmap('jet')
-    alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=6.0)
-
-    dlon = flt_sim0.flt_imgs[index_trk]['extent_sat_img'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat_img'][0]
-    Nscale = int(dlon/1.3155229999999989 * 15)
-
-    arrow_prop = dict(
-            arrowstyle='fancy,head_width=0.6,head_length=0.8',
-            shrinkA=0,
-            shrinkB=0,
-            facecolor='red',
-            edgecolor='white',
-            linewidth=1.0,
-            alpha=0.6,
-            relpos=(0.0, 0.0),
-            )
-    if index_trk == 0 and index_pnt == 0:
-        plot_arrow = False
-    else:
-        if index_pnt == 0:
-            lon_before = flt_sim0.flt_trks[index_trk-1]['lon'][-1]
-            lat_before = flt_sim0.flt_trks[index_trk-1]['lat'][-1]
-        else:
-            lon_before = flt_sim0.flt_trks[index_trk]['lon'][index_pnt-1]
-            lat_before = flt_sim0.flt_trks[index_trk]['lat'][index_pnt-1]
-        dx = lon_current - lon_before
-        dy = lat_current - lat_before
-
-        if np.sqrt(dx**2+dy**2)*111000.0 > 20.0:
-            plot_arrow = True
-            lon_point_to = lon_current + Nscale*dx
-            lat_point_to = lat_current + Nscale*dy
-        else:
-            plot_arrow = False
-    #\----------------------------------------------------------------------------/#
-
-
-    # figure setup
-    #/----------------------------------------------------------------------------\#
-    fig = plt.figure(figsize=(16, 9))
-
-    gs = gridspec.GridSpec(12, 17)
-
-    # ax of all
-    ax = fig.add_subplot(gs[:, :])
-
-    # map of flight track overlay satellite imagery
-    ax_map = fig.add_subplot(gs[:8, :7])
-
-    # solar zenith/elevation angle next to the map
-    divider = make_axes_locatable(ax_map)
-    ax_sza = divider.append_axes('right', size='5%', pad=0.0)
-
-    # aircraft and platform attitude status
-    ax_nav  = fig.add_subplot(gs[:2, 7:9])
-
-    # a secondary map
-    ax_map0 = fig.add_subplot(gs[:5, 9:13])
-
-    # camera imagery
-    ax_img  = fig.add_subplot(gs[:5, 13:])
-    ax_img_hist = ax_img.twinx()
-
-    # spetral irradiance
-    ax_wvl  = fig.add_subplot(gs[5:8, 9:])
-
-    # time series
-    ax_tms = fig.add_subplot(gs[9:, :])
-    ax_alt = ax_tms.twinx()
-
-    fig.subplots_adjust(hspace=10.0, wspace=10.0)
-    #\----------------------------------------------------------------------------/#
-
-    for itrk in range(index_trk+1):
-
-        flt_trk = flt_sim0.flt_trks[itrk]
-        flt_img = flt_sim0.flt_imgs[itrk]
-
-        if itrk == index_trk:
-
-            logic_solid = (flt_trk['tmhr'][:index_pnt]>tmhr_past) & (flt_trk['tmhr'][:index_pnt]<=tmhr_current)
-            logic_trans = np.logical_not(logic_solid)
-
-            if itrk == index_trk:
-                alpha_trans = 0.0
-            else:
-                alpha_trans = 0.1
-
-            if has_sat_img:
-                img = mpl_img.imread(flt_img['fname_sat_img'])
-                ax_map.imshow(img, extent=flt_img['extent_sat_img'], origin='upper', aspect='auto', zorder=0)
-
-                rect = mpatches.Rectangle((lon_current-0.25, lat_current-0.25), 0.5, 0.5, lw=1.0, ec='k', fc='none')
-                ax_map.add_patch(rect)
-
-                ax_map.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans)
-                ax_map.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
-
-            if has_sat_img0:
-                img = mpl_img.imread(flt_img['fname_sat_img0'])
-                ax_map0.imshow(img, extent=flt_img['extent_sat_img0'], origin='upper', aspect='auto', zorder=0)
-
-                ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_trans], flt_trk['lat'][:index_pnt][logic_trans], c=flt_trk['alt'][:index_pnt][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans)
-                ax_map0.scatter(flt_trk['lon'][:index_pnt][logic_solid], flt_trk['lat'][:index_pnt][logic_solid], c=flt_trk['alt'][:index_pnt][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
-
-            if has_cam_img:
-                ang_cam_offset = -152.0
-                cam_x_s = 5.0
-                cam_x_e = 255.0*4.0
-                cam_y_s = 0.0
-                cam_y_e = 0.12
-                cam_hist_x_s = 0.0
-                cam_hist_x_e = 255.0
-                cam_hist_bins = np.linspace(cam_hist_x_s, cam_hist_x_e, 31)
-
-                fname_cam = flt_img['fnames_cam_img'][index_pnt]
-                img = mpl_img.imread(fname_cam)[210:, 550:-650, :]
-
-                # if ('ang_hed' in vnames_trk):
-                #     ang_hed0   = flt_trk['ang_hed'][index_pnt]
-                # else:
-                #     ang_hed0 = 0.0
-                # img = ndimage.rotate(img, -ang_hed0+ang_cam_offset, reshape=False)[320:-320, 320:-320]
-
-                img = ndimage.rotate(img, ang_cam_offset, reshape=False)
-                img_plot = img.copy()
-                img_plot[:, :, 0] = np.int_(img[:, :, 0]/img[:, :, 0].max()*255)
-                img_plot[:, :, 1] = np.int_(img[:, :, 1]/img[:, :, 1].max()*255)
-                img_plot[:, :, 2] = np.int_(img[:, :, 2]/img[:, :, 2].max()*255)
-                img_plot[img_plot>=255] = 255
-                img_plot = np.int_(img_plot)
-                ax_img.imshow(img_plot, origin='upper', aspect='auto', zorder=0, extent=[cam_x_s, cam_x_e, cam_y_s, cam_y_e])
-
-                ax_img_hist.hist(img[:, :, 0].ravel(), bins=cam_hist_bins, histtype='step', lw=0.5, alpha=0.9, density=True, color='r')
-                ax_img_hist.hist(img[:, :, 1].ravel(), bins=cam_hist_bins, histtype='step', lw=0.5, alpha=0.9, density=True, color='g')
-                ax_img_hist.hist(img[:, :, 2].ravel(), bins=cam_hist_bins, histtype='step', lw=0.5, alpha=0.9, density=True, color='b')
-                ax_img.plot([255, 255], [0, 0.005], color='gray', lw=1.0, ls='-')
-
-
-            if not plot_arrow:
-                ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-                ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
-                # ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-                # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
-            else:
-                color0 = alt_cmap(alt_norm(alt_current))
-                arrow_prop['facecolor'] = color0
-                arrow_prop['relpos'] = (lon_current, lat_current)
-                ax_map.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
-                # ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
-            ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-            ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
-
-            ax_nav.axvline(0.0, lw=0.5, color='gray', zorder=1)
-            ax_nav.axhline(0.0, lw=0.5, color='gray', zorder=1)
-            if has_att:
-                ang_pit0   = flt_trk['ang_pit'][index_pnt]
-                ang_rol0   = flt_trk['ang_rol'][index_pnt]
-
-                x  = np.linspace(-10.0, 10.0, 101)
-
-                slope0  = -np.tan(np.deg2rad(ang_rol0))
-                offset0 = ang_pit0
-                y0 = slope0*x + offset0
-
-                ax_nav.plot(x[15:-15], y0[15:-15], lw=1.0, color='red', zorder=1, alpha=0.6)
-                ax_nav.scatter(x[50], y0[50], lw=0.0, s=40, c='red', zorder=1, alpha=0.6)
-
-                ax_nav.axhspan(-10.0, 0.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
-                ax_nav.axhspan(0.0,  10.0, lw=0.0, color='deepskyblue', zorder=0, alpha=0.3)
-
-                if has_att_corr:
-                    ang_pit_m0 = flt_trk['ang_pit_m'][index_pnt]
-                    ang_rol_m0 = flt_trk['ang_rol_m'][index_pnt]
-
-                    ang_pit_offset = 4.444537204377897
-                    ang_rol_offset = -0.5463839481366073
-
-                    slope1  = -np.tan(np.deg2rad(ang_rol0-ang_rol_m0+ang_rol_offset))
-                    offset1 = (ang_pit0-ang_pit_m0+ang_pit_offset)
-                    y1 = slope1*x + offset1
-
-                    ax_nav.plot(x[25:-25], y1[25:-25], lw=2.0, color='green', zorder=2, alpha=0.7)
-
-
-            for vname_plot in vars_plot.keys():
-                var_plot = vars_plot[vname_plot]
-                if var_plot['vname'].lower() in ['alt']:
-                    ax_alt.fill_between(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1], facecolor=vars_plot[vname_plot]['color'], alpha=0.25, lw=0.0, zorder=0)
-                elif var_plot['vname'].lower() in ['f-down-total_spns', 'f-down-diffuse_spns']:
-                    ax_wvl.scatter(flt_trk['wvl_spns'], flt_trk[var_plot['vname']][index_pnt, :], c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
-                    wvl_index = np.argmin(np.abs(flt_trk['wvl_spns']-flt_sim0.wvl0))
-                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
-                    ax_wvl.axvline(flt_trk['wvl_spns'][wvl_index], color=vars_plot[vname_plot]['color'], ls='-', lw=1.0, alpha=0.5, zorder=0)
-
-                elif var_plot['vname'].lower() in ['f-down_ssfr']:
-                    ax_wvl.scatter(flt_trk['wvl_ssfr_zen'], flt_trk[var_plot['vname']][index_pnt, :], c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
-                    wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl0))
-                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
-                    ax_wvl.axvline(flt_trk['wvl_ssfr_zen'][wvl_index], color=vars_plot[vname_plot]['color'], ls='-', lw=1.0, alpha=0.5, zorder=0)
-
-                elif var_plot['vname'].lower() in ['f-up_ssfr']:
-                    ax_wvl.scatter(flt_trk['wvl_ssfr_nad'], flt_trk[var_plot['vname']][index_pnt, :], c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=4)
-                    wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_nad']-flt_sim0.wvl0))
-                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
-                    ax_wvl.axvline(flt_trk['wvl_ssfr_nad'][wvl_index], color=vars_plot[vname_plot]['color'], ls='-', lw=1.0, alpha=0.5, zorder=0)
-                elif var_plot['vname'].lower() in ['f-down_toa']:
-                    ax_wvl.scatter(flt_trk['wvl_ssfr_zen'], flt_trk[var_plot['vname']]*np.cos(np.deg2rad(sza_current)), c=vars_plot[vname_plot]['color'], s=6, lw=0.0, zorder=1, alpha=0.6)
-                    wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl0))
-                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], np.cos(np.deg2rad(flt_trk['sza'][:index_pnt+1]))*flt_trk[var_plot['vname']][wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=1, alpha=0.6)
-                else:
-                    ax_tms.scatter(flt_trk['tmhr'][:index_pnt+1], flt_trk[var_plot['vname']][:index_pnt+1], c=vars_plot[vname_plot]['color'] , s=2, lw=0.0, zorder=4)
-
-        else:
-
-            logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<tmhr_current)
-            logic_trans = np.logical_not(logic_solid)
-
-            ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
-            ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
-            ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=0.1)
-            ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
-
-            if logic_solid.sum() > 0:
-
-                for vname_plot in vars_plot.keys():
-                    var_plot = vars_plot[vname_plot]
-
-                    if var_plot['vname'].lower() in ['alt']:
-                        ax_alt.fill_between(flt_trk['tmhr'], flt_trk[var_plot['vname']], facecolor=vars_plot[vname_plot]['color'], alpha=0.25, lw=0.0, zorder=0)
-
-                    elif var_plot['vname'].lower() in ['f-down-total_spns', 'f-down-diffuse_spns']:
-                        wvl_index = np.argmin(np.abs(flt_trk['wvl_spns']-flt_sim0.wvl0))
-                        ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']][:, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
-
-                    elif var_plot['vname'].lower() in ['f-down_ssfr']:
-                        wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl0))
-                        ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']][:, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
-                    elif var_plot['vname'].lower() in ['f-up_ssfr']:
-                        wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_nad']-flt_sim0.wvl0))
-                        ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']][:, wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=4)
-                    elif var_plot['vname'].lower() in ['f-down_toa']:
-                        wvl_index = np.argmin(np.abs(flt_trk['wvl_ssfr_zen']-flt_sim0.wvl0))
-                        ax_tms.scatter(flt_trk['tmhr'], np.cos(np.deg2rad(flt_trk['sza']))*flt_trk[var_plot['vname']][wvl_index], c=vars_plot[vname_plot]['color'], s=4, lw=0.0, zorder=1, alpha=0.6)
-                    else:
-                        ax_tms.scatter(flt_trk['tmhr'], flt_trk[var_plot['vname']], c=vars_plot[vname_plot]['color'] , s=2, lw=0.0, zorder=4)
-
-
-    # figure settings
-    #/----------------------------------------------------------------------------\#
-    title_fig = '%s UTC' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'))
-    fig.suptitle(title_fig, y=0.96, fontsize=20)
-    #\----------------------------------------------------------------------------/#
-
-
-    # map plot settings
-    #/----------------------------------------------------------------------------\#
-    if has_sat_img:
-        ax_map.set_xlim(flt_img['extent_sat_img'][:2])
-        ax_map.set_ylim(flt_img['extent_sat_img'][2:])
-
-        title_map = '%s at %s UTC' % (flt_img0['imager'], er3t.util.jday_to_dtime(flt_img0['jday']).strftime('%H:%M'))
-        time_diff = np.abs(flt_img0['jday']-jday_current)*86400.0
-        if time_diff > 301.0:
-            ax_map.set_title(title_map, color='gray')
-        else:
-            ax_map.set_title(title_map)
-
-    ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 2.0)))
-    ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 2.0)))
-    ax_map.set_xlabel('Longitude [$^\circ$]')
-    ax_map.set_ylabel('Latitude [$^\circ$]')
-    #\----------------------------------------------------------------------------/#
-
-
-    # navigation plot settings
-    #/----------------------------------------------------------------------------\#
-    ax_nav.set_xlim((-10.0, 10.0))
-    ax_nav.set_ylim((-10.0, 10.0))
-    ax_nav.axis('off')
-    #\----------------------------------------------------------------------------/#
-
-
-    # map0 plot settings
-    #/----------------------------------------------------------------------------\#
-    if has_sat_img0:
-        title_map0 = 'Zoomed-in View'
-        time_diff = np.abs(flt_img0['jday']-tmhr_current)*86400.0
-        if time_diff > 301.0:
-            ax_map0.set_title(title_map0, color='gray')
-        else:
-            ax_map0.set_title(title_map0)
-
-    ax_map0.set_xlim((lon_current-0.25, lon_current+0.25))
-    ax_map0.set_ylim((lat_current-0.25, lat_current+0.25))
-    ax_map0.axis('off')
-    #\----------------------------------------------------------------------------/#
-
-
-    # camera image plot settings
-    #/----------------------------------------------------------------------------\#
-    if has_cam_img:
-        jday_cam  = flt_sim0.flt_imgs[index_trk]['jday_cam_img'][index_pnt]
-        dtime_cam = er3t.util.jday_to_dtime(jday_cam)
-
-        title_img = 'Camera at %s UTC' % (dtime_cam.strftime('%H:%M:%S'))
-        time_diff = np.abs(jday_current-jday_cam)*86400.0
-        if time_diff > 301.0:
-            ax_img.set_title(title_img, color='gray')
-        else:
-            ax_img.set_title(title_img)
-
-        ax_img_hist.set_xlim((cam_x_s, cam_x_e))
-        ax_img_hist.set_ylim((cam_y_s, cam_y_e))
-
-    ax_img.axis('off')
-    ax_img_hist.axis('off')
-    #\----------------------------------------------------------------------------/#
-
-
-    # specta plot setting
-    #/----------------------------------------------------------------------------\#
-    ax_wvl.set_xlim((200, 2200))
-    ax_wvl.set_ylim((0.0, 2.0))
-    ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
-    ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
-    ax_wvl.set_xlabel('Wavelength [nm]')
-    ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
-    ax_wvl.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
-    #\----------------------------------------------------------------------------/#
-
-
-    # sun elevation plot settings
-    #/----------------------------------------------------------------------------\#
-    ax_sza.set_ylim((0.0, 90.0))
-    ax_sza.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 90.1, 30.0)))
-    ax_sza.axhline(90.0-sza_current, lw=1.5, color='r')
-    ax_sza.xaxis.set_ticks([])
-    ax_sza.yaxis.tick_right()
-    ax_sza.yaxis.set_label_position('right')
-    ax_sza.set_ylabel('Sun Elevation [$^\circ$]', rotation=270.0, labelpad=18)
-    #\----------------------------------------------------------------------------/#
-
-
-    # altitude plot settings
-    #/----------------------------------------------------------------------------\#
-    ax_alt.set_ylim((0.0, 8.0))
-    ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 2.0)))
-    ax_alt.yaxis.tick_right()
-    ax_alt.yaxis.set_label_position('right')
-    ax_alt.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
-
-    ax_alt.set_frame_on(True)
-    for spine in ax_alt.spines.values():
-        spine.set_visible(False)
-    ax_alt.spines['right'].set_visible(True)
-    ax_alt.spines['right'].set_color(vars_plot['Altitude']['color'])
-    ax_alt.tick_params(axis='y', colors=vars_plot['Altitude']['color'])
-    #\----------------------------------------------------------------------------/#
-
-
-    # time series plot settings
-    #/----------------------------------------------------------------------------\#
-    ax_tms.grid()
-    ax_tms.set_xlim((tmhr_past-0.0000001, tmhr_current+0.0000001))
-    ax_tms.xaxis.set_major_locator(FixedLocator([tmhr_past, tmhr_current-0.5*tmhr_length, tmhr_current]))
-    ax_tms.xaxis.set_minor_locator(FixedLocator(np.arange(tmhr_past, tmhr_current+0.001, 5.0/60.0)))
-    ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
-    ax_tms.set_xlabel('Time [hour]')
-
-    ax_tms.set_ylim((0.0, 2.0))
-    ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
-    ax_tms.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
-
-    if alt_current < 1.0:
-        title_all = 'Longitude %9.4f$^\circ$, Latitude %8.4f$^\circ$, Altitude %6.1f  m' % (lon_current, lat_current, alt_current*1000.0)
-    else:
-        title_all = 'Longitude %9.4f$^\circ$, Latitude %8.4f$^\circ$, Altitude %6.4f km' % (lon_current, lat_current, alt_current)
-    ax_tms.set_title(title_all)
-
-    ax_tms.spines['right'].set_visible(False)
-    ax_tms.set_zorder(ax_alt.get_zorder()+1)
-    ax_tms.patch.set_visible(False)
-    #\----------------------------------------------------------------------------/#
-
-    # acknowledgements
-    #/----------------------------------------------------------------------------\#
-    ax.axis('off')
-    text1 = 'Acknowledgements:\n\
-instruments engineered by Jeffery Drouet and Sebastian Schmidt\n\
-instruments calibrated by Hong Chen, Yu-Wen Chen, and Ken Hirata\n\
-instrument data collected by Arabella Chamberlain'
-    ax.annotate(text1, xy=(0.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='left', va='top')
-
-    text2 = 'Acknowledgements:\n\
-satellite imagery processed by Vikas Nataraja\n\
-instrument data processed by Hong Chen\n\
-video created by Hong Chen'
-    ax.annotate(text2, xy=(1.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='right', va='top')
-
-    # ax.annotate('by\nARCSIX SSFR Team', xy=(0.5, 0.30), fontsize=14, color='gray', xycoords='axes fraction', ha='center', va='top')
-    #\----------------------------------------------------------------------------/#
-
-
-    # legend plot settings
-    #/----------------------------------------------------------------------------\#
-    patches_legend = []
-    for key in vars_plot.keys():
-        if key.lower() != 'altitude':
-            patches_legend.append(mpatches.Patch(color=vars_plot[key]['color'], label=key))
-    # ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 1.23, 0.94, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=14)
-    ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=10)
-    #\----------------------------------------------------------------------------/#
-
-
-    if test:
-        plt.show()
-        sys.exit()
-    else:
-        plt.savefig('tmp-graph/%5.5d.png' % n, bbox_inches='tight')
-        plt.close(fig)
-
 def plot_video_frame(statements, test=False):
 
     # extract arguments
@@ -933,12 +408,12 @@ def plot_video_frame(statements, test=False):
     else:
         has_att_corr = False
 
-    if ('fname_sat_img' in vnames_img) and ('extent_sat_img' in vnames_img):
+    if ('fnames_sat_img' in vnames_img) and ('extent_sat_img' in vnames_img):
         has_sat_img = True
     else:
         has_sat_img = False
 
-    if ('fname_sat_img0' in vnames_img) and ('extent_sat_img0' in vnames_img):
+    if ('fnames_sat_img0' in vnames_img) and ('extent_sat_img0' in vnames_img):
         has_sat_img0 = True
     else:
         has_sat_img0 = False
@@ -1046,13 +521,15 @@ def plot_video_frame(statements, test=False):
     # base plot
     #/----------------------------------------------------------------------------\#
     if has_sat_img:
-        img = mpl_img.imread(flt_img0['fname_sat_img'])
+        fname_sat = flt_img0['fnames_sat_img'][index_pnt]
+        img = mpl_img.imread(fname_sat)
         ax_map.imshow(img, extent=flt_img0['extent_sat_img'], origin='upper', aspect='auto', zorder=0)
         rect = mpatches.Rectangle((lon_current-0.25, lat_current-0.25), 0.5, 0.5, lw=1.0, ec='k', fc='none')
         ax_map.add_patch(rect)
 
     if has_sat_img0:
-        img = mpl_img.imread(flt_img0['fname_sat_img0'])
+        fname_sat0 = flt_img0['fnames_sat_img0'][index_pnt]
+        img = mpl_img.imread(fname_sat0)
         ax_map0.imshow(img, extent=flt_img0['extent_sat_img0'], origin='upper', aspect='auto', zorder=0)
 
     if has_cam_img:
@@ -1209,8 +686,8 @@ def plot_video_frame(statements, test=False):
         ax_map.set_xlim(flt_img0['extent_sat_img'][:2])
         ax_map.set_ylim(flt_img0['extent_sat_img'][2:])
 
-        title_map = '%s at %s UTC' % (flt_img0['imager'], er3t.util.jday_to_dtime(flt_img0['jday']).strftime('%H:%M'))
-        time_diff = np.abs(flt_img0['jday']-jday_current)*86400.0
+        title_map = '%s at %s UTC' % (flt_img0['satID'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat_img'][index_pnt]).strftime('%H:%M'))
+        time_diff = np.abs(flt_img0['jday_sat_img'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map.set_title(title_map, color='gray')
         else:
@@ -1235,7 +712,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat_img0:
         title_map0 = 'Zoomed-in View'
-        time_diff = np.abs(flt_img0['jday']-tmhr_current)*86400.0
+        time_diff = np.abs(flt_img0['jday_sat_img0'][index_pnt]-tmhr_current)*86400.0
         if time_diff > 301.0:
             ax_map0.set_title(title_map0, color='gray')
         else:
@@ -1526,6 +1003,9 @@ def main_pre(
         indices = np.where(jday_sat_==jday_sat0)[0]
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
         fnames_sat.append(fname0)
+
+    fnames_sat0 = fnames_sat.copy()
+    jday_sat0 = jday_sat.copy()
     #\----------------------------------------------------------------------------/#
     # print(jday_sat)
     # print(fnames_sat)
@@ -1538,11 +1018,6 @@ def main_pre(
     tmhr_interval = 10.0/60.0
     half_interval = tmhr_interval/48.0
 
-    # jday_edges = np.append(jday_sat[0]-half_interval, jday_sat[1:]-(jday_sat[1:]-jday_sat[:-1])/2.0)
-    # jday_edges = np.append(jday_edges, jday_sat[-1]+half_interval)
-
-    # jday_s = ((jday_sat[0]  * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
-    # jday_e = ((jday_sat[-1] * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
     jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
     jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
 
@@ -1587,20 +1062,33 @@ def main_pre(
     for i in range(len(flt_trks)):
         flt_img = {}
 
-        index0  = np.argmin(np.abs(jday_sat-flt_trks[i]['jday0']))
-        flt_img['imager'] = os.path.basename(fnames_sat[index0]).split('_')[0].replace('-', ' ')
-        flt_img['fname_sat_img']  = fnames_sat[index0]
+        flt_img['satID'] = []
+
+        flt_img['fnames_sat_img'] = []
         flt_img['extent_sat_img'] = extent
+        flt_img['jday_sat_img'] = np.array([], dtype=np.float64)
 
-        flt_img['fname_sat_img0']  = fnames_sat[index0]
+        flt_img['fnames_sat_img0'] = []
         flt_img['extent_sat_img0'] = extent
+        flt_img['jday_sat_img0'] = np.array([], dtype=np.float64)
 
-        flt_img['jday'] = jday_sat[index0]
-        flt_img['tmhr'] = 24.0*(jday_sat[index0]-int(jday_sat[index0]))
-
-        flt_img['fnames_cam_img'] = []
+        flt_img['fnames_cam_img']  = []
         flt_img['jday_cam_img'] = np.array([], dtype=np.float64)
+
         for j in range(flt_trks[i]['jday'].size):
+
+            index_sat = np.argmin(np.abs(jday_sat-flt_trks[i]['jday'][j]))
+            flt_img['satID'].append(os.path.basename(fnames_sat[index_sat]).split('_')[0].replace('-', ' '))
+            flt_img['fnames_sat_img'].append(fnames_sat[index_sat])
+            flt_img['jday_sat_img'] = np.append(flt_img['jday_sat_img'], jday_sat[index_sat])
+
+            # this will change
+            #/--------------------------------------------------------------\#
+            index_sat0 = np.argmin(np.abs(jday_sat0-flt_trks[i]['jday'][j]))
+            flt_img['fnames_sat_img0'].append(fnames_sat0[index_sat0])
+            flt_img['jday_sat_img0'] = np.append(flt_img['jday_sat_img0'], jday_sat0[index_sat0])
+            #\--------------------------------------------------------------/#
+
             index_cam = np.argmin(np.abs(jday_cam-flt_trks[i]['jday'][j]))
             flt_img['fnames_cam_img'].append(fnames_cam[index_cam])
             flt_img['jday_cam_img'] = np.append(flt_img['jday_cam_img'], jday_cam[index_cam])
@@ -1725,7 +1213,7 @@ def main_pre(
     dtime_s = er3t.util.jday_to_dtime((jday[0] *86400.0//interval  )*interval/86400.0)
     dtime_e = er3t.util.jday_to_dtime((jday[-1]*86400.0//interval+1)*interval/86400.0)
 
-    if True:
+    if False:
 
         # download_polar_sat_img(
         #     dtime_s,
@@ -1754,6 +1242,9 @@ def main_pre(
         indices = np.where(jday_sat_==jday_sat0)[0]
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
         fnames_sat.append(fname0)
+
+    fnames_sat0 = fnames_sat.copy()
+    jday_sat0 = jday_sat.copy()
     #\----------------------------------------------------------------------------/#
     # print(jday_sat)
     # print(fnames_sat)
@@ -1802,6 +1293,7 @@ def main_pre(
     flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)
     #\----------------------------------------------------------------------------/#
 
+
     # process imagery
     #/----------------------------------------------------------------------------\#
     # create python dictionary to store corresponding satellite imagery data info
@@ -1810,20 +1302,32 @@ def main_pre(
     for i in range(len(flt_trks)):
         flt_img = {}
 
-        index0  = np.argmin(np.abs(jday_sat-flt_trks[i]['jday0']))
-        flt_img['imager'] = os.path.basename(fnames_sat[index0]).split('_')[0].replace('-', ' ')
-        flt_img['fname_sat_img']  = fnames_sat[index0]
+        flt_img['satID'] = []
+
+        flt_img['fnames_sat_img'] = []
         flt_img['extent_sat_img'] = extent
+        flt_img['jday_sat_img'] = np.array([], dtype=np.float64)
 
-        flt_img['fname_sat_img0']  = fnames_sat[index0]
+        flt_img['fnames_sat_img0'] = []
         flt_img['extent_sat_img0'] = extent
+        flt_img['jday_sat_img0'] = np.array([], dtype=np.float64)
 
-        flt_img['jday'] = jday_sat[index0]
-        flt_img['tmhr'] = 24.0*(jday_sat[index0]-int(jday_sat[index0]))
+        for j in range(flt_trks[i]['jday'].size):
+
+            index_sat = np.argmin(np.abs(jday_sat-flt_trks[i]['jday'][j]))
+            flt_img['satID'].append(os.path.basename(fnames_sat[index_sat]).split('_')[0].replace('-', ' '))
+            flt_img['fnames_sat_img'].append(fnames_sat[index_sat])
+            flt_img['jday_sat_img'] = np.append(flt_img['jday_sat_img'], jday_sat[index_sat])
+
+            # this will change
+            #/--------------------------------------------------------------\#
+            index_sat0 = np.argmin(np.abs(jday_sat0-flt_trks[i]['jday'][j]))
+            flt_img['fnames_sat_img0'].append(fnames_sat0[index_sat0])
+            flt_img['jday_sat_img0'] = np.append(flt_img['jday_sat_img0'], jday_sat0[index_sat0])
+            #\--------------------------------------------------------------/#
 
         flt_imgs.append(flt_img)
     #\--------------------------------------------------------------/#
-
 
     # generate flt-sat combined file
     #/----------------------------------------------------------------------------\#
