@@ -563,7 +563,7 @@ def plot_video_frame(statements, test=False):
         ax_img_hist.hist(img[:, :, 0].ravel(), bins=cam_hist_bins, histtype='step', lw=0.5, alpha=0.9, density=True, color='r')
         ax_img_hist.hist(img[:, :, 1].ravel(), bins=cam_hist_bins, histtype='step', lw=0.5, alpha=0.9, density=True, color='g')
         ax_img_hist.hist(img[:, :, 2].ravel(), bins=cam_hist_bins, histtype='step', lw=0.5, alpha=0.9, density=True, color='b')
-        ax_img.plot([255, 255], [0, 0.005], color='gray', lw=1.0, ls='-')
+        ax_img.plot([255, 255], [0, 0.005], color='white', lw=1.0, ls='-')
 
     if has_att:
         ax_nav.axhspan(-10.0, 0.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
