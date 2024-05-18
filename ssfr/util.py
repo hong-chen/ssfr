@@ -461,7 +461,7 @@ def write_ict(
 
 
 
-def read_iwg(fname, date_ref=None, tmhr_range=None):
+def read_iwg_camp2ex(fname, date_ref=None, tmhr_range=None):
 
     fname_xml = '%s.xml' % fname
 
@@ -477,6 +477,46 @@ def read_iwg(fname, date_ref=None, tmhr_range=None):
     Nvar = len(vnames)
     convert_func = lambda x: (datetime.datetime.strptime(x.decode('utf-8').split('.')[0], '%Y-%m-%dT%H:%M:%S')-datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
     data_all = np.genfromtxt(fname, delimiter=',', names=vnames, converters={1:convert_func}, usecols=range(1, Nvar+1))
+
+    if date_ref is None:
+        jday_int = np.int_(data_all['jday'])
+        jday_unique, counts = np.unique(jday_int, return_counts=True)
+        jdayRef = jday_unique[np.argmax(counts)]
+    else:
+        jdayRef = (date_ref - datetime.datetime(1, 1, 1)).total_seconds()/86400.0 + 1.0
+
+    data = OrderedDict()
+    data['tmhr'] = dict(data=(data_all['jday']-jdayRef)*24.0, units='Hour')
+
+    if tmhr_range != None:
+        logic = (data['tmhr']['data']>=tmhr_range[0]) & (data['tmhr']['data']<=tmhr_range[1])
+        for i, vname in enumerate(vnames):
+            data0 = data_all[vname][logic]
+            data[vname.lower()] = dict(data=data0, units='N/A')
+    else:
+        for i, vname in enumerate(vnames):
+            data0 = data_all[vname]
+            data[vname.lower()] = dict(data=data0, units='N/A')
+
+    return data
+
+
+
+
+
+def read_iwg(fname, date_ref=None, tmhr_range=None):
+
+    vnames = []
+    with open(fname, 'r') as f:
+        header = f.readline().strip()
+        vnames = header.split(',')
+
+    vnames = [vname.replace(' ', '_') for vname in vnames[1:]]
+    vnames[0] = 'jday'
+
+    Nvar = len(vnames)
+    convert_func = lambda x: (datetime.datetime.strptime(x.decode('utf-8').split('.')[0], '%Y-%m-%dT%H:%M:%S')-datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
+    data_all = np.genfromtxt(fname, delimiter=',', names=vnames, converters={1:convert_func}, usecols=range(1, Nvar+1), skip_header=1)
 
     if date_ref is None:
         jday_int = np.int_(data_all['jday'])

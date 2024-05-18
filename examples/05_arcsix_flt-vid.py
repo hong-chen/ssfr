@@ -74,6 +74,7 @@ def download_geo_sat_img(
         extent=[-60.5, -58.5, 12, 14],
         satellite='GOES-East',
         instrument='ABI',
+        layer_name='Band2_Red_Visible_1km',
         fdir_out='%s/sat_img' % _fdir_main_,
         dpi=200,
         ):
@@ -82,9 +83,9 @@ def download_geo_sat_img(
         dtime_e = datetime.datetime(date_s.year, date_s.month, date_s.day, 23, 59, date_s.second)
 
     while dtime_s <= dtime_e:
-        fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=False)
+        fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=False, layer_name0=layer_name)
         if not os.path.exists(fname_img):
-            fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=True)
+            fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=True, layer_name0=layer_name)
         dtime_s += datetime.timedelta(minutes=10.0)
 
 def download_polar_sat_img(
@@ -1119,18 +1120,18 @@ def plot_video_frame(statements, test=False):
 
     for vname in vars_plot.keys():
         var_plot = vars_plot[vname]
+        if var_plot['plot?']:
+            if 'vname_wvl' in var_plot.keys():
+                wvl_x  = flt_trk0[var_plot['vname_wvl']]
+                if 'toa' in var_plot['vname']:
+                    spec_y = flt_trk0[var_plot['vname']] * np.cos(np.deg2rad(sza_current))
+                else:
+                    spec_y = flt_trk0[var_plot['vname']][index_pnt, :]
 
-        if 'vname_wvl' in var_plot.keys() and var_plot['plot?']:
-            wvl_x  = flt_trk0[var_plot['vname_wvl']]
-            if 'toa' in var_plot['vname']:
-                spec_y = flt_trk0[var_plot['vname']] * np.cos(np.deg2rad(sza_current))
-            else:
-                spec_y = flt_trk0[var_plot['vname']][index_pnt, :]
+                ax_wvl.scatter(wvl_x, spec_y, c=var_plot['color'], s=6, lw=0.0, zorder=var_plot['zorder'])
 
-            ax_wvl.scatter(wvl_x, spec_y, c=var_plot['color'], s=6, lw=0.0, zorder=var_plot['zorder'])
-
-            wvl_index = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
-            ax_wvl.axvline(wvl_x[wvl_index], color=var_plot['color'], ls='-', lw=1.0, alpha=0.5, zorder=var_plot['zorder'])
+                wvl_index = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
+                ax_wvl.axvline(wvl_x[wvl_index], color=var_plot['color'], ls='-', lw=1.0, alpha=0.5, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
 
 
@@ -1175,20 +1176,21 @@ def plot_video_frame(statements, test=False):
 
             var_plot = vars_plot[vname]
 
-            if 'vname_wvl' in var_plot.keys() and var_plot['plot?']:
-                wvl_x  = flt_trk[var_plot['vname_wvl']]
-                index_wvl = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
-                if 'toa' in var_plot['vname']:
-                    tms_y = flt_trk[var_plot['vname']][index_wvl] * np.cos(np.deg2rad(flt_trk['sza']))
+            if var_plot['plot?']:
+                if 'vname_wvl' in var_plot.keys():
+                    wvl_x  = flt_trk[var_plot['vname_wvl']]
+                    index_wvl = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
+                    if 'toa' in var_plot['vname']:
+                        tms_y = flt_trk[var_plot['vname']][index_wvl] * np.cos(np.deg2rad(flt_trk['sza']))
+                    else:
+                        tms_y = flt_trk[var_plot['vname']][:, index_wvl]
                 else:
-                    tms_y = flt_trk[var_plot['vname']][:, index_wvl]
-            else:
-                tms_y = flt_trk[var_plot['vname']]
+                    tms_y = flt_trk[var_plot['vname']]
 
-            if vname == 'Altitude':
-                ax_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=vars_plot[vname]['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
-            else:
-                ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=4, lw=0.0, zorder=var_plot['zorder'])
+                if vname == 'Altitude':
+                    ax_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=vars_plot[vname]['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
+                else:
+                    ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=4, lw=0.0, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
 
 
@@ -1659,13 +1661,187 @@ def main_vid(
     os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "tmp-graph/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % fname_mp4)
 
 
+def main_pre(
+        date,
+        wvl0=_wavelength_,
+        run_rtm=False,
+        time_step=1,
+        wvl_step_spns=10,
+        wvl_step_ssfr=5,
+        ):
+
+
+    # create data directory (for storing data) if the directory does not exist
+    #/----------------------------------------------------------------------------\#
+    date_s = date.strftime('%Y%m%d')
+
+    fdir = os.path.abspath('%s/%s' % (_fdir_main_, date_s))
+    if not os.path.exists(fdir):
+        os.makedirs(fdir)
+    #\----------------------------------------------------------------------------/#
+
+
+    # read data
+    #/----------------------------------------------------------------------------\#
+
+    # read in aircraft hsk data
+    #/--------------------------------------------------------------\#
+    fname_flt = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
+
+    f_flt = h5py.File(fname_flt, 'r')
+    jday   = f_flt['jday'][...]
+    sza    = f_flt['sza'][...]
+    lon    = f_flt['lon'][...]
+    lat    = f_flt['lat'][...]
+
+    logic0 = (~np.isnan(jday) & ~np.isinf(sza))  & \
+             (~np.isnan(lon)  & ~np.isinf(lat))
+             # check_continuity(lon, threshold=1.0) & \
+             # check_continuity(lat, threshold=1.0)
+
+    jday = jday[logic0][::time_step]
+    sza  = sza[logic0][::time_step]
+    lon  = lon[logic0][::time_step]
+    lat  = lat[logic0][::time_step]
+
+    tmhr   = f_flt['tmhr'][...][logic0][::time_step]
+    alt    = f_flt['alt'][...][logic0][::time_step]
+
+    ang_hed = f_flt['ang_hed'][...][logic0][::time_step]
+    ang_pit = f_flt['ang_pit'][...][logic0][::time_step]
+    ang_rol = f_flt['ang_rol'][...][logic0][::time_step]
+
+    f_flt.close()
+    #\--------------------------------------------------------------/#
+
+
+    # process satellite imagery
+    #/----------------------------------------------------------------------------\#
+    extent = get_extent(lon, lat, margin=0.2)
+
+    dtime_s = er3t.util.jday_to_dtime(jday[0])
+    dtime_e = er3t.util.jday_to_dtime(jday[-1])
+
+    if False:
+
+        download_polar_sat_img(
+            dtime_s,
+            extent=extent,
+            fdir_out=_fdir_sat_img_,
+            )
+
+        download_geo_sat_img(
+            dtime_s,
+            dtime_e=dtime_e,
+            extent=extent,
+            fdir_out=_fdir_sat_img_,
+            )
+
+    # get the avaiable satellite data and calculate the time in hour for each file
+    date_sat_s  = date.strftime('%Y-%m-%d')
+    fnames_sat_ = sorted(glob.glob('%s/*%sT*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    jday_sat_ = get_jday_sat_img(fnames_sat_)
+
+    jday_sat = np.sort(np.unique(jday_sat_))
+
+    fnames_sat = []
+
+    for jday_sat0 in jday_sat:
+
+        indices = np.where(jday_sat_==jday_sat0)[0]
+        fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
+        fnames_sat.append(fname0)
+    #\----------------------------------------------------------------------------/#
+    # print(jday_sat)
+    # print(fnames_sat)
+
+
+    # pre-process the aircraft and satellite data
+    #/----------------------------------------------------------------------------\#
+    # create a filter to remove invalid data, e.g., out of available satellite data time range,
+    # invalid solar zenith angles etc.
+    tmhr_interval = 10.0/60.0
+    half_interval = tmhr_interval/48.0
+
+    jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
+    jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
+
+    jday_edges = np.arange(jday_s, jday_e+half_interval, half_interval*2.0)
+
+    logic = (jday>=jday_s) & (jday<=jday_e)
+
+    # create python dictionary to store valid flight data
+    flt_trk = {}
+    flt_trk['jday'] = jday[logic]
+    flt_trk['lon']  = lon[logic]
+    flt_trk['lat']  = lat[logic]
+    flt_trk['sza']  = sza[logic]
+    flt_trk['tmhr'] = tmhr[logic]
+    flt_trk['alt']  = alt[logic]/1000.0
+    flt_trk['ang_hed'] = ang_hed[logic]
+    flt_trk['ang_pit'] = ang_pit[logic]
+    flt_trk['ang_rol'] = ang_rol[logic]
+    # flt_trk['ang_pit_m'] = ang_pit_m[logic]
+    # flt_trk['ang_rol_m'] = ang_rol_m[logic]
+
+    # flt_trk['f-down-total_spns']   = spns_tot_flux[logic, :]
+    # flt_trk['f-down-diffuse_spns'] = spns_dif_flux[logic, :]
+    # flt_trk['f-down-direct_spns']  = flt_trk['f-down-total_spns'] - flt_trk['f-down-diffuse_spns']
+    # flt_trk['wvl_spns'] = spns_tot_wvl
+
+    # flt_trk['f-down_ssfr']  = ssfr_zen_flux[logic, :]
+    # flt_trk['f-up_ssfr']    = ssfr_nad_flux[logic, :]
+    # flt_trk['wvl_ssfr_zen'] = ssfr_zen_wvl
+    # flt_trk['wvl_ssfr_nad'] = ssfr_nad_wvl
+    # flt_trk['f-down_toa']   = ssfr_zen_toa
+
+    # partition the flight track into multiple mini flight track segments
+    flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)
+    #\----------------------------------------------------------------------------/#
+
+    # process imagery
+    #/----------------------------------------------------------------------------\#
+    # create python dictionary to store corresponding satellite imagery data info
+    #/--------------------------------------------------------------\#
+    flt_imgs = []
+    for i in range(len(flt_trks)):
+        flt_img = {}
+
+        index0  = np.argmin(np.abs(jday_sat-flt_trks[i]['jday0']))
+        flt_img['imager'] = os.path.basename(fnames_sat[index0]).split('_')[0].replace('-', ' ')
+        flt_img['fname_sat_img']  = fnames_sat[index0]
+        flt_img['extent_sat_img'] = extent
+
+        flt_img['fname_sat_img0']  = fnames_sat[index0]
+        flt_img['extent_sat_img0'] = extent
+
+        flt_img['jday'] = jday_sat[index0]
+        flt_img['tmhr'] = 24.0*(jday_sat[index0]-int(jday_sat[index0]))
+
+        flt_imgs.append(flt_img)
+    #\--------------------------------------------------------------/#
+
+
+    # generate flt-sat combined file
+    #/----------------------------------------------------------------------------\#
+    fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
+    sim0 = flt_sim(
+            date=date,
+            wavelength=wvl0,
+            flt_trks=flt_trks,
+            flt_imgs=flt_imgs,
+            fname=fname,
+            overwrite=True,
+            overwrite_rtm=run_rtm,
+            )
+    #\----------------------------------------------------------------------------/#
+
 
 if __name__ == '__main__':
 
 
     dates = [
-            # datetime.datetime(2024, 5, 17), # placeholder for ARCSIX test flight
-            datetime.datetime(2018, 9, 30), # for test only
+            datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
         ]
 
     for date in dates[::-1]:

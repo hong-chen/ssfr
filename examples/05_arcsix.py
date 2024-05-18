@@ -51,7 +51,7 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
 
-_fdir_hsk_   = 'data/test/arcsix/2024-Spring/p3/aux/hsk'
+_fdir_hsk_   = '/argus/field/arcsix/2024-Spring/p3/aux/hsk'
 _fdir_data_  = 'data/test/%s' % _mission_
 _fdir_out_   = 'data/test/processed'
 _fdir_cal_   = 'data/test/arcsix/cal'
@@ -425,16 +425,27 @@ def cdata_arcsix_hsk_v0(
 
     # this would change if we are processing IWG file
     #/--------------------------------------------------------------\#
-    fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[0]
-    data_hsk = ssfr.util.read_ict(fname)
+    # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[0]
+    # data_hsk = ssfr.util.read_ict(fname)
+    # var_dict = {
+    #         'lon': 'longitude',
+    #         'lat': 'latitude',
+    #         'alt': 'gps_altitude',
+    #         'tmhr': 'tmhr',
+    #         'ang_pit': 'pitch_angle',
+    #         'ang_rol': 'roll_angle',
+    #         'ang_hed': 'true_heading',
+    #         }
 
+    fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
+    data_hsk = ssfr.util.read_iwg(fname)
     var_dict = {
+            'tmhr': 'tmhr',
             'lon': 'longitude',
             'lat': 'latitude',
-            'alt': 'gps_altitude',
-            'tmhr': 'tmhr',
-            'ang_pit': 'pitch_angle',
-            'ang_rol': 'roll_angle',
+            'alt': 'gps_msl_altitude',
+            'ang_pit': 'pitch',
+            'ang_rol': 'roll',
             'ang_hed': 'true_heading',
             }
     #\--------------------------------------------------------------/#
@@ -576,12 +587,14 @@ def process_alp_data(date, run=True):
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
-    fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
-
     date_s = date.strftime('%Y%m%d')
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
             fdir_out=fdir_out, run=run)
+    sys.exit()
+
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
+    fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
+
     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data,
             fdir_out=fdir_out, run=run)
     fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0,
@@ -1623,8 +1636,7 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
-             # datetime.datetime(2024, 5, 17), # placeholder for test flight at NASA WFF
-             datetime.datetime(2018, 9, 30), # test using oracles data
+             datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
             ]
     for date in dates:
         main_process_data(date)
