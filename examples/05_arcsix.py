@@ -1002,7 +1002,11 @@ def cdata_arcsix_ssfr_v1(
                 vnames_dset.append(dset_tag)
         #\----------------------------------------------------------------------------/#
 
+        for vname in vnames_dset:
+            if data_ssfr_v0['%s/jday' % vname].size > 0:
+                print(vname, data_ssfr_v0['%s/jday' % vname].size)
         sys.exit()
+
 
         # load hsk
         #/----------------------------------------------------------------------------\#

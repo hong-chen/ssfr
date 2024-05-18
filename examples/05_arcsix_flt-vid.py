@@ -378,7 +378,7 @@ def plot_video_frame(statements, test=False):
             }
     vars_plot['Altitude']   = {
             'vname':'alt',
-            'color':'orange',
+            'color':'purple',
             'zorder': 0,
             }
 
