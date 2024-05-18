@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -745,7 +745,7 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
-    # specta plot setting
+    # spectra plot setting
     #/----------------------------------------------------------------------------\#
     ax_wvl.set_xlim((200, 2200))
     ax_wvl.set_ylim((0.0, 2.0))
@@ -815,6 +815,7 @@ def plot_video_frame(statements, test=False):
     ax_tms.patch.set_visible(False)
     #\----------------------------------------------------------------------------/#
 
+
     # acknowledgements
     #/----------------------------------------------------------------------------\#
     ax.axis('off')
@@ -822,14 +823,6 @@ def plot_video_frame(statements, test=False):
 presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hirata, Arabella Chamberlain, Katey Dong, Jeffery Drouet, and Sebastian Schmidt\n\
 '
     ax.annotate(text1, xy=(0.5, 0.24), fontsize=8, color='gray', xycoords='axes fraction', ha='center', va='center')
-
-#     text2 = 'Acknowledgements:\n\
-# satellite imagery processed by V. Nataraja\n\
-# instrument data processed by H. Chen\n\
-# video created by H. Chen'
-#     ax.annotate(text2, xy=(1.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='right', va='top')
-
-    # ax.annotate('by\nARCSIX SSFR Team', xy=(0.5, 0.30), fontsize=14, color='gray', xycoords='axes fraction', ha='center', va='top')
     #\----------------------------------------------------------------------------/#
 
 
@@ -1359,17 +1352,17 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        # main_pre(date)
+        main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
         #/----------------------------------------------------------------------------\#
-        # main_vid(date, wvl0=_wavelength_)
+        main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    # sys.exit()
+    sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
