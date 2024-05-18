@@ -815,7 +815,7 @@ def plot_video_frame(statements, test=False):
     ax.axis('off')
     text1 = 'Acknowledgements:\n\
 instruments calibrated and prepared by H. Chen, Y.-W. Chen, K. Hirata, A. Chamberlain, K. Dong\n\
-instruments installed and maintained by J. Drouet, S. Schmidt, A. Chamberlain\n\
+instruments installed and maintained by J. Drouet, S. Schmidt\n\
 instruments checked and operated by A. Chamberlain, V. Nataraja'
     ax.annotate(text1, xy=(0.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='left', va='top')
 
