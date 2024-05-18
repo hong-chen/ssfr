@@ -712,7 +712,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat_img0:
         title_map0 = 'Zoomed-in View'
-        time_diff = np.abs(flt_img0['jday_sat_img0'][index_pnt]-tmhr_current)*86400.0
+        time_diff = np.abs(flt_img0['jday_sat_img0'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map0.set_title(title_map0, color='gray')
         else:
@@ -1375,7 +1375,7 @@ if __name__ == '__main__':
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
     # statements = (flt_sim0, 0, 243, 1730)
     statements = (flt_sim0, 1, 443, 1730)
-    plot_video_frame_new(statements, test=True)
+    plot_video_frame(statements, test=True)
     #\----------------------------------------------------------------------------/#
 
     pass
