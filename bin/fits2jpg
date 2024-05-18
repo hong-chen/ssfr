@@ -44,8 +44,8 @@ def process(fname,
     with fits.open(fname) as f:
 
         data = f[0].data.copy()
-        x_max = f[0].header['X2']
-        y_max = f[0].header['Y2']
+        x_max = f[0].header['NAXIS1']
+        y_max = f[0].header['NAXIS2']
         Nbit  = f[0].header['BITCAMPX']
 
     # arrange the array to (height[descending order], width[ascending order], channel)
