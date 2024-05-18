@@ -1403,8 +1403,7 @@ def main_pre(
     lon    = f_flt['lon'][...]
     lat    = f_flt['lat'][...]
 
-    logic0 = (~np.isnan(jday) & ~np.isinf(jday))  & \
-             (~np.isnan(sza)  & ~np.isinf(sza))   & \
+    logic0 = (~np.isnan(jday) & ~np.isinf(sza))  & \
              check_continuity(lon, threshold=1.0) & \
              check_continuity(lat, threshold=1.0)
 
