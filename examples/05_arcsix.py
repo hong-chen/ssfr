@@ -570,7 +570,6 @@ def cdata_arcsix_alp_v1(
         # data_ref = data_hsk['alt']
         # data_tar = ssfr.util.interp(data_hsk['jday'], data_alp['jday'], data_alp['alt'])
         # time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar)
-
         # print('Find a time offset of %.2f seconds between %s and %s.' % (time_offset, _alp_.upper(), _hsk_.upper()))
 
         # figure
@@ -597,9 +596,10 @@ def cdata_arcsix_alp_v1(
             plt.show()
             sys.exit()
         #\----------------------------------------------------------------------------/#
-        #\----------------------------------------------------------------------------/#
 
         time_offset = _alp_time_offset_[date_s]
+        #\----------------------------------------------------------------------------/#
+
 
         f = h5py.File(fname_h5, 'w')
         f.attrs['description'] = 'v1:\n  1) raw data interpolated to HSK time frame;\n  2) time offset (seconds) was calculated and applied.'
@@ -733,6 +733,7 @@ def cdata_arcsix_spns_v1(
         data_hsk= ssfr.util.load_h5(fname_hsk)
         #\----------------------------------------------------------------------------/#
 
+
         # check time offset
         #/----------------------------------------------------------------------------\#
         if _test_mode_:
@@ -767,9 +768,9 @@ def cdata_arcsix_spns_v1(
             #\--------------------------------------------------------------/#
             plt.show()
             sys.exit()
+        time_offset = _spns_time_offset_[date_s]
         #\----------------------------------------------------------------------------/#
 
-        time_offset = _spns_time_offset_[date_s]
 
         # interpolate spn-s data to hsk time frame
         #/----------------------------------------------------------------------------\#
@@ -1002,11 +1003,6 @@ def cdata_arcsix_ssfr_v1(
                 vnames_dset.append(dset_tag)
         #\----------------------------------------------------------------------------/#
 
-        for vname in vnames_dset:
-            if data_ssfr_v0['%s/jday' % vname].size > 0:
-                print(vname, data_ssfr_v0['%s/jday' % vname].size)
-        sys.exit()
-
 
         # load hsk
         #/----------------------------------------------------------------------------\#
@@ -1014,9 +1010,21 @@ def cdata_arcsix_ssfr_v1(
         #\----------------------------------------------------------------------------/#
 
 
+
+
+        # read wavelengths and calculate toa downwelling solar flux
+        #/----------------------------------------------------------------------------\#
+        flux_toa = ssfr.util.get_solar_kurudz()
+
+        wvl_zen = data_ssfr_v0['dset0/wvl_zen']
+        f_dn_sol_zen = np.zeros_like(wvl_zen)
+        for i, wvl0 in enumerate(wvl_zen):
+            f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
+        #\----------------------------------------------------------------------------/#
+
         # check time offset
         #/----------------------------------------------------------------------------\#
-        if _test_mode_:
+        if False:
             index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
             data_ref = data_ssfr_v0['/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
             data_tar  = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday'], data_spns_v0['tot/flux'][:, index_wvl])
@@ -1048,74 +1056,71 @@ def cdata_arcsix_ssfr_v1(
             #\--------------------------------------------------------------/#
             plt.show()
             sys.exit()
-        #\----------------------------------------------------------------------------/#
+
         time_offset = _ssfr1_time_offset_[date_s]
-
-
-        # read wavelengths and calculate toa downwelling solar flux
-        #/----------------------------------------------------------------------------\#
-        flux_toa = ssfr.util.get_solar_kurudz()
-
-        wvl_zen = data_ssfr_v0['dset0/wvl_zen']
-        f_dn_sol_zen = np.zeros_like(wvl_zen)
-        for i, wvl0 in enumerate(wvl_zen):
-            f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
         #\----------------------------------------------------------------------------/#
-
 
         f = h5py.File(fname_h5, 'w')
 
         # processing data - since we have dual integration times, SSFR data with different
         # integration time will be processed seperately
         #/----------------------------------------------------------------------------\#
-        for dset_s in ['dset0', 'dset1']:
+        for dset_s in vnames_dset:
 
-            # select calibration file
-            #/----------------------------------------------------------------------------\#
-            fdir_cal = '%s/rad-cal' % _fdir_cal_
-            fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
-            data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+            # if data_ssfr_v0['%s/jday' % dset_s].size > 300:
+            if True:
 
-            fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
-            data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
-            #\----------------------------------------------------------------------------/#
+                # select calibration file
+                #/----------------------------------------------------------------------------\#
+                fdir_cal = '%s/rad-cal' % _fdir_cal_
+                # fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+                fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*zen*' % (which_ssfr.lower())), key=os.path.getmtime)[-1]
+                data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+
+                # fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+                fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*nad*' % (which_ssfr.lower())), key=os.path.getmtime)[-1]
+                data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+                #\----------------------------------------------------------------------------/#
+
+                # convert counts to flux
+                #/----------------------------------------------------------------------------\#
+                #\----------------------------------------------------------------------------/#
+
+                # interpolate ssfr data to hsk time frame
+                # and convert counts to flux
+                #/----------------------------------------------------------------------------\#
+                jday_ssfr_v0 = data_ssfr_v0['%s/jday' % dset_s] + time_offset/86400.0
+
+                wvl_zen  = data_ssfr_v0['%s/wvl_zen' % dset_s]
+                cnt_zen  = np.zeros((data_hsk['jday'].size, wvl_zen.size), dtype=np.float64)
+                flux_zen = np.zeros_like(cnt_zen)
+                for i in range(wvl_zen.size):
+                    cnt_zen[:, i]  = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_zen' % dset_s][:, i])
+                    flux_zen[:, i] = cnt_zen[:, i] / data_cal_zen['sec_resp'][i]
+
+                wvl_nad  = data_ssfr_v0['%s/wvl_nad' % dset_s]
+                cnt_nad  = np.zeros((data_hsk['jday'].size, wvl_nad.size), dtype=np.float64)
+                flux_nad = np.zeros_like(cnt_nad)
+                for i in range(wvl_nad.size):
+                    cnt_nad[:, i]  = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_nad' % dset_s][:, i])
+                    flux_nad[:, i] = cnt_nad[:, i] / data_cal_nad['sec_resp'][i]
+                #\----------------------------------------------------------------------------/#
+
+                #\----------------------------------------------------------------------------/#
 
 
-            # interpolate ssfr data to hsk time frame
-            # and convert counts to flux
-            #/----------------------------------------------------------------------------\#
-            jday_ssfr_v0 = data_ssfr_v0['%s/jday' % dset_s] + time_offset/86400.0
+                # save processed data
+                #/----------------------------------------------------------------------------\#
+                g = f.create_group(dset_s)
+                dset0 = g.create_dataset('wvl_zen' , data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
+                dset0 = g.create_dataset('cnt_zen' , data=cnt_zen     , compression='gzip', compression_opts=9, chunks=True)
+                dset0 = g.create_dataset('flux_zen', data=flux_zen    , compression='gzip', compression_opts=9, chunks=True)
+                dset0 = g.create_dataset('toa0'    , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
 
-            wvl_zen  = data_ssfr_v0['%s/wvl_zen' % dset_s]
-            cnt_zen  = np.zeros((data_hsk['jday'].size, wvl_zen.size), dtype=np.float64)
-            flux_zen = np.zeros_like(cnt_zen)
-            for i in range(wvl_zen.size):
-                cnt_zen[:, i]  = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_zen' % dset_s][:, i])
-                flux_zen[:, i] = cnt_zen[:, i] / data_cal_zen['sec_resp'][i]
-
-            wvl_nad  = data_ssfr_v0['%s/wvl_nad' % dset_s]
-            cnt_nad  = np.zeros((data_hsk['jday'].size, wvl_nad.size), dtype=np.float64)
-            flux_nad = np.zeros_like(cnt_nad)
-            for i in range(wvl_nad.size):
-                cnt_nad[:, i]  = ssfr.util.interp(data_hsk['jday'], jday_ssfr_v0, data_ssfr_v0['%s/cnt_nad' % dset_s][:, i])
-                flux_nad[:, i] = cnt_nad[:, i] / data_cal_nad['sec_resp'][i]
-            #\----------------------------------------------------------------------------/#
-
-            #\----------------------------------------------------------------------------/#
-
-
-            # save processed data
-            #/----------------------------------------------------------------------------\#
-            g = f.create_group(dset_s)
-            dset0 = g.create_dataset('wvl_zen' , data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('cnt_zen' , data=cnt_zen     , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('flux_zen', data=flux_zen    , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('toa0'    , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
-
-            dset0 = g.create_dataset('wvl_nad' , data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('cnt_nad' , data=cnt_nad     , compression='gzip', compression_opts=9, chunks=True)
-            dset0 = g.create_dataset('flux_nad', data=flux_nad    , compression='gzip', compression_opts=9, chunks=True)
-            #\----------------------------------------------------------------------------/#
+                dset0 = g.create_dataset('wvl_nad' , data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
+                dset0 = g.create_dataset('cnt_nad' , data=cnt_nad     , compression='gzip', compression_opts=9, chunks=True)
+                dset0 = g.create_dataset('flux_nad', data=flux_nad    , compression='gzip', compression_opts=9, chunks=True)
+                #\----------------------------------------------------------------------------/#
 
         #\----------------------------------------------------------------------------/#
 
