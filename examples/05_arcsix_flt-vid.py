@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -493,15 +493,19 @@ def plot_video_frame(statements, test=False):
     # map of flight track overlay satellite imagery
     ax_map = fig.add_subplot(gs[:8, :7])
 
-    # solar zenith/elevation angle next to the map
+    # flight altitude next to the map
     divider = make_axes_locatable(ax_map)
-    ax_sza = divider.append_axes('right', size='5%', pad=0.0)
+    ax_alt = divider.append_axes('right', size='3%', pad=0.0)
 
     # aircraft and platform attitude status
     ax_nav  = fig.add_subplot(gs[:2, 7:9])
 
     # a secondary map
     ax_map0 = fig.add_subplot(gs[:5, 9:13])
+
+    # solar zenith/elevation angle next to the map
+    divider = make_axes_locatable(ax_map0)
+    ax_sza = divider.append_axes('left', size='5%', pad=0.0)
 
     # camera imagery
     ax_img  = fig.add_subplot(gs[:5, 13:])
@@ -512,7 +516,7 @@ def plot_video_frame(statements, test=False):
 
     # time series
     ax_tms = fig.add_subplot(gs[9:, :])
-    ax_alt = ax_tms.twinx()
+    ax_tms_alt = ax_tms.twinx()
 
     fig.subplots_adjust(hspace=10.0, wspace=10.0)
     #\----------------------------------------------------------------------------/#
@@ -667,7 +671,7 @@ def plot_video_frame(statements, test=False):
                     tms_y = flt_trk[var_plot['vname']]
 
                 if vname == 'Altitude':
-                    ax_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=vars_plot[vname]['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
+                    ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=vars_plot[vname]['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
                 else:
                     ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=4, lw=0.0, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
@@ -759,30 +763,47 @@ def plot_video_frame(statements, test=False):
 
     # sun elevation plot settings
     #/----------------------------------------------------------------------------\#
+    ax_sza.axhline(90.0-sza_current, lw=1.5, color='r')
+
     ax_sza.set_ylim((0.0, 90.0))
     ax_sza.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 90.1, 30.0)))
-    ax_sza.axhline(90.0-sza_current, lw=1.5, color='r')
+    ax_sza.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 90.1, 10.0)))
     ax_sza.xaxis.set_ticks([])
-    ax_sza.yaxis.tick_right()
-    ax_sza.yaxis.set_label_position('right')
-    ax_sza.set_ylabel('Sun Elevation [$^\circ$]', rotation=270.0, labelpad=18)
+    ax_sza.yaxis.tick_left()
+    ax_sza.yaxis.set_label_position('left')
+    ax_sza.set_ylabel('Sun Elevation [$^\circ$]')
     #\----------------------------------------------------------------------------/#
 
 
     # altitude plot settings
     #/----------------------------------------------------------------------------\#
+    color0 = alt_cmap(alt_norm(alt_current))
+    ax_alt.axhline(alt_current, lw=1.5, color=color0)
+
     ax_alt.set_ylim((0.0, 8.0))
     ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 2.0)))
+    ax_alt.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 8.1, 1.0)))
+    ax_alt.xaxis.set_ticks([])
     ax_alt.yaxis.tick_right()
     ax_alt.yaxis.set_label_position('right')
-    ax_alt.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
+    ax_alt.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18)
+    #\----------------------------------------------------------------------------/#
 
-    ax_alt.set_frame_on(True)
-    for spine in ax_alt.spines.values():
+
+    # altitude (time series) plot settings
+    #/----------------------------------------------------------------------------\#
+    ax_tms_alt.set_ylim((0.0, 8.0))
+    ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 2.0)))
+    ax_tms_alt.yaxis.tick_right()
+    ax_tms_alt.yaxis.set_label_position('right')
+    ax_tms_alt.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
+
+    ax_tms_alt.set_frame_on(True)
+    for spine in ax_tms_alt.spines.values():
         spine.set_visible(False)
-    ax_alt.spines['right'].set_visible(True)
-    ax_alt.spines['right'].set_color(vars_plot['Altitude']['color'])
-    ax_alt.tick_params(axis='y', colors=vars_plot['Altitude']['color'])
+    ax_tms_alt.spines['right'].set_visible(True)
+    ax_tms_alt.spines['right'].set_color(vars_plot['Altitude']['color'])
+    ax_tms_alt.tick_params(axis='y', colors=vars_plot['Altitude']['color'])
     #\----------------------------------------------------------------------------/#
 
 
@@ -806,7 +827,7 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_title(title_all)
 
     ax_tms.spines['right'].set_visible(False)
-    ax_tms.set_zorder(ax_alt.get_zorder()+1)
+    ax_tms.set_zorder(ax_tms_alt.get_zorder()+1)
     ax_tms.patch.set_visible(False)
     #\----------------------------------------------------------------------------/#
 
@@ -1355,17 +1376,17 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        # main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
         #/----------------------------------------------------------------------------\#
-        main_vid(date, wvl0=_wavelength_)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
