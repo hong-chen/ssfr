@@ -55,7 +55,7 @@ _fdir_hsk_   = 'data/%s/2024-Spring/p3/aux/hsk' % _mission_
 _fdir_cal_   = 'data/%s/cal' % _mission_
 
 _fdir_data_  = 'data/%s' % _mission_
-_fdir_out_   = '%s/processed' % _fdir_data_
+_fdir_out_   = 'data/processed'
 
 
 _verbose_   = True
@@ -67,6 +67,9 @@ _alp_time_offset_ = {
         '20240517': -5.0*86400.0+5.2,
         }
 _spns_time_offset_ = {
+        '20240517': 0.0,
+        }
+_ssfr1_time_offset_ = {
         '20240517': 0.0,
         }
 #\----------------------------------------------------------------------------/#
@@ -991,8 +994,15 @@ def cdata_arcsix_ssfr_v1(
         # load ssfr v0 data
         #/----------------------------------------------------------------------------\#
         data_ssfr_v0 = ssfr.util.load_h5(fname_ssfr_v0)
+
+        vnames_dset = []
+        for vname in data_ssfr_v0.keys():
+            dset_tag = vname.split('/')[0]
+            if ('dset' in dset_tag) and (dset_tag not in vnames_dset):
+                vnames_dset.append(dset_tag)
         #\----------------------------------------------------------------------------/#
 
+        sys.exit()
 
         # load hsk
         #/----------------------------------------------------------------------------\#
@@ -1000,11 +1010,42 @@ def cdata_arcsix_ssfr_v1(
         #\----------------------------------------------------------------------------/#
 
 
-        # time offset (currently we do it manually)
+        # check time offset
         #/----------------------------------------------------------------------------\#
         if _test_mode_:
-            time_offset = (data_hsk['jday'][0] - data_ssfr_v0['dset0/jday'][0]) * 86400.0
+            index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
+            data_ref = data_ssfr_v0['/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
+            data_tar  = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday'], data_spns_v0['tot/flux'][:, index_wvl])
+
+            plt.close('all')
+            fig = plt.figure(figsize=(8, 6))
+            # fig.suptitle('Figure')
+            # plot
+            #/--------------------------------------------------------------\#
+            ax1 = fig.add_subplot(111)
+            # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+            # ax1.scatter(x, y, s=6, c='k', lw=0.0)
+            # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+            ax1.plot(data_ref, color='k', ls='-')
+            ax1.plot(data_tar, color='r', ls='-')
+            # ax1.set_xlim(())
+            # ax1.set_ylim(())
+            # ax1.set_xlabel('')
+            # ax1.set_ylabel('')
+            # ax1.set_title('')
+            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            #\--------------------------------------------------------------/#
+            # save figure
+            #/--------------------------------------------------------------\#
+            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+            #\--------------------------------------------------------------/#
+            plt.show()
+            sys.exit()
         #\----------------------------------------------------------------------------/#
+        time_offset = _ssfr1_time_offset_[date_s]
 
 
         # read wavelengths and calculate toa downwelling solar flux

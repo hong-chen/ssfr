@@ -66,6 +66,9 @@ _wavelength_   = 745.0
 
 _fdir_data_ = 'data/processed'
 
+_tmhr_range_ = {
+        '20240517': [19.1661, 23.0681],
+        }
 
 
 def download_geo_sat_img(
@@ -1081,7 +1084,7 @@ def main_pre(
     logic0 = (~np.isnan(jday) & ~np.isinf(sza))   & \
              check_continuity(lon, threshold=1.0) & \
              check_continuity(lat, threshold=1.0) & \
-             (tmhr>=19.1661) & (tmhr<=23.0681)
+             (tmhr>=_tmhr_range_[date_s][0]) & (tmhr<=_tmhr_range_[date_s][1])
 
     # print(jday[~logic0])
     # print(sza[~logic0])
