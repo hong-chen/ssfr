@@ -759,11 +759,13 @@ def plot_video_frame(statements, test=False):
 
     # altitude/sza plot settings
     #/----------------------------------------------------------------------------\#
-    ax_alt.axhspan(0, (90.0-sza_current)/10.0, color='gray', lw=0.0, zorder=0, alpha=0.3)
+    ax_alt.axhspan(0, (90.0-sza_current)/10.0, color='gold', lw=0.0, zorder=0, alpha=0.3)
+    ax_alt.scatter(0.5, (90.0-sza_current)/10.0, color='gold', s=120, lw=0.0, zorder=1, alpha=0.3)
 
     color0 = alt_cmap(alt_norm(alt_current))
     ax_alt.axhline(alt_current, lw=2.0, color=color0, zorder=1)
 
+    ax_alt.set_xlim((0.0, 1.0))
     ax_alt.set_ylim((0.0, 9.0))
     ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 3.0)))
     ax_alt.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
