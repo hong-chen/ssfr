@@ -1494,10 +1494,11 @@ def main_pre(
     #/----------------------------------------------------------------------------\#
     extent = get_extent(lon, lat, margin=0.2)
 
-    dtime_s = er3t.util.jday_to_dtime(jday[0])
-    dtime_e = er3t.util.jday_to_dtime(jday[-1])
+    interval = 600.0 # seconds
+    dtime_s = er3t.util.jday_to_dtime((jday[0] *86400.0//interval  )*interval/86400.0)
+    dtime_e = er3t.util.jday_to_dtime((jday[-1]*86400.0//interval+1)*interval/86400.0)
 
-    if False:
+    if True:
         # download_geo_sat_img(
         #     dtime_s,
         #     dtime_e=dtime_e,
