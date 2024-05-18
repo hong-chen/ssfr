@@ -1001,6 +1001,8 @@ def plot_video_frame(statements, test=False):
             lat_point_to = lat_current + Nscale*dy
         else:
             plot_arrow = False
+
+    plot_arrow=False
     #\----------------------------------------------------------------------------/#
 
 
@@ -1335,15 +1337,15 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     ax.axis('off')
     text1 = 'Acknowledgements:\n\
-instruments engineered by Jeffery Drouet and Sebastian Schmidt\n\
-instruments calibrated by Hong Chen, Yu-Wen Chen, and Ken Hirata\n\
-instrument data collected by Arabella Chamberlain'
+instruments calibrated and prepared by H. Chen, Y.-W. Chen, K. Hirata, A. Chamberlain, and K. Dong\n\
+instruments installed and maintained by J. Drouet, S. Schmidt, and A. Chamberlain\n\
+instruments checked and operated by A. Chamberlain, V. Nataraja'
     ax.annotate(text1, xy=(0.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='left', va='top')
 
     text2 = 'Acknowledgements:\n\
-satellite imagery processed by Vikas Nataraja\n\
-instrument data processed by Hong Chen\n\
-video created by Hong Chen'
+satellite imagery processed by V. Nataraja\n\
+instrument data processed by H. Chen\n\
+video created by H. Chen'
     ax.annotate(text2, xy=(1.0, 0.28), fontsize=8, color='gray', xycoords='axes fraction', ha='right', va='top')
 
     # ax.annotate('by\nARCSIX SSFR Team', xy=(0.5, 0.30), fontsize=14, color='gray', xycoords='axes fraction', ha='center', va='top')
