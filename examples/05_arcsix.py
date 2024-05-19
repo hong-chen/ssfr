@@ -70,7 +70,10 @@ _spns_time_offset_ = {
         '20240517': 0.0,
         }
 _ssfr1_time_offset_ = {
-        '20240517': 184.0,
+        '20240517': 187.0,
+        }
+_ssfr2_time_offset_ = {
+        '20240517': 0.0,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -963,13 +966,10 @@ def cdata_arcsix_ssfr_v0(
             if isinstance(ssfr0.data_raw[key], np.ndarray):
                 g.create_dataset(key, data=ssfr0.data_raw[key], compression='gzip', compression_opts=9, chunks=True)
 
-        for i in range(ssfr0.Ndset):
-            dset_s = 'dset%d' % i
-            data = getattr(ssfr0, dset_s)
-            g = f.create_group(dset_s)
-            for key in data.keys():
-                if key != 'info':
-                    g.create_dataset(key, data=data[key], compression='gzip', compression_opts=9, chunks=True)
+        g = f.create_group('corr')
+        for key in ssfr0.data_corr.keys():
+            if isinstance(ssfr0.data_corr[key], np.ndarray):
+                g.create_dataset(key, data=ssfr0.data_corr[key], compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
         #\----------------------------------------------------------------------------/#
@@ -1001,14 +1001,6 @@ def cdata_arcsix_ssfr_v1(
         # load ssfr v0 data
         #/----------------------------------------------------------------------------\#
         data_ssfr_v0 = ssfr.util.load_h5(fname_ssfr_v0)
-
-        Ndata = 0
-        vnames_dset = []
-        for vname in data_ssfr_v0.keys():
-            dset_tag = vname.split('/')[0]
-            if ('dset' in dset_tag) and (dset_tag not in vnames_dset):
-                Ndata += data_ssfr_v0['%s/jday' % dset_tag].size
-                vnames_dset.append(dset_tag)
         #\----------------------------------------------------------------------------/#
 
 
@@ -1022,7 +1014,7 @@ def cdata_arcsix_ssfr_v1(
         #/----------------------------------------------------------------------------\#
         flux_toa = ssfr.util.get_solar_kurudz()
 
-        wvl_zen = data_ssfr_v0['dset0/wvl_zen']
+        wvl_zen = data_ssfr_v0['corr/wvl_zen']
         f_dn_sol_zen = np.zeros_like(wvl_zen)
         for i, wvl0 in enumerate(wvl_zen):
             f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
@@ -1034,20 +1026,20 @@ def cdata_arcsix_ssfr_v1(
         # processing data - since we have dual integration times, SSFR data with different
         # integration time will be processed seperately
         #/----------------------------------------------------------------------------\#
-        jday     = np.zeros(Ndata, dtype=np.float64)
-        wvl_zen  = data_ssfr_v0['dset0/wvl_zen']
-        wvl_nad  = data_ssfr_v0['dset0/wvl_nad']
-        cnt_zen  = np.zeros((Ndata, wvl_zen.size), dtype=np.float64)
-        flux_zen = np.zeros_like(cnt_zen)
-        cnt_nad  = np.zeros((Ndata, wvl_nad.size), dtype=np.float64)
-        flux_nad = np.zeros_like(cnt_nad)
-        dset_num = np.zeros(Ndata, dtype=np.int32)
+        jday     = data_ssfr_v0['raw/jday']
+        dset_num = data_ssfr_v0['raw/dset_num']
 
+        wvl_zen  = data_ssfr_v0['corr/wvl_zen']
+        wvl_nad  = data_ssfr_v0['corr/wvl_nad']
 
-        Ns = 0
-        for idset, dset_s in enumerate(vnames_dset):
+        cnt_zen  = data_ssfr_v0['corr/cnt_zen']
+        spec_zen = np.zeros_like(cnt_zen)
+        cnt_nad  = data_ssfr_v0['corr/cnt_nad']
+        spec_nad = np.zeros_like(cnt_nad)
 
-            # select calibration file
+        for idset in np.unique(dset_num):
+
+            # select calibration file (can later be adjusted for different integration time sets)
             #/----------------------------------------------------------------------------\#
             fdir_cal = '%s/rad-cal' % _fdir_cal_
             # fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
@@ -1059,35 +1051,16 @@ def cdata_arcsix_ssfr_v1(
             data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
             #\----------------------------------------------------------------------------/#
 
+            logic_dset = (dset_num == idset)
 
             # convert counts to flux
             #/----------------------------------------------------------------------------\#
-            Ne = Ns + data_ssfr_v0['%s/jday' % dset_s].size
-
-            jday[Ns:Ne] = data_ssfr_v0['%s/jday' % dset_s]
-            dset_num[Ns:Ne] = idset
-
             for i in range(wvl_zen.size):
-                cnt_zen[Ns:Ne, i]  = data_ssfr_v0['%s/cnt_zen' % dset_s][:, i]
-                flux_zen[Ns:Ne, i] = cnt_zen[Ns:Ne, i] / data_cal_zen['sec_resp'][i]
+                spec_zen[logic_dset, i] = cnt_zen[logic_dset, i] / data_cal_zen['sec_resp'][i]
 
             for i in range(wvl_nad.size):
-                cnt_nad[Ns:Ne, i]  = data_ssfr_v0['%s/cnt_nad' % dset_s][:, i]
-                flux_nad[Ns:Ne, i] = cnt_nad[Ns:Ne, i] / data_cal_nad['sec_resp'][i]
+                spec_nad[logic_dset, i] = cnt_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
             #\----------------------------------------------------------------------------/#
-
-        #\----------------------------------------------------------------------------/#
-
-
-        # sort
-        #/----------------------------------------------------------------------------\#
-        indices_sort = np.argsort(jday)
-
-        jday = jday[indices_sort]
-        cnt_zen  = cnt_zen[indices_sort, :]
-        flux_zen = flux_zen[indices_sort, :]
-        cnt_nad  = cnt_nad[indices_sort, :]
-        flux_nad = flux_nad[indices_sort, :]
         #\----------------------------------------------------------------------------/#
 
 
@@ -1099,6 +1072,7 @@ def cdata_arcsix_ssfr_v1(
             time_offset = _ssfr2_time_offset_[date_s]
 
         if _test_mode_:
+        # if True:
             data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
             index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v2['tot/wvl']))
             data_ref = data_spns_v2['tot/flux'][:, index_wvl_spns]
@@ -1115,10 +1089,10 @@ def cdata_arcsix_ssfr_v1(
             # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
             # ax1.scatter(x, y, s=6, c='k', lw=0.0)
             # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-            ax1.plot(data_hsk['jday']-ssfr.util.dtime_to_jday(date), data_ref, color='k', ls='-')
-            ax1.plot(jday-ssfr.util.dtime_to_jday(date), flux_zen[:, index_wvl], color='r', ls='-')
-            ax1.plot(jday-ssfr.util.dtime_to_jday(date)+time_offset/86400.0, flux_zen[:, index_wvl], color='g', ls='-')
-            ax1.set_xlim((0.8, 0.86))
+            ax1.scatter(data_hsk['jday']-ssfr.util.dtime_to_jday(date), data_ref, c='k', lw=0, s=5)
+            ax1.scatter(jday-ssfr.util.dtime_to_jday(date), spec_zen[:, index_wvl], c='r', lw=0, s=5)
+            ax1.scatter(jday-ssfr.util.dtime_to_jday(date)+time_offset/86400.0, spec_zen[:, index_wvl], c='g', lw=0, s=5)
+            # ax1.set_xlim((0.8, 0.86))
             # ax1.set_xlim(())
             # ax1.set_ylim(())
             # ax1.set_xlabel('')
@@ -1142,16 +1116,16 @@ def cdata_arcsix_ssfr_v1(
         # and convert counts to flux
         #/----------------------------------------------------------------------------\#
         cnt_zen_hsk  = np.zeros((data_hsk['jday'].size, wvl_zen.size), dtype=np.float64)
-        flux_zen_hsk = np.zeros_like(cnt_zen_hsk)
+        spec_zen_hsk = np.zeros_like(cnt_zen_hsk)
         for i in range(wvl_zen.size):
             cnt_zen_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_zen[:, i])
-            flux_zen_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, flux_zen[:, i])
+            spec_zen_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_zen[:, i])
 
         cnt_nad_hsk  = np.zeros((data_hsk['jday'].size, wvl_nad.size), dtype=np.float64)
-        flux_nad_hsk = np.zeros_like(cnt_nad_hsk)
+        spec_nad_hsk = np.zeros_like(cnt_nad_hsk)
         for i in range(wvl_nad.size):
             cnt_nad_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_nad[:, i])
-            flux_nad_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, flux_nad[:, i])
+            spec_nad_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_nad[:, i])
         #\----------------------------------------------------------------------------/#
 
 
@@ -1160,13 +1134,19 @@ def cdata_arcsix_ssfr_v1(
         g1 = f.create_group('zen')
         g1.create_dataset('wvl' , data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
         g1.create_dataset('cnt' , data=cnt_zen_hsk , compression='gzip', compression_opts=9, chunks=True)
-        g1.create_dataset('flux', data=flux_zen_hsk, compression='gzip', compression_opts=9, chunks=True)
-        g1.create_dataset('toa0', data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
+        if which_ssfr == 'ssfr-a':
+            g1.create_dataset('flux', data=spec_zen_hsk, compression='gzip', compression_opts=9, chunks=True)
+            g1.create_dataset('toa0', data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
+        elif which_ssfr == 'ssfr-b':
+            g1.create_dataset('rad', data=spec_zen_hsk, compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('nad')
         g2.create_dataset('wvl' , data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
         g2.create_dataset('cnt' , data=cnt_nad_hsk , compression='gzip', compression_opts=9, chunks=True)
-        g2.create_dataset('flux', data=flux_nad_hsk, compression='gzip', compression_opts=9, chunks=True)
+        if which_ssfr == 'ssfr-a':
+            g2.create_dataset('flux', data=spec_nad_hsk, compression='gzip', compression_opts=9, chunks=True)
+        elif which_ssfr == 'ssfr-b':
+            g2.create_dataset('rad', data=spec_nad_hsk, compression='gzip', compression_opts=9, chunks=True)
         #\----------------------------------------------------------------------------/#
 
 
@@ -1466,8 +1446,7 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data,
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
-    sys.exit()
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     sys.exit()

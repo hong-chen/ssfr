@@ -288,8 +288,6 @@ class read_ssfr:
         self.data_raw['info']['comment'] = comment
         self.data_raw['info']['Ndata'] = self.data_raw['shutter'].size
 
-        self.data_raw['count_per_ms'] = self.data_raw['count_raw'] / self.data_raw['int_time'][:, np.newaxis, :]
-
         if which_time.lower() == 'arinc':
             self.data_raw['jday'] = self.data_raw['jday_a'].copy()
         elif which_time.lower() == 'crio':
@@ -301,9 +299,7 @@ class read_ssfr:
         #/----------------------------------------------------------------------------\#
         if process:
             self.dset_check()
-            sys.exit()
             self.dark_corr(dark_corr_mode=dark_corr_mode, dark_extend=dark_extend, light_extend=light_extend)
-
             if which_ssfr is not None:
                 self.wvl_join(which_ssfr, wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
         #\----------------------------------------------------------------------------/#
@@ -367,23 +363,35 @@ class read_ssfr:
             fill_value=np.nan,
             ):
 
+        # dark correction (light minus dark)
+        #/----------------------------------------------------------------------------\#
+        count_per_ms = (self.data_raw['count_raw']+2**15) / (self.data_raw['int_time'][:, np.newaxis, :])
+        count_per_ms_dark_corr = count_per_ms.copy()
+        count_per_ms_dark_corr[...] = fill_value
+        for ip in range(self.Nspec):
+            shutter_dark_corr, count_per_ms_dark_corr[:, :, ip] = ssfr.corr.dark_corr(self.data_raw['tmhr'], self.data_raw['shutter'], count_per_ms[:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
+
+        self.data_raw['shutter_dark-corr'] = shutter_dark_corr
+        self.data_raw['count_per_ms_dark-corr'] = count_per_ms_dark_corr
+        #\----------------------------------------------------------------------------/#
+
         # self.dset0['shutter_dark-corr'], where -1 is data excluded during dark correction
         # self.dset0['count_dark-corr']
         #/----------------------------------------------------------------------------\#
-        for idset in range(self.Ndset):
+        # for idset in range(self.Ndset):
 
-            dset = getattr(self, 'dset%d' %idset)
+        #     dset = getattr(self, 'dset%d' %idset)
 
-            # dark correction (light minus dark)
-            #/----------------------------------------------------------------------------\#
-            count_dark_corr = dset['count_raw'].copy()
-            count_dark_corr[...] = fill_value
-            for ip in range(self.Nspec):
-                shutter_dark_corr, count_dark_corr[:, :, ip] = ssfr.corr.dark_corr(dset['tmhr'], dset['shutter'], dset['count_raw'][:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
+        #     # dark correction (light minus dark)
+        #     #/----------------------------------------------------------------------------\#
+        #     count_dark_corr = dset['count_raw'].copy()
+        #     count_dark_corr[...] = fill_value
+        #     for ip in range(self.Nspec):
+        #         shutter_dark_corr, count_dark_corr[:, :, ip] = ssfr.corr.dark_corr(dset['tmhr'], dset['shutter'], dset['count_raw'][:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
 
-            dset['shutter_dark-corr'] = shutter_dark_corr
-            dset['count_dark-corr'] = count_dark_corr
-            #\----------------------------------------------------------------------------/#
+        #     dset['shutter_dark-corr'] = shutter_dark_corr
+        #     dset['count_dark-corr'] = count_dark_corr
+        #     #\----------------------------------------------------------------------------/#
         #\----------------------------------------------------------------------------/#
 
     def wvl_join(
@@ -395,6 +403,10 @@ class read_ssfr:
             ):
 
         wvls = get_ssfr_wvl(which_ssfr)
+        self.data_raw['wvl_zen_si'] = wvls['zen|si']
+        self.data_raw['wvl_zen_in'] = wvls['zen|in']
+        self.data_raw['wvl_nad_si'] = wvls['nad|si']
+        self.data_raw['wvl_nad_in'] = wvls['nad|in']
 
         # zenith wavelength
         #/----------------------------------------------------------------------------\#
@@ -420,20 +432,17 @@ class read_ssfr:
 
         # processing data (unit counts: [counts/ms])
         #/----------------------------------------------------------------------------\#
-        for it in range(self.Ndset):
+        counts_zen = np.hstack((self.data_raw['count_per_ms_dark-corr'][:, logic_zen_si, 0], self.data_raw['count_per_ms_dark-corr'][:, logic_zen_in, 1]))
+        counts_nad = np.hstack((self.data_raw['count_per_ms_dark-corr'][:, logic_nad_si, 2], self.data_raw['count_per_ms_dark-corr'][:, logic_nad_in, 3]))
 
-            dset = getattr(self, 'dset%d' % it)
+        counts_zen = counts_zen[:, indices_sort_zen]
+        counts_nad = counts_nad[:, indices_sort_nad]
 
-            counts_zen = np.hstack((dset['count_dark-corr'][:, logic_zen_si, 0]/dset['info']['int_time']['zen|si'], dset['count_dark-corr'][:, logic_zen_in, 1]/dset['info']['int_time']['zen|in']))
-            counts_nad = np.hstack((dset['count_dark-corr'][:, logic_nad_si, 2]/dset['info']['int_time']['nad|si'], dset['count_dark-corr'][:, logic_nad_in, 3]/dset['info']['int_time']['nad|in']))
-
-            counts_zen = counts_zen[:, indices_sort_zen]
-            counts_nad = counts_nad[:, indices_sort_nad]
-
-            dset['wvl_zen'] = wvl_zen
-            dset['cnt_zen'] = counts_zen
-            dset['wvl_nad'] = wvl_nad
-            dset['cnt_nad'] = counts_nad
+        self.data_corr = {}
+        self.data_corr['wvl_zen'] = wvl_zen
+        self.data_corr['cnt_zen'] = counts_zen
+        self.data_corr['wvl_nad'] = wvl_nad
+        self.data_corr['cnt_nad'] = counts_nad
         #\----------------------------------------------------------------------------/#
 
 
