@@ -73,7 +73,7 @@ _ssfr1_time_offset_ = {
         '20240517': 185.0,
         }
 _ssfr2_time_offset_ = {
-        '20240517': 185.0,
+        '20240517': 115.0,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -1722,12 +1722,12 @@ def main_process_data(date, run=True):
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
     sys.exit()
 #\----------------------------------------------------------------------------/#
 
