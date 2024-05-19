@@ -305,6 +305,9 @@ class read_ssfr:
         #/----------------------------------------------------------------------------\#
         if process:
             self.dset_sep()
+            print(self.data_raw['dset_num'])
+            sys.exit()
+
             self.dark_corr(dark_corr_mode=dark_corr_mode, dark_extend=dark_extend, light_extend=light_extend)
             if which_ssfr is not None:
                 self.wvl_join(which_ssfr, wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
@@ -313,6 +316,8 @@ class read_ssfr:
     def dset_sep(
             self,
             ):
+
+        self.data_raw['dset_num'] = np.zeros(self.data_raw['jday'].size, dtype=np.int32)
 
         int_time_ = np.unique(self.data_raw['int_time'], axis=0)
         self.Ndset, _ = int_time_.shape
@@ -338,6 +343,8 @@ class read_ssfr:
             for vname in self.data_raw.keys():
                 if vname in ['info']:
                     dset[vname] = self.data_raw[vname].copy()
+                elif vname in ['dset_num']:
+                    self.data_raw[vname][logic] = idset
                 else:
                     dset[vname] = self.data_raw[vname][logic, ...]
 
@@ -350,6 +357,8 @@ class read_ssfr:
             #\----------------------------------------------------------------------------/#
 
             dset_name = 'dset%d' % idset
+
+            print('%s: zen|si=%d, zen|in=%d, nad|si=%d, nad|in=%d' % (dset_name, *int_time_[idset]))
             setattr(self, dset_name, dset)
         #\----------------------------------------------------------------------------/#
 

@@ -55,7 +55,7 @@ _fdir_hsk_   = 'data/%s/2024-Spring/p3/aux/hsk' % _mission_
 _fdir_cal_   = 'data/%s/cal' % _mission_
 
 _fdir_data_  = 'data/%s' % _mission_
-_fdir_out_   = 'data/processed'
+_fdir_out_   = '%s/processed' % _fdir_data_
 
 
 _verbose_   = True
