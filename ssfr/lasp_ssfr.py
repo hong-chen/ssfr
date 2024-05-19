@@ -400,6 +400,7 @@ class read_ssfr:
         self.data_raw['count_dark-corr'] = count_dark_corr
         self.data_raw['count_per_ms_dark-corr'] = count_dark_corr / self.data_raw['int_time'][:, np.newaxis, :]
 
+
         # dark_per_ms = count_per_ms[self.data_raw['shutter']==]
 
         # dark correction (light minus dark)

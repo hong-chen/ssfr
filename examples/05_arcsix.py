@@ -1020,7 +1020,6 @@ def cdata_arcsix_ssfr_v1(
             f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
         #\----------------------------------------------------------------------------/#
 
-
         f = h5py.File(fname_h5, 'w')
 
         # processing data - since we have dual integration times, SSFR data with different
@@ -1060,7 +1059,6 @@ def cdata_arcsix_ssfr_v1(
                 data_cal_nad = {
                         'sec_resp': np.repeat(factor_nad, wvl_nad.size)
                         }
-
 
             logic_dset = (dset_num == idset)
 
@@ -1103,8 +1101,6 @@ def cdata_arcsix_ssfr_v1(
             ax1.scatter(data_hsk['jday']-ssfr.util.dtime_to_jday(date), data_ref, c='k', lw=0, s=5)
             ax1.scatter(jday-ssfr.util.dtime_to_jday(date), spec_zen[:, index_wvl], c='r', lw=0, s=5)
             ax1.scatter(jday-ssfr.util.dtime_to_jday(date)+time_offset/86400.0, spec_zen[:, index_wvl], c='g', lw=0, s=5)
-            # ax1.set_xlim((0.8, 0.86))
-            # ax1.set_xlim(())
             # ax1.set_ylim(())
             # ax1.set_xlabel('')
             # ax1.set_ylabel('')
@@ -1128,6 +1124,7 @@ def cdata_arcsix_ssfr_v1(
         #/----------------------------------------------------------------------------\#
         cnt_zen_hsk  = np.zeros((data_hsk['jday'].size, wvl_zen.size), dtype=np.float64)
         spec_zen_hsk = np.zeros_like(cnt_zen_hsk)
+
         for i in range(wvl_zen.size):
             cnt_zen_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_zen[:, i])
             spec_zen_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_zen[:, i])
