@@ -60,7 +60,7 @@ def read_ssfr_raw(
 
     Output:
         comment
-        spectra
+        count_raw
         shutter
         int_time
         temp
@@ -76,7 +76,7 @@ def read_ssfr_raw(
     data0 contains the following variables:
 
     comment  (str)        [N/A]    : comment in header
-    spectra  (numpy array)[N/A]    : counts of Silicon and InGaAs for both zenith and nadir
+    count_raw  (numpy array)[N/A]  : counts of Silicon and InGaAs for both zenith and nadir
     shutter  (numpy array)[N/A]    : shutter status (1:closed(dark), 0:open(light))
     int_time (numpy array)[ms]     : integration time of Silicon and InGaAs for both zenith and nadir
     temp (numpy array)    [Celsius]: temperature variables
@@ -99,7 +99,7 @@ def read_ssfr_raw(
         msg = '\nError [read_ssfr_raw]: <%s> has invalid file size.' % fname
         raise OSError(msg)
 
-    spectra    = np.zeros((iterN, 256, 4), dtype=np.float64) # spectra (Ntime, Nchan, Nspec)
+    count_raw = np.zeros((iterN, 256, 4), dtype=np.float64) # raw counts (Ntime, Nchan, Nspec)
     shutter    = np.zeros(iterN          , dtype=np.int32  ) # shutter status (1:closed, 0:open)
     int_time   = np.zeros((iterN, 4)     , dtype=np.float64) # integration time [ms]
     temp       = np.zeros((iterN, 11)    , dtype=np.float64) # temperature
@@ -132,7 +132,7 @@ def read_ssfr_raw(
         # l11d: null[l], temp(11)[11d]
         # ----------------          below repeat for zen_si, nad_si, zen_in, nad_in          ----------------------------
         # l2Bl: int_time[l], shutter[B], EOS[B], null[l]
-        # 257h: spectra(257)
+        # 257h: raw counts(257)
         # ---------------------------------------------------------------------------------------------------------------
         data     = struct.unpack('<d9ld9ll11dl2Bl257hl2Bl257hl2Bl257hlBBl257h', dataRec)
 
@@ -149,7 +149,7 @@ def read_ssfr_raw(
         if any([shutter_logic, eos_logic, null_logic, order_logic]):
             qual_flag[i] = 0
 
-        spectra[i, :, :]  = dataSpec[5:, :]
+        count_raw[i, :, :]  = dataSpec[5:, :]
         shutter[i]        = dataSpec[1, 0]
         int_time[i, :]    = dataSpec[0, :]
         temp[i, :]        = dataHead[21:]
@@ -165,7 +165,7 @@ def read_ssfr_raw(
 
     data_ = {
              'comment': comment,
-             'spectra': spectra,
+           'count_raw': count_raw,
              'shutter': shutter,
             'int_time': int_time,
                 'temp': temp,
@@ -193,7 +193,6 @@ class read_ssfr:
             fnames,
             Ndata=2000,
             which_time='arinc',
-            time_offset=0.0,
             process=True,
             dark_corr_mode='interp',
             dark_extend=2,
@@ -210,7 +209,6 @@ class read_ssfr:
         fnames      : list of SSFR files to read
         Ndata=      : pre-defined number of data records (any number larger than the "number of data records per file" will work); default=600
         which_time=  : "ARINC" or "cRIO"; default='arinc'
-        time_offset=: time offset in [seconds]; default=0.0
         process=    : whether or not process data, e.g., dark correction; default=True
         dark_corr_mode=: dark correction mode, can be 'interp' or 'mean'; default='interp'
         verbose=    : verbose tag; default=False
@@ -234,7 +232,7 @@ class read_ssfr:
         #   self.data_raw['info']['fnames']
         #   self.data_raw['info']['comment']
         #   self.data_raw['info']['Ndata']
-        #   self.data_raw['spectra']
+        #   self.data_raw['count_raw']
         #   self.data_raw['shutter']
         #   self.data_raw['int_time']
         #   self.data_raw['temp']
@@ -254,7 +252,7 @@ class read_ssfr:
 
         Nx         = Ndata * len(fnames)
         comment    = []
-        spectra    = np.zeros((Nx, self.Nchan, self.Nspec), dtype=np.float64)
+        count_raw  = np.zeros((Nx, self.Nchan, self.Nspec), dtype=np.float64)
         shutter    = np.zeros(Nx                          , dtype=np.int32  )
         int_time   = np.zeros((Nx, self.Nspec)            , dtype=np.float64)
         temp       = np.zeros((Nx, self.Ntemp)            , dtype=np.float64)
@@ -270,7 +268,7 @@ class read_ssfr:
             Nend = data0['iterN'] + Nstart
 
             comment.append(data0['comment'])
-            spectra[Nstart:Nend, ...]    = data0['spectra']
+            count_raw[Nstart:Nend, ...]    = data0['count_raw']
             shutter[Nstart:Nend, ...]    = data0['shutter']
             int_time[Nstart:Nend, ...]   = data0['int_time']
             temp[Nstart:Nend, ...]       = data0['temp']
@@ -280,7 +278,7 @@ class read_ssfr:
 
             Nstart = Nend
 
-        self.data_raw['spectra']    = spectra[:Nend, ...]
+        self.data_raw['count_raw']    = count_raw[:Nend, ...]
         self.data_raw['shutter']    = shutter[:Nend, ...]
         self.data_raw['int_time']   = int_time[:Nend, ...]
         self.data_raw['temp']       = temp[:Nend, ...]
@@ -290,30 +288,27 @@ class read_ssfr:
         self.data_raw['info']['comment'] = comment
         self.data_raw['info']['Ndata'] = self.data_raw['shutter'].size
 
+        self.data_raw['count_per_ms'] = self.data_raw['count_raw'] / self.data_raw['int_time'][:, np.newaxis, :]
+
         if which_time.lower() == 'arinc':
             self.data_raw['jday'] = self.data_raw['jday_a'].copy()
         elif which_time.lower() == 'crio':
             self.data_raw['jday'] = self.data_raw['jday_c'].copy()
         self.data_raw['tmhr'] = (self.data_raw['jday'] - int(self.data_raw['jday'][0])) * 24.0
-
-        self.data_raw['jday_corr'] = self.data_raw['jday'] + float(time_offset)/86400.0
-        self.data_raw['tmhr_corr'] = self.data_raw['tmhr'] + float(time_offset)/3600.0
         #\----------------------------------------------------------------------------/#
-
 
         # process data
         #/----------------------------------------------------------------------------\#
         if process:
-            self.dset_sep()
-            print(self.data_raw['dset_num'])
+            self.dset_check()
             sys.exit()
-
             self.dark_corr(dark_corr_mode=dark_corr_mode, dark_extend=dark_extend, light_extend=light_extend)
+
             if which_ssfr is not None:
                 self.wvl_join(which_ssfr, wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
         #\----------------------------------------------------------------------------/#
 
-    def dset_sep(
+    def dset_check(
             self,
             ):
 
@@ -321,6 +316,7 @@ class read_ssfr:
 
         int_time_ = np.unique(self.data_raw['int_time'], axis=0)
         self.Ndset, _ = int_time_.shape
+        print('Total of %d sets of integration times:' % self.Ndset)
 
         # seperate data for different pairs of integration times
         # after the following process, the object will contain
@@ -331,7 +327,7 @@ class read_ssfr:
         #/----------------------------------------------------------------------------\#
         for idset in range(self.Ndset):
 
-            dset = {}
+            # dset = {}
 
             # seperate data by integration times
             #/----------------------------------------------------------------------------\#
@@ -340,26 +336,27 @@ class read_ssfr:
                     (self.data_raw['int_time'][:, 2] == int_time_[idset, 2]) & \
                     (self.data_raw['int_time'][:, 3] == int_time_[idset, 3])
 
-            for vname in self.data_raw.keys():
-                if vname in ['info']:
-                    dset[vname] = self.data_raw[vname].copy()
-                elif vname in ['dset_num']:
-                    self.data_raw[vname][logic] = idset
-                else:
-                    dset[vname] = self.data_raw[vname][logic, ...]
+            self.data_raw['dset_num'][logic] = idset
+            # for vname in self.data_raw.keys():
+            #     if vname in ['info']:
+            #         dset[vname] = self.data_raw[vname].copy()
+            #     elif vname in ['dset_num']:
+            #         self.data_raw[vname][logic] = idset
+            #     else:
+            #         dset[vname] = self.data_raw[vname][logic, ...]
 
-            dset['info']['int_time'] = {
-                    'zen|si': int_time_[idset, 0],
-                    'zen|in': int_time_[idset, 1],
-                    'nad|si': int_time_[idset, 2],
-                    'nad|in': int_time_[idset, 3],
-                    }
+            # dset['info']['int_time'] = {
+            #         'zen|si': int_time_[idset, 0],
+            #         'zen|in': int_time_[idset, 1],
+            #         'nad|si': int_time_[idset, 2],
+            #         'nad|in': int_time_[idset, 3],
+            #         }
             #\----------------------------------------------------------------------------/#
 
             dset_name = 'dset%d' % idset
+            print('%s (%5d samples): zen|si=%3dms, zen|in=%3dms, nad|si=%3dms, nad|in=%3dms' % (dset_name, logic.sum(), *int_time_[idset]))
 
-            print('%s: zen|si=%d, zen|in=%d, nad|si=%d, nad|in=%d' % (dset_name, *int_time_[idset]))
-            setattr(self, dset_name, dset)
+            # setattr(self, dset_name, dset)
         #\----------------------------------------------------------------------------/#
 
     def dark_corr(
@@ -371,22 +368,21 @@ class read_ssfr:
             ):
 
         # self.dset0['shutter_dark-corr'], where -1 is data excluded during dark correction
-        # self.dset0['spectra_dark-corr']
+        # self.dset0['count_dark-corr']
         #/----------------------------------------------------------------------------\#
         for idset in range(self.Ndset):
 
             dset = getattr(self, 'dset%d' %idset)
 
             # dark correction (light minus dark)
-            # variable name: self.spectra_dark_corr
             #/----------------------------------------------------------------------------\#
-            spectra_dark_corr = dset['spectra'].copy()
-            spectra_dark_corr[...] = fill_value
+            count_dark_corr = dset['count_raw'].copy()
+            count_dark_corr[...] = fill_value
             for ip in range(self.Nspec):
-                shutter_dark_corr, spectra_dark_corr[:, :, ip] = ssfr.corr.dark_corr(dset['tmhr'], dset['shutter'], dset['spectra'][:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
+                shutter_dark_corr, count_dark_corr[:, :, ip] = ssfr.corr.dark_corr(dset['tmhr'], dset['shutter'], dset['count_raw'][:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
 
             dset['shutter_dark-corr'] = shutter_dark_corr
-            dset['spectra_dark-corr'] = spectra_dark_corr
+            dset['count_dark-corr'] = count_dark_corr
             #\----------------------------------------------------------------------------/#
         #\----------------------------------------------------------------------------/#
 
@@ -428,8 +424,8 @@ class read_ssfr:
 
             dset = getattr(self, 'dset%d' % it)
 
-            counts_zen = np.hstack((dset['spectra_dark-corr'][:, logic_zen_si, 0]/dset['info']['int_time']['zen|si'], dset['spectra_dark-corr'][:, logic_zen_in, 1]/dset['info']['int_time']['zen|in']))
-            counts_nad = np.hstack((dset['spectra_dark-corr'][:, logic_nad_si, 2]/dset['info']['int_time']['nad|si'], dset['spectra_dark-corr'][:, logic_nad_in, 3]/dset['info']['int_time']['nad|in']))
+            counts_zen = np.hstack((dset['count_dark-corr'][:, logic_zen_si, 0]/dset['info']['int_time']['zen|si'], dset['count_dark-corr'][:, logic_zen_in, 1]/dset['info']['int_time']['zen|in']))
+            counts_nad = np.hstack((dset['count_dark-corr'][:, logic_nad_si, 2]/dset['info']['int_time']['nad|si'], dset['count_dark-corr'][:, logic_nad_in, 3]/dset['info']['int_time']['nad|in']))
 
             counts_zen = counts_zen[:, indices_sort_zen]
             counts_nad = counts_nad[:, indices_sort_nad]

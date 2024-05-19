@@ -852,7 +852,7 @@ presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hira
         if vname.lower() != 'altitude' and var_plot['plot?']:
             patches_legend.append(mpatches.Patch(color=var_plot['color'], label=vname))
     if len(patches_legend) > 0:
-        ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=6)
+        ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=8)
         # ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 1.23, 0.92, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=12)
     #\----------------------------------------------------------------------------/#
 
