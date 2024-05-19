@@ -624,7 +624,7 @@ def plot_video_frame(statements, test=False):
                 else:
                     spec_y = flt_trk0[var_plot['vname']][index_pnt, :]
 
-                ax_wvl.scatter(wvl_x, spec_y, c=var_plot['color'], s=6, lw=0.0, zorder=var_plot['zorder'])
+                ax_wvl.scatter(wvl_x, spec_y, c=var_plot['color'], s=4, lw=0.0, zorder=var_plot['zorder'])
 
                 wvl_index = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
                 ax_wvl.axvline(wvl_x[wvl_index], color=var_plot['color'], ls='-', lw=1.0, alpha=0.5, zorder=var_plot['zorder'])
@@ -686,7 +686,7 @@ def plot_video_frame(statements, test=False):
                 if vname == 'Altitude':
                     ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=vars_plot[vname]['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
                 else:
-                    ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=4, lw=0.0, zorder=var_plot['zorder'])
+                    ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
 
 
