@@ -57,14 +57,15 @@ _platform_     = 'p3b'
 _hsk_          = 'hsk'
 _alp_          = 'alp'
 _spns_         = 'spns-a'
-_ssfr_         = 'ssfr-a'
+_ssfr1_        = 'ssfr-a'
+_ssfr2_        = 'ssfr-b'
 _cam_          = 'nac'
 
-_fdir_main_    = 'data/arcsix/flt-vid'
-_fdir_sat_img_ = 'data/arcsix/sat-img'
-_wavelength_   = 745.0
+_fdir_main_    = 'data/%s/flt-vid' % _mission_
+_fdir_sat_img_ = 'data/%s/sat-img' % _mission_
+_wavelength_   = 550.0
 
-_fdir_data_ = 'data/processed'
+_fdir_data_ = 'data/%s/processed' % _mission_
 
 _tmhr_range_ = {
         '20240517': [19.1661, 23.0681],
@@ -346,34 +347,46 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     vars_plot = OrderedDict()
 
-    vars_plot['SSFR↑']   = {
+    vars_plot['SSFR-A↑']   = {
             'vname':'f-up_ssfr',
             'color':'red',
-            'vname_wvl':'wvl_ssfr_nad',
-            'zorder': 5,
+            'vname_wvl':'wvl_ssfr1_nad',
+            'zorder': 7,
             }
-    vars_plot['SSFR↓']   = {
+    vars_plot['SSFR-A↓']   = {
             'vname':'f-down_ssfr',
             'color':'blue',
-            'vname_wvl':'wvl_ssfr_zen',
-            'zorder': 4,
+            'vname_wvl':'wvl_ssfr1_zen',
+            'zorder': 6,
+            }
+    vars_plot['SSFR-B↑']   = {
+            'vname':'r-up_ssfr',
+            'color':'magenta',
+            'vname_wvl':'wvl_ssfr2_nad',
+            'zorder': 2,
+            }
+    vars_plot['SSFR-B↓']   = {
+            'vname':'r-down_ssfr',
+            'color':'cyan',
+            'vname_wvl':'wvl_ssfr2_zen',
+            'zorder': 3,
             }
     vars_plot['SPNS Total↓']   = {
             'vname':'f-down-total_spns',
             'color':'green',
             'vname_wvl':'wvl_spns',
-            'zorder': 3,
+            'zorder': 5,
             }
     vars_plot['SPNS Diffuse↓']   = {
             'vname':'f-down-diffuse_spns',
             'color':'springgreen',
             'vname_wvl':'wvl_spns',
-            'zorder': 2,
+            'zorder': 4,
             }
     vars_plot['TOA↓']   = {
             'vname':'f-down_toa',
             'color':'black',
-            'vname_wvl':'wvl_ssfr_zen',
+            'vname_wvl':'wvl_ssfr1_zen',
             'zorder': 1,
             }
     vars_plot['Altitude']   = {
@@ -839,8 +852,8 @@ presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hira
         if vname.lower() != 'altitude' and var_plot['plot?']:
             patches_legend.append(mpatches.Patch(color=var_plot['color'], label=vname))
     if len(patches_legend) > 0:
-        ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=10)
-        # ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 1.23, 0.94, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=14)
+        ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=6)
+        # ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 1.23, 0.92, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=12)
     #\----------------------------------------------------------------------------/#
 
 
@@ -988,8 +1001,8 @@ def main_pre_simple(
 
     # flt_trk['f-down_ssfr']  = ssfr_zen_flux[logic, :]
     # flt_trk['f-up_ssfr']    = ssfr_nad_flux[logic, :]
-    # flt_trk['wvl_ssfr_zen'] = ssfr_zen_wvl
-    # flt_trk['wvl_ssfr_nad'] = ssfr_nad_wvl
+    # flt_trk['wvl_ssfr1_zen'] = ssfr_zen_wvl
+    # flt_trk['wvl_ssfr1_nad'] = ssfr_nad_wvl
     # flt_trk['f-down_toa']   = ssfr_zen_toa
 
     # partition the flight track into multiple mini flight track segments
@@ -1053,7 +1066,7 @@ def main_pre(
         run_rtm=False,
         time_step=1,
         wvl_step_spns=10,
-        wvl_step_ssfr=5,
+        wvl_step_ssfr=3,
         ):
 
 
@@ -1140,16 +1153,16 @@ def main_pre(
     # print(spns_dif_wvl.shape)
 
 
-    # read in ssfr data
+    # read in ssfr-a data
     #/--------------------------------------------------------------\#
-    fname_ssfr = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr_.upper(), _platform_.upper(), date_s)
-    f_ssfr = h5py.File(fname_ssfr, 'r')
-    ssfr_zen_flux = f_ssfr['zen/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    ssfr_zen_wvl  = f_ssfr['zen/wvl'][...][::wvl_step_ssfr]
-    ssfr_nad_flux = f_ssfr['nad/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    ssfr_nad_wvl  = f_ssfr['nad/wvl'][...][::wvl_step_ssfr]
-    ssfr_zen_toa  = f_ssfr['zen/toa0'][...][::wvl_step_ssfr]
-    f_ssfr.close()
+    fname_ssfr = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr1_.upper(), _platform_.upper(), date_s)
+    f_ssfr1 = h5py.File(fname_ssfr, 'r')
+    ssfr1_zen_flux = f_ssfr1['zen/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    ssfr1_zen_wvl  = f_ssfr1['zen/wvl'][...][::wvl_step_ssfr]
+    ssfr1_nad_flux = f_ssfr1['nad/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    ssfr1_nad_wvl  = f_ssfr1['nad/wvl'][...][::wvl_step_ssfr]
+    ssfr1_zen_toa  = f_ssfr1['zen/toa0'][...][::wvl_step_ssfr]
+    f_ssfr1.close()
     #\--------------------------------------------------------------/#
     # print(ssfr_zen_flux.shape)
     # print(ssfr_zen_wvl.shape)
@@ -1242,11 +1255,11 @@ def main_pre(
     flt_trk['f-down-direct_spns']  = flt_trk['f-down-total_spns'] - flt_trk['f-down-diffuse_spns']
     flt_trk['wvl_spns'] = spns_tot_wvl
 
-    flt_trk['f-down_ssfr']  = ssfr_zen_flux[logic, :]
-    flt_trk['f-up_ssfr']    = ssfr_nad_flux[logic, :]
-    flt_trk['wvl_ssfr_zen'] = ssfr_zen_wvl
-    flt_trk['wvl_ssfr_nad'] = ssfr_nad_wvl
-    flt_trk['f-down_toa']   = ssfr_zen_toa
+    flt_trk['f-down_ssfr']   = ssfr1_zen_flux[logic, :]
+    flt_trk['f-up_ssfr']     = ssfr1_nad_flux[logic, :]
+    flt_trk['wvl_ssfr1_zen'] = ssfr1_zen_wvl
+    flt_trk['wvl_ssfr1_nad'] = ssfr1_nad_wvl
+    flt_trk['f-down_toa']    = ssfr1_zen_toa
 
     # partition the flight track into multiple mini flight track segments
     flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)

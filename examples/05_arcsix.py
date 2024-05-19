@@ -958,13 +958,18 @@ def cdata_arcsix_ssfr_v0(
         #/----------------------------------------------------------------------------\#
         f = h5py.File(fname_h5, 'w')
 
+        g = f.create_group('raw')
+        for key in ssfr0.data_raw.keys():
+            if isinstance(ssfr0.data_raw[key], np.ndarray):
+                g.create_dataset(key, data=ssfr0.data_raw[key], compression='gzip', compression_opts=9, chunks=True)
+
         for i in range(ssfr0.Ndset):
             dset_s = 'dset%d' % i
             data = getattr(ssfr0, dset_s)
             g = f.create_group(dset_s)
             for key in data.keys():
                 if key != 'info':
-                    dset0 = g.create_dataset(key, data=data[key], compression='gzip', compression_opts=9, chunks=True)
+                    g.create_dataset(key, data=data[key], compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
         #\----------------------------------------------------------------------------/#
@@ -1461,7 +1466,8 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data,
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+    sys.exit()
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     sys.exit()
@@ -1723,13 +1729,13 @@ def main_process_data(date, run=True):
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-a', run=run)
-    sys.exit()
+    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
     # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    sys.exit()
 #\----------------------------------------------------------------------------/#
 
 
