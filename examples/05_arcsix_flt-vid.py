@@ -361,13 +361,13 @@ def plot_video_frame(statements, test=False):
             }
     vars_plot['SSFR-B↑']   = {
             'vname':'r-up_ssfr',
-            'color':'magenta',
+            'color':'deeppink',
             'vname_wvl':'wvl_ssfr2_nad',
             'zorder': 2,
             }
     vars_plot['SSFR-B↓']   = {
             'vname':'r-down_ssfr',
-            'color':'cyan',
+            'color':'dodgerblue',
             'vname_wvl':'wvl_ssfr2_zen',
             'zorder': 3,
             }

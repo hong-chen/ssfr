@@ -312,18 +312,10 @@ class read_ssfr:
 
         int_time_ = np.unique(self.data_raw['int_time'], axis=0)
         self.Ndset, _ = int_time_.shape
-        print('Total of %d sets of integration times:' % self.Ndset)
+        print('\nMessage [read_ssfr]:\nTotal of %d sets of integration times were found:' % self.Ndset)
 
-        # seperate data for different pairs of integration times
-        # after the following process, the object will contain
-        #   self.dset0, self.dset1 ...
-        #
-        #   with the same data variables contained in self.data_raw but with additions of
-        #   self.dset0['info']['int_time']
         #/----------------------------------------------------------------------------\#
         for idset in range(self.Ndset):
-
-            # dset = {}
 
             # seperate data by integration times
             #/----------------------------------------------------------------------------\#
@@ -333,26 +325,10 @@ class read_ssfr:
                     (self.data_raw['int_time'][:, 3] == int_time_[idset, 3])
 
             self.data_raw['dset_num'][logic] = idset
-            # for vname in self.data_raw.keys():
-            #     if vname in ['info']:
-            #         dset[vname] = self.data_raw[vname].copy()
-            #     elif vname in ['dset_num']:
-            #         self.data_raw[vname][logic] = idset
-            #     else:
-            #         dset[vname] = self.data_raw[vname][logic, ...]
-
-            # dset['info']['int_time'] = {
-            #         'zen|si': int_time_[idset, 0],
-            #         'zen|in': int_time_[idset, 1],
-            #         'nad|si': int_time_[idset, 2],
-            #         'nad|in': int_time_[idset, 3],
-            #         }
             #\----------------------------------------------------------------------------/#
 
             dset_name = 'dset%d' % idset
-            print('%s (%5d samples): zen|si=%3dms, zen|in=%3dms, nad|si=%3dms, nad|in=%3dms' % (dset_name, logic.sum(), *int_time_[idset]))
-
-            # setattr(self, dset_name, dset)
+            print('  %s (%5d samples): zen|si=%3dms, zen|in=%3dms, nad|si=%3dms, nad|in=%3dms' % (dset_name, logic.sum(), *int_time_[idset]))
         #\----------------------------------------------------------------------------/#
 
     def dark_corr(
@@ -362,6 +338,21 @@ class read_ssfr:
             light_extend=2,
             fill_value=np.nan,
             ):
+
+        for ispec in range(self.Nspec):
+            int_time = np.unique(self.data_raw['int_time'][:, ispec])
+            for int_time0 in int_time:
+                logic = (self.data_raw['int_time'][:, ispec]==int_time0)
+                logic_light = (logic & ((self.data_raw['shutter'][:]==0)))
+                logic_dark  = (logic & ((self.data_raw['shutter'][:]==1)))
+
+                if logic_dark.sum() == 0:
+
+                    msg = 'Warning [read_ssfr]: cannot find corresponding darks for '
+                    warnings.warn()
+
+                print(ispec, int_time0, logic_light.sum(), logic_dark.sum())
+        sys.exit()
 
         # dark correction (light minus dark)
         #/----------------------------------------------------------------------------\#
