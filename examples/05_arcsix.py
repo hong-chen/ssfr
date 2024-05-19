@@ -618,7 +618,7 @@ def cdata_arcsix_alp_v1(
         jday_corr        = data_alp['jday'] + time_offset/86400.0
         for vname in data_alp.keys():
             if vname not in ['tmhr', 'jday']:
-                f[vname] = ssfr.util.interp(data_hsk['jday'], jday_corr, data_alp[vname])
+                f[vname] = ssfr.util.interp(data_hsk['jday'], jday_corr, data_alp[vname], mode='linear')
         f.close()
 
     return fname_h5
@@ -744,7 +744,7 @@ def cdata_arcsix_spns_v1(
         if _test_mode_:
             index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
             data_ref = data_spns_v0['tot/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
-            data_tar  = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday'], data_spns_v0['tot/flux'][:, index_wvl])
+            data_tar  = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday'], data_spns_v0['tot/flux'][:, index_wvl], mode='nearest')
 
             plt.close('all')
             fig = plt.figure(figsize=(8, 6))
@@ -780,11 +780,11 @@ def cdata_arcsix_spns_v1(
         #/----------------------------------------------------------------------------\#
         flux_dif = np.zeros((data_hsk['jday'].size, data_spns_v0['dif/wvl'].size), dtype=np.float64)
         for i in range(flux_dif.shape[-1]):
-            flux_dif[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['dif/jday']+time_offset/86400.0, data_spns_v0['dif/flux'][:, i])
+            flux_dif[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['dif/jday']+time_offset/86400.0, data_spns_v0['dif/flux'][:, i], mode='nearest')
 
         flux_tot = np.zeros((data_hsk['jday'].size, data_spns_v0['tot/wvl'].size), dtype=np.float64)
         for i in range(flux_tot.shape[-1]):
-            flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday']+time_offset/86400.0, data_spns_v0['tot/flux'][:, i])
+            flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday']+time_offset/86400.0, data_spns_v0['tot/flux'][:, i], mode='nearest')
         #\----------------------------------------------------------------------------/#
 
         f = h5py.File(fname_h5, 'w')
@@ -1126,14 +1126,14 @@ def cdata_arcsix_ssfr_v1(
         spec_zen_hsk = np.zeros_like(cnt_zen_hsk)
 
         for i in range(wvl_zen.size):
-            cnt_zen_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_zen[:, i])
-            spec_zen_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_zen[:, i])
+            cnt_zen_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_zen[:, i], mode='nearest')
+            spec_zen_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_zen[:, i], mode='nearest')
 
         cnt_nad_hsk  = np.zeros((data_hsk['jday'].size, wvl_nad.size), dtype=np.float64)
         spec_nad_hsk = np.zeros_like(cnt_nad_hsk)
         for i in range(wvl_nad.size):
-            cnt_nad_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_nad[:, i])
-            spec_nad_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_nad[:, i])
+            cnt_nad_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_nad[:, i], mode='nearest')
+            spec_nad_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_nad[:, i], mode='nearest')
         #\----------------------------------------------------------------------------/#
 
 
@@ -1719,12 +1719,12 @@ def main_process_data(date, run=True):
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
     sys.exit()
 #\----------------------------------------------------------------------------/#
 

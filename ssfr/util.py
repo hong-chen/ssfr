@@ -323,8 +323,11 @@ def jday_to_dtime(jday):
 
 def interp(x, x0, y0, mode='linear'):
 
-    logic = (~np.isnan(x0) & ~np.isnan(y0))
-    f = interpolate.interp1d(x0[logic], y0[logic], bounds_error=False, kind=mode)
+    if mode == 'nearest':
+        f = interpolate.interp1d(x0, y0, bounds_error=False, kind=mode)
+    else:
+        logic = (~np.isnan(x0) & ~np.isnan(y0))
+        f = interpolate.interp1d(x0[logic], y0[logic], bounds_error=False, kind=mode)
 
     return f(x)
 
