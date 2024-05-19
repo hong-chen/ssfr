@@ -385,7 +385,7 @@ def plot_video_frame(statements, test=False):
             }
     vars_plot['TOA↓']   = {
             'vname':'f-down_toa',
-            'color':'black',
+            'color':'dimgray',
             'vname_wvl':'wvl_ssfr1_zen',
             'zorder': 1,
             }
