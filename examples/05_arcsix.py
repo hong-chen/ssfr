@@ -70,7 +70,7 @@ _spns_time_offset_ = {
         '20240517': 0.0,
         }
 _ssfr1_time_offset_ = {
-        '20240517': 187.0,
+        '20240517': 185.0,
         }
 _ssfr2_time_offset_ = {
         '20240517': 185.0,
@@ -1451,16 +1451,19 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr1_))
+    if which_ssfr == 'ssfr-a':
+        fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr1_))
+    elif which_ssfr == 'ssfr-b':
+        fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr2_))
     fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
 
     date_s = date.strftime('%Y%m%d')
 
     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data,
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
-    sys.exit()
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+    sys.exit()
     fname_ssfr_v2 = cdata_arcsix_ssfr_v2(date, fname_ssfr_v1, _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
 
