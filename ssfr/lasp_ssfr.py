@@ -339,6 +339,20 @@ class read_ssfr:
             fill_value=np.nan,
             ):
 
+        spec_info = {
+                0: 'zen|si',
+                1: 'zen|in',
+                2: 'nad|si',
+                3: 'nad|in',
+                }
+
+        shutter_dark_corr = np.zeros_like(self.data_raw['shutter'])
+        shutter_dark_corr[...] = -2
+        count_dark_corr  = np.zeros_like(self.data_raw['count_raw'])
+        count_dark_corr[...] = fill_value
+
+        fail_list = []
+
         for ispec in range(self.Nspec):
             int_time = np.unique(self.data_raw['int_time'][:, ispec])
             for int_time0 in int_time:
@@ -346,24 +360,58 @@ class read_ssfr:
                 logic_light = (logic & ((self.data_raw['shutter'][:]==0)))
                 logic_dark  = (logic & ((self.data_raw['shutter'][:]==1)))
 
-                if logic_dark.sum() == 0:
+                if logic_dark.sum() > 0:
 
-                    msg = 'Warning [read_ssfr]: cannot find corresponding darks for '
-                    warnings.warn()
+                    shutter_dark_corr[logic], count_dark_corr[logic, :, ispec] = \
+                            ssfr.corr.dark_corr(
+                            self.data_raw['tmhr'][logic],
+                            self.data_raw['shutter'][logic],
+                            self.data_raw['count_raw'][logic, :, ispec],
+                            mode=dark_corr_mode,
+                            darkExtend=dark_extend,
+                            lightExtend=light_extend,
+                            fillValue=fill_value
+                            )
 
-                print(ispec, int_time0, logic_light.sum(), logic_dark.sum())
-        sys.exit()
+                else:
+
+                    msg = '\nWarning [read_ssfr]: cannot find corresponding darks for %s=%3dms at\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
+                    warnings.warn(msg)
+                    fail_list.append([ispec, int_time0, logic_light])
+
+        # a fallback process when no darks are found for corresponding integration times
+        #/----------------------------------------------------------------------------\#
+        for item in fail_list:
+
+            ispec, int_time0, logic_light = item
+
+            logic = (shutter_dark_corr == 1)
+            count_base = -2**15
+            darks = (self.data_raw['count_raw'][logic, :, ispec]-count_base) / (self.data_raw['int_time'][logic, np.newaxis, ispec]) * int_time0 + count_base
+            dark_mean = np.mean(darks, axis=0)
+
+            shutter_dark_corr[logic_light] = 0
+            count_dark_corr[logic_light, :, ispec] = self.data_raw['count_raw'][logic_light, :, ispec] - dark_mean[np.newaxis, :]
+            msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (no darks) at\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
+            warnings.warn(msg)
+        #\----------------------------------------------------------------------------/#
+
+        self.data_raw['shutter_dark-corr'] = shutter_dark_corr
+        self.data_raw['count_dark-corr'] = count_dark_corr
+        self.data_raw['count_per_ms_dark-corr'] = count_dark_corr / self.data_raw['int_time'][:, np.newaxis, :]
+
+        # dark_per_ms = count_per_ms[self.data_raw['shutter']==]
 
         # dark correction (light minus dark)
         #/----------------------------------------------------------------------------\#
-        count_per_ms = (self.data_raw['count_raw']+2**15) / (self.data_raw['int_time'][:, np.newaxis, :])
-        count_per_ms_dark_corr = count_per_ms.copy()
-        count_per_ms_dark_corr[...] = fill_value
-        for ip in range(self.Nspec):
-            shutter_dark_corr, count_per_ms_dark_corr[:, :, ip] = ssfr.corr.dark_corr(self.data_raw['tmhr'], self.data_raw['shutter'], count_per_ms[:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
+        # count_per_ms = (self.data_raw['count_raw']+2**15) / (self.data_raw['int_time'][:, np.newaxis, :])
+        # count_per_ms_dark_corr = count_per_ms.copy()
+        # count_per_ms_dark_corr[...] = fill_value
+        # for ip in range(self.Nspec):
+        #     shutter_dark_corr, count_per_ms_dark_corr[:, :, ip] = ssfr.corr.dark_corr(self.data_raw['tmhr'], self.data_raw['shutter'], count_per_ms[:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
 
-        self.data_raw['shutter_dark-corr'] = shutter_dark_corr
-        self.data_raw['count_per_ms_dark-corr'] = count_per_ms_dark_corr
+        # self.data_raw['shutter_dark-corr'] = shutter_dark_corr
+        # self.data_raw['count_per_ms_dark-corr'] = count_per_ms_dark_corr
         #\----------------------------------------------------------------------------/#
 
         # self.dset0['shutter_dark-corr'], where -1 is data excluded during dark correction
