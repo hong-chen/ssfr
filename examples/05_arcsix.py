@@ -73,7 +73,7 @@ _ssfr1_time_offset_ = {
         '20240517': 187.0,
         }
 _ssfr2_time_offset_ = {
-        '20240517': 0.0,
+        '20240517': 185.0,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -1039,17 +1039,28 @@ def cdata_arcsix_ssfr_v1(
 
         for idset in np.unique(dset_num):
 
-            # select calibration file (can later be adjusted for different integration time sets)
-            #/----------------------------------------------------------------------------\#
-            fdir_cal = '%s/rad-cal' % _fdir_cal_
-            # fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
-            fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*zen*' % (which_ssfr.lower())), key=os.path.getmtime)[-1]
-            data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+            if which_ssfr == 'ssfr-a':
+                # select calibration file (can later be adjusted for different integration time sets)
+                #/----------------------------------------------------------------------------\#
+                fdir_cal = '%s/rad-cal' % _fdir_cal_
+                # fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+                fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*zen*' % (which_ssfr.lower())), key=os.path.getmtime)[-1]
+                data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
-            # fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
-            fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*nad*' % (which_ssfr.lower())), key=os.path.getmtime)[-1]
-            data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
-            #\----------------------------------------------------------------------------/#
+                # fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+                fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*nad*' % (which_ssfr.lower())), key=os.path.getmtime)[-1]
+                data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+                #\----------------------------------------------------------------------------/#
+            elif which_ssfr == 'ssfr-b':
+                factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.2
+                data_cal_zen = {
+                        'sec_resp': np.repeat(factor_zen, wvl_zen.size)
+                        }
+                factor_nad = (np.nanmax(cnt_nad)-np.nanmin(cnt_nad)) / 2.2
+                data_cal_nad = {
+                        'sec_resp': np.repeat(factor_nad, wvl_nad.size)
+                        }
+
 
             logic_dset = (dset_num == idset)
 
@@ -1068,7 +1079,7 @@ def cdata_arcsix_ssfr_v1(
         #/----------------------------------------------------------------------------\#
         if which_ssfr == 'ssfr-a':
             time_offset = _ssfr1_time_offset_[date_s]
-        else:
+        elif which_ssfr == 'ssfr-b':
             time_offset = _ssfr2_time_offset_[date_s]
 
         if _test_mode_:
@@ -1708,12 +1719,12 @@ def main_process_data(date, run=True):
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
     sys.exit()
 #\----------------------------------------------------------------------------/#
 

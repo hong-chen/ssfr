@@ -1155,8 +1155,8 @@ def main_pre(
 
     # read in ssfr-a data
     #/--------------------------------------------------------------\#
-    fname_ssfr = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr1_.upper(), _platform_.upper(), date_s)
-    f_ssfr1 = h5py.File(fname_ssfr, 'r')
+    fname_ssfr1 = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr1_.upper(), _platform_.upper(), date_s)
+    f_ssfr1 = h5py.File(fname_ssfr1, 'r')
     ssfr1_zen_flux = f_ssfr1['zen/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
     ssfr1_zen_wvl  = f_ssfr1['zen/wvl'][...][::wvl_step_ssfr]
     ssfr1_nad_flux = f_ssfr1['nad/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
@@ -1168,6 +1168,17 @@ def main_pre(
     # print(ssfr_zen_wvl.shape)
     # print(ssfr_nad_flux.shape)
     # print(ssfr_nad_wvl.shape)
+
+    # read in ssfr-b data
+    #/--------------------------------------------------------------\#
+    fname_ssfr2 = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr2_.upper(), _platform_.upper(), date_s)
+    f_ssfr2 = h5py.File(fname_ssfr2, 'r')
+    ssfr2_zen_rad = f_ssfr2['zen/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    ssfr2_zen_wvl = f_ssfr2['zen/wvl'][...][::wvl_step_ssfr]
+    ssfr2_nad_rad = f_ssfr2['nad/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    ssfr2_nad_wvl = f_ssfr2['nad/wvl'][...][::wvl_step_ssfr]
+    f_ssfr2.close()
+    #\--------------------------------------------------------------/#
 
 
     # process camera imagery
@@ -1260,6 +1271,11 @@ def main_pre(
     flt_trk['wvl_ssfr1_zen'] = ssfr1_zen_wvl
     flt_trk['wvl_ssfr1_nad'] = ssfr1_nad_wvl
     flt_trk['f-down_toa']    = ssfr1_zen_toa
+
+    flt_trk['r-down_ssfr']   = ssfr2_zen_rad[logic, :]
+    flt_trk['r-up_ssfr']     = ssfr2_nad_rad[logic, :]
+    flt_trk['wvl_ssfr2_zen'] = ssfr2_zen_wvl
+    flt_trk['wvl_ssfr2_nad'] = ssfr2_nad_wvl
 
     # partition the flight track into multiple mini flight track segments
     flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)
