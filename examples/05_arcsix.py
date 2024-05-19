@@ -70,7 +70,7 @@ _spns_time_offset_ = {
         '20240517': 0.0,
         }
 _ssfr1_time_offset_ = {
-        '20240517': 0.0,
+        '20240517': 184.0,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -736,6 +736,8 @@ def cdata_arcsix_spns_v1(
 
         # check time offset
         #/----------------------------------------------------------------------------\#
+        time_offset = _spns_time_offset_[date_s]
+
         if _test_mode_:
             index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
             data_ref = data_spns_v0['tot/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
@@ -768,7 +770,6 @@ def cdata_arcsix_spns_v1(
             #\--------------------------------------------------------------/#
             plt.show()
             sys.exit()
-        time_offset = _spns_time_offset_[date_s]
         #\----------------------------------------------------------------------------/#
 
 
@@ -1087,9 +1088,18 @@ def cdata_arcsix_ssfr_v1(
 
         # check time offset
         #/----------------------------------------------------------------------------\#
-        if True:
+        if which_ssfr == 'ssfr-a':
+            time_offset = _ssfr1_time_offset_[date_s]
+        else:
+            time_offset = _ssfr2_time_offset_[date_s]
+
+        if _test_mode_:
+            data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
+            index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v2['tot/wvl']))
+            data_ref = data_spns_v2['tot/flux'][:, index_wvl_spns]
+            # data_ref = f_dn_sol_zen[index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
+
             index_wvl = np.argmin(np.abs(745.0-wvl_zen))
-            data_ref = data_ssfr_v0['dset0/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
 
             plt.close('all')
             fig = plt.figure(figsize=(8, 6))
@@ -1100,8 +1110,10 @@ def cdata_arcsix_ssfr_v1(
             # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
             # ax1.scatter(x, y, s=6, c='k', lw=0.0)
             # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-            ax1.plot(data_ref, color='k', ls='-')
-            ax1.plot(data_tar, color='r', ls='-')
+            ax1.plot(data_hsk['jday']-ssfr.util.dtime_to_jday(date), data_ref, color='k', ls='-')
+            ax1.plot(jday-ssfr.util.dtime_to_jday(date), flux_zen[:, index_wvl], color='r', ls='-')
+            ax1.plot(jday-ssfr.util.dtime_to_jday(date)+time_offset/86400.0, flux_zen[:, index_wvl], color='g', ls='-')
+            ax1.set_xlim((0.8, 0.86))
             # ax1.set_xlim(())
             # ax1.set_ylim(())
             # ax1.set_xlabel('')
@@ -1119,31 +1131,39 @@ def cdata_arcsix_ssfr_v1(
             plt.show()
             sys.exit()
 
-        time_offset = _ssfr1_time_offset_[date_s]
-        #\----------------------------------------------------------------------------/#
-
-        # save processed data
-        #/----------------------------------------------------------------------------\#
-        # g = f.create_group(dset_s)
-        # dset0 = g.create_dataset('wvl_zen' , data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
-        # dset0 = g.create_dataset('cnt_zen' , data=cnt_zen     , compression='gzip', compression_opts=9, chunks=True)
-        # dset0 = g.create_dataset('flux_zen', data=flux_zen    , compression='gzip', compression_opts=9, chunks=True)
-        # dset0 = g.create_dataset('toa0'    , data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
-
-        # dset0 = g.create_dataset('wvl_nad' , data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
-        # dset0 = g.create_dataset('cnt_nad' , data=cnt_nad     , compression='gzip', compression_opts=9, chunks=True)
-        # dset0 = g.create_dataset('flux_nad', data=flux_nad    , compression='gzip', compression_opts=9, chunks=True)
         #\----------------------------------------------------------------------------/#
 
 
         # interpolate ssfr data to hsk time frame
         # and convert counts to flux
         #/----------------------------------------------------------------------------\#
+        cnt_zen_hsk  = np.zeros((data_hsk['jday'].size, wvl_zen.size), dtype=np.float64)
+        flux_zen_hsk = np.zeros_like(cnt_zen_hsk)
+        for i in range(wvl_zen.size):
+            cnt_zen_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_zen[:, i])
+            flux_zen_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, flux_zen[:, i])
 
+        cnt_nad_hsk  = np.zeros((data_hsk['jday'].size, wvl_nad.size), dtype=np.float64)
+        flux_nad_hsk = np.zeros_like(cnt_nad_hsk)
+        for i in range(wvl_nad.size):
+            cnt_nad_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_nad[:, i])
+            flux_nad_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, flux_nad[:, i])
         #\----------------------------------------------------------------------------/#
 
-        print(jday)
-        sys.exit()
+
+        # save processed data
+        #/----------------------------------------------------------------------------\#
+        g1 = f.create_group('zen')
+        g1.create_dataset('wvl' , data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
+        g1.create_dataset('cnt' , data=cnt_zen_hsk , compression='gzip', compression_opts=9, chunks=True)
+        g1.create_dataset('flux', data=flux_zen_hsk, compression='gzip', compression_opts=9, chunks=True)
+        g1.create_dataset('toa0', data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
+
+        g2 = f.create_group('nad')
+        g2.create_dataset('wvl' , data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
+        g2.create_dataset('cnt' , data=cnt_nad_hsk , compression='gzip', compression_opts=9, chunks=True)
+        g2.create_dataset('flux', data=flux_nad_hsk, compression='gzip', compression_opts=9, chunks=True)
+        #\----------------------------------------------------------------------------/#
 
 
         # save processed data
