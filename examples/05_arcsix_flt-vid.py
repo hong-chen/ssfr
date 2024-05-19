@@ -1142,15 +1142,14 @@ def main_pre(
 
     # read in ssfr data
     #/--------------------------------------------------------------\#
-    # fname_ssfr = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _ssfr_.upper(), _platform_.upper(), date_s)
-    # which_dset = 'dset1'
-    # f_ssfr = h5py.File(fname_ssfr, 'r')
-    # ssfr_zen_flux = f_ssfr['%s/flux_zen' % which_dset][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    # ssfr_zen_wvl  = f_ssfr['%s/wvl_zen'  % which_dset][...][::wvl_step_ssfr]
-    # ssfr_nad_flux = f_ssfr['%s/flux_nad' % which_dset][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    # ssfr_nad_wvl  = f_ssfr['%s/wvl_nad'  % which_dset][...][::wvl_step_ssfr]
-    # ssfr_zen_toa  = f_ssfr['%s/toa0'     % which_dset][...][::wvl_step_ssfr]
-    # f_ssfr.close()
+    fname_ssfr = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr_.upper(), _platform_.upper(), date_s)
+    f_ssfr = h5py.File(fname_ssfr, 'r')
+    ssfr_zen_flux = f_ssfr['zen/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    ssfr_zen_wvl  = f_ssfr['zen/wvl'][...][::wvl_step_ssfr]
+    ssfr_nad_flux = f_ssfr['nad/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    ssfr_nad_wvl  = f_ssfr['nad/wvl'][...][::wvl_step_ssfr]
+    ssfr_zen_toa  = f_ssfr['zen/toa0'][...][::wvl_step_ssfr]
+    f_ssfr.close()
     #\--------------------------------------------------------------/#
     # print(ssfr_zen_flux.shape)
     # print(ssfr_zen_wvl.shape)
@@ -1243,11 +1242,11 @@ def main_pre(
     flt_trk['f-down-direct_spns']  = flt_trk['f-down-total_spns'] - flt_trk['f-down-diffuse_spns']
     flt_trk['wvl_spns'] = spns_tot_wvl
 
-    # flt_trk['f-down_ssfr']  = ssfr_zen_flux[logic, :]
-    # flt_trk['f-up_ssfr']    = ssfr_nad_flux[logic, :]
-    # flt_trk['wvl_ssfr_zen'] = ssfr_zen_wvl
-    # flt_trk['wvl_ssfr_nad'] = ssfr_nad_wvl
-    # flt_trk['f-down_toa']   = ssfr_zen_toa
+    flt_trk['f-down_ssfr']  = ssfr_zen_flux[logic, :]
+    flt_trk['f-up_ssfr']    = ssfr_nad_flux[logic, :]
+    flt_trk['wvl_ssfr_zen'] = ssfr_zen_wvl
+    flt_trk['wvl_ssfr_nad'] = ssfr_nad_wvl
+    flt_trk['f-down_toa']   = ssfr_zen_toa
 
     # partition the flight track into multiple mini flight track segments
     flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)
