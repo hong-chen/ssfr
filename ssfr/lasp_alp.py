@@ -165,7 +165,7 @@ class read_alp:
         lon = dataAll[:, index_lon]; lon[lon<0.0] += 360.0
         index_lat = 6
         lat = dataAll[:, index_lat]
-        logic = (tmhr>0.0) & (lon>0.0) & (lon<360.0) & (lat>-90.0) & (lat<90.0)
+        logic = (lon>0.0) & (lon<360.0) & (lat>-90.0) & (lat<90.0)
         dataAll   = dataAll[logic, :]
 
         self.tmhr        = tmhr[logic]    # time in hour

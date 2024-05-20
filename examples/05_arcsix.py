@@ -575,16 +575,13 @@ def cdata_arcsix_alp_v1(
         #/----------------------------------------------------------------------------\#
         # if _test_mode_:
         if True:
-            print(data_hsk['jday'])
-            print(data_alp['jday'])
-            sys.exit()
             data_offset = {
                     'x0': data_hsk['jday']*86400.0,
                     'y0': data_hsk['alt'],
                     'x1': data_alp['jday']*86400.0,
                     'y1': data_alp['alt'],
                     }
-            ssfr.vis.find_offset_bokeh(data_offset)
+            ssfr.vis.find_offset_bokeh(data_offset, fname_html='alp_offset_check_%s.html' % date_s)
             sys.exit()
             plt.close('all')
             fig = plt.figure(figsize=(8, 6))
@@ -645,7 +642,7 @@ def process_alp_data(date, run=True):
     fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
 
     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data,
-            fdir_out=fdir_out, run=True)
+            fdir_out=fdir_out, run=run)
 
     fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0,
             fdir_out=fdir_out, run=True)
