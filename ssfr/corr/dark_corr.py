@@ -7,17 +7,18 @@ from scipy import stats
 __all__ = ['dark_corr']
 
 
+
 def dark_corr(
         x0,
         shutter0,
         data0,
         mode='interp',
-        darkExtend=2,
-        lightExtend=2,
-        lightThr=10,
-        darkThr=5,
-        shutterMode={'open':0, 'close':1},
-        fillValue=np.nan,
+        dark_extend=2,
+        light_extend=2,
+        light_threshold=10,
+        dark_threshold=5,
+        shutter_mode={'open':0, 'close':1},
+        fill_value=np.nan,
         verbose=False
         ):
 
@@ -47,17 +48,21 @@ def dark_corr(
     shutter = shutter0.copy()
     data    = data0.copy()
 
+    # append a different status at the begin and end to force cycle break
+    #/----------------------------------------------------------------------------\#
     shutter_diff = shutter[1:]-shutter[:-1]
+    shutter_diff_o_minus_c = shutter_mode['open']-shutter_mode['close']
 
-    if shutter[0] == shutterMode['open']:
-        shutter_diff = np.append(shutterMode['open']-shutterMode['close'], shutter_diff)
-    elif shutter[0] == shutterMode['close']:
-        shutter_diff = np.append(shutterMode['close']-shutterMode['open'], shutter_diff)
+    if shutter[0] == shutter_mode['open']:
+        shutter_diff = np.append( shutter_diff_o_minus_c, shutter_diff)
+    elif shutter[0] == shutter_mode['close']:
+        shutter_diff = np.append(-shutter_diff_o_minus_c, shutter_diff)
 
-    if shutter[-1] == shutterMode['open']:
-        shutter_diff = np.append(shutter_diff, shutterMode['close']-shutterMode['open'])
-    elif shutter[-1] == shutterMode['close']:
-        shutter_diff = np.append(shutter_diff, shutterMode['open']-shutterMode['close'])
+    if shutter[-1] == shutter_mode['open']:
+        shutter_diff = np.append(shutter_diff, -shutter_diff_o_minus_c)
+    elif shutter[-1] == shutter_mode['close']:
+        shutter_diff = np.append(shutter_diff,  shutter_diff_o_minus_c)
+    #\----------------------------------------------------------------------------/#
 
     break_indices = np.where(shutter_diff!=0)[0]
 
@@ -79,18 +84,18 @@ def dark_corr(
             msg = '\nError [dark_corr]: The break indices are wrong.'
             raise ValueError(msg)
 
-        if shutter0_uni[0] == shutterMode['open']:
-            index_l = max([0, index_l0+lightExtend])
-            index_r = min([index_r0-lightExtend, shutter.size])
-            if (index_r-index_l) > lightThr:
+        if shutter0_uni[0] == shutter_mode['open']:
+            index_l = max([0, index_l0+light_extend])
+            index_r = min([index_r0-light_extend, shutter.size])
+            if (index_r-index_l) > light_threshold:
                 circle_range.append([index_l, index_r])
                 circle_tag.append(0)
                 logic_light[index_l:index_r] = True
 
-        elif shutter0_uni[0] == shutterMode['close']:
-            index_l = max([0, index_l0+darkExtend])
-            index_r = min([index_r0-darkExtend, shutter.size])
-            if (index_r-index_l) > darkThr:
+        elif shutter0_uni[0] == shutter_mode['close']:
+            index_l = max([0, index_l0+dark_extend])
+            index_r = min([index_r0-dark_extend, shutter.size])
+            if (index_r-index_l) > dark_threshold:
                 circle_range.append([index_l, index_r])
                 circle_tag.append(1)
                 logic_dark[index_l:index_r] = True
@@ -98,7 +103,7 @@ def dark_corr(
     logic_bad = np.logical_not(logic_dark|logic_light)
 
     data_corr      = np.zeros_like(data)
-    data_corr[...] = fillValue
+    data_corr[...] = fill_value
 
     mode          = mode.lower()
     shutter_modes = np.unique(shutter)
@@ -106,10 +111,11 @@ def dark_corr(
         msg = '\nWarning [dark_corr]: Only one light/dark cycle is detected, change <mode=%s> to <mode=mean>.' % mode
         warnings.warn(msg)
 
+    dark_mean = np.mean(data[logic_dark, ...], axis=0)
+
     if mode == 'mean':
 
-        data_corr0 = np.mean(data[logic_light, ...], axis=0) - np.mean(data[logic_dark, ...], axis=0)
-        data_corr[logic_light, ...] = np.tile(data_corr0, logic_light.sum()).reshape(-1, Ny)
+        data_corr[logic_light, ...] = data[logic_light, ...] - np.tile(dark_mean, logic_light.sum()).reshape(-1, Ny)
 
     elif mode == 'interp':
 
@@ -130,7 +136,9 @@ def dark_corr(
                     Nr += 1
 
                 if Nl<0 or Nr>(Ncircle-1):
-                    data_corr[crange[0]:crange[1], ...] = np.nan
+                    msg = '\nWarnings [dark_corr]: Found light cycle at the edge, use average darks ...'
+                    warnings.warn(msg)
+                    data_corr[crange[0]:crange[1], ...] = data[crange[0]:crange[1], ...] - np.tile(dark_mean, crange[1]-crange[0]).reshape(-1, Ny)
                 else:
                     interp_x = np.append(x[circle_range[Nl][0]:circle_range[Nl][1]], x[circle_range[Nr][0]:circle_range[Nr][1]])
                     target_x = x[crange[0]:crange[1]]
@@ -157,12 +165,12 @@ def dark_corr_old(
         shutter0,
         data0,
         mode='interp',
-        darkExtend=2,
-        lightExtend=2,
-        lightThr=10,
-        darkThr=5,
-        shutterMode={'open':0, 'close':1},
-        fillValue=np.nan,
+        dark_extend=2,
+        light_extend=2,
+        light_threshold=10,
+        dark_threshold=5,
+        shutter_mode={'open':0, 'close':1},
+        fill_value=np.nan,
         verbose=False):
 
     x       = x0.copy()
@@ -170,7 +178,7 @@ def dark_corr_old(
     data    = data0.copy()
 
     data_corr      = np.zeros_like(data)
-    data_corr[...] = fillValue
+    data_corr[...] = fill_value
 
     mode          = mode.lower()
     shutter_modes = np.unique(shutter)
@@ -202,13 +210,13 @@ def dark_corr_old(
             if np.unique(shutter)[0] == 0:
                 if verbose:
                     print('Warning [dark_corr]: only one light cycle is detected.')
-                mean = np.mean(spectra[lightExtend:-lightExtend, :], axis=0)
+                mean = np.mean(spectra[light_extend:-light_extend, :], axis=0)
                 spectra_dark_corr = np.tile(mean, spectra.shape[0]).reshape(spectra.shape)
                 return shutter, spectra_dark_corr
             elif np.unique(shutter)[0] == 1:
                 if verbose:
                     print('Warning [dark_corr]: only one dark cycle is detected.')
-                mean = np.mean(spectra[darkExtend:-darkExtend, :], axis=0)
+                mean = np.mean(spectra[dark_extend:-dark_extend, :], axis=0)
                 spectra_dark_corr = np.tile(mean, spectra.shape[0]).reshape(spectra.shape)
                 return shutter, spectra_dark_corr
             else:
@@ -219,8 +227,8 @@ def dark_corr_old(
 
         dark_offset            = np.zeros_like(spectra)
         dark_std               = np.zeros_like(spectra)
-        dark_offset[...]       = fillValue
-        dark_std[...]          = fillValue
+        dark_offset[...]       = fill_value
+        dark_std[...]          = fill_value
 
         if shutter[0] == 0:
             darkL = np.array([], dtype=np.int32)
@@ -265,28 +273,28 @@ def dark_corr_old(
 
         if mode.lower() == 'dark_interpolate':
 
-            shutter[:darkL[0]+darkExtend] = fillValue  # omit the data before the first dark cycle
+            shutter[:darkL[0]+dark_extend] = fill_value  # omit the data before the first dark cycle
 
             for i in range(darkL.size-1):
 
                 if darkR[i] < darkL[i]:
                     sys.exit('Error   [dark_corr]: darkR[%d]=%d is smaller than darkL[%d]=%d.' % (i,darkR[i],i,darkL[i]))
 
-                darkLL = darkL[i]   + darkExtend
-                darkLR = darkR[i]   - darkExtend
-                darkRL = darkL[i+1] + darkExtend
-                darkRR = darkR[i+1] - darkExtend
-                lightL = darkR[i]   + lightExtend
-                lightR = darkL[i+1] - lightExtend
+                darkLL = darkL[i]   + dark_extend
+                darkLR = darkR[i]   - dark_extend
+                darkRL = darkL[i+1] + dark_extend
+                darkRR = darkR[i+1] - dark_extend
+                lightL = darkR[i]   + light_extend
+                lightR = darkL[i+1] - light_extend
 
-                shutter[darkL[i]:darkLL] = fillValue
-                shutter[darkLR:darkR[i]] = fillValue
-                shutter[darkR[i]:lightL] = fillValue
-                shutter[lightR:darkL[i+1]] = fillValue
-                shutter[darkL[i+1]:darkRL] = fillValue
-                shutter[darkRR:darkR[i+1]] = fillValue
+                shutter[darkL[i]:darkLL] = fill_value
+                shutter[darkLR:darkR[i]] = fill_value
+                shutter[darkR[i]:lightL] = fill_value
+                shutter[lightR:darkL[i+1]] = fill_value
+                shutter[darkL[i+1]:darkRL] = fill_value
+                shutter[darkRR:darkR[i+1]] = fill_value
 
-                if lightR-lightL>lightThr and darkLR-darkLL>darkThr and darkRR-darkRL>darkThr:
+                if lightR-lightL>light_threshold and darkLR-darkLL>dark_threshold and darkRR-darkRL>dark_threshold:
 
                     interp_x = np.append(tmhr[darkLL:darkLR], tmhr[darkRL:darkRR])
                     target_x = tmhr[darkL[i]:darkL[i+1]]
@@ -299,10 +307,10 @@ def dark_corr_old(
                         spectra_dark_corr[darkL[i]:darkL[i+1], iChan] = spectra[darkL[i]:darkL[i+1], iChan] - dark_offset[darkL[i]:darkL[i+1], iChan]
 
                 else:
-                    shutter[darkL[i]:darkR[i+1]] = fillValue
+                    shutter[darkL[i]:darkR[i+1]] = fill_value
 
-            shutter[darkRR:] = fillValue  # omit the data after the last dark cycle
-            spectra_dark_corr[shutter==fillValue, :] = fillValue
+            shutter[darkRR:] = fill_value  # omit the data after the last dark cycle
+            spectra_dark_corr[shutter==fill_value, :] = fill_value
 
             return shutter, spectra_dark_corr
 

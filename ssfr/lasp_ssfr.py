@@ -264,7 +264,7 @@ class read_ssfr:
 
         Nfile = len(fnames)
         if self.verbose:
-            msg = '\nProcessing CU-LASP SSFR files (Total of %d):' % (Nfile)
+            msg = '\nMessage [read_ssfr]: Processing CU-LASP SSFR files (Total of %d):' % (Nfile)
             print(msg)
 
         Nstart = 0
@@ -314,6 +314,10 @@ class read_ssfr:
             if which_ssfr is not None:
                 self.wvl_join(which_ssfr, wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
         #\----------------------------------------------------------------------------/#
+
+        if self.verbose:
+            msg = '\nMessage [read_ssfr]: Data processing complete.'
+            print(msg)
 
     def dset_check(
             self,
@@ -367,9 +371,9 @@ class read_ssfr:
         count_dark_corr      = np.zeros_like(self.data_raw['count_raw'])
         count_dark_corr[...] = fill_value
 
-        if dark_fallback:
-            count_dark_corr_fb      = np.zeros_like(self.data_raw['count_raw'])
-            count_dark_corr_fb[...] = fill_value
+        # if dark_fallback:
+        #     count_dark_corr_fb      = np.zeros_like(self.data_raw['count_raw'])
+        #     count_dark_corr_fb[...] = fill_value
 
         fail_list = []
 
@@ -391,22 +395,22 @@ class read_ssfr:
                             self.data_raw['shutter'][logic],
                             self.data_raw['count_raw'][logic, :, ispec],
                             mode=dark_corr_mode,
-                            darkExtend=dark_extend,
-                            lightExtend=light_extend,
-                            fillValue=fill_value
+                            dark_extend=dark_extend,
+                            light_extend=light_extend,
+                            fill_value=fill_value
                             )
 
-                    if dark_fallback:
-                        _, count_dark_corr_fb[logic, :, ispec] = \
-                                ssfr.corr.dark_corr(
-                                self.data_raw['tmhr'][logic],
-                                self.data_raw['shutter'][logic],
-                                self.data_raw['count_raw'][logic, :, ispec],
-                                mode='mean',
-                                darkExtend=dark_extend,
-                                lightExtend=light_extend,
-                                fillValue=fill_value
-                                )
+                    # if dark_fallback:
+                    #     _, count_dark_corr_fb[logic, :, ispec] = \
+                    #             ssfr.corr.dark_corr(
+                    #             self.data_raw['tmhr'][logic],
+                    #             self.data_raw['shutter'][logic],
+                    #             self.data_raw['count_raw'][logic, :, ispec],
+                    #             mode='mean',
+                    #             dark_extend=dark_extend,
+                    #             light_extend=light_extend,
+                    #             fill_value=fill_value
+                    #             )
 
                 else:
 
@@ -432,8 +436,8 @@ class read_ssfr:
                 msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (where no darks were found) at indices\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
                 warnings.warn(msg)
 
-            logic_fb = np.isnan(count_dark_corr) & (~np.isnan(count_dark_corr_fb))
-            count_dark_corr[logic_fb] = count_dark_corr_fb[logic_fb]
+            # logic_fb = np.isnan(count_dark_corr) & (~np.isnan(count_dark_corr_fb))
+            # count_dark_corr[logic_fb] = count_dark_corr_fb[logic_fb]
         #\----------------------------------------------------------------------------/#
 
         shutter_dark_corr = np.zeros_like(self.data_raw['shutter'])
@@ -447,40 +451,6 @@ class read_ssfr:
         self.data_raw['shutter_dark-corr'] = shutter_dark_corr
         self.data_raw['count_dark-corr'] = count_dark_corr
         self.data_raw['count_per_ms_dark-corr'] = count_dark_corr / self.data_raw['int_time'][:, np.newaxis, :]
-
-
-        # dark_per_ms = count_per_ms[self.data_raw['shutter']==]
-
-        # dark correction (light minus dark)
-        #/----------------------------------------------------------------------------\#
-        # count_per_ms = (self.data_raw['count_raw']+2**15) / (self.data_raw['int_time'][:, np.newaxis, :])
-        # count_per_ms_dark_corr = count_per_ms.copy()
-        # count_per_ms_dark_corr[...] = fill_value
-        # for ip in range(self.Nspec):
-        #     shutter_dark_corr, count_per_ms_dark_corr[:, :, ip] = ssfr.corr.dark_corr(self.data_raw['tmhr'], self.data_raw['shutter'], count_per_ms[:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
-
-        # self.data_raw['shutter_dark-corr'] = shutter_dark_corr
-        # self.data_raw['count_per_ms_dark-corr'] = count_per_ms_dark_corr
-        #\----------------------------------------------------------------------------/#
-
-        # self.dset0['shutter_dark-corr'], where -1 is data excluded during dark correction
-        # self.dset0['count_dark-corr']
-        #/----------------------------------------------------------------------------\#
-        # for idset in range(self.Ndset):
-
-        #     dset = getattr(self, 'dset%d' %idset)
-
-        #     # dark correction (light minus dark)
-        #     #/----------------------------------------------------------------------------\#
-        #     count_dark_corr = dset['count_raw'].copy()
-        #     count_dark_corr[...] = fill_value
-        #     for ip in range(self.Nspec):
-        #         shutter_dark_corr, count_dark_corr[:, :, ip] = ssfr.corr.dark_corr(dset['tmhr'], dset['shutter'], dset['count_raw'][:, :, ip], mode=dark_corr_mode, darkExtend=dark_extend, lightExtend=light_extend, fillValue=fill_value)
-
-        #     dset['shutter_dark-corr'] = shutter_dark_corr
-        #     dset['count_dark-corr'] = count_dark_corr
-        #     #\----------------------------------------------------------------------------/#
-        #\----------------------------------------------------------------------------/#
 
     def wvl_join(
             self,
@@ -526,11 +496,11 @@ class read_ssfr:
         counts_zen = counts_zen[:, indices_sort_zen]
         counts_nad = counts_nad[:, indices_sort_nad]
 
-        self.data_corr = {}
-        self.data_corr['wvl_zen'] = wvl_zen
-        self.data_corr['cnt_zen'] = counts_zen
-        self.data_corr['wvl_nad'] = wvl_nad
-        self.data_corr['cnt_nad'] = counts_nad
+        self.data_spec = {}
+        self.data_spec['wvl_zen'] = wvl_zen
+        self.data_spec['cnt_zen'] = counts_zen
+        self.data_spec['wvl_nad'] = wvl_nad
+        self.data_spec['cnt_nad'] = counts_nad
         #\----------------------------------------------------------------------------/#
 
 

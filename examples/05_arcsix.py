@@ -963,10 +963,10 @@ def cdata_arcsix_ssfr_v0(
             if isinstance(ssfr0.data_raw[key], np.ndarray):
                 g.create_dataset(key, data=ssfr0.data_raw[key], compression='gzip', compression_opts=9, chunks=True)
 
-        g = f.create_group('corr')
-        for key in ssfr0.data_corr.keys():
-            if isinstance(ssfr0.data_corr[key], np.ndarray):
-                g.create_dataset(key, data=ssfr0.data_corr[key], compression='gzip', compression_opts=9, chunks=True)
+        g = f.create_group('spec')
+        for key in ssfr0.data_spec.keys():
+            if isinstance(ssfr0.data_spec[key], np.ndarray):
+                g.create_dataset(key, data=ssfr0.data_spec[key], compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
         #\----------------------------------------------------------------------------/#
@@ -1011,7 +1011,7 @@ def cdata_arcsix_ssfr_v1(
         #/----------------------------------------------------------------------------\#
         flux_toa = ssfr.util.get_solar_kurudz()
 
-        wvl_zen = data_ssfr_v0['corr/wvl_zen']
+        wvl_zen = data_ssfr_v0['spec/wvl_zen']
         f_dn_sol_zen = np.zeros_like(wvl_zen)
         for i, wvl0 in enumerate(wvl_zen):
             f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
@@ -1025,12 +1025,12 @@ def cdata_arcsix_ssfr_v1(
         jday     = data_ssfr_v0['raw/jday']
         dset_num = data_ssfr_v0['raw/dset_num']
 
-        wvl_zen  = data_ssfr_v0['corr/wvl_zen']
-        wvl_nad  = data_ssfr_v0['corr/wvl_nad']
+        wvl_zen  = data_ssfr_v0['spec/wvl_zen']
+        wvl_nad  = data_ssfr_v0['spec/wvl_nad']
 
-        cnt_zen  = data_ssfr_v0['corr/cnt_zen']
+        cnt_zen  = data_ssfr_v0['spec/cnt_zen']
         spec_zen = np.zeros_like(cnt_zen)
-        cnt_nad  = data_ssfr_v0['corr/cnt_nad']
+        cnt_nad  = data_ssfr_v0['spec/cnt_nad']
         spec_nad = np.zeros_like(cnt_nad)
 
         for idset in np.unique(dset_num):
@@ -1455,7 +1455,6 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
 
     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data,
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
-    sys.exit()
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     sys.exit()
@@ -1717,7 +1716,7 @@ def main_process_data(date, run=True):
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
