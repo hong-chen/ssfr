@@ -603,8 +603,8 @@ def find_offset_bokeh(
     x_max = max((x0_max, x1_max))
 
     if x_reset:
-        data_dict['x0'] = data_dict['x0']-x_min
-        data_dict['x1'] = data_dict['x1']-x_min
+        x0 = data_dict['x0']-x_min
+        x1 = data_dict['x1']-x_min
     else:
         x0 = data_dict['x0']
         x1 = data_dict['x1']
