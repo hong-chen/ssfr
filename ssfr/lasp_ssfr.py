@@ -119,7 +119,7 @@ def read_ssfr_raw(
 
     if verbose:
         print('#/--------------------------------------------------------------\#')
-        print('Comments in <%s>...' % fname.split('/')[-1])
+        print('Comments in <%s>...' % os.path.basename(fname))
         print(comment)
         print('#\--------------------------------------------------------------/#')
 
@@ -195,13 +195,14 @@ class read_ssfr:
             which_time='arinc',
             process=True,
             dark_corr_mode='interp',
+            dark_fallback=True,
             dark_extend=2,
             light_extend=2,
             which_ssfr=None,
             wvl_s=350.0,
             wvl_e=2200.0,
             wvl_j=950.0,
-            verbose=False,
+            verbose=ssfr.common.karg['verbose'],
             ):
 
         '''
@@ -221,10 +222,11 @@ class read_ssfr:
             raise OSError(msg)
 
         if len(fnames) == 0:
-            msg = 'Error [read_ssfr]: input variable <fnames> is empty.'
+            msg = '\nError [read_ssfr]: input variable <fnames> is empty.'
             raise OSError(msg)
         #\----------------------------------------------------------------------------/#
 
+        self.verbose = verbose
 
         # read in all the data
         # after the following process, the object will contain
@@ -260,10 +262,19 @@ class read_ssfr:
         jday_ARINC = np.zeros(Nx                          , dtype=np.float64)
         jday_cRIO  = np.zeros(Nx                          , dtype=np.float64)
 
-        Nstart = 0
-        for fname in fnames:
+        Nfile = len(fnames)
+        if self.verbose:
+            msg = '\nProcessing CU-LASP SSFR files (Total of %d):' % (Nfile)
+            print(msg)
 
-            data0 = read_ssfr_raw(fname, verbose=verbose)
+        Nstart = 0
+        for i, fname in enumerate(fnames):
+
+            if self.verbose:
+                msg = '    reading %3d/%3d <%s> ...' % (i, Nfile, fname)
+                print(msg)
+
+            data0 = read_ssfr_raw(fname, verbose=False)
 
             Nend = data0['iterN'] + Nstart
 
@@ -299,7 +310,7 @@ class read_ssfr:
         #/----------------------------------------------------------------------------\#
         if process:
             self.dset_check()
-            self.dark_corr(dark_corr_mode=dark_corr_mode, dark_extend=dark_extend, light_extend=light_extend)
+            self.dark_corr(dark_corr_mode=dark_corr_mode, dark_extend=dark_extend, light_extend=light_extend, dark_fallback=dark_fallback)
             if which_ssfr is not None:
                 self.wvl_join(which_ssfr, wvl_start=wvl_s, wvl_end=wvl_e, wvl_join=wvl_j)
         #\----------------------------------------------------------------------------/#
@@ -312,7 +323,9 @@ class read_ssfr:
 
         int_time_ = np.unique(self.data_raw['int_time'], axis=0)
         self.Ndset, _ = int_time_.shape
-        print('\nMessage [read_ssfr]:\nTotal of %d sets of integration times were found:' % self.Ndset)
+        if self.verbose:
+            msg = '\nMessage [read_ssfr]:\nTotal of %d sets of integration times were found:' % self.Ndset
+            print(msg)
 
         #/----------------------------------------------------------------------------\#
         for idset in range(self.Ndset):
@@ -328,7 +341,9 @@ class read_ssfr:
             #\----------------------------------------------------------------------------/#
 
             dset_name = 'dset%d' % idset
-            print('  %6s (%5d samples): zen|si=%3dms, zen|in=%3dms, nad|si=%3dms, nad|in=%3dms' % (dset_name, logic.sum(), *int_time_[idset]))
+            if self.verbose:
+                msg = '    %6s (%5d samples): zen|si=%3dms, zen|in=%3dms, nad|si=%3dms, nad|in=%3dms' % (dset_name, logic.sum(), *int_time_[idset])
+                print(msg)
         #\----------------------------------------------------------------------------/#
 
     def dark_corr(
@@ -337,7 +352,7 @@ class read_ssfr:
             dark_extend=2,
             light_extend=2,
             fill_value=np.nan,
-            fallback=True,
+            dark_fallback=True,
             ):
 
         spec_info = {
@@ -352,7 +367,7 @@ class read_ssfr:
         count_dark_corr      = np.zeros_like(self.data_raw['count_raw'])
         count_dark_corr[...] = fill_value
 
-        if fallback:
+        if dark_fallback:
             count_dark_corr_fb      = np.zeros_like(self.data_raw['count_raw'])
             count_dark_corr_fb[...] = fill_value
 
@@ -381,7 +396,7 @@ class read_ssfr:
                             fillValue=fill_value
                             )
 
-                    if fallback:
+                    if dark_fallback:
                         _, count_dark_corr_fb[logic, :, ispec] = \
                                 ssfr.corr.dark_corr(
                                 self.data_raw['tmhr'][logic],
@@ -395,13 +410,13 @@ class read_ssfr:
 
                 else:
 
-                    msg = '\nWarning [read_ssfr]: cannot find corresponding darks for %s=%3dms at\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
+                    msg = '\nWarning [read_ssfr]: cannot find corresponding darks for %s=%3dms at indices\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
                     warnings.warn(msg)
                     fail_list.append([ispec, int_time0, logic_light])
 
         # a fallback process when no darks are found for corresponding integration times
         #/----------------------------------------------------------------------------\#
-        if fallback:
+        if dark_fallback:
 
             for item in fail_list:
 
@@ -414,7 +429,7 @@ class read_ssfr:
 
                 shutter_dark_corr_spec[logic_light, ispec] = 0
                 count_dark_corr[logic_light, :, ispec] = self.data_raw['count_raw'][logic_light, :, ispec] - dark_mean[np.newaxis, :]
-                msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (no darks) at\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
+                msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (where no darks were found) at indices\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
                 warnings.warn(msg)
 
             logic_fb = np.isnan(count_dark_corr) & (~np.isnan(count_dark_corr_fb))

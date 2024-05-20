@@ -4,6 +4,10 @@ __all__ = ['fdir_data']
 
 fdir_data = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 
+karg = {
+        'verbose': True,
+        }
+
 input_list = {
         'which_ssfr': 'lasp',
           'which_lc': 'zenith',

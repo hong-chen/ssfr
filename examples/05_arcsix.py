@@ -947,9 +947,6 @@ def cdata_arcsix_ssfr_v0(
 
     if run:
         fnames_ssfr = ssfr.util.get_all_files(fdir_data, pattern='*.SKS')
-        if _verbose_:
-            msg = '\nProcessing %s files:\n%s' % (which_ssfr.upper(), '\n'.join(fnames_ssfr))
-            print(msg)
 
         ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames_ssfr, dark_corr_mode='interp', which_ssfr='lasp|%s' % which_ssfr.lower())
 
@@ -1457,7 +1454,8 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data,
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+    sys.exit()
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     sys.exit()
