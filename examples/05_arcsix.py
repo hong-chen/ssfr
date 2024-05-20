@@ -577,7 +577,19 @@ def cdata_arcsix_alp_v1(
 
         # figure
         #/----------------------------------------------------------------------------\#
-        if _test_mode_:
+        # if _test_mode_:
+        if True:
+            print(data_hsk['jday'])
+            print(data_alp['jday'])
+            sys.exit()
+            data_offset = {
+                    'x0': data_hsk['jday']*86400.0,
+                    'y0': data_hsk['alt'],
+                    'x1': data_alp['jday']*86400.0,
+                    'y1': data_alp['alt'],
+                    }
+            ssfr.vis.find_offset_bokeh(data_offset)
+            sys.exit()
             plt.close('all')
             fig = plt.figure(figsize=(8, 6))
             # fig.suptitle('Figure')
@@ -640,7 +652,7 @@ def process_alp_data(date, run=True):
             fdir_out=fdir_out, run=run)
 
     fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0,
-            fdir_out=fdir_out, run=run)
+            fdir_out=fdir_out, run=True)
 
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     _fnames_['%s_alp_v0' % date_s] = fname_alp_v0
@@ -1715,6 +1727,7 @@ def main_process_data(date, run=True):
     #    - motor pitch angle
     #    - motor roll angle
     process_alp_data(date, run=False)
+    sys.exit()
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse

@@ -575,7 +575,7 @@ span_t.location = slider_t.value;
 
 
 def find_offset_bokeh(
-        fname,
+        data_dict,
         wvl0=None,
         tmhr0=None,
         tmhr_range=None,
@@ -597,9 +597,17 @@ def find_offset_bokeh(
     #/----------------------------------------------------------------------------\#
     # data_time
     #/--------------------------------------------------------------\#
-    data_time  = ColumnDataSource(data=data_time_dict)
+    print(data_dict.keys())
+    x0_min = np.nanmin(data_dict['x0'])
+    x0_max = np.nanmax(data_dict['x0'])
+    x1_min = np.nanmin(data_dict['x1'])
+    x1_max = np.nanmax(data_dict['x1'])
+    print(x0_min, x0_max)
+    print(x1_min, x1_max)
+    # data = ColumnDataSource(data=data_dict)
     #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
+    sys.exit()
 
 
     # bokeh plot settings

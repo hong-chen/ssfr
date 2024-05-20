@@ -20,7 +20,6 @@ __all__ = [
         'get_all_files',
         'get_all_folders',
         'if_file_exists',
-        'cal_julian_day',
         'cal_heading',
         'cal_solar_angles',
         'cal_solar_factor',
@@ -80,16 +79,6 @@ def if_file_exists(fname, exitTag=True):
             exit("Error   [if_file_exists]: cannot find '{fname}'".format(fname=fname))
         else:
             print("Warning [if_file_exists]: cannot find '{fname}'".format(fname=fname))
-
-def cal_julian_day(date, tmhr):
-
-    julian_day = np.zeros_like(tmhr, dtype=np.float64)
-
-    for i in range(tmhr.size):
-        tmhr0 = tmhr[i]
-        julian_day[i] = (date - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0 + tmhr0/24.0
-
-    return julian_day
 
 def cal_heading(lon, lat):
 

@@ -5,7 +5,8 @@ import datetime
 import warnings
 import h5py
 import numpy as np
-from ssfr.util import load_h5, cal_heading, cal_julian_day
+
+import ssfr
 
 __all__ = [
             'read_alp_raw',
@@ -77,7 +78,7 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
     f = open(fname, 'rb')
     if verbose:
-        print('++++++++++++++++++++++++++++++++++++++++++++++++++')
+        print('#/----------------------------------------------------------------------------\#')
         print('Reading <%s> ...' % fname.split('/')[-1])
 
     # read data record
@@ -91,7 +92,7 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
     if verbose:
         print(dataAll[:, 3].min()/3600.0, dataAll[:, 3].max()/3600.0)
-        print('--------------------------------------------------')
+        print('#\----------------------------------------------------------------------------/#')
 
     return dataAll
 
@@ -107,12 +108,14 @@ class read_alp:
             tmhr_range=None,
             Ndata=15000,
             time_offset=0.0,
-            verbose=False
+            verbose=ssfr.common.karg['verbose'],
             ):
 
         if len(fnames) == 0:
             msg = '\nError [read_alp]: No files are found in <fnames>.'
             raise OSError(msg)
+
+        self.verbose = verbose
 
         vnames = ['GPS_Time',
                   'Span_CPT_Pitch',
@@ -130,8 +133,18 @@ class read_alp:
         Nx         = Ndata * len(fnames)
         dataAll    = np.zeros((Nx, len(vnames)), dtype=np.float64)
 
+        Nfile = len(fnames)
+        if self.verbose:
+            msg = '\nMessage [read_alp]: Processing CU-LASP ALP files (Total of %d):' % (Nfile)
+            print(msg)
+
         Nstart = 0
-        for fname in fnames:
+        for i, fname in enumerate(fnames):
+
+            if self.verbose:
+                msg = '    reading %3d/%3d <%s> ...' % (i, Nfile, fname)
+                print(msg)
+
             dataAll0 = read_alp_raw(fname, vnames=vnames, dataLen=248, verbose=False)
             Nend = Nstart + dataAll0.shape[0]
             dataAll[Nstart:Nend, ...]  = dataAll0
@@ -168,9 +181,9 @@ class read_alp:
         self.ang_pit_i   = dataAll[:, 10] # inclinometer pitch angle
         self.ang_rol_i   = dataAll[:, 11] # inclinometer roll angle
 
-        self.ang_hed     = cal_heading(self.lon, self.lat)
+        self.ang_hed     = ssfr.util.cal_heading(self.lon, self.lat)
         if date is not None:
-            self.jday = cal_julian_day(date, self.tmhr)
+            self.jday = ssfr.util.dtime_to_jday(date) + self.tmhr/24.0
 
     def save_h5(self, fname):
 
