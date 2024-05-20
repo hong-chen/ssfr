@@ -337,6 +337,7 @@ class read_ssfr:
             dark_extend=2,
             light_extend=2,
             fill_value=np.nan,
+            fallback=True,
             ):
 
         spec_info = {
@@ -348,17 +349,24 @@ class read_ssfr:
 
         shutter_dark_corr_spec = np.zeros((self.data_raw['shutter'].size, self.Nspec), dtype=self.data_raw['shutter'].dtype)
         shutter_dark_corr_spec[...] = -2
-        count_dark_corr  = np.zeros_like(self.data_raw['count_raw'])
+        count_dark_corr      = np.zeros_like(self.data_raw['count_raw'])
         count_dark_corr[...] = fill_value
 
+        if fallback:
+            count_dark_corr_fb      = np.zeros_like(self.data_raw['count_raw'])
+            count_dark_corr_fb[...] = fill_value
+
         fail_list = []
+
+        total = self.data_raw['count_raw'].size
+        count = 0
 
         for ispec in range(self.Nspec):
             int_time = np.unique(self.data_raw['int_time'][:, ispec])
             for int_time0 in int_time:
                 logic = (self.data_raw['int_time'][:, ispec]==int_time0)
-                logic_light = (logic & ((self.data_raw['shutter'][:]==0)))
-                logic_dark  = (logic & ((self.data_raw['shutter'][:]==1)))
+                logic_light = (logic & ((self.data_raw['shutter']==0)))
+                logic_dark  = (logic & ((self.data_raw['shutter']==1)))
 
                 if logic_dark.sum() > 0:
 
@@ -373,6 +381,18 @@ class read_ssfr:
                             fillValue=fill_value
                             )
 
+                    if fallback:
+                        _, count_dark_corr_fb[logic, :, ispec] = \
+                                ssfr.corr.dark_corr(
+                                self.data_raw['tmhr'][logic],
+                                self.data_raw['shutter'][logic],
+                                self.data_raw['count_raw'][logic, :, ispec],
+                                mode='mean',
+                                darkExtend=dark_extend,
+                                lightExtend=light_extend,
+                                fillValue=fill_value
+                                )
+
                 else:
 
                     msg = '\nWarning [read_ssfr]: cannot find corresponding darks for %s=%3dms at\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
@@ -381,19 +401,24 @@ class read_ssfr:
 
         # a fallback process when no darks are found for corresponding integration times
         #/----------------------------------------------------------------------------\#
-        for item in fail_list:
+        if fallback:
 
-            ispec, int_time0, logic_light = item
+            for item in fail_list:
 
-            logic = (shutter_dark_corr_spec[:, ispec] == 1)
-            count_base = -2**15
-            darks = (self.data_raw['count_raw'][logic, :, ispec]-count_base) / (self.data_raw['int_time'][logic, np.newaxis, ispec]) * int_time0 + count_base
-            dark_mean = np.mean(darks, axis=0)
+                ispec, int_time0, logic_light = item
 
-            shutter_dark_corr_spec[logic_light, ispec] = 0
-            count_dark_corr[logic_light, :, ispec] = self.data_raw['count_raw'][logic_light, :, ispec] - dark_mean[np.newaxis, :]
-            msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (no darks) at\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
-            warnings.warn(msg)
+                logic_dark = (shutter_dark_corr_spec[:, ispec] == 1)
+                count_base = -2**15
+                darks = (self.data_raw['count_raw'][logic_dark, :, ispec]-count_base) / (self.data_raw['int_time'][logic_dark, np.newaxis, ispec]) * int_time0 + count_base
+                dark_mean = np.mean(darks, axis=0)
+
+                shutter_dark_corr_spec[logic_light, ispec] = 0
+                count_dark_corr[logic_light, :, ispec] = self.data_raw['count_raw'][logic_light, :, ispec] - dark_mean[np.newaxis, :]
+                msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (no darks) at\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
+                warnings.warn(msg)
+
+            logic_fb = np.isnan(count_dark_corr) & (~np.isnan(count_dark_corr_fb))
+            count_dark_corr[logic_fb] = count_dark_corr_fb[logic_fb]
         #\----------------------------------------------------------------------------/#
 
         shutter_dark_corr = np.zeros_like(self.data_raw['shutter'])
@@ -401,7 +426,8 @@ class read_ssfr:
         shutter_dark_corr[np.sum(shutter_dark_corr_spec==1, axis=-1)==self.Nspec] = 1
         shutter_dark_corr[np.sum(shutter_dark_corr_spec<0 , axis=-1)>0] = -1
 
-        count_dark_corr[shutter_dark_corr!=0, :, :] = fill_value
+        logic_fill = (shutter_dark_corr!=0)
+        count_dark_corr[logic_fill, :, :] = fill_value
 
         self.data_raw['shutter_dark-corr'] = shutter_dark_corr
         self.data_raw['count_dark-corr'] = count_dark_corr

@@ -1724,7 +1724,7 @@ def main_process_data(date, run=True):
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
     sys.exit()
 #\----------------------------------------------------------------------------/#
 
