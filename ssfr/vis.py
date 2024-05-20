@@ -12,8 +12,9 @@ import ssfr
 
 __all__ = [
         'quicklook_bokeh_ssfr_and_spns',
-        'quicklook_bokeh_spns',
+        'quicklook_spns_bokeh',
         'quicklook_bokeh_ssfr_raw',
+        'find_offset_bokeh',
         ]
 
 
@@ -573,6 +574,276 @@ span_t.location = slider_t.value;
 
 
 
+def find_offset_bokeh(
+        fname,
+        wvl0=None,
+        tmhr0=None,
+        tmhr_range=None,
+        tmhr_step=10,
+        description=None,
+        fname_html=None
+        ):
+
+    from bokeh.layouts import layout, gridplot
+    from bokeh.models import ColumnDataSource, ColorBar
+    from bokeh.models.widgets import Select, Slider, CheckboxGroup
+    from bokeh.models import Toggle, CustomJS, Legend, Span, HoverTool
+    from bokeh.plotting import figure, output_file, save
+    from bokeh.transform import linear_cmap
+    from bokeh.palettes import RdYlBu6, Spectral6
+    from bokeh.tile_providers import get_provider, Vendors
+
+    # prepare data
+    #/----------------------------------------------------------------------------\#
+    # data_time
+    #/--------------------------------------------------------------\#
+    data_time  = ColumnDataSource(data=data_time_dict)
+    #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
+
+
+    # bokeh plot settings
+    #/----------------------------------------------------------------------------\#
+    if description is not None:
+        title = 'Time Offset Check (%s)' % description
+    else:
+        title = 'Time Offset Check'
+
+    if fname_html is None:
+        fname_html = 'find-time-offset-bokeh-plot_created-at-%s.html' % datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+
+    output_file(fname_html, title=title, mode='inline')
+
+    height_time = 500
+    width_time  = 1200
+    #\----------------------------------------------------------------------------/#
+
+
+    # time series plot
+    #/----------------------------------------------------------------------------\#
+    xrange_s = np.nanmin(data_time.data['tmhr'])-0.1
+    xrange_e = np.nanmax(data_time.data['tmhr'])+0.1
+    yrange_e = np.nanmax(data_time.data['flux0_plot'])*1.1
+
+    plt_time = figure(
+                  height=height_time,
+                  width=width_time,
+                  title='Flux Time Series at %.2f nm' % (data_spec.data['wvl0'][index_wvl]),
+                  tools='reset,save,box_zoom,wheel_zoom,pan',
+                  active_scroll='wheel_zoom',
+                  active_drag='pan',
+                  x_axis_label='Time [Hour]',
+                  y_axis_label='Flux Density',
+                  x_range=[xrange_s, xrange_e],
+                  y_range=[0.0     , yrange_e],
+                  output_backend='webgl'
+                  )
+
+    htool = HoverTool(tooltips = [('Time', '$x{0.0000}'), ('Flux', '$y{0.0000}')], mode='mouse', line_policy='nearest')
+    plt_time.add_tools(htool)
+
+    plt_time.varea(x=data_time.data['tmhr'], y1=np.zeros_like(data_time.data['tmhr']), y2=data_time.data['alt'], fill_alpha=0.2, fill_color='purple')
+    plt_time.circle('tmhr', 'toa_plot'  , source=data_time, color='gray'      , size=3, legend_label='TOA↓ (Kurudz)', fill_alpha=0.4, line_alpha=0.4)
+    plt_time.circle('tmhr', 'flux0_plot', source=data_time, color='green'     , size=3, legend_label='Total↓ (SPN-S)')
+    plt_time.circle('tmhr', 'flux1_plot', source=data_time, color='lightgreen', size=3, legend_label='Diffuse↓ (SPN-S)')
+
+    slider_time = Slider(start=xrange_s, end=xrange_e, value=data_time.data['tmhr'][index_tmhr], step=0.0001, width=width_time, height=40, title='Time [Hour]', format='0[.]0000')
+    vline_time  = Span(location=slider_time.value, dimension='height', line_color='black', line_dash='dashed', line_width=1)
+    plt_time.add_layout(vline_time)
+
+    plt_time.legend.click_policy  = 'hide'
+    plt_time.legend.location = 'top_right'
+    plt_time.legend.background_fill_alpha = 0.8
+    plt_time.title.text_font_size = '1.3em'
+    plt_time.title.align          = 'center'
+    plt_time.xaxis.axis_label_text_font_style = 'normal'
+    plt_time.yaxis.axis_label_text_font_style = 'normal'
+    plt_time.xaxis.axis_label_text_font_size  = '1.0em'
+    plt_time.xaxis.major_label_text_font_size = '1.0em'
+    plt_time.yaxis.axis_label_text_font_size  = '1.0em'
+    plt_time.yaxis.major_label_text_font_size = '1.0em'
+    #\----------------------------------------------------------------------------/#
+
+    # callback (spec slider)
+    #/----------------------------------------------------------------------------\#
+    slider_spec_callback = CustomJS(args=dict(
+                             plt_t    = plt_time,
+                             span_s   = vline_spec,
+                             slider_s = slider_spec,
+                             src_s    = data_spec,
+                             src_t    = data_time,
+                             ), code="""
+function closest (num, arr) {
+    var curr = 0;
+    var diff = Math.abs (num - arr[curr]);
+    for (var val = 0; val < arr.length; val++) {
+        var newdiff = Math.abs (num - arr[val]);
+        if (newdiff < diff) {
+            diff = newdiff;
+            curr = val;
+        }
+    }
+    return curr;
+}
+
+var x  = src_t.data['tmhr'];
+
+var wvl0 = src_s.data['wvl0'];
+var wvl0_index = closest(slider_s.value, wvl0);
+
+var wvl1 = src_s.data['wvl1'];
+var wvl1_index = closest(slider_s.value, wvl1);
+
+var wvl0_index_s = wvl0_index.toString();
+var wvl1_index_s = wvl1_index.toString();
+
+var v0 = 'flux0_' + wvl0_index_s;
+var v1 = 'flux1_' + wvl1_index_s;
+
+var max0 = 0.0;
+var i = 0;
+
+for (i = 0; i < x.length; i++) {
+    if (src_t.data[v0][i]>max0) {
+    max0 = src_t.data[v0][i];
+    }
+    src_t.data['flux0_plot'][i] = src_t.data[v0][i];
+    src_t.data['flux1_plot'][i] = src_t.data[v1][i];
+    src_t.data['toa_plot'][i]   = src_s.data['toa0'][wvl0_index] * src_t.data['mu'][i];
+}
+src_t.change.emit();
+
+var title = 'Flux Time Series at ' + wvl0[wvl0_index].toFixed(2).toString() + ' nm';
+plt_t.title.text = title;
+
+if (max0 > 0.0) {
+plt_t.y_range.end = max0*1.1;
+}
+
+span_s.location = slider_s.value;
+    """)
+    #\----------------------------------------------------------------------------/#
+
+    # callback (time slider)
+    #/----------------------------------------------------------------------------\#
+    slider_time_callback = CustomJS(args=dict(
+                             plt_s    = plt_spec,
+                             plt_g    = plt_geo,
+                             span_t   = vline_time,
+                             slider_t = slider_time,
+                             src_t  = data_time,
+                             src_s  = data_spec,
+                             src_g  = data_geo,
+                             src_g0 = data_geo0,
+                             src_g1 = data_geo1,
+                             ), code="""
+function closest (num, arr) {
+    var curr = 0;
+    var diff = Math.abs (num - arr[curr]);
+    for (var val = 0; val < arr.length; val++) {
+        var newdiff = Math.abs (num - arr[val]);
+        if (newdiff < diff) {
+            diff = newdiff;
+            curr = val;
+        }
+    }
+    return curr;
+}
+
+var x  = src_t.data['tmhr'];
+
+var index = closest(slider_t.value, x);
+var index_s = index.toString();
+
+var v0 = 'flux0_' + index_s;
+var v1 = 'flux1_' + index_s;
+
+var max0 = 0.0;
+var i = 0;
+
+for (i = 0; i < src_s.data['wvl0'].length; i++) {
+    if (src_s.data[v0][i]>max0) {
+    max0 = src_s.data[v0][i];
+    }
+    src_s.data['flux0_plot'][i] = src_s.data[v0][i];
+    src_s.data['flux1_plot'][i] = src_s.data[v1][i];
+    src_s.data['toa_plot'][i]   = src_s.data['toa0'][i] * src_t.data['mu'][index];
+}
+src_s.change.emit();
+
+var msec0 = (src_t.data['jday'][index]-1.0)*86400000.0;
+var date0 = new Date(msec0);
+
+var month0 = date0.getUTCMonth() + 1;
+
+var date_s = '';
+
+date_s = date0.getUTCFullYear() + '-'
+        + ('0' + month0).slice(-2) + '-'
+        + ('0' + date0.getUTCDate()).slice(-2) + ' '
+        + ('0' + date0.getUTCHours()).slice(-2) + ':'
+        + ('0' + date0.getUTCMinutes()).slice(-2) + ':'
+        + ('0' + date0.getUTCSeconds()).slice(-2);
+
+var title1 = 'Spectral Flux at ' + date_s + ' UTC';
+plt_s.title.text = title1;
+
+if (max0 > 0.0) {
+plt_s.y_range.end = max0*1.1;
+}
+
+if (src_g.data['alt'][index] < 1.0){
+var alt_m  = src_g.data['alt'][index]*1000.0;
+var title2 = 'Aircraft at ' + alt_m.toFixed(1).toString() + ' m';
+} else {
+var title2 = 'Aircraft at ' + src_g.data['alt'][index].toFixed(4).toString() + ' km';
+}
+plt_g.title.text = title2;
+
+src_g0.data['x'][0]   = src_g.data['x'][index];
+src_g0.data['y'][0]   = src_g.data['y'][index];
+src_g0.data['alt'][0] = src_g.data['alt'][index];
+src_g0.change.emit();
+
+plt_g.x_range.start = src_g0.data['x'][0]-20000.0;
+plt_g.x_range.end   = src_g0.data['x'][0]+20000.0;
+plt_g.y_range.start = src_g0.data['y'][0]-20000.0;
+plt_g.y_range.end   = src_g0.data['y'][0]+20000.0;
+
+var index_past = closest(slider_t.value-0.25, x);
+
+for (i = 0; i < src_g.data['x'].length; i++) {
+    if (i>index_past && i<=index) {
+    src_g1.data['x'][i] = src_g.data['x'][i];
+    src_g1.data['y'][i] = src_g.data['y'][i];
+    } else {
+    src_g1.data['x'][i] = Number.NaN;
+    src_g1.data['y'][i] = Number.NaN;
+    }
+}
+src_g1.change.emit();
+
+span_t.location = slider_t.value;
+    """)
+    #\----------------------------------------------------------------------------/#
+
+    slider_spec.js_on_change('value', slider_spec_callback)
+    slider_time.js_on_change('value', slider_time_callback)
+
+    layout0 = layout(
+                     children=[[plt_spec, plt_geo],
+                               [slider_spec],
+                               [plt_time],
+                               [slider_time]
+                               ],
+                     sizing_mode='fixed'
+                     )
+
+    save(layout0)
+
+
+
+
 def quicklook_mpl_ssfr_raw(
         data0,
         ichan=100,
@@ -818,6 +1089,7 @@ def quicklook_mpl_ssfr_raw(
         fig.savefig('%s%s' % (extra_tag, filename.replace(file_ext, 'png')), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
+
 
 
 if __name__ == '__main__':
