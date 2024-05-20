@@ -328,7 +328,7 @@ class read_ssfr:
             #\----------------------------------------------------------------------------/#
 
             dset_name = 'dset%d' % idset
-            print('  %s (%5d samples): zen|si=%3dms, zen|in=%3dms, nad|si=%3dms, nad|in=%3dms' % (dset_name, logic.sum(), *int_time_[idset]))
+            print('  %6s (%5d samples): zen|si=%3dms, zen|in=%3dms, nad|si=%3dms, nad|in=%3dms' % (dset_name, logic.sum(), *int_time_[idset]))
         #\----------------------------------------------------------------------------/#
 
     def dark_corr(
