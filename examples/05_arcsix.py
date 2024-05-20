@@ -1012,10 +1012,12 @@ def cdata_arcsix_ssfr_v1(
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
                 #\----------------------------------------------------------------------------/#
             elif which_ssfr == 'ssfr-b':
+                print(np.nanmin(cnt_zen))
                 factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.0
                 data_cal_zen = {
                         'sec_resp': np.repeat(factor_zen, wvl_zen.size)
                         }
+                print(np.nanmin(cnt_nad))
                 factor_nad = (np.nanmax(cnt_nad)-np.nanmin(cnt_nad)) / 2.0
                 data_cal_nad = {
                         'sec_resp': np.repeat(factor_nad, wvl_nad.size)
