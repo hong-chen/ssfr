@@ -1069,8 +1069,12 @@ def cdata_arcsix_ssfr_v1(
             for i in range(wvl_nad.size):
                 spec_nad[logic_dset, i] = cnt_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
             #\----------------------------------------------------------------------------/#
-            spec_zen[data_ssfr_v0['spec/sat_zen']==1] = 2.0
-            spec_nad[data_ssfr_v0['spec/sat_nad']==1] = 2.0
+
+            # set saturation to 0
+            #/--------------------------------------------------------------\#
+            spec_zen[data_ssfr_v0['spec/sat_zen']==1] = -0.1
+            spec_nad[data_ssfr_v0['spec/sat_nad']==1] = -0.1
+            #\--------------------------------------------------------------/#
         #\----------------------------------------------------------------------------/#
 
 

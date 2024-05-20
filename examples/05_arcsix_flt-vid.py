@@ -806,8 +806,7 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
     ax_tms.set_xlabel('Time [hour]')
 
-    # ax_tms.set_ylim((0.0, 2.0))
-    ax_tms.set_ylim(bottom=0.0)
+    ax_tms.set_ylim(bottom=-0.1)
     ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
     ax_tms.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
 
@@ -825,6 +824,7 @@ def plot_video_frame(statements, test=False):
 
     # spectra plot setting
     #/----------------------------------------------------------------------------\#
+    ax_wvl.grid()
     ax_wvl.set_xlim((200, 2200))
     ax_wvl.set_ylim(ax_tms.get_ylim())
     ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
