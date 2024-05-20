@@ -574,7 +574,11 @@ def cdata_arcsix_alp_v1(
                     'x1': data_alp['jday'][::10]*86400.0,
                     'y1': data_alp['alt'][::10],
                     }
-            ssfr.vis.find_offset_bokeh(data_offset, fname_html='alp_offset_check_%s.html' % date_s)
+            ssfr.vis.find_offset_bokeh(
+                    data_offset,
+                    description='ALP Altitude vs. HSK Altitude',
+                    fname_html='alp_offset_check_%s.html' % date_s)
+            return
         #\--------------------------------------------------------------/#
         time_offset = _alp_time_offset_[date_s]
         #\----------------------------------------------------------------------------/#
@@ -718,18 +722,21 @@ def cdata_arcsix_spns_v1(
         if _offset_mode_:
             index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
             data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
-
             # bokeh plot
             #/--------------------------------------------------------------\#
-            if _offset_mode_:
-                data_offset = {
-                        'x0': data_hsk['jday']*86400.0,
-                        'y0': data_hsk['alt'],
-                        'x1': data_spns_v0['tot/jday']*86400.0,
-                        'y1': data_y1,
-                        }
-                ssfr.vis.find_offset_bokeh(data_offset, fname_html='spns_offset_check_%s.html' % date_s)
+            data_offset = {
+                    'x0': data_hsk['jday']*86400.0,
+                    'y0': data_hsk['alt'],
+                    'x1': data_spns_v0['tot/jday']*86400.0,
+                    'y1': data_y1,
+                    }
+            ssfr.vis.find_offset_bokeh(
+                    data_offset,
+                    description='SPNS Total vs. HSK Altitude (555 nm)',
+                    fname_html='spns_offset_check_%s.html' % date_s)
             #\--------------------------------------------------------------/#
+            return
+
         time_offset = _spns_time_offset_[date_s]
         #\----------------------------------------------------------------------------/#
 
@@ -869,10 +876,9 @@ def process_spns_data(date, run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data,
-            fdir_out=fdir_out, run=False)
+            fdir_out=fdir_out, run=run)
     fname_spns_v1 = cdata_arcsix_spns_v1(date, fname_spns_v0, _fnames_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
-    sys.exit()
     # fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=run)
     fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s],
@@ -1039,47 +1045,34 @@ def cdata_arcsix_ssfr_v1(
 
         # check time offset
         #/----------------------------------------------------------------------------\#
+
+        if _offset_mode_:
+            data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
+            index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v2['tot/wvl']))
+            data_y0 = data_spns_v2['tot/flux'][:, index_wvl_spns]
+
+            index_wvl_ssfr = np.argmin(np.abs(745.0-wvl_zen))
+            data_y1 = spec_zen[:, index_wvl_ssfr]
+
+            # bokeh plot
+            #/--------------------------------------------------------------\#
+            data_offset = {
+                    'x0': data_spns_v2['jday']*86400.0,
+                    'y0': data_y0,
+                    'x1': jday*86400.0,
+                    'y1': data_y1,
+                    }
+            ssfr.vis.find_offset_bokeh(
+                    data_offset,
+                    description='SSFR Zenith vs. SPNS Total (745nm)',
+                    fname_html='ssfr_offset_check_%s.html' % date_s)
+            #\--------------------------------------------------------------/#
+            return
+
         if which_ssfr == 'ssfr-a':
             time_offset = _ssfr1_time_offset_[date_s]
         elif which_ssfr == 'ssfr-b':
             time_offset = _ssfr2_time_offset_[date_s]
-
-        if _offset_mode_:
-        # if True:
-            data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
-            index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v2['tot/wvl']))
-            data_ref = data_spns_v2['tot/flux'][:, index_wvl_spns]
-            # data_ref = f_dn_sol_zen[index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
-
-            index_wvl = np.argmin(np.abs(745.0-wvl_zen))
-
-            plt.close('all')
-            fig = plt.figure(figsize=(8, 6))
-            # fig.suptitle('Figure')
-            # plot
-            #/--------------------------------------------------------------\#
-            ax1 = fig.add_subplot(111)
-            # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-            # ax1.scatter(x, y, s=6, c='k', lw=0.0)
-            # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-            ax1.scatter(data_hsk['jday']-ssfr.util.dtime_to_jday(date), data_ref, c='k', lw=0, s=5)
-            ax1.scatter(jday-ssfr.util.dtime_to_jday(date), spec_zen[:, index_wvl], c='r', lw=0, s=5)
-            ax1.scatter(jday-ssfr.util.dtime_to_jday(date)+time_offset/86400.0, spec_zen[:, index_wvl], c='g', lw=0, s=5)
-            # ax1.set_ylim(())
-            # ax1.set_xlabel('')
-            # ax1.set_ylabel('')
-            # ax1.set_title('')
-            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            #\--------------------------------------------------------------/#
-            # save figure
-            #/--------------------------------------------------------------\#
-            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-            #\--------------------------------------------------------------/#
-            plt.show()
-            sys.exit()
         #\----------------------------------------------------------------------------/#
 
 
@@ -1678,18 +1671,17 @@ def main_process_data(date, run=True):
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=run)
-    sys.exit()
+    process_spns_data(date, run=False)
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
 #\----------------------------------------------------------------------------/#
 
 
