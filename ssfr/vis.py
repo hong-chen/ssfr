@@ -659,7 +659,7 @@ def find_offset_bokeh(
     plt_offset = figure(
                   height=height_time,
                   width=width_time,
-                  title='Offset Check',
+                  title=title,
                   tools='reset,save,box_zoom,wheel_zoom,pan',
                   active_scroll='wheel_zoom',
                   active_drag='pan',
