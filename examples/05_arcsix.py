@@ -567,9 +567,9 @@ def cdata_arcsix_alp_v1(
         if _offset_mode_:
             data_offset = {
                     'x0': data_hsk['jday']*86400.0,
-                    'y0': data_hsk['ang_pit'],
+                    'y0': data_hsk['ang_rol'],
                     'x1': data_alp['jday'][::10]*86400.0,
-                    'y1': data_alp['ang_pit_a'][::10],
+                    'y1': data_alp['ang_rol_s'][::10],
                     }
             ssfr.vis.find_offset_bokeh(
                     data_offset,

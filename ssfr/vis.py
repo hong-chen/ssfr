@@ -609,9 +609,11 @@ def find_offset_bokeh(
         x0 = data_dict['x0'].copy()
         x1 = data_dict['x1'].copy()
 
+
     if y_reset:
         y0 = (data_dict['y0']-np.nanmin(data_dict['y0'])) / (np.nanmax(data_dict['y0'])-np.nanmin(data_dict['y0']))
         y1 = (data_dict['y1']-np.nanmin(data_dict['y1'])) / (np.nanmax(data_dict['y1'])-np.nanmin(data_dict['y1']))
+        x
     else:
         y0 = data_dict['y0'].copy()
         y1 = data_dict['y1'].copy()
@@ -634,8 +636,6 @@ def find_offset_bokeh(
             'y1_new': y1_new[logic_notnan],
             }
     data1 = ColumnDataSource(data=data_dict1)
-
-    print(data_dict1['x1_new'])
     #\----------------------------------------------------------------------------/#
 
 
@@ -655,13 +655,18 @@ def find_offset_bokeh(
     width_time  = 1200
     #\----------------------------------------------------------------------------/#
 
+    x_min = min((np.nanmin(x0), np.nanmin(x1)))
+    x_max = min((np.nanmax(x0), np.nanmax(x1)))
+    xrange_s = x_min-0.1
+    xrange_e = x_max+0.1
+
+    y_min = min((np.nanmin(y0), np.nanmin(y1)))
+    y_max = min((np.nanmax(y0), np.nanmax(y1)))
+    yrange_s = y_min-0.1
+    yrange_e = y_max+0.1
 
     # time series plot
     #/----------------------------------------------------------------------------\#
-    xrange_s = -0.1
-    xrange_e = (x_max-x_min)+0.1
-    yrange_s = -0.1
-    yrange_e = 1.1
 
     plt_offset = figure(
                   height=height_time,
@@ -727,7 +732,7 @@ data1.change.emit();
                                [slider_y_scale],
                                [slider_y_offset],
                                ],
-                     sizing_mode='fixed'
+                     sizing_mode='scale_width'
                      )
 
     save(layout0)
