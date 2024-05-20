@@ -605,8 +605,8 @@ def plot_video_frame(statements, test=False):
             ang_pit_m0 = flt_trk0['ang_pit_m'][index_pnt]
             ang_rol_m0 = flt_trk0['ang_rol_m'][index_pnt]
 
-            ang_pit_offset = 4.444537204377897
-            ang_rol_offset = -0.5463839481366073
+            ang_pit_offset = 0.0
+            ang_rol_offset = 0.0
 
             slope1  = -np.tan(np.deg2rad(ang_rol0-ang_rol_m0+ang_rol_offset))
             offset1 = (ang_pit0-ang_pit_m0+ang_pit_offset)

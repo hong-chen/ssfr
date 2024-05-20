@@ -59,7 +59,7 @@ _fdir_out_   = '%s/processed' % _fdir_data_
 
 
 _verbose_   = True
-_offset_mode_ = True
+_offset_mode_ = False
 
 _fnames_ = {}
 
@@ -1438,8 +1438,7 @@ def main_process_data(date, run=True):
     #    - heading angle
     #    - motor pitch angle
     #    - motor roll angle
-    process_alp_data(date, run=True)
-    sys.exit()
+    process_alp_data(date, run=False)
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
@@ -1449,12 +1448,12 @@ def main_process_data(date, run=True):
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
 #\----------------------------------------------------------------------------/#
 
 if __name__ == '__main__':
