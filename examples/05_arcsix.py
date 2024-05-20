@@ -1069,9 +1069,8 @@ def cdata_arcsix_ssfr_v1(
             for i in range(wvl_nad.size):
                 spec_nad[logic_dset, i] = cnt_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
             #\----------------------------------------------------------------------------/#
-
-            spec_zen[data_ssfr_v0['spec/sat_zen']] = 2.0
-            spec_nad[data_ssfr_v0['spec/sat_nad']] = 2.0
+            spec_zen[data_ssfr_v0['spec/sat_zen']==1] = 2.0
+            spec_nad[data_ssfr_v0['spec/sat_nad']==1] = 2.0
         #\----------------------------------------------------------------------------/#
 
 
@@ -1721,12 +1720,12 @@ def main_process_data(date, run=True):
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
 #\----------------------------------------------------------------------------/#
 
 
