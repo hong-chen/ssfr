@@ -1036,8 +1036,8 @@ def cdata_arcsix_ssfr_v1(
 
             # set saturation to 0
             #/--------------------------------------------------------------\#
-            spec_zen[data_ssfr_v0['spec/sat_zen']==1] = -0.1
-            spec_nad[data_ssfr_v0['spec/sat_nad']==1] = -0.1
+            spec_zen[data_ssfr_v0['spec/sat_zen']==1] = -0.05
+            spec_nad[data_ssfr_v0['spec/sat_nad']==1] = -0.05
             #\--------------------------------------------------------------/#
         #\----------------------------------------------------------------------------/#
 
@@ -1425,6 +1425,66 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
 
 # main program
 #/----------------------------------------------------------------------------\#
+def main_process_data_v0(date, run=True):
+
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    date_s = date.strftime('%Y%m%d')
+
+
+    # HSK v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+            fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+
+    # ALP v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
+    fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
+            fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+
+    # SPNS v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
+    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
+            fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+
+    # SSFR-A v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr1_))
+    fdir_data_ssfr1 = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_ssfr1_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr1,
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+
+    # SSFR-B v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr2_))
+    fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
+            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+
+    _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
+    _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
+    _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
+    _fnames_['%s_ssfr1_v0' % date_s] = fname_ssfr1_v0
+    _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
+
+
+
 def main_process_data(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
@@ -1479,7 +1539,7 @@ if __name__ == '__main__':
              datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
             ]
     for date in dates:
-        main_process_data(date)
+        main_process_data_v0(date, run=True)
     #\----------------------------------------------------------------------------/#
 
     pass
