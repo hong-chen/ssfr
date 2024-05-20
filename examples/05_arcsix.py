@@ -1065,7 +1065,7 @@ def cdata_arcsix_ssfr_v1(
             ssfr.vis.find_offset_bokeh(
                     data_offset,
                     description='SSFR Zenith vs. SPNS Total (745nm)',
-                    fname_html='ssfr_offset_check_%s.html' % date_s)
+                    fname_html='%s_offset_check_%s.html' % (which_ssfr, date_s))
             #\--------------------------------------------------------------/#
             return
 
