@@ -346,8 +346,8 @@ class read_ssfr:
                 3: 'nad|in',
                 }
 
-        shutter_dark_corr = np.zeros_like(self.data_raw['shutter'])
-        shutter_dark_corr[...] = -2
+        shutter_dark_corr_spec = np.zeros((self.data_raw['shutter'].size, self.Nspec), dtype=self.data_raw['shutter'].dtype)
+        shutter_dark_corr_spec[...] = -2
         count_dark_corr  = np.zeros_like(self.data_raw['count_raw'])
         count_dark_corr[...] = fill_value
 
@@ -362,7 +362,7 @@ class read_ssfr:
 
                 if logic_dark.sum() > 0:
 
-                    shutter_dark_corr[logic], count_dark_corr[logic, :, ispec] = \
+                    shutter_dark_corr_spec[logic, ispec], count_dark_corr[logic, :, ispec] = \
                             ssfr.corr.dark_corr(
                             self.data_raw['tmhr'][logic],
                             self.data_raw['shutter'][logic],
@@ -385,16 +385,23 @@ class read_ssfr:
 
             ispec, int_time0, logic_light = item
 
-            logic = (shutter_dark_corr == 1)
+            logic = (shutter_dark_corr_spec[:, ispec] == 1)
             count_base = -2**15
             darks = (self.data_raw['count_raw'][logic, :, ispec]-count_base) / (self.data_raw['int_time'][logic, np.newaxis, ispec]) * int_time0 + count_base
             dark_mean = np.mean(darks, axis=0)
 
-            shutter_dark_corr[logic_light] = 0
+            shutter_dark_corr_spec[logic_light, ispec] = 0
             count_dark_corr[logic_light, :, ispec] = self.data_raw['count_raw'][logic_light, :, ispec] - dark_mean[np.newaxis, :]
             msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (no darks) at\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
             warnings.warn(msg)
         #\----------------------------------------------------------------------------/#
+
+        shutter_dark_corr = np.zeros_like(self.data_raw['shutter'])
+        shutter_dark_corr[np.sum(shutter_dark_corr_spec==0, axis=-1)==self.Nspec] = 0
+        shutter_dark_corr[np.sum(shutter_dark_corr_spec==1, axis=-1)==self.Nspec] = 1
+        shutter_dark_corr[np.sum(shutter_dark_corr_spec<0 , axis=-1)>0] = -1
+
+        count_dark_corr[shutter_dark_corr!=0, :, :] = fill_value
 
         self.data_raw['shutter_dark-corr'] = shutter_dark_corr
         self.data_raw['count_dark-corr'] = count_dark_corr
