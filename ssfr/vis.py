@@ -576,13 +576,12 @@ span_t.location = slider_t.value;
 
 def find_offset_bokeh(
         data_dict,
-        offset_range=[-600, 600],
-        wvl0=None,
-        tmhr0=None,
-        tmhr_range=None,
-        tmhr_step=10,
+        offset_x_range=[-600, 600],
+        offset_y_range=[-1.0, 1.0],
+        y_scale=True,
+        x_reset=True,
         description=None,
-        fname_html=None
+        fname_html=None,
         ):
 
     from bokeh.layouts import layout, gridplot
@@ -603,28 +602,34 @@ def find_offset_bokeh(
     x_min = min((x0_min, x1_min))
     x_max = max((x0_max, x1_max))
 
-    y0 = (data_dict['y0']-np.nanmin(data_dict['y0'])) / (np.nanmax(data_dict['y0'])-np.nanmin(data_dict['y0']))
-    y1 = (data_dict['y1']-np.nanmin(data_dict['y1'])) / (np.nanmax(data_dict['y1'])-np.nanmin(data_dict['y1']))
+    if x_reset:
+        data_dict['x0'] = data_dict['x0']-x_min
+        data_dict['x1'] = data_dict['x1']-x_min
+    else:
+        x0 = data_dict['x0']
+        x1 = data_dict['x1']
 
-    data_dict['y0'] = y0
-    data_dict['y1'] = y1
-    data_dict['x0'] = data_dict['x0']-x_min
-    data_dict['x1'] = data_dict['x1']-x_min
+    if y_reset:
+        y0 = (data_dict['y0']-np.nanmin(data_dict['y0'])) / (np.nanmax(data_dict['y0'])-np.nanmin(data_dict['y0']))
+        y1 = (data_dict['y1']-np.nanmin(data_dict['y1'])) / (np.nanmax(data_dict['y1'])-np.nanmin(data_dict['y1']))
+    else:
+        y0 = data_dict['y0']
+        y1 = data_dict['y1']
 
-    x1_new = data_dict['x1'] + 0.0
+    x1_new = x1 + 0.0
     y1_new = y1 * 1.0
 
     logic_notnan = (~np.isnan(data_dict['x0'])) & (~np.isnan(data_dict['y0']))
     data_dict0 = {
-            'x0': data_dict['x0'][logic_notnan],
-            'y0': data_dict['y0'][logic_notnan],
+            'x0': x0[logic_notnan],
+            'y0': y0[logic_notnan],
             }
     data0 = ColumnDataSource(data=data_dict0)
 
     logic_notnan = (~np.isnan(data_dict['x1'])) & (~np.isnan(data_dict['y1']))
     data_dict1 = {
-            'x1': data_dict['x1'][logic_notnan],
-            'y1': data_dict['y1'][logic_notnan],
+            'x1': x1[logic_notnan],
+            'y1': y1[logic_notnan],
             'x1_new': x1_new[logic_notnan],
             'y1_new': y1_new[logic_notnan],
             }
@@ -677,9 +682,9 @@ def find_offset_bokeh(
     plt_offset.circle('x1'    , 'y1'    , source=data1, color='red', size=3, legend_label='Raw', visible=False)
     plt_offset.circle('x1_new', 'y1_new', source=data1, color='green', size=3, legend_label='With Offset')
 
-    slider_x_offset = Slider(start=offset_range[0], end=offset_range[1], value=0.0, step=0.01, width=width_time, height=40, title='X Offset', format='0[.]00')
-    slider_y_offset = Slider(start=-1.0, end=1.0, value=0.0, step=0.001, width=width_time, height=40, title='Y Offset', format='0[.]000')
-    slider_y_scale  = Slider(start=0.2, end=5.0, value=1, step=0.01, width=width_time, height=40, title='Y Scale Factor', format='0[.]00')
+    slider_x_offset = Slider(start=offset_x_range[0], end=offset_x_range[1], value=0.0, step=0.01, width=width_time, height=40, title='X Offset', format='0[.]00')
+    slider_y_offset = Slider(start=offset_y_range[0], end=offset_y_range[0], value=0.0, step=0.01, width=width_time, height=40, title='Y Offset', format='0[.]00')
+    slider_y_scale  = Slider(start=0.2, end=5.0, value=1, step=0.001, width=width_time, height=40, title='Y Scale Factor', format='0[.]000')
 
     plt_offset.legend.click_policy  = 'hide'
     plt_offset.legend.location = 'top_right'
