@@ -413,9 +413,6 @@ def test_data_b(
     return
 #\----------------------------------------------------------------------------/#
 
-
-
-
 # functions for processing HSK and ALP
 #/----------------------------------------------------------------------------\#
 def cdata_arcsix_hsk_v0(
@@ -570,13 +567,18 @@ def cdata_arcsix_alp_v1(
         if _offset_mode_:
             data_offset = {
                     'x0': data_hsk['jday']*86400.0,
-                    'y0': data_hsk['alt'],
+                    'y0': data_hsk['ang_pit'],
                     'x1': data_alp['jday'][::10]*86400.0,
-                    'y1': data_alp['alt'][::10],
+                    'y1': data_alp['ang_pit_a'][::10],
                     }
             ssfr.vis.find_offset_bokeh(
                     data_offset,
-                    description='ALP Altitude vs. HSK Altitude',
+                    offset_x_range=[-200, 200],
+                    offset_y_range=[-10, 10],
+                    x_reset=True,
+                    y_reset=False,
+                    description='ALP Pitch vs. HSK Pitch',
+                    # description='ALP Altitude vs. HSK Altitude',
                     fname_html='alp_offset_check_%s.html' % date_s)
             return
         #\--------------------------------------------------------------/#
@@ -611,7 +613,8 @@ def process_alp_data(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=run)
+            # fdir_out=fdir_out, run=run)
+            fdir_out=fdir_out, run=False)
 
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
     fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
@@ -626,9 +629,6 @@ def process_alp_data(date, run=True):
     _fnames_['%s_alp_v0' % date_s] = fname_alp_v0
     _fnames_['%s_alp_v1' % date_s] = fname_alp_v1
 #\----------------------------------------------------------------------------/#
-
-
-
 
 # functions for processing SPNS
 #/----------------------------------------------------------------------------\#
@@ -888,9 +888,6 @@ def process_spns_data(date, run=True):
     _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
     _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
 #\----------------------------------------------------------------------------/#
-
-
-
 
 # functions for processing SSFR
 #/----------------------------------------------------------------------------\#
@@ -1424,231 +1421,6 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     pass
 #\----------------------------------------------------------------------------/#
 
-
-
-
-# functions for quicklook
-#/----------------------------------------------------------------------------\#
-def quicklook_alp(date):
-
-    date_s = date.strftime('%Y%m%d')
-
-    data_hsk_v0 = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
-    data_alp_v0 = ssfr.util.load_h5(_fnames_['%s_alp_v0' % date_s])
-    data_alp_v1 = ssfr.util.load_h5(_fnames_['%s_alp_v1' % date_s])
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        fig.suptitle('%s Quicklook (%s)' % (_alp_.upper(), date_s))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(data_hsk_v0['tmhr'], data_hsk_v0['alt'], s=2, c='k', lw=0.0)
-        ax1.scatter(data_alp_v0['tmhr'], data_alp_v0['alt'], s=2, c='r', lw=0.0)
-        ax1.scatter(data_alp_v1['tmhr'], data_alp_v1['alt'], s=2, c='g', lw=0.0)
-        # ax1.scatter(data_alp_v0['tmhr'], data_alp_v0['ang_pit_m'], s=2, c='r', lw=0.0)
-        # ax1.scatter(data_alp_v1['tmhr'], data_alp_v1['ang_pit_m'], s=2, c='g', lw=0.0)
-
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        #\--------------------------------------------------------------/#
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_%s.png' % (_metadata['Function'], date_s), bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-    #\----------------------------------------------------------------------------/#
-
-def quicklook_spns(date):
-
-    date_s = date.strftime('%Y%m%d')
-
-    data_spns_v1 = ssfr.util.load_h5(_fnames_['%s_spns_v1' % date_s])
-    data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        fig.suptitle('%s Quicklook (%s)' % (_spns_.upper(), date_s))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(data_spns_v1['tmhr'], data_spns_v1['tot/flux'][:, 100]-data_spns_v1['dif/flux'][:, 100], s=2, c='r', lw=0.0)
-        ax1.scatter(data_spns_v2['tmhr'], data_spns_v2['tot/flux'][:, 100]-data_spns_v2['dif/flux'][:, 100], s=2, c='b', lw=0.0)
-
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        #\--------------------------------------------------------------/#
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_%s.png' % (_metadata['Function'], date_s), bbox_inches='tight', metadata=_metadata)
-        plt.show()
-        #\--------------------------------------------------------------/#
-    #\----------------------------------------------------------------------------/#
-#\----------------------------------------------------------------------------/#
-
-
-
-
-# functions for visualization
-#/----------------------------------------------------------------------------\#
-def plot_time_series(date, wvl0=950.0):
-
-    date_s = date.strftime('%Y-%m-%d')
-
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_out_, _mission_.upper(), _spns_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
-    tmhr = f['tmhr'][...]
-    wvl_ = f['tot/wvl'][...]
-    flux_spns_tot = f['tot/flux'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-    f.close()
-
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_out_, _mission_.upper(), _ssfr_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
-    wvl_ = f['dset0/wvl_zen'][...]
-    # flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
-    flux_ssfr_zen0 = f['dset0/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-    wvl_ = f['dset0/wvl_nad'][...]
-    # flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
-    flux_ssfr_nad0 = f['dset0/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-
-    wvl_ = f['dset1/wvl_zen'][...]
-    # flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 4.651062916040369
-    flux_ssfr_zen1 = f['dset1/flux_zen'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-    wvl_ = f['dset1/wvl_nad'][...]
-    # flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))] / 6.755421945458449
-    flux_ssfr_nad1 = f['dset1/flux_nad'][...][:, np.argmin(np.abs(wvl_-wvl0))]
-    f.close()
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(tmhr, flux_spns_tot, s=6, c='k', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_zen0, s=3, c='r', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_nad0, s=3, c='b', lw=0.0)
-        ax1.scatter(tmhr, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
-        ax1.set_xlabel('Time [Hour]')
-        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
-        ax1.set_title('Skywatch Test (%s, %s, %d nm)' % (_ssfr_.upper(), date_s, wvl0))
-        #\--------------------------------------------------------------/#
-
-        patches_legend = [
-                          mpatches.Patch(color='black' , label='%s Total' % _spns_.upper()), \
-                          mpatches.Patch(color='red'    , label='%s Zenith Si080In250' % _ssfr_.upper()), \
-                          mpatches.Patch(color='magenta', label='%s Zenith Si120In350' % _ssfr_.upper()), \
-                          mpatches.Patch(color='blue'   , label='%s Nadir Si080In250' % _ssfr_.upper()), \
-                          mpatches.Patch(color='cyan'   , label='%s Nadir Si120In350' % _ssfr_.upper()), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-    #\----------------------------------------------------------------------------/#
-
-def plot_spectra(date, tmhr0=20.830):
-
-    date_s = date.strftime('%Y-%m-%d')
-
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_out_, _mission_.upper(), _spns_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
-    tmhr = f['tmhr'][...]
-    wvl_spns_tot  = f['tot/wvl'][...]
-    flux_spns_tot = f['tot/flux'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-    f.close()
-
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (_fdir_out_, _mission_.upper(), _ssfr_.upper(), date_s)
-    f = h5py.File(fname_h5, 'r')
-    # flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
-    # flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
-    flux_ssfr_zen0 = f['dset0/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-    flux_ssfr_nad0 = f['dset0/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-
-    wvl_ssfr_zen = f['dset1/wvl_zen'][...]
-    wvl_ssfr_nad = f['dset1/wvl_nad'][...]
-    # flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 4.651062916040369
-    # flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :] / 6.755421945458449
-    flux_ssfr_zen1 = f['dset1/flux_zen'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-    flux_ssfr_nad1 = f['dset1/flux_nad'][...][np.argmin(np.abs(tmhr-tmhr0)), :]
-    f.close()
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        ax1.scatter(wvl_spns_tot, flux_spns_tot, s=6, c='k', lw=0.0)
-        ax1.scatter(wvl_ssfr_zen, flux_ssfr_zen0, s=3, c='r', lw=0.0)
-        ax1.scatter(wvl_ssfr_zen, flux_ssfr_zen1, s=3, c='magenta', lw=0.0)
-        ax1.scatter(wvl_ssfr_nad, flux_ssfr_nad0, s=3, c='b', lw=0.0)
-        ax1.scatter(wvl_ssfr_nad, flux_ssfr_nad1, s=3, c='cyan', lw=0.0)
-        ax1.set_xlabel('Wavelength [nm]')
-        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
-        ax1.set_title('Skywatch Test (%s, %s, %.4f Hour)' % (_ssfr_.upper(), date_s, tmhr0))
-        #\--------------------------------------------------------------/#
-
-        patches_legend = [
-                          mpatches.Patch(color='black' , label='%s Total' % _spns_.upper()), \
-                          mpatches.Patch(color='red'    , label='%s Zenith Si080In250' % _ssfr_.upper()), \
-                          mpatches.Patch(color='magenta', label='%s Zenith Si120In350' % _ssfr_.upper()), \
-                          mpatches.Patch(color='blue'   , label='%s Nadir Si080In250' % _ssfr_.upper()), \
-                          mpatches.Patch(color='cyan'   , label='%s Nadir Si120In350' % _ssfr_.upper()), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=12)
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-    #\----------------------------------------------------------------------------/#
-#\----------------------------------------------------------------------------/#
-
-
-
-
-# functions for generating quicklook video
-#/----------------------------------------------------------------------------\#
-def generate_quicklook_video(date):
-
-    # quicklook_alp(date)
-    # quicklook_spns(date)
-    # ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description=_mission_.upper(), fname_html='%s_ql_%s_v2.html' % (_spns_, date_s))
-    pass
-#\----------------------------------------------------------------------------/#
-
-
-
-
 # main program
 #/----------------------------------------------------------------------------\#
 def main_process_data(date, run=True):
@@ -1666,7 +1438,8 @@ def main_process_data(date, run=True):
     #    - heading angle
     #    - motor pitch angle
     #    - motor roll angle
-    process_alp_data(date, run=False)
+    process_alp_data(date, run=True)
+    sys.exit()
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
@@ -1683,9 +1456,6 @@ def main_process_data(date, run=True):
     #    - spectral upwelling global
     # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
 #\----------------------------------------------------------------------------/#
-
-
-
 
 if __name__ == '__main__':
 

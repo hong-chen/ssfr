@@ -606,15 +606,15 @@ def find_offset_bokeh(
         x0 = data_dict['x0']-x_min
         x1 = data_dict['x1']-x_min
     else:
-        x0 = data_dict['x0']
-        x1 = data_dict['x1']
+        x0 = data_dict['x0'].copy()
+        x1 = data_dict['x1'].copy()
 
     if y_reset:
         y0 = (data_dict['y0']-np.nanmin(data_dict['y0'])) / (np.nanmax(data_dict['y0'])-np.nanmin(data_dict['y0']))
         y1 = (data_dict['y1']-np.nanmin(data_dict['y1'])) / (np.nanmax(data_dict['y1'])-np.nanmin(data_dict['y1']))
     else:
-        y0 = data_dict['y0']
-        y1 = data_dict['y1']
+        y0 = data_dict['y0'].copy()
+        y1 = data_dict['y1'].copy()
 
     x1_new = x1 + 0.0
     y1_new = y1 * 1.0
@@ -634,6 +634,8 @@ def find_offset_bokeh(
             'y1_new': y1_new[logic_notnan],
             }
     data1 = ColumnDataSource(data=data_dict1)
+
+    print(data_dict1['x1_new'])
     #\----------------------------------------------------------------------------/#
 
 
