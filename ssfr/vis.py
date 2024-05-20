@@ -683,7 +683,7 @@ def find_offset_bokeh(
     plt_offset.circle('x1_new', 'y1_new', source=data1, color='green', size=3, legend_label='With Offset')
 
     slider_x_offset = Slider(start=offset_x_range[0], end=offset_x_range[1], value=0.0, step=0.01, width=width_time, height=40, title='X Offset', format='0[.]00')
-    slider_y_offset = Slider(start=offset_y_range[0], end=offset_y_range[0], value=0.0, step=0.01, width=width_time, height=40, title='Y Offset', format='0[.]00')
+    slider_y_offset = Slider(start=offset_y_range[0], end=offset_y_range[1], value=0.0, step=0.01, width=width_time, height=40, title='Y Offset', format='0[.]00')
     slider_y_scale  = Slider(start=0.2, end=5.0, value=1, step=0.001, width=width_time, height=40, title='Y Scale Factor', format='0[.]000')
 
     plt_offset.legend.click_policy  = 'hide'
