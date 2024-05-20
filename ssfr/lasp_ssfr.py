@@ -187,6 +187,14 @@ class read_ssfr:
     Nchan = 256
     Ntemp = 11
     Nspec = 4
+    spec_info = {
+            0: 'zen|si',
+            1: 'zen|in',
+            2: 'nad|si',
+            3: 'nad|in',
+            }
+    count_base = -2**15
+    count_ceil = 2**15
 
     def __init__(
             self,
@@ -323,10 +331,20 @@ class read_ssfr:
             self,
             ):
 
-        self.data_raw['dset_num'] = np.zeros(self.data_raw['jday'].size, dtype=np.int32)
+        # saturation detection: if counts greater than the minimum dark counts or above
+        # 90% of the dynamic range (whichever the smallest) is determined as saturation
+        #/----------------------------------------------------------------------------\#
+        dynamic_range = self.count_ceil-self.count_base
+        dark_min = self.data_raw['count_raw'][self.data_raw['shutter']==1].min()
+        manual_min = 0.1*dynamic_range+self.count_base
+        count_saturation = self.count_ceil - min((dark_min, manual_min)) + self.count_base
+        self.data_raw['saturation'] = np.int_(self.data_raw['count_raw']>(count_saturation))
+        self.data_raw['saturation'][self.data_raw['shutter']==1, :, :] = 0
+        #\----------------------------------------------------------------------------/#
 
-        int_time_ = np.unique(self.data_raw['int_time'], axis=0)
-        self.Ndset, _ = int_time_.shape
+        self.data_raw['dset_num'] = np.zeros(self.data_raw['jday'].size, dtype=np.int32)
+        int_time_dset = np.unique(self.data_raw['int_time'], axis=0)
+        self.Ndset, _ = int_time_dset.shape
         if self.verbose:
             msg = '\nMessage [read_ssfr]:\nTotal of %d sets of integration times were found:' % self.Ndset
             print(msg)
@@ -336,17 +354,27 @@ class read_ssfr:
 
             # seperate data by integration times
             #/----------------------------------------------------------------------------\#
-            logic = (self.data_raw['int_time'][:, 0] == int_time_[idset, 0]) & \
-                    (self.data_raw['int_time'][:, 1] == int_time_[idset, 1]) & \
-                    (self.data_raw['int_time'][:, 2] == int_time_[idset, 2]) & \
-                    (self.data_raw['int_time'][:, 3] == int_time_[idset, 3])
+            logic = (self.data_raw['int_time'][:, 0] == int_time_dset[idset, 0]) & \
+                    (self.data_raw['int_time'][:, 1] == int_time_dset[idset, 1]) & \
+                    (self.data_raw['int_time'][:, 2] == int_time_dset[idset, 2]) & \
+                    (self.data_raw['int_time'][:, 3] == int_time_dset[idset, 3])
+
+            logic_light = logic & (self.data_raw['shutter']==0)
+            logic_dark  = logic & (self.data_raw['shutter']==1)
 
             self.data_raw['dset_num'][logic] = idset
+
+            saturation = np.int_(np.sum(self.data_raw['saturation'][logic], axis=1)>0)
             #\----------------------------------------------------------------------------/#
 
             dset_name = 'dset%d' % idset
+            paired_info = [item for pair in zip([self.spec_info[i] for i in range(self.Nspec)], int_time_dset[idset], np.sum(saturation, axis=0)) for item in pair]
             if self.verbose:
-                msg = '    %6s (%5d samples): zen|si=%3dms, zen|in=%3dms, nad|si=%3dms, nad|in=%3dms' % (dset_name, logic.sum(), *int_time_[idset])
+                msg = '    %-6s (%5d samples, %5d lights and %5d darks):\n\
+         %s=%3dms (%5d saturated)\n\
+         %s=%3dms (%5d saturated)\n\
+         %s=%3dms (%5d saturated)\n\
+         %s=%3dms (%5d saturated)' % (dset_name, logic.sum(), logic_light.sum(), logic_dark.sum(), *paired_info)
                 print(msg)
         #\----------------------------------------------------------------------------/#
 
@@ -359,27 +387,22 @@ class read_ssfr:
             dark_fallback=True,
             ):
 
-        spec_info = {
-                0: 'zen|si',
-                1: 'zen|in',
-                2: 'nad|si',
-                3: 'nad|in',
-                }
 
         shutter_dark_corr_spec = np.zeros((self.data_raw['shutter'].size, self.Nspec), dtype=self.data_raw['shutter'].dtype)
         shutter_dark_corr_spec[...] = -2
         count_dark_corr      = np.zeros_like(self.data_raw['count_raw'])
         count_dark_corr[...] = fill_value
 
-        # if dark_fallback:
-        #     count_dark_corr_fb      = np.zeros_like(self.data_raw['count_raw'])
-        #     count_dark_corr_fb[...] = fill_value
-
         fail_list = []
-
         total = self.data_raw['count_raw'].size
         count = 0
 
+        # go through each spectrometer and every integration time
+        # linear interpolation is default for dark correction when two neighbouring
+        # dark cycles are found. When there are no two adjacent dark cycles:
+        # 1) only one: fill in with average darks (done within the ssfr.corr.dark_corr)
+        # 2) no darks: fill in with average darks (done in this function when dark_fallback=True)
+        #/----------------------------------------------------------------------------\#
         for ispec in range(self.Nspec):
             int_time = np.unique(self.data_raw['int_time'][:, ispec])
             for int_time0 in int_time:
@@ -400,23 +423,13 @@ class read_ssfr:
                             fill_value=fill_value
                             )
 
-                    # if dark_fallback:
-                    #     _, count_dark_corr_fb[logic, :, ispec] = \
-                    #             ssfr.corr.dark_corr(
-                    #             self.data_raw['tmhr'][logic],
-                    #             self.data_raw['shutter'][logic],
-                    #             self.data_raw['count_raw'][logic, :, ispec],
-                    #             mode='mean',
-                    #             dark_extend=dark_extend,
-                    #             light_extend=light_extend,
-                    #             fill_value=fill_value
-                    #             )
-
                 else:
 
-                    msg = '\nWarning [read_ssfr]: cannot find corresponding darks for %s=%3dms at indices\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
+                    msg = '\nWarning [read_ssfr]: cannot find corresponding darks for %s=%3dms at indices\n    %s' % (self.spec_info[ispec], int_time0, np.where(logic_light)[0])
                     warnings.warn(msg)
                     fail_list.append([ispec, int_time0, logic_light])
+        #\----------------------------------------------------------------------------/#
+
 
         # a fallback process when no darks are found for corresponding integration times
         #/----------------------------------------------------------------------------\#
@@ -433,13 +446,14 @@ class read_ssfr:
 
                 shutter_dark_corr_spec[logic_light, ispec] = 0
                 count_dark_corr[logic_light, :, ispec] = self.data_raw['count_raw'][logic_light, :, ispec] - dark_mean[np.newaxis, :]
-                msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (where no darks were found) at indices\n    %s' % (spec_info[ispec], int_time0, np.where(logic_light)[0])
+                msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (where no darks were found) at indices\n    %s' % (self.spec_info[ispec], int_time0, np.where(logic_light)[0])
                 warnings.warn(msg)
-
-            # logic_fb = np.isnan(count_dark_corr) & (~np.isnan(count_dark_corr_fb))
-            # count_dark_corr[logic_fb] = count_dark_corr_fb[logic_fb]
         #\----------------------------------------------------------------------------/#
 
+
+        # since dark correction is performed over different spectrometers seperately,
+        # we only keep the when correction for four spectrometers are all successful
+        #/----------------------------------------------------------------------------\#
         shutter_dark_corr = np.zeros_like(self.data_raw['shutter'])
         shutter_dark_corr[np.sum(shutter_dark_corr_spec==0, axis=-1)==self.Nspec] = 0
         shutter_dark_corr[np.sum(shutter_dark_corr_spec==1, axis=-1)==self.Nspec] = 1
@@ -447,6 +461,7 @@ class read_ssfr:
 
         logic_fill = (shutter_dark_corr!=0)
         count_dark_corr[logic_fill, :, :] = fill_value
+        #\----------------------------------------------------------------------------/#
 
         self.data_raw['shutter_dark-corr'] = shutter_dark_corr
         self.data_raw['count_dark-corr'] = count_dark_corr
@@ -490,17 +505,28 @@ class read_ssfr:
 
         # processing data (unit counts: [counts/ms])
         #/----------------------------------------------------------------------------\#
+        saturation = self.data_raw['saturation'].copy()
+        saturation[self.data_raw['shutter_dark-corr']!=0, ...] = 0
+
         counts_zen = np.hstack((self.data_raw['count_per_ms_dark-corr'][:, logic_zen_si, 0], self.data_raw['count_per_ms_dark-corr'][:, logic_zen_in, 1]))
         counts_nad = np.hstack((self.data_raw['count_per_ms_dark-corr'][:, logic_nad_si, 2], self.data_raw['count_per_ms_dark-corr'][:, logic_nad_in, 3]))
+
+        saturation_zen = np.hstack((saturation[:, logic_zen_si, 0], saturation[:, logic_zen_in, 1]))
+        saturation_nad = np.hstack((saturation[:, logic_nad_si, 2], saturation[:, logic_nad_in, 3]))
 
         counts_zen = counts_zen[:, indices_sort_zen]
         counts_nad = counts_nad[:, indices_sort_nad]
 
+        saturation_zen = saturation_zen[:, indices_sort_zen]
+        saturation_nad = saturation_nad[:, indices_sort_nad]
+
         self.data_spec = {}
         self.data_spec['wvl_zen'] = wvl_zen
         self.data_spec['cnt_zen'] = counts_zen
+        self.data_spec['sat_zen'] = saturation_zen
         self.data_spec['wvl_nad'] = wvl_nad
         self.data_spec['cnt_nad'] = counts_nad
+        self.data_spec['sat_nad'] = saturation_nad
         #\----------------------------------------------------------------------------/#
 
 

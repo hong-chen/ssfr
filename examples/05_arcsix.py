@@ -950,6 +950,8 @@ def cdata_arcsix_ssfr_v0(
 
         ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames_ssfr, dark_corr_mode='interp', which_ssfr='lasp|%s' % which_ssfr.lower())
 
+        sys.exit()
+
         # data that are useful
         #   wvl_zen [nm]
         #   cnt_zen [counts/ms]
@@ -1716,12 +1718,12 @@ def main_process_data(date, run=True):
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+    process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
 
     # 5. SSFR-B - radiance (350nm - 2200nm)
     #    - spectral downwelling global
     #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
     sys.exit()
 #\----------------------------------------------------------------------------/#
 
