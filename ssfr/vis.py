@@ -578,7 +578,7 @@ def find_offset_bokeh(
         data_dict,
         offset_x_range=[-600, 600],
         offset_y_range=[-1.0, 1.0],
-        y_scale=True,
+        y_reset=True,
         x_reset=True,
         description=None,
         fname_html=None,
