@@ -59,12 +59,12 @@ _fdir_out_   = '%s/processed' % _fdir_data_
 
 
 _verbose_   = True
-_test_mode_ = False
+_offset_mode_ = True
 
 _fnames_ = {}
 
 _alp_time_offset_ = {
-        '20240517': -5.0*86400.0+5.2,
+        '20240517': 5.0,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -565,46 +565,17 @@ def cdata_arcsix_alp_v1(
 
         # calculate time offset
         #/----------------------------------------------------------------------------\#
-        # time_step = 1.0 # 1Hz data
-        # data_ref = data_hsk['alt']
-        # data_tar = ssfr.util.interp(data_hsk['jday'], data_alp['jday'], data_alp['alt'])
-        # time_offset = time_step * ssfr.util.cal_step_offset(data_ref, data_tar)
-        # print('Find a time offset of %.2f seconds between %s and %s.' % (time_offset, _alp_.upper(), _hsk_.upper()))
-
-        # figure
-        #/----------------------------------------------------------------------------\#
-        # if _test_mode_:
-        if True:
+        # bokeh plot
+        #/--------------------------------------------------------------\#
+        if _offset_mode_:
             data_offset = {
                     'x0': data_hsk['jday']*86400.0,
                     'y0': data_hsk['alt'],
-                    'x1': data_alp['jday']*86400.0,
-                    'y1': data_alp['alt'],
+                    'x1': data_alp['jday'][::10]*86400.0,
+                    'y1': data_alp['alt'][::10],
                     }
             ssfr.vis.find_offset_bokeh(data_offset, fname_html='alp_offset_check_%s.html' % date_s)
-            sys.exit()
-            plt.close('all')
-            fig = plt.figure(figsize=(8, 6))
-            # fig.suptitle('Figure')
-            # plot
-            #/--------------------------------------------------------------\#
-            ax1 = fig.add_subplot(111)
-            ax1.scatter(data_hsk['jday'], data_hsk['alt'], s=6, c='k', lw=0.0)
-            ax1.scatter(data_alp['jday'], data_alp['alt'], s=6, c='r', lw=0.0)
-            ax1.scatter(data_alp['jday']+_alp_time_offset_[date_s]/86400.0, data_alp['alt'], s=6, c='g', lw=0.0)
-            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            #\--------------------------------------------------------------/#
-            # save figure
-            #/--------------------------------------------------------------\#
-            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-            #\--------------------------------------------------------------/#
-            plt.show()
-            sys.exit()
-        #\----------------------------------------------------------------------------/#
-
+        #\--------------------------------------------------------------/#
         time_offset = _alp_time_offset_[date_s]
         #\----------------------------------------------------------------------------/#
 
@@ -645,7 +616,7 @@ def process_alp_data(date, run=True):
             fdir_out=fdir_out, run=run)
 
     fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0,
-            fdir_out=fdir_out, run=True)
+            fdir_out=fdir_out, run=run)
 
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     _fnames_['%s_alp_v0' % date_s] = fname_alp_v0
@@ -744,40 +715,22 @@ def cdata_arcsix_spns_v1(
 
         # check time offset
         #/----------------------------------------------------------------------------\#
-        time_offset = _spns_time_offset_[date_s]
-
-        if _test_mode_:
+        if _offset_mode_:
             index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
-            data_ref = data_spns_v0['tot/toa0'][index_wvl] * np.cos(np.deg2rad(data_hsk['sza']))
-            data_tar  = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday'], data_spns_v0['tot/flux'][:, index_wvl], mode='nearest')
+            data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
 
-            plt.close('all')
-            fig = plt.figure(figsize=(8, 6))
-            # fig.suptitle('Figure')
-            # plot
+            # bokeh plot
             #/--------------------------------------------------------------\#
-            ax1 = fig.add_subplot(111)
-            # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-            # ax1.scatter(x, y, s=6, c='k', lw=0.0)
-            # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-            ax1.plot(data_ref, color='k', ls='-')
-            ax1.plot(data_tar, color='r', ls='-')
-            # ax1.set_xlim(())
-            # ax1.set_ylim(())
-            # ax1.set_xlabel('')
-            # ax1.set_ylabel('')
-            # ax1.set_title('')
-            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            if _offset_mode_:
+                data_offset = {
+                        'x0': data_hsk['jday']*86400.0,
+                        'y0': data_hsk['alt'],
+                        'x1': data_spns_v0['tot/jday']*86400.0,
+                        'y1': data_y1,
+                        }
+                ssfr.vis.find_offset_bokeh(data_offset, fname_html='spns_offset_check_%s.html' % date_s)
             #\--------------------------------------------------------------/#
-            # save figure
-            #/--------------------------------------------------------------\#
-            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-            #\--------------------------------------------------------------/#
-            plt.show()
-            sys.exit()
+        time_offset = _spns_time_offset_[date_s]
         #\----------------------------------------------------------------------------/#
 
 
@@ -916,9 +869,10 @@ def process_spns_data(date, run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data,
-            fdir_out=fdir_out, run=run)
+            fdir_out=fdir_out, run=False)
     fname_spns_v1 = cdata_arcsix_spns_v1(date, fname_spns_v0, _fnames_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
+    sys.exit()
     # fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=run)
     fname_spns_v2 = cdata_arcsix_spns_v2(date, fname_spns_v1, _fnames_['%s_hsk_v0' % date_s],
@@ -1090,7 +1044,7 @@ def cdata_arcsix_ssfr_v1(
         elif which_ssfr == 'ssfr-b':
             time_offset = _ssfr2_time_offset_[date_s]
 
-        if _test_mode_:
+        if _offset_mode_:
         # if True:
             data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
             index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v2['tot/wvl']))
@@ -1720,12 +1674,12 @@ def main_process_data(date, run=True):
     #    - motor pitch angle
     #    - motor roll angle
     process_alp_data(date, run=False)
-    sys.exit()
 
     # 3. SPNS - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=False)
+    process_spns_data(date, run=run)
+    sys.exit()
 
     # 4. SSFR-A - irradiance (350nm - 2200nm)
     #    - spectral downwelling global

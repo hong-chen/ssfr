@@ -576,6 +576,7 @@ span_t.location = slider_t.value;
 
 def find_offset_bokeh(
         data_dict,
+        offset_range=[-600, 600],
         wvl0=None,
         tmhr0=None,
         tmhr_range=None,
@@ -610,20 +611,22 @@ def find_offset_bokeh(
     data_dict['x0'] = data_dict['x0']-x_min
     data_dict['x1'] = data_dict['x1']-x_min
 
-    data_dict['x1_new'] = data_dict['x1'] + 1.0
-    data_dict['y1_new'] = y1 * 1.0
+    x1_new = data_dict['x1'] + 0.0
+    y1_new = y1 * 1.0
 
+    logic_notnan = (~np.isnan(data_dict['x0'])) & (~np.isnan(data_dict['y0']))
     data_dict0 = {
-            'x0': data_dict['x0'],
-            'y0': data_dict['y0'],
+            'x0': data_dict['x0'][logic_notnan],
+            'y0': data_dict['y0'][logic_notnan],
             }
     data0 = ColumnDataSource(data=data_dict0)
 
+    logic_notnan = (~np.isnan(data_dict['x1'])) & (~np.isnan(data_dict['y1']))
     data_dict1 = {
-            'x1': data_dict['x1'],
-            'y1': data_dict['y1'],
-            'x1_new': data_dict['x1_new'],
-            'y1_new': data_dict['y1_new'],
+            'x1': data_dict['x1'][logic_notnan],
+            'y1': data_dict['y1'][logic_notnan],
+            'x1_new': x1_new[logic_notnan],
+            'y1_new': y1_new[logic_notnan],
             }
     data1 = ColumnDataSource(data=data_dict1)
     #\----------------------------------------------------------------------------/#
@@ -653,7 +656,7 @@ def find_offset_bokeh(
     yrange_s = -0.1
     yrange_e = 1.1
 
-    plt_time = figure(
+    plt_offset = figure(
                   height=height_time,
                   width=width_time,
                   title='Offset Check',
@@ -667,36 +670,55 @@ def find_offset_bokeh(
                   output_backend='webgl'
                   )
 
-    # htool = HoverTool(tooltips = [('Time', '$x{0.0000}'), ('Flux', '$y{0.0000}')], mode='mouse', line_policy='nearest')
-    # plt_time.add_tools(htool)
+    htool = HoverTool(tooltips = [('x', '$x{0.0000}'), ('y', '$y{0.0}')], mode='mouse', line_policy='nearest')
+    plt_offset.add_tools(htool)
 
-    # plt_time.varea(x=data.data['tmhr'], y1=np.zeros_like(data.data['tmhr']), y2=data.data['alt'], fill_alpha=0.2, fill_color='purple')
-    plt_time.circle('x0'    , 'y0'    , source=data0, color='black', size=3, legend_label='Reference')
-    plt_time.circle('x1'    , 'y1'    , source=data1, color='red', size=3, legend_label='Raw')
-    plt_time.circle('x1_new', 'y1_new', source=data1, color='green', size=3, legend_label='With Offset')
+    plt_offset.circle('x0'    , 'y0'    , source=data0, color='black', size=3, legend_label='Reference')
+    plt_offset.circle('x1'    , 'y1'    , source=data1, color='red', size=3, legend_label='Raw', visible=False)
+    plt_offset.circle('x1_new', 'y1_new', source=data1, color='green', size=3, legend_label='With Offset')
 
-    # slider_time = Slider(start=xrange_s, end=xrange_e, value=data.data['tmhr'][index_tmhr], step=0.0001, width=width_time, height=40, title='Time [Hour]', format='0[.]0000')
-    # vline_time  = Span(location=slider_time.value, dimension='height', line_color='black', line_dash='dashed', line_width=1)
-    # plt_time.add_layout(vline_time)
+    slider_x_offset = Slider(start=offset_range[0], end=offset_range[1], value=0.0, step=0.01, width=width_time, height=40, title='X Offset', format='0[.]00')
+    slider_y_offset = Slider(start=-1.0, end=1.0, value=0.0, step=0.001, width=width_time, height=40, title='Y Offset', format='0[.]000')
+    slider_y_scale  = Slider(start=0.5, end=2.0, value=1, step=0.01, width=width_time, height=40, title='Y Scale Factor', format='0[.]00')
 
-    plt_time.legend.click_policy  = 'hide'
-    plt_time.legend.location = 'top_right'
-    plt_time.legend.background_fill_alpha = 0.8
-    plt_time.title.text_font_size = '1.3em'
-    plt_time.title.align          = 'center'
-    plt_time.xaxis.axis_label_text_font_style = 'normal'
-    plt_time.yaxis.axis_label_text_font_style = 'normal'
-    plt_time.xaxis.axis_label_text_font_size  = '1.0em'
-    plt_time.xaxis.major_label_text_font_size = '1.0em'
-    plt_time.yaxis.axis_label_text_font_size  = '1.0em'
-    plt_time.yaxis.major_label_text_font_size = '1.0em'
+    plt_offset.legend.click_policy  = 'hide'
+    plt_offset.legend.location = 'top_right'
+    plt_offset.legend.background_fill_alpha = 0.8
+    plt_offset.title.text_font_size = '1.3em'
+    plt_offset.title.align          = 'center'
+    plt_offset.xaxis.axis_label_text_font_style = 'normal'
+    plt_offset.yaxis.axis_label_text_font_style = 'normal'
+    plt_offset.xaxis.axis_label_text_font_size  = '1.0em'
+    plt_offset.xaxis.major_label_text_font_size = '1.0em'
+    plt_offset.yaxis.axis_label_text_font_size  = '1.0em'
+    plt_offset.yaxis.major_label_text_font_size = '1.0em'
     #\----------------------------------------------------------------------------/#
 
-    # slider_time.js_on_change('value', slider_time_callback)
+    slider_callback = CustomJS(
+            args=dict(data1=data1, x_offset=slider_x_offset, y_offset=slider_y_offset, y_scale=slider_y_scale),
+            code=
+"""
+var x = data1.data['x1'];
+var y = data1.data['y1'];
+var i = 0;
+for (i = 0; i < x.length; i++) {
+    data1.data['x1_new'][i] = x[i]+x_offset.value;
+    data1.data['y1_new'][i] = y[i]*y_scale.value + y_offset.value;
+}
+data1.change.emit();
+"""
+        )
+
+    slider_x_offset.js_on_change('value', slider_callback)
+    slider_y_offset.js_on_change('value', slider_callback)
+    slider_y_scale.js_on_change('value', slider_callback)
 
     layout0 = layout(
                      children=[
-                               [plt_time],
+                               [plt_offset],
+                               [slider_x_offset],
+                               [slider_y_scale],
+                               [slider_y_offset],
                                ],
                      sizing_mode='fixed'
                      )
