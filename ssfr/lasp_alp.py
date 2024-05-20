@@ -155,7 +155,7 @@ class read_alp:
         index_tmhr= 0
         tmhr = (dataAll[:, index_tmhr] + time_offset) / 3600.0
         tmhr_int = np.int_(tmhr)
-        tmhr_unique, counts = np.unique(tmhr_int, return_counts=True)
+        tmhr_unique, counts = np.unique(tmhr_int[tmhr_int>0], return_counts=True)
         tmhrRef = tmhr_unique[np.argmax(counts)]
         while tmhrRef > 24.0:
             tmhr    -= 24.0
@@ -184,6 +184,11 @@ class read_alp:
         self.ang_hed     = ssfr.util.cal_heading(self.lon, self.lat)
         if date is not None:
             self.jday = ssfr.util.dtime_to_jday(date) + self.tmhr/24.0
+
+        if self.verbose:
+            msg = '\nMessage [read_alp]: Data processing complete.'
+            print(msg)
+
 
     def save_h5(self, fname):
 

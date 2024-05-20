@@ -529,10 +529,6 @@ def cdata_arcsix_alp_v0(
     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
     if run:
         fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
-        if _verbose_:
-            msg = '\nProcessing %s files:\n%s' % (_alp_.upper(), '\n'.join(fnames_alp))
-            print(msg)
-
         alp0 = ssfr.lasp_alp.read_alp(fnames_alp, date=date)
         alp0.save_h5(fname_h5)
     #\----------------------------------------------------------------------------/#
@@ -649,7 +645,7 @@ def process_alp_data(date, run=True):
     fdir_data = sorted(fdirs, key=os.path.getmtime)[-1]
 
     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data,
-            fdir_out=fdir_out, run=run)
+            fdir_out=fdir_out, run=True)
 
     fname_alp_v1 = cdata_arcsix_alp_v1(date, fname_alp_v0, fname_hsk_v0,
             fdir_out=fdir_out, run=True)
