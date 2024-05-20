@@ -950,13 +950,13 @@ def cdata_arcsix_ssfr_v0(
 
         ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames_ssfr, dark_corr_mode='interp', which_ssfr='lasp|%s' % which_ssfr.lower())
 
-        sys.exit()
-
         # data that are useful
         #   wvl_zen [nm]
         #   cnt_zen [counts/ms]
+        #   sat_zen: saturation tag, 1 means saturation
         #   wvl_nad [nm]
         #   cnt_nad [counts/ms]
+        #   sat_nad: saturation tag, 1 means saturation
         #/----------------------------------------------------------------------------\#
         f = h5py.File(fname_h5, 'w')
 
@@ -1050,11 +1050,11 @@ def cdata_arcsix_ssfr_v1(
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
                 #\----------------------------------------------------------------------------/#
             elif which_ssfr == 'ssfr-b':
-                factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.2
+                factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.0
                 data_cal_zen = {
                         'sec_resp': np.repeat(factor_zen, wvl_zen.size)
                         }
-                factor_nad = (np.nanmax(cnt_nad)-np.nanmin(cnt_nad)) / 2.2
+                factor_nad = (np.nanmax(cnt_nad)-np.nanmin(cnt_nad)) / 2.0
                 data_cal_nad = {
                         'sec_resp': np.repeat(factor_nad, wvl_nad.size)
                         }
@@ -1069,6 +1069,9 @@ def cdata_arcsix_ssfr_v1(
             for i in range(wvl_nad.size):
                 spec_nad[logic_dset, i] = cnt_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
             #\----------------------------------------------------------------------------/#
+
+            spec_zen[data_ssfr_v0['spec/sat_zen']] = 2.0
+            spec_nad[data_ssfr_v0['spec/sat_nad']] = 2.0
         #\----------------------------------------------------------------------------/#
 
 
@@ -1456,7 +1459,7 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     date_s = date.strftime('%Y%m%d')
 
     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data,
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
+            which_ssfr=which_ssfr, fdir_out=fdir_out, run=False)
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(date, fname_ssfr_v0, _fnames_['%s_hsk_v0' % date_s],
             which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
     sys.exit()
@@ -1724,7 +1727,6 @@ def main_process_data(date, run=True):
     #    - spectral downwelling global
     #    - spectral upwelling global
     # process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
-    sys.exit()
 #\----------------------------------------------------------------------------/#
 
 
