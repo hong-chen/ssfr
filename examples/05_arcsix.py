@@ -64,15 +64,19 @@ _fnames_ = {}
 
 _alp_time_offset_ = {
         '20240517': 5.0,
+        '20240521': -17.94,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
+        '20240521': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240517': 185.0,
+        '20240521': 182.0,
         }
 _ssfr2_time_offset_ = {
         '20240517': 115.0,
+        '20240521': -6.0,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -1345,8 +1349,9 @@ def run_offset_check(date):
     # SPNS vs HSK altitude (other ideas, TOA)
     #/----------------------------------------------------------------------------\#
     data_spns_v0 = ssfr.util.load_h5(_fnames_['%s_spns_v0' % date_s])
-    index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
+    index_wvl = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
     data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
+
     data_offset = {
             'x0': data_hsk['jday']*86400.0,
             'y0': data_hsk['alt'],
@@ -1359,9 +1364,32 @@ def run_offset_check(date):
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
-            description='SPNS Total vs. HSK Altitude (555 nm)',
-            fname_html='spns_offset_check_%s.html' % date_s)
+            description='SPNS Total vs. HSK Altitude (745 nm)',
+            fname_html='spns-alt_offset_check_%s.html' % date_s)
     #\----------------------------------------------------------------------------/#
+
+    # SPNS vs TOA
+    #/----------------------------------------------------------------------------\#
+    index_wvl = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
+    data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
+    data_y0   = data_spns_v0['tot/toa0'][index_wvl]*np.cos(np.deg2rad(data_hsk['sza']))
+
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_spns_v0['tot/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=[-300, 300],
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SPNS Total vs. TOA (745 nm)',
+            fname_html='spns-toa_offset_check_%s.html' % date_s)
+    #\----------------------------------------------------------------------------/#
+
 
     # SSFR-A vs SPNS
     #/----------------------------------------------------------------------------\#
@@ -1579,9 +1607,10 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
-             datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
+             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
+             datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
             ]
-    for date in dates:
+    for date in dates[::-1]:
         # main_process_data_v0(date, run=True)
         main_process_data_v0(date, run=False)
 

@@ -69,7 +69,8 @@ _wavelength_   = 550.0
 _fdir_data_ = 'data/%s/processed' % _mission_
 
 _tmhr_range_ = {
-        '20240517': [19.1661, 23.0681],
+        # '20240517': [19.1661, 23.0681],
+        '20240517': [10.1661, 26.0681],
         }
 
 
@@ -79,7 +80,8 @@ def download_geo_sat_img(
         extent=[-60.5, -58.5, 12, 14],
         satellite='GOES-East',
         instrument='ABI',
-        layer_name='Band2_Red_Visible_1km',
+        # layer_name='Band2_Red_Visible_1km',
+        layer_name=None,
         fdir_out='%s/sat_img' % _fdir_main_,
         dpi=200,
         ):
@@ -931,13 +933,13 @@ def main_pre_simple(
     dtime_s = er3t.util.jday_to_dtime((jday[0] *86400.0//interval  )*interval/86400.0)
     dtime_e = er3t.util.jday_to_dtime((jday[-1]*86400.0//interval+1)*interval/86400.0)
 
-    if False:
+    if True:
 
-        # download_polar_sat_img(
-        #     dtime_s,
-        #     extent=extent,
-        #     fdir_out=_fdir_sat_img_,
-        #     )
+        download_polar_sat_img(
+            dtime_s,
+            extent=extent,
+            fdir_out=_fdir_sat_img_,
+            )
 
         download_geo_sat_img(
             dtime_s,
@@ -1084,7 +1086,6 @@ def main_pre(
 
     # read data
     #/----------------------------------------------------------------------------\#
-
     # read in aircraft hsk data
     #/--------------------------------------------------------------\#
     fname_flt = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
@@ -1124,6 +1125,50 @@ def main_pre(
     # print(lat.shape)
     # print(tmhr.shape)
     # print(alt.shape)
+
+    # process satellite imagery
+    #/----------------------------------------------------------------------------\#
+    extent = get_extent(lon, lat, margin=0.2)
+
+    interval = 600.0 # seconds
+    dtime_s = er3t.util.jday_to_dtime((jday[0] *86400.0//interval  )*interval/86400.0)
+    dtime_e = er3t.util.jday_to_dtime((jday[-1]*86400.0//interval+1)*interval/86400.0)
+
+    if True:
+        download_geo_sat_img(
+            dtime_s,
+            dtime_e=dtime_e,
+            extent=extent,
+            fdir_out=_fdir_sat_img_,
+            )
+
+        download_polar_sat_img(
+            dtime_s,
+            extent=extent,
+            fdir_out=_fdir_sat_img_,
+            )
+
+    # get the avaiable satellite data and calculate the time in hour for each file
+    date_sat_s  = date.strftime('%Y-%m-%d')
+    fnames_sat_ = sorted(glob.glob('%s/*%sT*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    jday_sat_ = get_jday_sat_img(fnames_sat_)
+
+    jday_sat = np.sort(np.unique(jday_sat_))
+
+    fnames_sat = []
+
+    for jday_sat0 in jday_sat:
+
+        indices = np.where(jday_sat_==jday_sat0)[0]
+        fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
+        fnames_sat.append(fname0)
+
+    fnames_sat0 = fnames_sat.copy()
+    jday_sat0 = jday_sat.copy()
+    #\----------------------------------------------------------------------------/#
+    # print(jday_sat)
+    # print(fnames_sat)
+    sys.exit()
 
 
     # read in nav data
@@ -1193,48 +1238,6 @@ def main_pre(
     #\----------------------------------------------------------------------------/#
 
 
-    # process satellite imagery
-    #/----------------------------------------------------------------------------\#
-    extent = get_extent(lon, lat, margin=0.2)
-
-    interval = 600.0 # seconds
-    dtime_s = er3t.util.jday_to_dtime((jday[0] *86400.0//interval  )*interval/86400.0)
-    dtime_e = er3t.util.jday_to_dtime((jday[-1]*86400.0//interval+1)*interval/86400.0)
-
-    if False:
-        # download_geo_sat_img(
-        #     dtime_s,
-        #     dtime_e=dtime_e,
-        #     extent=extent,
-        #     fdir_out=_fdir_sat_img_,
-        #     )
-
-        download_polar_sat_img(
-            dtime_s,
-            extent=extent,
-            fdir_out=_fdir_sat_img_,
-            )
-
-    # get the avaiable satellite data and calculate the time in hour for each file
-    date_sat_s  = date.strftime('%Y-%m-%d')
-    fnames_sat_ = sorted(glob.glob('%s/*%sT*Z*.png' % (_fdir_sat_img_, date_sat_s)))
-    jday_sat_ = get_jday_sat_img(fnames_sat_)
-
-    jday_sat = np.sort(np.unique(jday_sat_))
-
-    fnames_sat = []
-
-    for jday_sat0 in jday_sat:
-
-        indices = np.where(jday_sat_==jday_sat0)[0]
-        fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
-        fnames_sat.append(fname0)
-
-    fnames_sat0 = fnames_sat.copy()
-    jday_sat0 = jday_sat.copy()
-    #\----------------------------------------------------------------------------/#
-    # print(jday_sat)
-    # print(fnames_sat)
 
 
     # pre-process the aircraft and satellite data
@@ -1386,14 +1389,16 @@ if __name__ == '__main__':
 
 
     dates = [
-            datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
+            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
+            datetime.datetime(2024, 5, 21), # ARCSIX test flight #1
         ]
 
     for date in dates[::-1]:
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        main_pre_simple(date)
+        # main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
