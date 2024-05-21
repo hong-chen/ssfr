@@ -64,13 +64,14 @@ _cam_          = 'nac'
 _fdir_main_    = 'data/%s/flt-vid' % _mission_
 _fdir_sat_img_ = 'data/%s/sat-img' % _mission_
 _fdir_cam_img_ = 'data/%s/2024-Spring/p3' % _mission_
-_wavelength_   = 550.0
+_wavelength_   = 555.0
 
 _fdir_data_ = 'data/%s/processed' % _mission_
+_fdir_tmp_graph_ = 'tmp-graph_flt-vid'
 
 _tmhr_range_ = {
         # '20240517': [19.1661, 23.0681],
-        '20240517': [10.1661, 26.0681],
+        '20240521': [10.1661, 26.0681],
         }
 
 
@@ -865,7 +866,7 @@ presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hira
         plt.show()
         sys.exit()
     else:
-        plt.savefig('tmp-graph/%5.5d.png' % n, bbox_inches='tight')
+        plt.savefig('%s/%5.5d.png' % (_fdir_tmp_graph_, n), bbox_inches='tight')
         plt.close(fig)
 
 
@@ -1134,7 +1135,7 @@ def main_pre(
     dtime_s = er3t.util.jday_to_dtime((jday[0] *86400.0//interval  )*interval/86400.0)
     dtime_e = er3t.util.jday_to_dtime((jday[-1]*86400.0//interval+1)*interval/86400.0)
 
-    if True:
+    if False:
         download_geo_sat_img(
             dtime_s,
             dtime_e=dtime_e,
@@ -1168,7 +1169,6 @@ def main_pre(
     #\----------------------------------------------------------------------------/#
     # print(jday_sat)
     # print(fnames_sat)
-    sys.exit()
 
 
     # read in nav data
@@ -1219,13 +1219,13 @@ def main_pre(
 
     # read in ssfr-b data
     #/--------------------------------------------------------------\#
-    fname_ssfr2 = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr2_.upper(), _platform_.upper(), date_s)
-    f_ssfr2 = h5py.File(fname_ssfr2, 'r')
-    ssfr2_zen_rad = f_ssfr2['zen/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    ssfr2_zen_wvl = f_ssfr2['zen/wvl'][...][::wvl_step_ssfr]
-    ssfr2_nad_rad = f_ssfr2['nad/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    ssfr2_nad_wvl = f_ssfr2['nad/wvl'][...][::wvl_step_ssfr]
-    f_ssfr2.close()
+    # fname_ssfr2 = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr2_.upper(), _platform_.upper(), date_s)
+    # f_ssfr2 = h5py.File(fname_ssfr2, 'r')
+    # ssfr2_zen_rad = f_ssfr2['zen/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    # ssfr2_zen_wvl = f_ssfr2['zen/wvl'][...][::wvl_step_ssfr]
+    # ssfr2_nad_rad = f_ssfr2['nad/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+    # ssfr2_nad_wvl = f_ssfr2['nad/wvl'][...][::wvl_step_ssfr]
+    # f_ssfr2.close()
     #\--------------------------------------------------------------/#
 
 
@@ -1279,10 +1279,10 @@ def main_pre(
     flt_trk['wvl_ssfr1_nad'] = ssfr1_nad_wvl
     flt_trk['f-down_toa']    = ssfr1_zen_toa
 
-    flt_trk['r-down_ssfr']   = ssfr2_zen_rad[logic, :]
-    flt_trk['r-up_ssfr']     = ssfr2_nad_rad[logic, :]
-    flt_trk['wvl_ssfr2_zen'] = ssfr2_zen_wvl
-    flt_trk['wvl_ssfr2_nad'] = ssfr2_nad_wvl
+    # flt_trk['r-down_ssfr']   = ssfr2_zen_rad[logic, :]
+    # flt_trk['r-up_ssfr']     = ssfr2_nad_rad[logic, :]
+    # flt_trk['wvl_ssfr2_zen'] = ssfr2_zen_wvl
+    # flt_trk['wvl_ssfr2_nad'] = ssfr2_nad_wvl
 
     # partition the flight track into multiple mini flight track segments
     flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)
@@ -1352,7 +1352,7 @@ def main_vid(
 
     date_s = date.strftime('%Y%m%d')
 
-    fdir = 'tmp-graph'
+    fdir = _fdir_tmp_graph_
     if os.path.exists(fdir):
         os.system('rm -rf %s' % fdir)
     os.makedirs(fdir)
@@ -1382,7 +1382,7 @@ def main_vid(
 
     # make video
     fname_mp4 = '%s-FLT-VID_%s_%s.mp4' % (_mission_.upper(), _platform_.upper(), date_s)
-    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "tmp-graph/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % fname_mp4)
+    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
 
 
 if __name__ == '__main__':
@@ -1397,8 +1397,8 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre_simple(date)
-        # main_pre(date)
+        # main_pre_simple(date)
+        main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames

@@ -1616,8 +1616,8 @@ if __name__ == '__main__':
 
         # run_offset_check(date)
 
-        main_process_data_v1(date, run=True)
-        # main_process_data_v1(date, run=False)
+        # main_process_data_v1(date, run=True)
+        main_process_data_v1(date, run=False)
 
         # main_process_data_v2(date, run=True)
     #\----------------------------------------------------------------------------/#
