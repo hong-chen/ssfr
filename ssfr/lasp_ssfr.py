@@ -433,6 +433,7 @@ class read_ssfr:
 
         # a fallback process when no darks are found for corresponding integration times
         #/----------------------------------------------------------------------------\#
+        #this piece might causing issues
         if dark_fallback:
 
             for item in fail_list:
@@ -440,8 +441,7 @@ class read_ssfr:
                 ispec, int_time0, logic_light = item
 
                 logic_dark = (shutter_dark_corr_spec[:, ispec] == 1)
-                count_base = -2**15
-                darks = (self.data_raw['count_raw'][logic_dark, :, ispec]-count_base) / (self.data_raw['int_time'][logic_dark, np.newaxis, ispec]) * int_time0 + count_base
+                darks = (self.data_raw['count_raw'][logic_dark, :, ispec]-self.count_base) / (self.data_raw['int_time'][logic_dark, np.newaxis, ispec]) * int_time0 + self.count_base
                 dark_mean = np.mean(darks, axis=0)
 
                 shutter_dark_corr_spec[logic_light, ispec] = 0
