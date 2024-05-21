@@ -63,6 +63,7 @@ _cam_          = 'nac'
 
 _fdir_main_    = 'data/%s/flt-vid' % _mission_
 _fdir_sat_img_ = 'data/%s/sat-img' % _mission_
+_fdir_cam_img_ = 'data/%s/2024-Spring/p3' % _mission_
 _wavelength_   = 550.0
 
 _fdir_data_ = 'data/%s/processed' % _mission_
@@ -1185,7 +1186,8 @@ def main_pre(
 
     # process camera imagery
     #/----------------------------------------------------------------------------\#
-    fdir_cam = '%s/%s-%s_%s_%s_v1' % (_fdir_data_, _mission_.upper(), _cam_.upper(), _platform_.upper(), date_s)
+    fdirs = er3t.util.get_all_folders(_fdir_cam_img_, pattern='*%4.4d*%2.2d*%2.2d*nac*jpg*' % (date.year, date.month, date.day))
+    fdir_cam = sorted(fdirs, key=os.path.getmtime)[-1]
     fnames_cam = sorted(glob.glob('%s/*.jpg' % (fdir_cam)))
     jday_cam = get_jday_cam_img(date, fnames_cam)
     #\----------------------------------------------------------------------------/#
