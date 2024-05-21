@@ -51,7 +51,7 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
 
-_fdir_hsk_   = 'data/%s/2024-Spring/p3/aux/hsk' % _mission_
+_fdir_hsk_   = 'data/arcsix/2024-Spring/p3/aux/hsk'
 _fdir_cal_   = 'data/%s/cal' % _mission_
 
 _fdir_data_  = 'data/%s' % _mission_
@@ -59,7 +59,6 @@ _fdir_out_   = '%s/processed' % _fdir_data_
 
 
 _verbose_   = True
-_offset_mode_ = False
 
 _fnames_ = {}
 
@@ -560,30 +559,7 @@ def cdata_arcsix_alp_v1(
         data_hsk = ssfr.util.load_h5(fname_hsk)
         data_alp = ssfr.util.load_h5(fname_v0)
 
-        # calculate time offset
-        #/----------------------------------------------------------------------------\#
-        # bokeh plot
-        #/--------------------------------------------------------------\#
-        if _offset_mode_:
-            data_offset = {
-                    'x0': data_hsk['jday']*86400.0,
-                    'y0': data_hsk['ang_rol'],
-                    'x1': data_alp['jday'][::10]*86400.0,
-                    'y1': data_alp['ang_rol_s'][::10],
-                    }
-            ssfr.vis.find_offset_bokeh(
-                    data_offset,
-                    offset_x_range=[-200, 200],
-                    offset_y_range=[-10, 10],
-                    x_reset=True,
-                    y_reset=False,
-                    description='ALP Pitch vs. HSK Pitch',
-                    # description='ALP Altitude vs. HSK Altitude',
-                    fname_html='alp_offset_check_%s.html' % date_s)
-            return
-        #\--------------------------------------------------------------/#
         time_offset = _alp_time_offset_[date_s]
-        #\----------------------------------------------------------------------------/#
 
 
         f = h5py.File(fname_h5, 'w')
@@ -717,29 +693,8 @@ def cdata_arcsix_spns_v1(
         #\----------------------------------------------------------------------------/#
 
 
-        # check time offset
-        #/----------------------------------------------------------------------------\#
-        if _offset_mode_:
-            index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
-            data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
-            # bokeh plot
-            #/--------------------------------------------------------------\#
-            data_offset = {
-                    'x0': data_hsk['jday']*86400.0,
-                    'y0': data_hsk['alt'],
-                    'x1': data_spns_v0['tot/jday']*86400.0,
-                    'y1': data_y1,
-                    }
-            ssfr.vis.find_offset_bokeh(
-                    data_offset,
-                    description='SPNS Total vs. HSK Altitude (555 nm)',
-                    fname_html='spns_offset_check_%s.html' % date_s)
-            #\--------------------------------------------------------------/#
-            return
 
         time_offset = _spns_time_offset_[date_s]
-        #\----------------------------------------------------------------------------/#
-
 
         # interpolate spn-s data to hsk time frame
         #/----------------------------------------------------------------------------\#
@@ -1012,12 +967,10 @@ def cdata_arcsix_ssfr_v1(
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
                 #\----------------------------------------------------------------------------/#
             elif which_ssfr == 'ssfr-b':
-                print(np.nanmin(cnt_zen))
                 factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.0
                 data_cal_zen = {
                         'sec_resp': np.repeat(factor_zen, wvl_zen.size)
                         }
-                print(np.nanmin(cnt_nad))
                 factor_nad = (np.nanmax(cnt_nad)-np.nanmin(cnt_nad)) / 2.0
                 data_cal_nad = {
                         'sec_resp': np.repeat(factor_nad, wvl_nad.size)
@@ -1044,30 +997,6 @@ def cdata_arcsix_ssfr_v1(
 
         # check time offset
         #/----------------------------------------------------------------------------\#
-
-        if _offset_mode_:
-            data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
-            index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v2['tot/wvl']))
-            data_y0 = data_spns_v2['tot/flux'][:, index_wvl_spns]
-
-            index_wvl_ssfr = np.argmin(np.abs(745.0-wvl_zen))
-            data_y1 = spec_zen[:, index_wvl_ssfr]
-
-            # bokeh plot
-            #/--------------------------------------------------------------\#
-            data_offset = {
-                    'x0': data_spns_v2['jday']*86400.0,
-                    'y0': data_y0,
-                    'x1': jday*86400.0,
-                    'y1': data_y1,
-                    }
-            ssfr.vis.find_offset_bokeh(
-                    data_offset,
-                    description='SSFR Zenith vs. SPNS Total (745nm)',
-                    fname_html='%s_offset_check_%s.html' % (which_ssfr, date_s))
-            #\--------------------------------------------------------------/#
-            return
-
         if which_ssfr == 'ssfr-a':
             time_offset = _ssfr1_time_offset_[date_s]
         elif which_ssfr == 'ssfr-b':
@@ -1423,8 +1352,154 @@ def process_ssfr_data(date, which_ssfr='ssfr-a', run=True):
     pass
 #\----------------------------------------------------------------------------/#
 
+def run_offset_check(date):
+
+    date_s = date.strftime('%Y%m%d')
+
+    # calculate time offset for ALP
+    #/----------------------------------------------------------------------------\#
+    data_hsk = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
+    data_alp = ssfr.util.load_h5(_fnames_['%s_alp_v0' % date_s])
+
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['ang_pit'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['ang_pit_s'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=[-300, 300],
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=False,
+            description='ALP Pitch vs. HSK Pitch',
+            fname_html='alp-pit_offset_check_%s.html' % date_s)
+
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['ang_rol'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['ang_rol_s'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=[-300, 300],
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=False,
+            description='ALP Roll vs. HSK Roll',
+            fname_html='alp-rol_offset_check_%s.html' % date_s)
+
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['alt'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['alt'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=[-300, 300],
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=False,
+            description='ALP Altitude vs. HSK Altitude',
+            fname_html='alp-alt_offset_check_%s.html' % date_s)
+
+    data_spns_v0 = ssfr.util.load_h5(_fnames_['%s_spns_v0' % date_s])
+    index_wvl = np.argmin(np.abs(555.0-data_spns_v0['tot/wvl']))
+    data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['alt'],
+            'x1': data_spns_v0['tot/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=[-300, 300],
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SPNS Total vs. HSK Altitude (555 nm)',
+            fname_html='spns_offset_check_%s.html' % date_s)
+
+    data_spns_v0 = ssfr.util.load_h5(_fnames_['%s_spns_v0' % date_s])
+    index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
+    data_y0 = data_spns_v0['tot/flux'][:, index_wvl_spns]
+
+    data_ssfr1_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v0' % date_s])
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_zen']))
+    data_y1 = data_ssfr1_v0['spec/cnt_zen'][:, index_wvl_ssfr]
+    data_offset = {
+            'x0': data_spns_v0['tot/jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_ssfr1_v0['raw/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=[-300, 300],
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SSFR-A Zenith Count vs. SPNS Total (745nm)',
+            fname_html='ssfr-a_offset_check_%s.html' % (date_s))
+
+
+    data_ssfr2_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr2_v0' % date_s])
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr2_v0['spec/wvl_zen']))
+    data_y1 = data_ssfr2_v0['spec/cnt_zen'][:, index_wvl_ssfr]
+    data_offset = {
+            'x0': data_spns_v0['tot/jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_ssfr2_v0['raw/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=[-300, 300],
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SSFR-B Zenith Count vs. SPNS Total (745nm)',
+            fname_html='ssfr-b_offset_check_%s.html' % (date_s))
+
+
 # main program
 #/----------------------------------------------------------------------------\#
+def main_process_data_instrument(date, run=True):
+
+    date_s = date.strftime('%Y%m%d')
+
+    # 1&2. aircraft housekeeping file (need to request data from the P-3 data system)
+    #      active leveling platform
+    #    - longitude
+    #    - latitude
+    #    - altitude
+    #    - UTC time
+    #    - pitch angle
+    #    - roll angle
+    #    - heading angle
+    #    - motor pitch angle
+    #    - motor roll angle
+    process_alp_data(date, run=False)
+
+    # 3. SPNS - irradiance (400nm - 900nm)
+    #    - spectral downwelling diffuse
+    #    - spectral downwelling global/direct (direct=global-diffuse)
+    process_spns_data(date, run=False)
+
+    # 4. SSFR-A - irradiance (350nm - 2200nm)
+    #    - spectral downwelling global
+    #    - spectral upwelling global
+    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+
+    # 5. SSFR-B - radiance (350nm - 2200nm)
+    #    - spectral downwelling global
+    #    - spectral upwelling global
+    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+
 def main_process_data_v0(date, run=True):
 
     fdir_out = _fdir_out_
@@ -1483,39 +1558,72 @@ def main_process_data_v0(date, run=True):
     _fnames_['%s_ssfr1_v0' % date_s] = fname_ssfr1_v0
     _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
 
+def main_process_data_v1(date, run=True, offset_check=True):
 
-
-def main_process_data(date, run=True):
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
 
     date_s = date.strftime('%Y%m%d')
 
-    # 1&2. aircraft housekeeping file (need to request data from the P-3 data system)
-    #      active leveling platform
-    #    - longitude
-    #    - latitude
-    #    - altitude
-    #    - UTC time
-    #    - pitch angle
-    #    - roll angle
-    #    - heading angle
-    #    - motor pitch angle
-    #    - motor roll angle
-    process_alp_data(date, run=False)
+    if offset_check:
 
-    # 3. SPNS - irradiance (400nm - 900nm)
-    #    - spectral downwelling diffuse
-    #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=False)
+        run_offset_check(date)
 
-    # 4. SSFR-A - irradiance (350nm - 2200nm)
-    #    - spectral downwelling global
-    #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+        return
 
-    # 5. SSFR-B - radiance (350nm - 2200nm)
-    #    - spectral downwelling global
-    #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+    # ALP v1: time synced with hsk time with time offset applied
+    #/----------------------------------------------------------------------------\#
+    fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+    # SPNS v1: time synced with hsk time with time offset applied
+    #/----------------------------------------------------------------------------\#
+    fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+    # SSFR-A v1: time synced with hsk time with time offset applied
+    #/----------------------------------------------------------------------------\#
+    fname_ssfr1_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr1_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+    # SSFR-B v1: time synced with hsk time with time offset applied
+    #/----------------------------------------------------------------------------\#
+    fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr2_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+    _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
+    _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
+    _fnames_['%s_ssfr1_v1' % date_s] = fname_ssfr1_v1
+    _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
+
+def main_process_data_v2(date, run=True):
+
+    """
+    v0: raw data directly read out from the data files
+    v1: data collocated/synced to aircraft nav
+    v2: attitude corrected data
+    """
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    # SPNS v2
+    #/----------------------------------------------------------------------------\#
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
+    #         fdir_out=fdir_out, run=run)
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+
+    _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
 #\----------------------------------------------------------------------------/#
 
 if __name__ == '__main__':
@@ -1539,7 +1647,14 @@ if __name__ == '__main__':
              datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
             ]
     for date in dates:
-        main_process_data_v0(date, run=True)
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
+
+        # main_process_data_v1(date, run=True, offset_check=True)
+        # main_process_data_v1(date, run=True, offset_check=False)
+        main_process_data_v1(date, run=False, offset_check=False)
+
+        main_process_data_v2(date, run=True)
     #\----------------------------------------------------------------------------/#
 
     pass

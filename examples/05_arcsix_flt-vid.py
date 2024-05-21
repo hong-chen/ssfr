@@ -1140,7 +1140,8 @@ def main_pre(
 
     # read in spns data
     #/--------------------------------------------------------------\#
-    fname_spns = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
+    # fname_spns = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
+    fname_spns = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
     f_spns = h5py.File(fname_spns, 'r')
     spns_tot_flux = f_spns['tot/flux'][...][logic0, :][::time_step, ::wvl_step_spns]
     spns_tot_wvl  = f_spns['tot/wvl'][...][::wvl_step_spns]

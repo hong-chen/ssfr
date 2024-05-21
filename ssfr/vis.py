@@ -613,7 +613,6 @@ def find_offset_bokeh(
     if y_reset:
         y0 = (data_dict['y0']-np.nanmin(data_dict['y0'])) / (np.nanmax(data_dict['y0'])-np.nanmin(data_dict['y0']))
         y1 = (data_dict['y1']-np.nanmin(data_dict['y1'])) / (np.nanmax(data_dict['y1'])-np.nanmin(data_dict['y1']))
-        x
     else:
         y0 = data_dict['y0'].copy()
         y1 = data_dict['y1'].copy()
