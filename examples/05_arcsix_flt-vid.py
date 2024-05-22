@@ -70,7 +70,7 @@ _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_tmp_graph_ = 'tmp-graph_flt-vid'
 
 _tmhr_range_ = {
-        # '20240517': [19.1661, 23.0681],
+        '20240517': [19.20, 23.00],
         '20240521': [14.80, 17.50],
         }
 
@@ -1370,7 +1370,7 @@ def main_vid(
     Npnt        = indices_trk.size
     indices     = np.arange(Npnt)
 
-    interval = 5
+    interval = 1
     indices_trk = indices_trk[::interval]
     indices_pnt = indices_pnt[::interval]
     indices     = indices[::interval]
@@ -1389,8 +1389,8 @@ if __name__ == '__main__':
 
 
     dates = [
-            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
-            datetime.datetime(2024, 5, 21), # ARCSIX test flight #1
+            datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
+            # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
         ]
 
     for date in dates[::-1]:
