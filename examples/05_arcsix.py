@@ -437,55 +437,72 @@ def cdata_arcsix_hsk_v0(
 
     date_s = date.strftime('%Y%m%d')
 
-    # this would change if we are processing IWG file
-    #/--------------------------------------------------------------\#
-    # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[0]
-    # data_hsk = ssfr.util.read_ict(fname)
-    # var_dict = {
-    #         'lon': 'longitude',
-    #         'lat': 'latitude',
-    #         'alt': 'gps_altitude',
-    #         'tmhr': 'tmhr',
-    #         'ang_pit': 'pitch_angle',
-    #         'ang_rol': 'roll_angle',
-    #         'ang_hed': 'true_heading',
-    #         }
-
-    fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
-    data_hsk = ssfr.util.read_iwg(fname)
-    var_dict = {
-            'tmhr': 'tmhr',
-            'lon': 'longitude',
-            'lat': 'latitude',
-            'alt': 'gps_msl_altitude',
-            'ang_pit': 'pitch',
-            'ang_rol': 'roll',
-            'ang_hed': 'true_heading',
-            }
-    #\--------------------------------------------------------------/#
-
-    # fake hsk for skywatch
-    #/----------------------------------------------------------------------------\#
-    # tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
-    # lon0 = -105.24227862207863 # skywatch longitude
-    # lat0 =  40.01097849056196  # skywatch latitude
-    # alt0 =  4.0                # skywatch altitude
-    # pit0 = 0.0
-    # rol0 = 0.0
-    # hed0 = 0.0
-    # data_hsk = {
-    #         'tmhr': {'data': tmhr, 'units': 'hour'},
-    #         'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
-    #         'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
-    #         'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
-    #         'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
-    #         'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
-    #         'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
-    #         }
-    #\----------------------------------------------------------------------------/#
-
     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
     if run:
+
+        # this would change if we are processing IWG file
+        #/--------------------------------------------------------------\#
+        # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[0]
+        # data_hsk = ssfr.util.read_ict(fname)
+        # var_dict = {
+        #         'lon': 'longitude',
+        #         'lat': 'latitude',
+        #         'alt': 'gps_altitude',
+        #         'tmhr': 'tmhr',
+        #         'ang_pit': 'pitch_angle',
+        #         'ang_rol': 'roll_angle',
+        #         'ang_hed': 'true_heading',
+        #         }
+        try:
+            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
+            data_hsk = ssfr.util.read_iwg_nsrc(fname)
+            var_dict = {
+                    'tmhr': 'tmhr',
+                    'lon': 'longitude',
+                    'lat': 'latitude',
+                    'alt': 'gps_alt_msl',
+                    'ang_pit': 'pitch_angle',
+                    'ang_rol': 'roll_angle',
+                    'ang_hed': 'true_heading',
+                    }
+        except Exception as error:
+            print(error)
+            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.mts' % (date.year, date.month, date.day))[0]
+            data_hsk = ssfr.util.read_iwg_mts(fname)
+            var_dict = {
+                    'tmhr': 'tmhr',
+                    'lon': 'longitude',
+                    'lat': 'latitude',
+                    'alt': 'gps_msl_altitude',
+                    'ang_pit': 'pitch',
+                    'ang_rol': 'roll',
+                    'ang_hed': 'true_heading',
+                    }
+        print()
+        print('Processing HSK file:'fname)
+        print()
+        #\--------------------------------------------------------------/#
+
+        # fake hsk for skywatch
+        #/----------------------------------------------------------------------------\#
+        # tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
+        # lon0 = -105.24227862207863 # skywatch longitude
+        # lat0 =  40.01097849056196  # skywatch latitude
+        # alt0 =  4.0                # skywatch altitude
+        # pit0 = 0.0
+        # rol0 = 0.0
+        # hed0 = 0.0
+        # data_hsk = {
+        #         'tmhr': {'data': tmhr, 'units': 'hour'},
+        #         'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
+        #         'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
+        #         'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
+        #         'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
+        #         'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
+        #         'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
+        #         }
+        #\----------------------------------------------------------------------------/#
+
 
         # solar geometries
         #/----------------------------------------------------------------------------\#
@@ -1607,17 +1624,17 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 27), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
-             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
-             datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
+             datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
+             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
             ]
     for date in dates[::-1]:
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
+        main_process_data_v0(date, run=True)
+        # main_process_data_v0(date, run=False)
 
-        # run_offset_check(date)
+        run_offset_check(date)
 
         # main_process_data_v1(date, run=True)
-        main_process_data_v1(date, run=False)
+        # main_process_data_v1(date, run=False)
 
         # main_process_data_v2(date, run=True)
     #\----------------------------------------------------------------------------/#

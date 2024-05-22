@@ -36,7 +36,8 @@ __all__ = [
         'cal_weighted_flux',
         'read_ict',
         'write_ict',
-        'read_iwg',
+        'read_iwg_nsrc',
+        'read_iwg_mts',
         'read_cabin',
         ]
 
@@ -454,7 +455,7 @@ def write_ict(
 
 
 
-def read_iwg_camp2ex(fname, date_ref=None, tmhr_range=None):
+def read_iwg_nsrc(fname, date_ref=None, tmhr_range=None):
 
     fname_xml = '%s.xml' % fname
 
@@ -497,7 +498,7 @@ def read_iwg_camp2ex(fname, date_ref=None, tmhr_range=None):
 
 
 
-def read_iwg(fname, date_ref=None, tmhr_range=None):
+def read_iwg_mts(fname, date_ref=None, tmhr_range=None):
 
     vnames = []
     with open(fname, 'r') as f:
