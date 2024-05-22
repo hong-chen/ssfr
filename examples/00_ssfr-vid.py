@@ -529,8 +529,9 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     for key in ['zen', 'nad']:
         var_plot = vars_plot['%s|spec' % key]
-        ax_wvl.plot(flt_trk0[var_plot['vname_wvl']], flt_trk0[var_plot['vname']][index_pnt, :],
-                color=var_plot['color'], marker='o', markersize=2, lw=0.5, markeredgewidth=0.0, alpha=1.0, zorder=10)
+        if var_plot['plot?']:
+            ax_wvl.plot(flt_trk0[var_plot['vname_wvl']], flt_trk0[var_plot['vname']][index_pnt, :],
+                    color=var_plot['color'], marker='o', markersize=2, lw=0.5, markeredgewidth=0.0, alpha=1.0, zorder=10)
         for key0 in ['si', 'in']:
             var_plot0 = vars_plot['%s|%s|dc' % (key, key0)]
             ax_wvl0.fill_between(flt_trk0[var_plot0['vname_wvl']], 0.0, flt_trk0[var_plot0['vname']][index_pnt, :],
@@ -567,7 +568,20 @@ def plot_video_frame(statements, test=False):
 
     # temperature plot
     #/----------------------------------------------------------------------------\#
-    temp = flt_trk0['temperature'][index_pnt, :]
+    temperatures = {
+            0: {'name': 'Ambient T' , 'units':'$^\circ C$'},
+            1: {'name': 'Zen In T'  , 'units':'$^\circ C$'},
+            2: {'name': 'Nad In T'  , 'units':'$^\circ C$'},
+            3: {'name': 'Plate T'   , 'units':'$^\circ C$'},
+            4: {'name': 'Zen In TEC', 'units':'$^\circ C$'},
+            5: {'name': 'Nad In TEC', 'units':'$^\circ C$'},
+            6: {'name': 'Wvl Con T' , 'units':'$^\circ C$'},
+            7: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
+            8: {'name': 'RH'        , 'units':'%%'},
+            9: {'name': 'Power Vol' , 'units':'V'},
+           10: {'name': 'N/A'       , 'units':''},
+            }
+    temp = flt_trk0['temperature'][index_pnt, :].copy()
     temp[(temp<-100.0)|(temp>50.0)] = np.nan
     temp_x = np.arange(temp.size)
     width = 0.6
@@ -575,11 +589,14 @@ def plot_video_frame(statements, test=False):
     logic_temp= ~np.isnan(temp)
     ax_temp0.bar(temp_x, temp, width=width, color=temp_color, lw=1.0, alpha=0.4, zorder=0, ec='gray')
     for i, x0 in enumerate(temp_x):
-        ax_temp0.text(x0, 0.0, 'T%d' % i, fontsize=12, color=temp_color, ha='center', va='center')
+        ax_temp0.text(x0, 0.0, temperatures[i]['name'], fontsize=10, color=temp_color, ha='center', va='center')
 
     for i, x0 in enumerate(temp_x[logic_temp]):
         y0 = temp[logic_temp][i]
-        ax_temp0.text(x0, y0, '%.1f$^\circ C$' % y0, fontsize=10, color=temp_color, ha='center', va='center')
+        ax_temp0.text(x0, y0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color=temp_color, ha='center', va='center')
+
+    for i, x0 in enumerate(temp_x[~logic_temp]):
+        ax_temp0.text(x0, -10.0, '%.1f%s' % (flt_trk0['temperature'][index_pnt, i], temperatures[x0]['units']), fontsize=10, color=temp_color, ha='center', va='center')
 
     ax_temp0.axhline(0.0, color=temp_color, lw=1.0, ls='-')
     ax_temp0.set_xlim(temp_x[0]-width/2.0, temp_x[-1]+width/2.0)
@@ -686,10 +703,24 @@ def main_pre(
 
     # read data
     #/----------------------------------------------------------------------------\#
-    data_ssfr_v0 = er3t.util.load_h5(fname_ssfr1_v0)
-    data_ssfr_v1 = er3t.util.load_h5(fname_ssfr1_v1)
+    try:
+        data_ssfr_v1 = er3t.util.load_h5(fname_ssfr1_v1)
+        has_v1 = True
+    except Exception as error:
+        print(error)
+        has_v1 = False
 
-    jday = data_ssfr_v1['v0/jday'][::time_step]
+    data_ssfr_v0 = er3t.util.load_h5(fname_ssfr1_v0)
+
+    if has_v1:
+        jday = data_ssfr_v1['v0/jday'][::time_step]
+        zen_spec = data_ssfr_v1['v0/spec_zen'][::time_step, ::wvl_step_ssfr]
+        nad_spec = data_ssfr_v1['v0/spec_nad'][::time_step, ::wvl_step_ssfr]
+        zen_wvl  = data_ssfr_v1['v0/wvl_zen'][::wvl_step_ssfr]
+        nad_wvl  = data_ssfr_v1['v0/wvl_nad'][::wvl_step_ssfr]
+    else:
+        jday = data_ssfr_v0['raw/jday'][::time_step]
+
     tmhr = (jday-int(jday[0]))*24.0
     sza  = np.zeros_like(jday)
     lon  = np.zeros_like(jday)
@@ -711,10 +742,6 @@ def main_pre(
     nad_si_wvl = data_ssfr_v0['raw/wvl_nad_si'][::wvl_step_ssfr]
     nad_in_wvl = data_ssfr_v0['raw/wvl_nad_in'][::wvl_step_ssfr]
 
-    zen_spec = data_ssfr_v1['v0/spec_zen'][::time_step, ::wvl_step_ssfr]
-    nad_spec = data_ssfr_v1['v0/spec_nad'][::time_step, ::wvl_step_ssfr]
-    zen_wvl  = data_ssfr_v1['v0/wvl_zen'][::wvl_step_ssfr]
-    nad_wvl  = data_ssfr_v1['v0/wvl_nad'][::wvl_step_ssfr]
 
     int_time = data_ssfr_v0['raw/int_time'][::time_step, :]
 
@@ -754,10 +781,11 @@ def main_pre(
     flt_trk['nad_si_wvl'] = nad_si_wvl
     flt_trk['nad_in_wvl'] = nad_in_wvl
 
-    flt_trk['zen_spec'] = zen_spec
-    flt_trk['nad_spec'] = nad_spec
-    flt_trk['zen_wvl']  = zen_wvl
-    flt_trk['nad_wvl']  = nad_wvl
+    if has_v1:
+        flt_trk['zen_spec'] = zen_spec
+        flt_trk['nad_spec'] = nad_spec
+        flt_trk['zen_wvl']  = zen_wvl
+        flt_trk['nad_wvl']  = nad_wvl
 
     flt_trk['int_time'] = int_time
     flt_trk['shutter']  = shutter
@@ -827,8 +855,8 @@ def main_vid(
 if __name__ == '__main__':
 
     dates = [
-            datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
-            # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
+            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
+            datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
         ]
 
     for date in dates[::-1]:
