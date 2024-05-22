@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -570,15 +570,15 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     temperatures = {
             0: {'name': 'Ambient T' , 'units':'$^\circ C$'},
-            1: {'name': 'Zen In T'  , 'units':'$^\circ C$'},
-            2: {'name': 'Nad In T'  , 'units':'$^\circ C$'},
-            3: {'name': 'Plate T'   , 'units':'$^\circ C$'},
-            4: {'name': 'Zen In TEC', 'units':'$^\circ C$'},
-            5: {'name': 'Nad In TEC', 'units':'$^\circ C$'},
-            6: {'name': 'Wvl Con T' , 'units':'$^\circ C$'},
-            7: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
-            8: {'name': 'RH'        , 'units':'%%'},
-            9: {'name': 'Power Vol' , 'units':'V'},
+            1: {'name': 'Power Vol' , 'units':'V'},
+            2: {'name': 'Zen In T'  , 'units':'$^\circ C$'},
+            3: {'name': 'Nad In T'  , 'units':'$^\circ C$'},
+            4: {'name': 'RH'        , 'units':'%'},
+            5: {'name': 'Zen In TEC', 'units':'$^\circ C$'},
+            6: {'name': 'Nad In TEC', 'units':'$^\circ C$'},
+            7: {'name': 'Wvl Con T' , 'units':'$^\circ C$'},
+            8: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
+            9: {'name': 'Plate T'   , 'units':'$^\circ C$'},
            10: {'name': 'N/A'       , 'units':''},
             }
     temp = flt_trk0['temperature'][index_pnt, :].copy()
@@ -589,14 +589,14 @@ def plot_video_frame(statements, test=False):
     logic_temp= ~np.isnan(temp)
     ax_temp0.bar(temp_x, temp, width=width, color=temp_color, lw=1.0, alpha=0.4, zorder=0, ec='gray')
     for i, x0 in enumerate(temp_x):
-        ax_temp0.text(x0, 0.0, temperatures[i]['name'], fontsize=10, color=temp_color, ha='center', va='center')
+        ax_temp0.text(x0, 0.0, temperatures[i]['name'], fontsize=10, color=temp_color, ha='center', va='bottom')
 
     for i, x0 in enumerate(temp_x[logic_temp]):
         y0 = temp[logic_temp][i]
-        ax_temp0.text(x0, y0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color=temp_color, ha='center', va='center')
+        ax_temp0.text(x0, y0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color='black', ha='center', va='center')
 
     for i, x0 in enumerate(temp_x[~logic_temp]):
-        ax_temp0.text(x0, -10.0, '%.1f%s' % (flt_trk0['temperature'][index_pnt, i], temperatures[x0]['units']), fontsize=10, color=temp_color, ha='center', va='center')
+        ax_temp0.text(x0, -10.0, '%.1f%s' % (flt_trk0['temperature'][index_pnt, x0], temperatures[x0]['units']), fontsize=10, color=temp_color, ha='center', va='center')
 
     ax_temp0.axhline(0.0, color=temp_color, lw=1.0, ls='-')
     ax_temp0.set_xlim(temp_x[0]-width/2.0, temp_x[-1]+width/2.0)
@@ -855,25 +855,25 @@ def main_vid(
 if __name__ == '__main__':
 
     dates = [
-            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
-            datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
+            datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
+            # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
         ]
 
     for date in dates[::-1]:
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        # main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
         #/----------------------------------------------------------------------------\#
-        main_vid(date, wvl0=_wavelength_)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
