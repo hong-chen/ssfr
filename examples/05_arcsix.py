@@ -63,7 +63,7 @@ _verbose_   = True
 _fnames_ = {}
 
 _alp_time_offset_ = {
-        '20240517': 5.0,
+        '20240517': 5.55,
         '20240521': -17.94,
         }
 _spns_time_offset_ = {
@@ -479,7 +479,7 @@ def cdata_arcsix_hsk_v0(
                     'ang_hed': 'true_heading',
                     }
         print()
-        print('Processing HSK file:'fname)
+        print('Processing HSK file:', fname)
         print()
         #\--------------------------------------------------------------/#
 
@@ -1628,12 +1628,12 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
             ]
     for date in dates[::-1]:
-        main_process_data_v0(date, run=True)
-        # main_process_data_v0(date, run=False)
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
 
-        run_offset_check(date)
+        # run_offset_check(date)
 
-        # main_process_data_v1(date, run=True)
+        main_process_data_v1(date, run=True)
         # main_process_data_v1(date, run=False)
 
         # main_process_data_v2(date, run=True)
