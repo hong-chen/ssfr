@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-# _ssfr_         = 'ssfr-a'
-_ssfr_         = 'ssfr-b'
+_ssfr_         = 'ssfr-a'
+# _ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -554,11 +554,12 @@ def plot_video_frame(statements, test=False):
 
     ax_wvl.set_ylim((0, 2))
 
-    patches_legend = [
-                      mpatches.Patch(color='blue', label='Zenith'), \
-                      mpatches.Patch(color='red' , label='Nadir'), \
-                     ]
-    ax_wvl.legend(handles=patches_legend, loc='lower right', fontsize=12)
+    if vars_plot['zen|spec']['plot?'] and vars_plot['nad|spec']['plot?']:
+        patches_legend = [
+                          mpatches.Patch(color='blue', label='Zenith'), \
+                          mpatches.Patch(color='red' , label='Nadir'), \
+                         ]
+        ax_wvl.legend(handles=patches_legend, loc='lower right', fontsize=12)
 
     ax_wvl0.set_ylim((0, count_ceil*2.0))
     ax_wvl0.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True, useOffset=True)
@@ -570,15 +571,15 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     temperatures = {
             0: {'name': 'Ambient T' , 'units':'$^\circ C$'},
-            1: {'name': 'Power Vol' , 'units':'V'},
-            2: {'name': 'Zen In T'  , 'units':'$^\circ C$'},
-            3: {'name': 'Nad In T'  , 'units':'$^\circ C$'},
+            1: {'name': 'Zen In T'  , 'units':'$^\circ C$'},
+            2: {'name': 'Nad In T'  , 'units':'$^\circ C$'},
+            3: {'name': 'Plate T'   , 'units':'$^\circ C$'},
             4: {'name': 'RH'        , 'units':'%'},
             5: {'name': 'Zen In TEC', 'units':'$^\circ C$'},
             6: {'name': 'Nad In TEC', 'units':'$^\circ C$'},
             7: {'name': 'Wvl Con T' , 'units':'$^\circ C$'},
-            8: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
-            9: {'name': 'Plate T'   , 'units':'$^\circ C$'},
+            8: {'name': 'N/A'       , 'units':''},
+            9: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
            10: {'name': 'N/A'       , 'units':''},
             }
     temp = flt_trk0['temperature'][index_pnt, :].copy()
@@ -592,11 +593,14 @@ def plot_video_frame(statements, test=False):
         ax_temp0.text(x0, 0.0, temperatures[i]['name'], fontsize=10, color=temp_color, ha='center', va='bottom')
 
     for i, x0 in enumerate(temp_x[logic_temp]):
-        y0 = temp[logic_temp][i]
-        ax_temp0.text(x0, y0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color='black', ha='center', va='center')
+        if temperatures[x0]['name'] != 'N/A':
+            y0 = temp[logic_temp][i]
+            ax_temp0.text(x0, y0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color='black', ha='center', va='center')
 
     for i, x0 in enumerate(temp_x[~logic_temp]):
-        ax_temp0.text(x0, -10.0, '%.1f%s' % (flt_trk0['temperature'][index_pnt, x0], temperatures[x0]['units']), fontsize=10, color=temp_color, ha='center', va='center')
+        if temperatures[x0]['name'] != 'N/A':
+            y0 = flt_trk0['temperature'][index_pnt, x0]
+            ax_temp0.text(x0, -10.0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color='black', ha='center', va='center')
 
     ax_temp0.axhline(0.0, color=temp_color, lw=1.0, ls='-')
     ax_temp0.set_xlim(temp_x[0]-width/2.0, temp_x[-1]+width/2.0)
@@ -836,7 +840,7 @@ def main_vid(
     Npnt        = indices_trk.size
     indices     = np.arange(Npnt)
 
-    interval = 5
+    interval = 1
     indices_trk = indices_trk[::interval]
     indices_pnt = indices_pnt[::interval]
     indices     = indices[::interval]
@@ -855,8 +859,9 @@ def main_vid(
 if __name__ == '__main__':
 
     dates = [
-            datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
+            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
+            datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration test
         ]
 
     for date in dates[::-1]:
@@ -882,7 +887,8 @@ if __name__ == '__main__':
     fname = '%s/%s-%s-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _ssfr_.upper(), _platform_.upper(), date_s)
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
     # statements = (flt_sim0, 0, 243, 1730)
-    statements = (flt_sim0, 1, 443, 1730)
+    # statements = (flt_sim0, 1, 443, 1730)
+    statements = (flt_sim0, 0, 0, 10)
     plot_video_frame(statements, test=True)
     #\----------------------------------------------------------------------------/#
 
