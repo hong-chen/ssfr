@@ -80,6 +80,19 @@ def read_ssfr_raw(
     shutter  (numpy array)[N/A]    : shutter status (1:closed(dark), 0:open(light))
     int_time (numpy array)[ms]     : integration time of Silicon and InGaAs for both zenith and nadir
     temp (numpy array)    [Celsius]: temperature variables
+                                     temp = {
+                                            0: {'name': 'Ambient T' , 'units':'$^\circ C$'},
+                                            1: {'name': 'Zen In T'  , 'units':'$^\circ C$'},
+                                            2: {'name': 'Nad In T'  , 'units':'$^\circ C$'},
+                                            3: {'name': 'Plate T'   , 'units':'$^\circ C$'},
+                                            4: {'name': 'RH'        , 'units':'%'},
+                                            5: {'name': 'Zen In TEC', 'units':'$^\circ C$'},
+                                            6: {'name': 'Nad In TEC', 'units':'$^\circ C$'},
+                                            7: {'name': 'Wvl Con T' , 'units':'$^\circ C$'},
+                                            8: {'name': 'N/A'       , 'units':''},
+                                            9: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
+                                           10: {'name': 'N/A'       , 'units':''},
+                                            }
     jday_ARINC (numpy array)[day]  : julian days (w.r.t 0001-01-01) of aircraft nagivation system
     jday_cRIO(numpy array)[day]    : julian days (w.r.t 0001-01-01) of SSFR Inertial Navigation System (INS)
     qual_flag(numpy array)[N/A]    : quality flag(1:good, 0:bad)
