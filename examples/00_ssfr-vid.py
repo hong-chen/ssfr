@@ -840,7 +840,7 @@ def main_vid(
     Npnt        = indices_trk.size
     indices     = np.arange(Npnt)
 
-    interval = 1
+    interval = 3
     indices_trk = indices_trk[::interval]
     indices_pnt = indices_pnt[::interval]
     indices     = indices[::interval]
@@ -859,9 +859,9 @@ def main_vid(
 if __name__ == '__main__':
 
     dates = [
-            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
-            # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
-            datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration test
+            datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
+            datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
+            # datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration test
         ]
 
     for date in dates[::-1]:
