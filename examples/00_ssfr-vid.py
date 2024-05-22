@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-_ssfr_         = 'ssfr-a'
-# _ssfr_         = 'ssfr-b'
+# _ssfr_         = 'ssfr-a'
+_ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -553,26 +553,34 @@ def plot_video_frame(statements, test=False):
 
     ax_wvl.set_ylim((0, 2))
 
-    # patches_legend = [
-    #                   mpatches.Patch(color='blue', label='Zenith'), \
-    #                   mpatches.Patch(color='red' , label='Nadir'), \
-    #                  ]
-    # ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=16)
+    patches_legend = [
+                      mpatches.Patch(color='blue', label='Zenith'), \
+                      mpatches.Patch(color='red' , label='Nadir'), \
+                     ]
+    ax_wvl.legend(handles=patches_legend, loc='lower right', fontsize=12)
 
     ax_wvl0.set_ylim((0, count_ceil*2.0))
     ax_wvl0.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True, useOffset=True)
     ax_wvl0.set_ylabel('Digital Counts', labelpad=18, rotation=270)
     #\----------------------------------------------------------------------------/#
 
+
+    # temperature plot
+    #/----------------------------------------------------------------------------\#
     temp = flt_trk0['temperature'][index_pnt, :]
     temp[(temp<-100.0)|(temp>50.0)] = np.nan
     temp_x = np.arange(temp.size)
     width = 0.6
     temp_color='gray'
+    logic_temp= ~np.isnan(temp)
     ax_temp0.bar(temp_x, temp, width=width, color=temp_color, lw=1.0, alpha=0.4, zorder=0, ec='gray')
     for i, x0 in enumerate(temp_x):
-        ax_temp0.text(x0,     0.0,                  'T%d' % i, fontsize=12, color=temp_color, ha='center', va='center')
-        ax_temp0.text(x0, temp[i], '%.1f$^\circ C$' % temp[i], fontsize=10, color=temp_color, ha='center', va='center')
+        ax_temp0.text(x0, 0.0, 'T%d' % i, fontsize=12, color=temp_color, ha='center', va='center')
+
+    for i, x0 in enumerate(temp_x[logic_temp]):
+        y0 = temp[logic_temp][i]
+        ax_temp0.text(x0, y0, '%.1f$^\circ C$' % y0, fontsize=10, color=temp_color, ha='center', va='center')
+
     ax_temp0.axhline(0.0, color=temp_color, lw=1.0, ls='-')
     ax_temp0.set_xlim(temp_x[0]-width/2.0, temp_x[-1]+width/2.0)
     ax_temp0.set_ylim((-100, 50))
@@ -581,7 +589,11 @@ def plot_video_frame(statements, test=False):
     ax_temp0.axis('off')
     ax_temp0_.tick_params(top=False, labeltop=False, left=False, labelleft=False, right=False, labelright=False, bottom=False, labelbottom=False)
     ax_temp0_.axis('off')
+    #\----------------------------------------------------------------------------/#
 
+
+    # time series
+    #/----------------------------------------------------------------------------\#
     for itrk in range(index_trk+1):
 
         flt_trk = flt_sim0.flt_trks[itrk]
@@ -629,6 +641,7 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_ylim((count_base-5000, count_ceil+5000))
     ax_tms.set_ylabel('Digital Counts')
     ax_tms.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True)
+    #\----------------------------------------------------------------------------/#
 
 
     # figure settings
