@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -429,10 +429,10 @@ def plot_video_frame(statements, test=False):
     # spetral irradiance
     ax_wvl  = fig.add_subplot(gs[10:14, :])
     ax_wvl0 = ax_wvl.twinx()
+    ax_tms0 = ax_wvl.twinx().twiny()
 
     # time series
     ax_tms  = fig.add_subplot(gs[14:, :])
-    # ax_tms0 = ax_tms.twinx()
 
     fig.subplots_adjust(hspace=100.0, wspace=5.0)
     #\----------------------------------------------------------------------------/#
@@ -458,8 +458,12 @@ def plot_video_frame(statements, test=False):
             'nad|in': {'full_name': 'Nadir InGaAs'  , 'int_time': int_time_nad_in_current},
             }
 
-    Nchan_zen_si = 75
-    Nchan_zen_in = 202
+    Nchan = {
+            'zen|si': 75,
+            'zen|in': 202,
+            }
+    Nchan['nad|si'] = np.argmin(np.abs(flt_trk0['zen_si_wvl'][Nchan['zen|si']]-flt_trk0['nad_si_wvl']))
+    Nchan['nad|in'] = np.argmin(np.abs(flt_trk0['zen_in_wvl'][Nchan['zen|in']]-flt_trk0['nad_in_wvl']))
 
     for key in axes_spec.keys():
         ax_spec  = axes_spec[key]
@@ -488,7 +492,7 @@ def plot_video_frame(statements, test=False):
 
         if key in ['zen|si', 'nad|si']:
             ax_spec.set_ylabel('Digital Counts')
-            ax_spec.axvline(Nchan_zen_si, color=var_plot_dc['color'], ls='--')
+            ax_spec.axvline(Nchan[key], color=var_plot_dc['color'], ls='--')
 
         if key in ['nad|si', 'nad|in']:
             ax_spec.set_xlabel('Channel Number')
@@ -496,8 +500,8 @@ def plot_video_frame(statements, test=False):
         ax_spec.set_title('%s (%3d ms)' % (spec_info[key]['full_name'], spec_info[key]['int_time']), color=var_plot_dc['color'])
 
         ax_spec0.set_ylim((-2000, dynamic_range+2000))
-        ax_spec0.yaxis.set_major_locator(FixedLocator(np.arange(-40000, 80001, 10000)+(count_ceil-30000)))
-        ax_spec0.yaxis.set_minor_locator(FixedLocator(np.arange(-40000, 80001,  5000)+(count_ceil-30000)))
+        ax_spec0.yaxis.set_major_locator(FixedLocator(np.arange(-40000, 80001, 20000)))
+        ax_spec0.yaxis.set_minor_locator(FixedLocator(np.arange(-40000, 80001,  5000)))
         ax_spec0.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True, useOffset=True)
 
         ax_spec0.set_frame_on(True)
@@ -509,7 +513,7 @@ def plot_video_frame(statements, test=False):
 
         if key in ['zen|in', 'nad|in']:
             ax_spec0.set_ylabel('Digital Counts', color='green', rotation=270, labelpad=18)
-            ax_spec.axvline(Nchan_zen_in, color=var_plot_dc['color'], ls='--')
+            ax_spec.axvline(Nchan[key], color=var_plot_dc['color'], ls='--')
 
     patches_legend = [
                       mpatches.Patch(color='black' , label='Raw Counts'), \
@@ -529,10 +533,7 @@ def plot_video_frame(statements, test=False):
             var_plot0 = vars_plot['%s|%s|dc' % (key, key0)]
             ax_wvl0.fill_between(flt_trk0[var_plot0['vname_wvl']], 0.0, flt_trk0[var_plot0['vname']][index_pnt, :],
                     color=var_plot0['color'], lw=0.0,  alpha=0.3, zorder=5)
-            if key0 == 'si':
-                ax_wvl0.axvline(flt_trk0[var_plot0['vname_wvl']][Nchan_zen_si], color=var_plot0['color'], ls='--')
-            elif key0 == 'in':
-                ax_wvl0.axvline(flt_trk0[var_plot0['vname_wvl']][Nchan_zen_in], color=var_plot0['color'], ls='--')
+            ax_wvl0.axvline(flt_trk0[var_plot0['vname_wvl']][Nchan['%s|%s' % (key, key0)]], color=var_plot0['color'], ls='--')
 
     ax_wvl.axvline(950.0, color='black', lw=1.0, alpha=1.0, zorder=1, ls=':')
     ax_wvl.axhline(0.0  , color='black', lw=1.0, alpha=1.0, zorder=1)
@@ -543,19 +544,23 @@ def plot_video_frame(statements, test=False):
     ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
     ax_wvl.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 2.1, 0.1)))
     ax_wvl.set_xlabel('Wavelength [nm]')
-    ax_wvl.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
-
-    patches_legend = [
-                      mpatches.Patch(color='blue', label='Zenith'), \
-                      mpatches.Patch(color='red' , label='Nadir'), \
-                     ]
-    ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=16)
-
-    ax_wvl0.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True, useOffset=True)
-    ax_wvl0.set_ylabel('Digital Counts', labelpad=18, rotation=270)
+    if _ssfr_ == 'ssfr-a':
+        ax_wvl.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
+    elif _ssfr_ == 'ssfr-b':
+        ax_wvl.set_ylabel('Rad. [$\mathrm{W m^{-2} nm^{-1} sr^{-1}}$]')
 
     ax_wvl.set_ylim((0, 2))
+
+    # patches_legend = [
+    #                   mpatches.Patch(color='blue', label='Zenith'), \
+    #                   mpatches.Patch(color='red' , label='Nadir'), \
+    #                  ]
+    # ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=16)
+
     ax_wvl0.set_ylim((0, count_ceil*2.0))
+    ax_wvl0.axis('off')
+    # ax_wvl0.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True, useOffset=True)
+    # ax_wvl0.set_ylabel('Digital Counts', labelpad=18, rotation=270)
     #\----------------------------------------------------------------------------/#
 
     for itrk in range(index_trk+1):
@@ -564,6 +569,9 @@ def plot_video_frame(statements, test=False):
 
         logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<=tmhr_current)
         logic_trans = np.logical_not(logic_solid)
+
+        logic_solid0 = (flt_trk['tmhr']>=(tmhr_current-0.5*tmhr_length)) & (flt_trk['tmhr']<=tmhr_current)
+        logic_trans0 = np.logical_not(logic_solid0)
 
         if itrk == index_trk:
             alpha_trans = 0.0
@@ -580,12 +588,8 @@ def plot_video_frame(statements, test=False):
 
             if var_plot['plot?']:
 
-                if '|si|' in vname:
-                    tms_y = flt_trk[var_plot['vname']][:, Nchan_zen_si]
-                    tms_y0 = flt_trk[var_plot['vname']][:, Nchan_zen_si] - flt_trk[var_plot0['vname']][:, Nchan_zen_si]
-                elif '|in|' in vname:
-                    tms_y = flt_trk[var_plot['vname']][:, Nchan_zen_in]
-                    tms_y0 = flt_trk[var_plot['vname']][:, Nchan_zen_in] - flt_trk[var_plot0['vname']][:, Nchan_zen_in]
+                tms_y = flt_trk[var_plot['vname']][:, Nchan[key]]
+                tms_y0 = flt_trk[var_plot['vname']][:, Nchan[key]] - flt_trk[var_plot0['vname']][:, Nchan[key]]
 
                 ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=15, lw=0.0, zorder=var_plot['zorder'], alpha=0.8)
                 ax_tms.plot(flt_trk['tmhr'][logic_solid], tms_y0[logic_solid], lw=0.5, color=var_plot0['color'], zorder=10, alpha=1.0)
@@ -607,9 +611,12 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_ylabel('Digital Counts')
     ax_tms.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True)
 
+
+    ax_tms0.axis('off')
+
     # figure settings
     #/----------------------------------------------------------------------------\#
-    title_fig = '%s UTC' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'))
+    title_fig = '%s UTC (%s)' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'), _ssfr_.upper())
     fig.suptitle(title_fig, y=0.96, fontsize=20)
     #\----------------------------------------------------------------------------/#
 
