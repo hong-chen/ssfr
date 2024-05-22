@@ -46,7 +46,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -429,7 +429,9 @@ def plot_video_frame(statements, test=False):
     # spetral irradiance
     ax_wvl  = fig.add_subplot(gs[10:14, :])
     ax_wvl0 = ax_wvl.twinx()
-    ax_tms0 = ax_wvl.twinx().twiny()
+
+    ax_temp0_= ax_wvl.twinx()
+    ax_temp0 = ax_temp0_.twiny()
 
     # time series
     ax_tms  = fig.add_subplot(gs[14:, :])
@@ -537,7 +539,7 @@ def plot_video_frame(statements, test=False):
 
     ax_wvl.axvline(950.0, color='black', lw=1.0, alpha=1.0, zorder=1, ls=':')
     ax_wvl.axhline(0.0  , color='black', lw=1.0, alpha=1.0, zorder=1)
-    ax_wvl.grid(lw=0.5, zorder=0)
+    # ax_wvl.grid(lw=0.5, zorder=0)
     ax_wvl.set_xlim((200, 2400))
     ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(200, 2401, 200)))
     ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
@@ -558,10 +560,27 @@ def plot_video_frame(statements, test=False):
     # ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=16)
 
     ax_wvl0.set_ylim((0, count_ceil*2.0))
-    ax_wvl0.axis('off')
-    # ax_wvl0.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True, useOffset=True)
-    # ax_wvl0.set_ylabel('Digital Counts', labelpad=18, rotation=270)
+    ax_wvl0.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True, useOffset=True)
+    ax_wvl0.set_ylabel('Digital Counts', labelpad=18, rotation=270)
     #\----------------------------------------------------------------------------/#
+
+    temp = flt_trk0['temperature'][index_pnt, :]
+    temp[(temp<-100.0)|(temp>50.0)] = np.nan
+    temp_x = np.arange(temp.size)
+    width = 0.6
+    temp_color='gray'
+    ax_temp0.bar(temp_x, temp, width=width, color=temp_color, lw=1.0, alpha=0.4, zorder=0, ec='gray')
+    for i, x0 in enumerate(temp_x):
+        ax_temp0.text(x0,     0.0,                  'T%d' % i, fontsize=12, color=temp_color, ha='center', va='center')
+        ax_temp0.text(x0, temp[i], '%.1f$^\circ C$' % temp[i], fontsize=10, color=temp_color, ha='center', va='center')
+    ax_temp0.axhline(0.0, color=temp_color, lw=1.0, ls='-')
+    ax_temp0.set_xlim(temp_x[0]-width/2.0, temp_x[-1]+width/2.0)
+    ax_temp0.set_ylim((-100, 50))
+
+    ax_temp0.tick_params(top=False, labeltop=False, left=False, labelleft=False, right=False, labelright=False, bottom=False, labelbottom=False)
+    ax_temp0.axis('off')
+    ax_temp0_.tick_params(top=False, labeltop=False, left=False, labelleft=False, right=False, labelright=False, bottom=False, labelbottom=False)
+    ax_temp0_.axis('off')
 
     for itrk in range(index_trk+1):
 
@@ -570,8 +589,8 @@ def plot_video_frame(statements, test=False):
         logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<=tmhr_current)
         logic_trans = np.logical_not(logic_solid)
 
-        logic_solid0 = (flt_trk['tmhr']>=(tmhr_current-0.5*tmhr_length)) & (flt_trk['tmhr']<=tmhr_current)
-        logic_trans0 = np.logical_not(logic_solid0)
+        # logic_solid0 = (flt_trk['tmhr']>=(tmhr_current-0.5*tmhr_length)) & (flt_trk['tmhr']<=tmhr_current)
+        # logic_trans0 = np.logical_not(logic_solid0)
 
         if itrk == index_trk:
             alpha_trans = 0.0
@@ -611,8 +630,6 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_ylabel('Digital Counts')
     ax_tms.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True)
 
-
-    ax_tms0.axis('off')
 
     # figure settings
     #/----------------------------------------------------------------------------\#
@@ -805,17 +822,17 @@ if __name__ == '__main__':
 
         # prepare flight data
         #/----------------------------------------------------------------------------\#
-        # main_pre(date)
+        main_pre(date)
         #\----------------------------------------------------------------------------/#
 
         # generate video frames
         #/----------------------------------------------------------------------------\#
-        # main_vid(date, wvl0=_wavelength_)
+        main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    # sys.exit()
+    sys.exit()
 
     # test
     #/----------------------------------------------------------------------------\#
