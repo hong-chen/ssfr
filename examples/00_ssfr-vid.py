@@ -540,7 +540,6 @@ def plot_video_frame(statements, test=False):
 
     ax_wvl.axvline(950.0, color='black', lw=1.0, alpha=1.0, zorder=1, ls=':')
     ax_wvl.axhline(0.0  , color='black', lw=1.0, alpha=1.0, zorder=1)
-    # ax_wvl.grid(lw=0.5, zorder=0)
     ax_wvl.set_xlim((200, 2400))
     ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(200, 2401, 200)))
     ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
@@ -578,29 +577,27 @@ def plot_video_frame(statements, test=False):
             5: {'name': 'Zen In TEC', 'units':'$^\circ C$'},
             6: {'name': 'Nad In TEC', 'units':'$^\circ C$'},
             7: {'name': 'Wvl Con T' , 'units':'$^\circ C$'},
-            8: {'name': 'N/A'       , 'units':''},
+            8: {'name': 'Unknown'   , 'units':''},
             9: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
            10: {'name': 'N/A'       , 'units':''},
             }
     temp = flt_trk0['temperature'][index_pnt, :].copy()
-    temp[(temp<-100.0)|(temp>50.0)] = np.nan
+    logic_bad  = ~((temp>=-100.0)&(temp<=50.0))
+    logic_good = ~logic_bad
+    temp[logic_bad] = np.nan
     temp_x = np.arange(temp.size)
     width = 0.6
     temp_color='gray'
-    logic_temp= ~np.isnan(temp)
     ax_temp0.bar(temp_x, temp, width=width, color=temp_color, lw=1.0, alpha=0.4, zorder=0, ec='gray')
     for i, x0 in enumerate(temp_x):
-        ax_temp0.text(x0, 0.0, temperatures[i]['name'], fontsize=10, color=temp_color, ha='center', va='bottom')
-
-    for i, x0 in enumerate(temp_x[logic_temp]):
-        if temperatures[x0]['name'] != 'N/A':
-            y0 = temp[logic_temp][i]
-            ax_temp0.text(x0, y0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color='black', ha='center', va='center')
-
-    for i, x0 in enumerate(temp_x[~logic_temp]):
-        if temperatures[x0]['name'] != 'N/A':
+        ax_temp0.text(x0, 0.0, temperatures[x0]['name'], fontsize=10, color=temp_color, ha='center', va='bottom')
+        if logic_good[x0]:
             y0 = flt_trk0['temperature'][index_pnt, x0]
-            ax_temp0.text(x0, -10.0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color='black', ha='center', va='center')
+            ax_temp0.text(x0, y0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color='black', ha='center', va='center')
+        else:
+            if temperatures[x0]['name'] == 'RH':
+                y0 = flt_trk0['temperature'][index_pnt, x0]
+                ax_temp0.text(x0, -10.0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color=temp_color, ha='center', va='center')
 
     ax_temp0.axhline(0.0, color=temp_color, lw=1.0, ls='-')
     ax_temp0.set_xlim(temp_x[0]-width/2.0, temp_x[-1]+width/2.0)
