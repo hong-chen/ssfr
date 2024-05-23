@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-_ssfr_         = 'ssfr-a'
-# _ssfr_         = 'ssfr-b'
+# _ssfr_         = 'ssfr-a'
+_ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -577,12 +577,13 @@ def plot_video_frame(statements, test=False):
             5: {'name': 'Zen In TEC', 'units':'$^\circ C$'},
             6: {'name': 'Nad In TEC', 'units':'$^\circ C$'},
             7: {'name': 'Wvl Con T' , 'units':'$^\circ C$'},
-            8: {'name': 'Unknown'   , 'units':''},
+            8: {'name': 'N/A'       , 'units':''},
             9: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
            10: {'name': 'N/A'       , 'units':''},
             }
     temp = flt_trk0['temperature'][index_pnt, :].copy()
     logic_bad  = ~((temp>=-100.0)&(temp<=50.0))
+    logic_bad[[8, 10]] = True
     logic_good = ~logic_bad
     temp[logic_bad] = np.nan
     temp_x = np.arange(temp.size)
@@ -618,9 +619,6 @@ def plot_video_frame(statements, test=False):
 
         logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<=tmhr_current)
         logic_trans = np.logical_not(logic_solid)
-
-        # logic_solid0 = (flt_trk['tmhr']>=(tmhr_current-0.5*tmhr_length)) & (flt_trk['tmhr']<=tmhr_current)
-        # logic_trans0 = np.logical_not(logic_solid0)
 
         if itrk == index_trk:
             alpha_trans = 0.0
