@@ -45,8 +45,8 @@ import matplotlib.gridspec as gridspec
 from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-# import cartopy.crs as ccrs
-mpl.use('Agg')
+import cartopy.crs as ccrs
+# mpl.use('Agg')
 
 
 import er3t
@@ -733,8 +733,8 @@ def plot_video_frame(statements, test=False):
 
     ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 2.0)))
     ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 2.0)))
-    ax_map.set_xlabel('Longitude [$^\circ$]')
-    ax_map.set_ylabel('Latitude [$^\circ$]')
+    ax_map.set_xlabel('Longitude [$^\\circ$]')
+    ax_map.set_ylabel('Latitude [$^\\circ$]')
     #\----------------------------------------------------------------------------/#
 
 
@@ -797,7 +797,7 @@ def plot_video_frame(statements, test=False):
     ax_alt.xaxis.set_ticks([])
     ax_alt.yaxis.tick_right()
     ax_alt.yaxis.set_label_position('right')
-    ax_alt.set_ylabel('Sun Elevation [$\\times 10^\circ$] / Altitude [km]', rotation=270.0, labelpad=18)
+    ax_alt.set_ylabel('Sun Elevation [$\\times 10^\\circ$] / Altitude [km]', rotation=270.0, labelpad=18)
     #\----------------------------------------------------------------------------/#
 
 
@@ -829,12 +829,12 @@ def plot_video_frame(statements, test=False):
 
     ax_tms.set_ylim(bottom=-0.1)
     ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
-    ax_tms.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
+    ax_tms.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
 
     if alt_current < 1.0:
-        title_all = 'Longitude %9.4f$^\circ$, Latitude %8.4f$^\circ$, Altitude %6.1f  m' % (lon_current, lat_current, alt_current*1000.0)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.1f  m' % (lon_current, lat_current, alt_current*1000.0)
     else:
-        title_all = 'Longitude %9.4f$^\circ$, Latitude %8.4f$^\circ$, Altitude %6.4f km' % (lon_current, lat_current, alt_current)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.4f km' % (lon_current, lat_current, alt_current)
     ax_tms.set_title(title_all)
 
     ax_tms.spines['right'].set_visible(False)
@@ -852,7 +852,7 @@ def plot_video_frame(statements, test=False):
     ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
     ax_wvl.set_xlabel('Wavelength [nm]')
     ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
-    ax_wvl.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
+    ax_wvl.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
     #\----------------------------------------------------------------------------/#
 
 
@@ -1532,9 +1532,62 @@ def process_sat_img_vn(
         imagerID, satID = satname.split('-')
         extent = [float(x) for x in region_s.replace(')', '').replace('(', '').split(',')]
 
-        lon_1d = np.linspace(extent[0], extent[1], 1001)
-        lat_1d = np.linspace(extent[2], extent[3], 1001)
-        lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d, indexing='ij')
+        img = mpl_img.imread(fname)
+        lon_1d = np.linspace(extent[0], extent[1], img.shape[1]+1)
+        lat_1d = np.linspace(extent[2], extent[3], img.shape[0]+1)[::-1]
+        lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
+
+        logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
+        img[logic_black, -1] = 0.0
+
+        if proj0 is None:
+            lon0 = -68.70379848070486
+            lat0 = 76.53111177550895
+            proj0 = ccrs.NearsidePerspective(
+                    central_longitude=lon0,
+                    central_latitude=lat0,
+                    satellite_height=800000.0,
+                    false_easting=0,
+                    false_northing=0,
+                    globe=None
+                    )
+
+
+        if True:
+            plt.close('all')
+            fig = plt.figure(figsize=(8, 8))
+            #/----------------------------------------------------------------------------\#
+            # fig.suptitle('Figure')
+            # plot
+            #/--------------------------------------------------------------\#
+            ax1 = fig.add_subplot(111, projection=proj0)
+            ax1.coastlines(color='gray', lw=0.5)
+            ax1.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
+            ax1.scatter(lon0, lat0, transform=ccrs.PlateCarree(), s=200, c='r', marker='*', lw=0.0)
+            g1 = ax1.gridlines(lw=0.1, color='gray')
+            g1.xlocator = FixedLocator(np.arange(-180, 181, 30))
+            g1.ylocator = FixedLocator(np.arange(-85, 86, 5))
+            # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+            # ax1.scatter(x, y, s=6, c='k', lw=0.0)
+            # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+            # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+            # ax1.set_xlim(())
+            # ax1.set_ylim(())
+            # ax1.set_xlabel('')
+            # ax1.set_ylabel('')
+            # ax1.set_title('')
+            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            #\--------------------------------------------------------------/#
+            # save figure
+            #/--------------------------------------------------------------\#
+            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+            #\--------------------------------------------------------------/#
+            plt.show()
+            sys.exit()
+        #\----------------------------------------------------------------------------/#
 
         fname_out = '%s.png' % filename_new
 

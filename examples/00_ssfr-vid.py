@@ -547,9 +547,9 @@ def plot_video_frame(statements, test=False):
     ax_wvl.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 2.1, 0.1)))
     ax_wvl.set_xlabel('Wavelength [nm]')
     if _ssfr_ == 'ssfr-a':
-        ax_wvl.set_ylabel('Flux [$\mathrm{W m^{-2} nm^{-1}}$]')
+        ax_wvl.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
     elif _ssfr_ == 'ssfr-b':
-        ax_wvl.set_ylabel('Rad. [$\mathrm{W m^{-2} nm^{-1} sr^{-1}}$]')
+        ax_wvl.set_ylabel('Rad. [$\\mathrm{W m^{-2} nm^{-1} sr^{-1}}$]')
 
     ax_wvl.set_ylim((0, 2))
 
@@ -569,16 +569,16 @@ def plot_video_frame(statements, test=False):
     # temperature plot
     #/----------------------------------------------------------------------------\#
     temperatures = {
-            0: {'name': 'Ambient T' , 'units':'$^\circ C$'},
-            1: {'name': 'Zen In T'  , 'units':'$^\circ C$'},
-            2: {'name': 'Nad In T'  , 'units':'$^\circ C$'},
-            3: {'name': 'Plate T'   , 'units':'$^\circ C$'},
+            0: {'name': 'Ambient T' , 'units':'$^\\circ C$'},
+            1: {'name': 'Zen In T'  , 'units':'$^\\circ C$'},
+            2: {'name': 'Nad In T'  , 'units':'$^\\circ C$'},
+            3: {'name': 'Plate T'   , 'units':'$^\\circ C$'},
             4: {'name': 'RH'        , 'units':'%'},
-            5: {'name': 'Zen In TEC', 'units':'$^\circ C$'},
-            6: {'name': 'Nad In TEC', 'units':'$^\circ C$'},
-            7: {'name': 'Wvl Con T' , 'units':'$^\circ C$'},
+            5: {'name': 'Zen In TEC', 'units':'$^\\circ C$'},
+            6: {'name': 'Nad In TEC', 'units':'$^\\circ C$'},
+            7: {'name': 'Wvl Con T' , 'units':'$^\\circ C$'},
             8: {'name': 'N/A'       , 'units':''},
-            9: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
+            9: {'name': 'cRIO T'    , 'units':'$^\\circ C$'},
            10: {'name': 'N/A'       , 'units':''},
             }
     temp = flt_trk0['temperature'][index_pnt, :].copy()
