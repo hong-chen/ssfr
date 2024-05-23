@@ -61,8 +61,9 @@ _ssfr1_        = 'ssfr-a'
 _ssfr2_        = 'ssfr-b'
 _cam_          = 'nac'
 
-_fdir_main_    = 'data/%s/flt-vid' % _mission_
-_fdir_sat_img_ = 'data/%s/sat-img-vn' % _mission_
+_fdir_main_       = 'data/%s/flt-vid' % _mission_
+_fdir_sat_img_vn_ = 'data/%s/sat-img-vn' % _mission_
+_fdir_sat_img_ = 'data/%s/sat-img' % _mission_
 _fdir_cam_img_ = 'data/%s/2024-Spring/p3' % _mission_
 _wavelength_   = 555.0
 
@@ -1429,6 +1430,171 @@ def main_vid(
     os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
 
 
+def process_sat_img_vn_old(
+        date,
+        fdir_sat_vn=_fdir_sat_img_vn_,
+        fdir_sat=_fdir_sat_img_,
+        ):
+
+    """
+    process satellite imageries from Vikas Nataraja
+    """
+
+    date_s = date.strftime('%Y%m%d')
+    fdir_out = '%s/%s' % (fdir_sat, date_s)
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+
+    extents = {
+            'ca_archipelago': [-158.00, -21.03, 76.38, 88.06],
+            'lincoln_sea': [-120.00,  36.69, 77.94, 88.88],
+            }
+    date_sat_s = date.strftime('%Y-%m-%d')
+
+    for key in extents.keys():
+
+        extent = extents[key]
+        lon_1d = np.linspace(extent[0], extent[1], 1001)
+        lat_1d = np.linspace(extent[2], extent[3], 1001)
+        lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d, indexing='ij')
+
+        fdir_in = '%s/%s' % (fdir_sat_vn, key)
+        fnames_sat_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
+        fnames_sat_fc = er3t.util.get_all_files(fdir_in, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
+
+        for fname in fnames_sat_fc:
+            print(fname)
+
+    sys.exit()
+
+    # fnames_sat_tc1_ = sorted(glob.glob('%s/ca_archipelago/*TrueColor*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    # jday_sat_tc1, fnames_sat_tc1 = process_sat_img(fnames_sat_tc1_)
+
+    # fnames_sat_tc2_ = sorted(glob.glob('%s/lincoln_sea/*TrueColor*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    # jday_sat_tc2, fnames_sat_tc2 = process_sat_img(fnames_sat_tc2_)
+
+    # fnames_sat_fc1_ = sorted(glob.glob('%s/ca_archipelago/*FalseColor721*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    # jday_sat_fc1, fnames_sat_fc1 = process_sat_img(fnames_sat_fc1_)
+
+    # fnames_sat_fc2_ = sorted(glob.glob('%s/lincoln_sea/*FalseColor721*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    # jday_sat_fc2, fnames_sat_fc2 = process_sat_img(fnames_sat_fc2_)
+
+    # jday_sat_ = get_jday_sat_img(fnames_sat_)
+    # jday_sat = np.sort(np.unique(jday_sat_))
+
+    # fnames_sat = []
+
+    # for jday_sat0 in jday_sat:
+
+    #     indices = np.where(jday_sat_==jday_sat0)[0]
+    #     fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
+    #     fnames_sat.append(fname0)
+
+    # return jday_sat, fnames_sat
+
+def process_sat_img_vn(
+        fname,
+        proj0=None,
+        # date,
+        # fdir_sat_vn=_fdir_sat_img_vn_,
+        fdir_sat=_fdir_sat_img_,
+        ):
+
+    """
+    process satellite imageries from Vikas Nataraja
+    """
+
+    filename = os.path.basename(fname).replace('.png', '')
+    satname, layername, dtime_s, region_s = filename.split('_')
+    dtime = datetime.datetime.strptime(dtime_s, '%Y-%m-%d-%H%M%SZ')
+
+    # check if new image exist
+    #/----------------------------------------------------------------------------\#
+    date_s = dtime.strftime('%Y%m%d')
+    fdir_out = '%s/%s' % (fdir_sat, date_s)
+    dtime_s_new = dtime.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    filename_new = filename.replace(dtime_s, dtime_s_new)
+    fnames_new = er3t.util.get_all_files(fdir_out, '%s*' % (filename_new))
+    if len(fnames_new)>0:
+        run = False
+        fname_out = fnames_new[0]
+    else:
+        run = True
+    #\----------------------------------------------------------------------------/#
+
+    if run:
+
+        if not os.path.exists(fdir_out):
+            os.makedirs(fdir_out)
+
+        imagerID, satID = satname.split('-')
+        extent = [float(x) for x in region_s.replace(')', '').replace('(', '').split(',')]
+
+        lon_1d = np.linspace(extent[0], extent[1], 1001)
+        lat_1d = np.linspace(extent[2], extent[3], 1001)
+        lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d, indexing='ij')
+
+        fname_out = '%s.png' % filename_new
+
+    print(fname_out)
+    sys.exit()
+
+    return fname_out
+
+
+
+    print(imagerID, satID, dtime, extent)
+
+
+
+    sys.exit()
+
+    date_sat_s = date.strftime('%Y-%m-%d')
+
+    for key in extents.keys():
+
+        extent = extents[key]
+        lon_1d = np.linspace(extent[0], extent[1], 1001)
+        lat_1d = np.linspace(extent[2], extent[3], 1001)
+        lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d, indexing='ij')
+
+        fdir_in = '%s/%s' % (fdir_sat_vn, key)
+        fnames_sat_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
+        fnames_sat_fc = er3t.util.get_all_files(fdir_in, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
+
+        for fname in fnames_sat_fc:
+            print(fname)
+
+    sys.exit()
+
+    # fnames_sat_tc1_ = sorted(glob.glob('%s/ca_archipelago/*TrueColor*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    # jday_sat_tc1, fnames_sat_tc1 = process_sat_img(fnames_sat_tc1_)
+
+    # fnames_sat_tc2_ = sorted(glob.glob('%s/lincoln_sea/*TrueColor*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    # jday_sat_tc2, fnames_sat_tc2 = process_sat_img(fnames_sat_tc2_)
+
+    # fnames_sat_fc1_ = sorted(glob.glob('%s/ca_archipelago/*FalseColor721*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    # jday_sat_fc1, fnames_sat_fc1 = process_sat_img(fnames_sat_fc1_)
+
+    # fnames_sat_fc2_ = sorted(glob.glob('%s/lincoln_sea/*FalseColor721*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
+    # jday_sat_fc2, fnames_sat_fc2 = process_sat_img(fnames_sat_fc2_)
+
+    # jday_sat_ = get_jday_sat_img(fnames_sat_)
+    # jday_sat = np.sort(np.unique(jday_sat_))
+
+    # fnames_sat = []
+
+    # for jday_sat0 in jday_sat:
+
+    #     indices = np.where(jday_sat_==jday_sat0)[0]
+    #     fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
+    #     fnames_sat.append(fname0)
+
+    # return jday_sat, fnames_sat
+
+
 if __name__ == '__main__':
 
 
@@ -1436,6 +1602,13 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
             datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
         ]
+
+    # for date in dates[::-1]:
+    #     process_sat_img_vn(date)
+
+    process_sat_img_vn('data/arcsix/sat-img-vn/ca_archipelago/MODIS-AQUA_TrueColor_2024-05-21-201000Z_(-158.00,-21.03,76.38,88.06).png')
+
+    sys.exit()
 
     for date in dates[::-1]:
 
