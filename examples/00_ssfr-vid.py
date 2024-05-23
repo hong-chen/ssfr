@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-# _ssfr_         = 'ssfr-a'
-_ssfr_         = 'ssfr-b'
+_ssfr_         = 'ssfr-a'
+# _ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -812,7 +812,8 @@ def main_pre(
 
 def main_vid(
         date,
-        wvl0=_wavelength_
+        wvl0=_wavelength_,
+        interval=1,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -835,7 +836,6 @@ def main_vid(
     Npnt        = indices_trk.size
     indices     = np.arange(Npnt)
 
-    interval = 3
     indices_trk = indices_trk[::interval]
     indices_pnt = indices_pnt[::interval]
     indices     = indices[::interval]
@@ -854,9 +854,9 @@ def main_vid(
 if __name__ == '__main__':
 
     dates = [
-            # datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration test
-            datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
-            datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
+            datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration test
+            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
+            # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
         ]
 
     for date in dates[::-1]:
