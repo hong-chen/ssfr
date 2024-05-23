@@ -885,10 +885,6 @@ def main_pre_simple(
     # create data directory (for storing data) if the directory does not exist
     #/----------------------------------------------------------------------------\#
     date_s = date.strftime('%Y%m%d')
-
-    fdir = os.path.abspath('%s/%s' % (_fdir_main_, date_s))
-    if not os.path.exists(fdir):
-        os.makedirs(fdir)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1078,10 +1074,6 @@ def main_pre(
     # create data directory (for storing data) if the directory does not exist
     #/----------------------------------------------------------------------------\#
     date_s = date.strftime('%Y%m%d')
-
-    fdir = os.path.abspath('%s/%s' % (_fdir_main_, date_s))
-    if not os.path.exists(fdir):
-        os.makedirs(fdir)
     #\----------------------------------------------------------------------------/#
 
 
