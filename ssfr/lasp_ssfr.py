@@ -217,8 +217,8 @@ class read_ssfr:
             process=True,
             dark_corr_mode='interp',
             dark_fallback=True,
-            dark_extend=2,
-            light_extend=2,
+            dark_extend=1,
+            light_extend=1,
             which_ssfr=None,
             wvl_s=350.0,
             wvl_e=2200.0,
@@ -394,8 +394,8 @@ class read_ssfr:
     def dark_corr(
             self,
             dark_corr_mode='interp',
-            dark_extend=2,
-            light_extend=2,
+            dark_extend=1,
+            light_extend=1,
             fill_value=np.nan,
             dark_fallback=True,
             ):
