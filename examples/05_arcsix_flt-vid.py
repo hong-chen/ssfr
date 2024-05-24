@@ -1784,7 +1784,7 @@ def plot_video_frame(statements, test=False):
             ax_map.set_title(title_map)
 
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
-        g1 = ax_map.gridlines(lw=0.2, color='gray', draw_labels=True)
+        g1 = ax_map.gridlines(lw=0.8, color='gray', draw_labels=True)
         g1.xlocator = FixedLocator(np.arange(-180, 181, 2.0))
         g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 1.0))
         g1.top_labels = False
@@ -1803,7 +1803,7 @@ def plot_video_frame(statements, test=False):
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
     if has_sat_img0:
-        title_map0 = 'Zoomed-in 721'
+        title_map0 = 'False Color 721'
         time_diff = np.abs(flt_img0['jday_sat_img0'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map0.set_title(title_map0, color='gray')
@@ -1811,7 +1811,7 @@ def plot_video_frame(statements, test=False):
             ax_map0.set_title(title_map0)
 
         ax_map0.coastlines(resolution='10m', color='black', lw=0.5)
-        g2 = ax_map0.gridlines(lw=0.2, color='gray')
+        g2 = ax_map0.gridlines(lw=0.8, color='gray', ls='--')
         g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 1.0))
         g2.ylocator = FixedLocator(np.arange(-89.0, 89.1, 0.2))
         ax_map0.set_extent([lon_current-1.0, lon_current+1.0, lat_current-0.25, lat_current+0.25], crs=ccrs.PlateCarree())
