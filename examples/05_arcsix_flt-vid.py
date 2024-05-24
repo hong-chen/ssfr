@@ -1803,7 +1803,7 @@ def plot_video_frame(statements, test=False):
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
     if has_sat_img0:
-        title_map0 = 'Zoomed-in RGB'
+        title_map0 = 'Zoomed-in 721'
         time_diff = np.abs(flt_img0['jday_sat_img0'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map0.set_title(title_map0, color='gray')
@@ -2322,14 +2322,14 @@ def main_pre(
 
         fdir_in = '%s/%s' % (_fdir_sat_img_vn_, key)
 
-        fnames_fc = er3t.util.get_all_files(fdir_in, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
-        jday_sat_ , fnames_sat_  = process_sat_img_vn(fnames_fc)
+        fnames_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
+        jday_sat_ , fnames_sat_  = process_sat_img_vn(fnames_tc)
         # fnames_sat[key]['jday']    = jday_sat_
         fnames_sat[key]['jday']    = jday_sat_-1.0
         fnames_sat[key]['fnames']  = fnames_sat_
 
-        fnames_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
-        jday_sat0_, fnames_sat0_ = process_sat_img_vn(fnames_tc)
+        fnames_fc = er3t.util.get_all_files(fdir_in, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
+        jday_sat0_, fnames_sat0_ = process_sat_img_vn(fnames_fc)
         # fnames_sat0[key]['jday']   = jday_sat0_
         fnames_sat0[key]['jday']   = jday_sat0_-1.0
         fnames_sat0[key]['fnames'] = fnames_sat0_
