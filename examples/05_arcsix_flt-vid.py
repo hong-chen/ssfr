@@ -209,7 +209,7 @@ def get_jday_sat_img(fnames):
 
     return np.array(jday)
 
-def get_extent(lon, lat, margin=0.2):
+def get_extent(lon, lat, margin=0.2, scale_lon=1.0):
 
     logic = check_continuity(lon, threshold=1.0) & check_continuity(lat, threshold=1.0)
     lon = lon[logic]
@@ -229,8 +229,8 @@ def get_extent(lon, lat, margin=0.2):
     delta_half = max([delta_lon, delta_lat])/2.0 + margin
 
     extent = [
-            lon_c-delta_half, \
-            lon_c+delta_half, \
+            lon_c-delta_half*scale_lon, \
+            lon_c+delta_half*scale_lon, \
             lat_c-delta_half, \
             lat_c+delta_half  \
             ]
@@ -1603,7 +1603,7 @@ def plot_video_frame(statements, test=False):
 
         ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
 
-        rect = mpatches.Rectangle((lon_current-0.5, lat_current-0.25), 1.0, 0.5, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree())
+        rect = mpatches.Rectangle((lon_current-1.0, lat_current-0.25), 2.0, 0.5, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree())
         ax_map.add_patch(rect)
 
 
@@ -1785,7 +1785,7 @@ def plot_video_frame(statements, test=False):
 
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
         g1 = ax_map.gridlines(lw=0.2, color='gray', draw_labels=True)
-        g1.xlocator = FixedLocator(np.arange(-180, 181, 1.0))
+        g1.xlocator = FixedLocator(np.arange(-180, 181, 2.0))
         g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 1.0))
         g1.top_labels = False
         g1.right_labels = False
@@ -1812,9 +1812,9 @@ def plot_video_frame(statements, test=False):
 
         ax_map0.coastlines(resolution='10m', color='black', lw=0.5)
         g2 = ax_map0.gridlines(lw=0.2, color='gray')
-        g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 0.1))
-        g2.ylocator = FixedLocator(np.arange(-89.0, 89.1, 0.1))
-        ax_map0.set_extent([lon_current-0.5, lon_current+0.5, lat_current-0.25, lat_current+0.25], crs=ccrs.PlateCarree())
+        g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 1.0))
+        g2.ylocator = FixedLocator(np.arange(-89.0, 89.1, 0.2))
+        ax_map0.set_extent([lon_current-1.0, lon_current+1.0, lat_current-0.25, lat_current+0.25], crs=ccrs.PlateCarree())
     ax_map0.axis('off')
     #\----------------------------------------------------------------------------/#
 
@@ -2304,7 +2304,8 @@ def main_pre(
 
     # process satellite imagery
     #/----------------------------------------------------------------------------\#
-    date_sat_s  = date.strftime('%Y-%m-%d')
+    # date_sat_s  = date.strftime('%Y-%m-%d')
+    date_sat_s  = (date+datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 
     fnames_sat  = {
             'ca_archipelago': {
@@ -2323,12 +2324,14 @@ def main_pre(
 
         fnames_fc = er3t.util.get_all_files(fdir_in, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
         jday_sat_ , fnames_sat_  = process_sat_img_vn(fnames_fc)
-        fnames_sat[key]['jday']    = jday_sat_
+        # fnames_sat[key]['jday']    = jday_sat_
+        fnames_sat[key]['jday']    = jday_sat_-1.0
         fnames_sat[key]['fnames']  = fnames_sat_
 
         fnames_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
         jday_sat0_, fnames_sat0_ = process_sat_img_vn(fnames_tc)
-        fnames_sat0[key]['jday']   = jday_sat0_
+        # fnames_sat0[key]['jday']   = jday_sat0_
+        fnames_sat0[key]['jday']   = jday_sat0_-1.0
         fnames_sat0[key]['fnames'] = fnames_sat0_
     #\----------------------------------------------------------------------------/#
 
@@ -2337,7 +2340,7 @@ def main_pre(
     #/----------------------------------------------------------------------------\#
     # create python dictionary to store corresponding satellite imagery data info
     #/--------------------------------------------------------------\#
-    extent = get_extent(flt_trk['lon'], flt_trk['lat'], margin=2.0)
+    extent = get_extent(flt_trk['lon'], flt_trk['lat'], margin=0.5, scale_lon=1.5)
 
     flt_imgs = []
     for i in range(len(flt_trks)):
@@ -2423,7 +2426,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=20,
+        interval=10,
         ):
 
     date_s = date.strftime('%Y%m%d')
