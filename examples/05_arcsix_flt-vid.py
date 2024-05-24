@@ -1784,7 +1784,7 @@ def plot_video_frame(statements, test=False):
             ax_map.set_title(title_map)
 
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
-        g1 = ax_map.gridlines(lw=0.8, color='gray', draw_labels=True)
+        g1 = ax_map.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-')
         g1.xlocator = FixedLocator(np.arange(-180, 181, 2.0))
         g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 1.0))
         g1.top_labels = False
@@ -1811,7 +1811,7 @@ def plot_video_frame(statements, test=False):
             ax_map0.set_title(title_map0)
 
         ax_map0.coastlines(resolution='10m', color='black', lw=0.5)
-        g2 = ax_map0.gridlines(lw=0.8, color='gray', ls='--')
+        g2 = ax_map0.gridlines(lw=0.5, color='gray', ls='-')
         g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 1.0))
         g2.ylocator = FixedLocator(np.arange(-89.0, 89.1, 0.2))
         ax_map0.set_extent([lon_current-1.0, lon_current+1.0, lat_current-0.25, lat_current+0.25], crs=ccrs.PlateCarree())
@@ -2426,7 +2426,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=10,
+        interval=5,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -2462,227 +2462,6 @@ def main_vid(
     fname_mp4 = '%s-FLT-VID_%s_%s.mp4' % (_mission_.upper(), _platform_.upper(), date_s)
     os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
 
-
-def test_sat_img_vn_old(
-        date,
-        fdir_sat_vn=_fdir_sat_img_vn_,
-        fdir_sat=_fdir_sat_img_,
-        ):
-
-    """
-    process satellite imageries from Vikas Nataraja
-    """
-
-    date_s = date.strftime('%Y%m%d')
-    fdir_out = '%s/%s' % (fdir_sat, date_s)
-    if not os.path.exists(fdir_out):
-        os.makedirs(fdir_out)
-
-
-    extents = {
-            'ca_archipelago': [-158.00, -21.03, 76.38, 88.06],
-            'lincoln_sea': [-120.00,  36.69, 77.94, 88.88],
-            }
-    date_sat_s = date.strftime('%Y-%m-%d')
-
-    for key in extents.keys():
-
-        extent = extents[key]
-        lon_1d = np.linspace(extent[0], extent[1], 1001)
-        lat_1d = np.linspace(extent[2], extent[3], 1001)
-        lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d, indexing='ij')
-
-        fdir_in = '%s/%s' % (fdir_sat_vn, key)
-        fnames_sat_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
-        fnames_sat_fc = er3t.util.get_all_files(fdir_in, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
-
-        for fname in fnames_sat_fc:
-            print(fname)
-
-    sys.exit()
-
-    # fnames_sat_tc1_ = sorted(glob.glob('%s/ca_archipelago/*TrueColor*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
-    # jday_sat_tc1, fnames_sat_tc1 = process_sat_img(fnames_sat_tc1_)
-
-    # fnames_sat_tc2_ = sorted(glob.glob('%s/lincoln_sea/*TrueColor*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
-    # jday_sat_tc2, fnames_sat_tc2 = process_sat_img(fnames_sat_tc2_)
-
-    # fnames_sat_fc1_ = sorted(glob.glob('%s/ca_archipelago/*FalseColor721*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
-    # jday_sat_fc1, fnames_sat_fc1 = process_sat_img(fnames_sat_fc1_)
-
-    # fnames_sat_fc2_ = sorted(glob.glob('%s/lincoln_sea/*FalseColor721*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
-    # jday_sat_fc2, fnames_sat_fc2 = process_sat_img(fnames_sat_fc2_)
-
-    # jday_sat_ = get_jday_sat_img(fnames_sat_)
-    # jday_sat = np.sort(np.unique(jday_sat_))
-
-    # fnames_sat = []
-
-    # for jday_sat0 in jday_sat:
-
-    #     indices = np.where(jday_sat_==jday_sat0)[0]
-    #     fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
-    #     fnames_sat.append(fname0)
-
-    # return jday_sat, fnames_sat
-
-def test_sat_img_vn(
-        fname,
-        proj0=None,
-        # date,
-        # fdir_sat_vn=_fdir_sat_img_vn_,
-        fdir_sat=_fdir_sat_img_,
-        ):
-
-    """
-    process satellite imageries from Vikas Nataraja
-    """
-
-    filename = os.path.basename(fname).replace('.png', '')
-    satname, layername, dtime_s, region_s = filename.split('_')
-    dtime = datetime.datetime.strptime(dtime_s, '%Y-%m-%d-%H%M%SZ')
-
-    # check if new image exist
-    #/----------------------------------------------------------------------------\#
-    date_s = dtime.strftime('%Y%m%d')
-    fdir_out = '%s/%s' % (fdir_sat, date_s)
-    dtime_s_new = dtime.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-    filename_new = filename.replace(dtime_s, dtime_s_new)
-    fnames_new = er3t.util.get_all_files(fdir_out, '%s*' % (filename_new))
-    if len(fnames_new)>0:
-        run = False
-        fname_out = fnames_new[0]
-    else:
-        run = True
-    #\----------------------------------------------------------------------------/#
-
-    if run:
-
-        if not os.path.exists(fdir_out):
-            os.makedirs(fdir_out)
-
-        # imagerID, satID = satname.split('-')
-        extent = [float(x) for x in region_s.replace(')', '').replace('(', '').split(',')]
-
-        img = mpl_img.imread(fname)
-        lon_1d = np.linspace(extent[0], extent[1], img.shape[1]+1)
-        lat_1d = np.linspace(extent[2], extent[3], img.shape[0]+1)[::-1]
-        lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
-
-        logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
-        img[logic_black, -1] = 0.0
-
-        if proj0 is None:
-            lon0 = -68.70379848070486
-            lat0 = 76.53111177550895
-            proj0 = ccrs.Orthographic(
-                    central_longitude=lon0,
-                    central_latitude=lat0,
-                    )
-            # proj0 = ccrs.NearsidePerspective(
-            #         central_longitude=lon0,
-            #         central_latitude=lat0,
-            #         satellite_height=800000.0,
-            #         false_easting=0,
-            #         false_northing=0,
-            #         globe=None
-            #         )
-
-
-        if True:
-            plt.close('all')
-            fig = plt.figure(figsize=(8, 8))
-            #/----------------------------------------------------------------------------\#
-            # fig.suptitle('Figure')
-            # plot
-            #/--------------------------------------------------------------\#
-            ax1 = fig.add_subplot(111, projection=proj0)
-            ax1.coastlines(color='gray', lw=0.5)
-            ax1.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
-            ax1.scatter(lon0, lat0, transform=ccrs.PlateCarree(), s=200, c='k', marker='*', lw=0.0)
-            g1 = ax1.gridlines(lw=0.1, color='gray')
-            g1.xlocator = FixedLocator(np.arange(-180, 181, 30))
-            g1.ylocator = FixedLocator(np.arange(-85, 86, 5))
-            # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-            # ax1.scatter(x, y, s=6, c='k', lw=0.0)
-            # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-            # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-            # ax1.set_xlim(())
-            # ax1.set_ylim(())
-            # ax1.set_xlabel('')
-            # ax1.set_ylabel('')
-            # ax1.set_title('')
-            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-            #\--------------------------------------------------------------/#
-            # save figure
-            #/--------------------------------------------------------------\#
-            # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-            # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-            #\--------------------------------------------------------------/#
-            plt.show()
-            sys.exit()
-        #\----------------------------------------------------------------------------/#
-
-        fname_out = '%s.png' % filename_new
-
-    print(fname_out)
-    sys.exit()
-
-    return fname_out
-
-
-
-    print(imagerID, satID, dtime, extent)
-
-
-
-    sys.exit()
-
-    date_sat_s = date.strftime('%Y-%m-%d')
-
-    for key in extents.keys():
-
-        extent = extents[key]
-        lon_1d = np.linspace(extent[0], extent[1], 1001)
-        lat_1d = np.linspace(extent[2], extent[3], 1001)
-        lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d, indexing='ij')
-
-        fdir_in = '%s/%s' % (fdir_sat_vn, key)
-        fnames_sat_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
-        fnames_sat_fc = er3t.util.get_all_files(fdir_in, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
-
-        for fname in fnames_sat_fc:
-            print(fname)
-
-    sys.exit()
-
-    # fnames_sat_tc1_ = sorted(glob.glob('%s/ca_archipelago/*TrueColor*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
-    # jday_sat_tc1, fnames_sat_tc1 = process_sat_img(fnames_sat_tc1_)
-
-    # fnames_sat_tc2_ = sorted(glob.glob('%s/lincoln_sea/*TrueColor*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
-    # jday_sat_tc2, fnames_sat_tc2 = process_sat_img(fnames_sat_tc2_)
-
-    # fnames_sat_fc1_ = sorted(glob.glob('%s/ca_archipelago/*FalseColor721*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
-    # jday_sat_fc1, fnames_sat_fc1 = process_sat_img(fnames_sat_fc1_)
-
-    # fnames_sat_fc2_ = sorted(glob.glob('%s/lincoln_sea/*FalseColor721*%s*Z*.png' % (_fdir_sat_img_, date_sat_s)))
-    # jday_sat_fc2, fnames_sat_fc2 = process_sat_img(fnames_sat_fc2_)
-
-    # jday_sat_ = get_jday_sat_img(fnames_sat_)
-    # jday_sat = np.sort(np.unique(jday_sat_))
-
-    # fnames_sat = []
-
-    # for jday_sat0 in jday_sat:
-
-    #     indices = np.where(jday_sat_==jday_sat0)[0]
-    #     fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
-    #     fnames_sat.append(fname0)
-
-    # return jday_sat, fnames_sat
 
 
 if __name__ == '__main__':
