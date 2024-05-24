@@ -1558,7 +1558,7 @@ def plot_video_frame(statements, test=False):
     # map of flight track overlay satellite imagery
     proj0 = ccrs.Orthographic(
             central_longitude=lon_current,
-            central_latitude=84.0,
+            central_latitude=80.0,
             )
     ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect='auto')
 
