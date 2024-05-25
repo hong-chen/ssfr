@@ -48,8 +48,9 @@ import matplotlib.gridspec as gridspec
 from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -73,6 +74,8 @@ _preferred_region_ = 'ca_archipelago'
 
 _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_tmp_graph_ = 'tmp-graph_flt-vid'
+
+_title_extra_ = 'ARCSIX RF#1'
 
 _tmhr_range_ = {
         '20240517': [19.20, 23.00],
@@ -210,7 +213,7 @@ def get_jday_sat_img(fnames):
 
     return np.array(jday)
 
-def get_extent(lon, lat, margin=0.2, scale_lon=1.0):
+def get_extent(lon, lat, margin=0.1):
 
     logic = check_continuity(lon, threshold=1.0) & check_continuity(lat, threshold=1.0)
     lon = lon[logic]
@@ -224,17 +227,32 @@ def get_extent(lon, lat, margin=0.2, scale_lon=1.0):
     lon_c = (lon_min+lon_max)/2.0
     lat_c = (lat_min+lat_max)/2.0
 
-    delta_lon = lon_max - lon_min
-    delta_lat = lat_max - lat_min
+    # distance approach
+    #/----------------------------------------------------------------------------\#
+    # dist_x1 = er3t.util.cal_geodesic_dist(lon_min, lat_min, lon_max, lat_min)
+    # dist_x2 = er3t.util.cal_geodesic_dist(lon_min, lat_max, lon_max, lat_max)
+    # dist_y  = er3t.util.cal_geodesic_dist(lon_min, lat_min, lon_min, lat_max)
+    # dist_half = max([dist_x1, dist_x2, dist_y])/2.0 * (1.0+margin/2.0)
 
-    delta_half = max([delta_lon, delta_lat])/2.0 + margin
+    # lon0, _    = er3t.util.cal_geodesic_lonlat(lon_c, lat_c, dist_half, -90.0)
+    # lon1, _    = er3t.util.cal_geodesic_lonlat(lon_c, lat_c, dist_half,  90.0)
+    # _   , lat0 = er3t.util.cal_geodesic_lonlat(lon_c, lat_c, dist_half, 180.0)
+    # _   , lat1 = er3t.util.cal_geodesic_lonlat(lon_c, lat_c, dist_half,  0.0)
 
-    extent = [
-            lon_c-delta_half*scale_lon, \
-            lon_c+delta_half*scale_lon, \
-            lat_c-delta_half, \
-            lat_c+delta_half  \
-            ]
+    # extent = [lon0, lon1, lat0, lat1]
+    #\----------------------------------------------------------------------------/#
+
+    deg_x = (lon_max-lon_min)*np.cos(np.deg2rad(lat_c))
+    deg_y = (lat_max-lat_min)
+
+    deg_half = (max([deg_x, deg_y])/2.0 * (1.0+margin/2.0))/np.cos(np.deg2rad(lat_c))
+
+    lon0 = lon_c-deg_half
+    lon1 = lon_c+deg_half
+    lat0 = lat_c-deg_half
+    lat1 = lat_c+deg_half
+
+    extent = [lon0, lon1, lat0, lat1]
 
     return extent
 
@@ -452,12 +470,12 @@ class flt_sim:
             self,
             date=datetime.datetime.now(),
             fdir='./',
+            extent=None,
             wavelength=None,
             flt_trks=None,
             flt_imgs=None,
             fname=None,
             overwrite=False,
-            overwrite_rtm=False,
             quiet=False,
             verbose=False
             ):
@@ -465,6 +483,7 @@ class flt_sim:
         self.date      = date
         self.wvl0      = wavelength
         self.fdir      = os.path.abspath(fdir)
+        self.extent    = extent
         self.flt_trks  = flt_trks
         self.flt_imgs  = flt_imgs
         self.overwrite = overwrite
@@ -478,7 +497,7 @@ class flt_sim:
         elif (((flt_trks is not None) and (flt_imgs is not None) and (wavelength is not None)) and (fname is not None) and (os.path.exists(fname)) and (overwrite)) or \
              (((flt_trks is not None) and (flt_imgs is not None) and (wavelength is not None)) and (fname is not None) and (not os.path.exists(fname))):
 
-            self.run(overwrite=overwrite_rtm)
+            self.run_rtm()
             self.dump(fname)
 
         elif (((flt_trks is not None) and (flt_imgs is not None) and (wavelength is not None)) and (fname is None)):
@@ -496,6 +515,9 @@ class flt_sim:
             if hasattr(obj, 'flt_trks') and hasattr(obj, 'flt_imgs'):
                 if self.verbose:
                     print('Message [flt_sim]: Loading %s ...' % fname)
+                self.date     = obj.date
+                self.fdir     = obj.fdir
+                self.extent   = obj.extent
                 self.wvl0     = obj.wvl0
                 self.fname    = obj.fname
                 self.flt_trks = obj.flt_trks
@@ -503,7 +525,7 @@ class flt_sim:
             else:
                 sys.exit('Error   [flt_sim]: File \'%s\' is not the correct pickle file to load.' % fname)
 
-    def run(self, overwrite=True):
+    def run_rtm(self, overwrite=True):
 
         N = len(self.flt_trks)
 
@@ -621,20 +643,20 @@ def plot_video_frame_wff(statements, test=False):
     else:
         has_att_corr = False
 
-    if ('fnames_sat_img' in vnames_img) and ('extent_sat_img' in vnames_img):
-        has_sat_img = True
+    if ('fnames_sat0' in vnames_img) and ('extent_sat0' in vnames_img):
+        has_sat0 = True
     else:
-        has_sat_img = False
+        has_sat0 = False
 
-    if ('fnames_sat_img0' in vnames_img) and ('extent_sat_img0' in vnames_img):
-        has_sat_img0 = True
+    if ('fnames_sat1' in vnames_img) and ('extent_sat1' in vnames_img):
+        has_sat1 = True
     else:
-        has_sat_img0 = False
+        has_sat1 = False
 
-    if ('fnames_cam_img' in vnames_img):
-        has_cam_img = True
+    if ('fnames_cam0' in vnames_img):
+        has_cam0 = True
     else:
-        has_cam_img = False
+        has_cam0 = False
     #\----------------------------------------------------------------------------/#
 
 
@@ -658,7 +680,7 @@ def plot_video_frame_wff(statements, test=False):
     alt_cmap = mpl.colormaps['jet']
     alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=6.0)
 
-    dlon = flt_sim0.flt_imgs[index_trk]['extent_sat_img'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat_img'][0]
+    dlon = flt_sim0.flt_imgs[index_trk]['extent_sat0'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat0'][0]
     Nscale = int(dlon/1.3155229999999989 * 15)
 
     arrow_prop = dict(
@@ -733,19 +755,19 @@ def plot_video_frame_wff(statements, test=False):
 
     # base plot
     #/----------------------------------------------------------------------------\#
-    if has_sat_img:
-        fname_sat = flt_img0['fnames_sat_img'][index_pnt]
+    if has_sat0:
+        fname_sat = flt_img0['fnames_sat0'][index_pnt]
         img = mpl_img.imread(fname_sat)
-        ax_map.imshow(img, extent=flt_img0['extent_sat_img'], origin='upper', aspect='auto', zorder=0)
+        ax_map.imshow(img, extent=flt_img0['extent_sat0'], origin='upper', aspect='auto', zorder=0)
         rect = mpatches.Rectangle((lon_current-0.25, lat_current-0.25), 0.5, 0.5, lw=1.0, ec='k', fc='none')
         ax_map.add_patch(rect)
 
-    if has_sat_img0:
-        fname_sat0 = flt_img0['fnames_sat_img0'][index_pnt]
-        img = mpl_img.imread(fname_sat0)
-        ax_map0.imshow(img, extent=flt_img0['extent_sat_img0'], origin='upper', aspect='auto', zorder=0)
+    if has_sat1:
+        fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
+        img = mpl_img.imread(fname_sat1)
+        ax_map0.imshow(img, extent=flt_img0['extent_sat1'], origin='upper', aspect='auto', zorder=0)
 
-    if has_cam_img:
+    if has_cam0:
         # ang_cam_offset = -152.0 # for ORACLES
         ang_cam_offset = -233.0 # for ARCSIX
         cam_x_s = 5.0
@@ -756,7 +778,7 @@ def plot_video_frame_wff(statements, test=False):
         cam_hist_x_e = 255.0
         cam_hist_bins = np.linspace(cam_hist_x_s, cam_hist_x_e, 31)
 
-        fname_cam = flt_img0['fnames_cam_img'][index_pnt]
+        fname_cam = flt_img0['fnames_cam0'][index_pnt]
         img = mpl_img.imread(fname_cam)[:-200, 540:-640, :]
 
         # if ('ang_hed' in vnames_trk):
@@ -896,12 +918,12 @@ def plot_video_frame_wff(statements, test=False):
 
     # map plot settings
     #/----------------------------------------------------------------------------\#
-    if has_sat_img:
-        ax_map.set_xlim(flt_img0['extent_sat_img'][:2])
-        ax_map.set_ylim(flt_img0['extent_sat_img'][2:])
+    if has_sat0:
+        ax_map.set_xlim(flt_img0['extent_sat0'][:2])
+        ax_map.set_ylim(flt_img0['extent_sat0'][2:])
 
-        title_map = '%s at %s UTC' % (flt_img0['satID'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat_img'][index_pnt]).strftime('%H:%M'))
-        time_diff = np.abs(flt_img0['jday_sat_img'][index_pnt]-jday_current)*86400.0
+        title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
+        time_diff = np.abs(flt_img0['jday_sat0'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map.set_title(title_map, color='gray')
         else:
@@ -924,9 +946,9 @@ def plot_video_frame_wff(statements, test=False):
 
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
-    if has_sat_img0:
+    if has_sat1:
         title_map0 = 'Zoomed-in View'
-        time_diff = np.abs(flt_img0['jday_sat_img0'][index_pnt]-jday_current)*86400.0
+        time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map0.set_title(title_map0, color='gray')
         else:
@@ -940,8 +962,8 @@ def plot_video_frame_wff(statements, test=False):
 
     # camera image plot settings
     #/----------------------------------------------------------------------------\#
-    if has_cam_img:
-        jday_cam  = flt_img0['jday_cam_img'][index_pnt]
+    if has_cam0:
+        jday_cam  = flt_img0['jday_cam0'][index_pnt]
         dtime_cam = er3t.util.jday_to_dtime(jday_cam)
 
         title_img = 'Camera at %s UTC' % (dtime_cam.strftime('%H:%M:%S'))
@@ -1147,33 +1169,31 @@ def main_pre_wff(
     fnames_sat_ = sorted(glob.glob('%s/*%sT*Z*.png' % (_fdir_sat_img_, date_sat_s)))
     jday_sat_ = get_jday_sat_img(fnames_sat_)
 
-    jday_sat = np.sort(np.unique(jday_sat_))
+    jday_sat0 = np.sort(np.unique(jday_sat_))
 
-    fnames_sat = []
+    fnames_sat0 = []
 
-    for jday_sat0 in jday_sat:
+    for jday_sat_i in jday_sat0:
 
-        indices = np.where(jday_sat_==jday_sat0)[0]
+        indices = np.where(jday_sat_==jday_sat_i)[0]
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
-        fnames_sat.append(fname0)
+        fnames_sat0.append(fname0)
 
-    fnames_sat0 = fnames_sat.copy()
-    jday_sat0 = jday_sat.copy()
+    fnames_sat1 = fnames_sat0.copy()
+    jday_sat1 = jday_sat0.copy()
     #\----------------------------------------------------------------------------/#
-    # print(jday_sat)
-    # print(fnames_sat)
 
 
     # read in nav data
     #/--------------------------------------------------------------\#
     fname_nav = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
-    f_nav = h5py.File(fname_nav, 'r')
-    ang_hed = f_nav['ang_hed'][...][logic0][::time_step]
-    ang_pit = f_nav['ang_pit_s'][...][logic0][::time_step]
-    ang_rol = f_nav['ang_rol_s'][...][logic0][::time_step]
-    ang_pit_m = f_nav['ang_pit_m'][...][logic0][::time_step]
-    ang_rol_m = f_nav['ang_rol_m'][...][logic0][::time_step]
-    f_nav.close()
+    f_alp = h5py.File(fname_nav, 'r')
+    ang_hed = f_alp['ang_hed'][...][logic0][::time_step]
+    ang_pit = f_alp['ang_pit_s'][...][logic0][::time_step]
+    ang_rol = f_alp['ang_rol_s'][...][logic0][::time_step]
+    ang_pit_m = f_alp['ang_pit_m'][...][logic0][::time_step]
+    ang_rol_m = f_alp['ang_rol_m'][...][logic0][::time_step]
+    f_alp.close()
     #\--------------------------------------------------------------/#
 
 
@@ -1225,9 +1245,9 @@ def main_pre_wff(
     # process camera imagery
     #/----------------------------------------------------------------------------\#
     fdirs = er3t.util.get_all_folders(_fdir_cam_img_, pattern='*%4.4d*%2.2d*%2.2d*nac*jpg*' % (date.year, date.month, date.day))
-    fdir_cam = sorted(fdirs, key=os.path.getmtime)[-1]
-    fnames_cam = sorted(glob.glob('%s/*.jpg' % (fdir_cam)))
-    jday_cam = get_jday_cam_img(date, fnames_cam)
+    fdir_cam0 = sorted(fdirs, key=os.path.getmtime)[-1]
+    fnames_cam0 = sorted(glob.glob('%s/*.jpg' % (fdir_cam0)))
+    jday_cam0 = get_jday_cam_img(date, fnames_cam0)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1290,36 +1310,36 @@ def main_pre_wff(
 
         flt_img = {}
 
-        flt_img['satID'] = []
+        flt_img['id_sat0'] = []
 
-        flt_img['fnames_sat_img'] = []
-        flt_img['extent_sat_img'] = extent
-        flt_img['jday_sat_img'] = np.array([], dtype=np.float64)
+        flt_img['fnames_sat0'] = []
+        flt_img['extent_sat0'] = extent
+        flt_img['jday_sat0'] = np.array([], dtype=np.float64)
 
-        flt_img['fnames_sat_img0'] = []
-        flt_img['extent_sat_img0'] = extent
-        flt_img['jday_sat_img0'] = np.array([], dtype=np.float64)
+        flt_img['fnames_sat1'] = []
+        flt_img['extent_sat1'] = extent
+        flt_img['jday_sat1'] = np.array([], dtype=np.float64)
 
-        flt_img['fnames_cam_img']  = []
-        flt_img['jday_cam_img'] = np.array([], dtype=np.float64)
+        flt_img['fnames_cam0']  = []
+        flt_img['jday_cam0'] = np.array([], dtype=np.float64)
 
         for j in range(flt_trks[i]['jday'].size):
 
-            index_sat = np.argmin(np.abs(jday_sat-flt_trks[i]['jday'][j]))
-            flt_img['satID'].append(os.path.basename(fnames_sat[index_sat]).split('_')[0].replace('-', ' '))
-            flt_img['fnames_sat_img'].append(fnames_sat[index_sat])
-            flt_img['jday_sat_img'] = np.append(flt_img['jday_sat_img'], jday_sat[index_sat])
+            index_sat0 = np.argmin(np.abs(jday_sat0-flt_trks[i]['jday'][j]))
+            flt_img['id_sat0'].append(os.path.basename(fnames_sat0[index_sat0]).split('_')[0].replace('-', ' '))
+            flt_img['fnames_sat0'].append(fnames_sat0[index_sat0])
+            flt_img['jday_sat0'] = np.append(flt_img['jday_sat0'], jday_sat0[index_sat0])
 
             # this will change
             #/--------------------------------------------------------------\#
-            index_sat0 = np.argmin(np.abs(jday_sat0-flt_trks[i]['jday'][j]))
-            flt_img['fnames_sat_img0'].append(fnames_sat0[index_sat0])
-            flt_img['jday_sat_img0'] = np.append(flt_img['jday_sat_img0'], jday_sat0[index_sat0])
+            index_sat1 = np.argmin(np.abs(jday_sat1-flt_trks[i]['jday'][j]))
+            flt_img['fnames_sat1'].append(fnames_sat1[index_sat1])
+            flt_img['jday_sat1'] = np.append(flt_img['jday_sat1'], jday_sat1[index_sat1])
             #\--------------------------------------------------------------/#
 
-            index_cam = np.argmin(np.abs(jday_cam-flt_trks[i]['jday'][j]))
-            flt_img['fnames_cam_img'].append(fnames_cam[index_cam])
-            flt_img['jday_cam_img'] = np.append(flt_img['jday_cam_img'], jday_cam[index_cam])
+            index_cam = np.argmin(np.abs(jday_cam0-flt_trks[i]['jday'][j]))
+            flt_img['fnames_cam0'].append(fnames_cam0[index_cam])
+            flt_img['jday_cam0'] = np.append(flt_img['jday_cam0'], jday_cam0[index_cam])
 
         flt_imgs.append(flt_img)
     #\--------------------------------------------------------------/#
@@ -1335,7 +1355,6 @@ def main_pre_wff(
             flt_imgs=flt_imgs,
             fname=fname,
             overwrite=True,
-            overwrite_rtm=run_rtm,
             )
     #\----------------------------------------------------------------------------/#
 
@@ -1482,20 +1501,20 @@ def plot_video_frame(statements, test=False):
     else:
         has_att_corr = False
 
-    if ('fnames_sat_img' in vnames_img) and ('extent_sat_img' in vnames_img):
-        has_sat_img = True
+    if ('fnames_sat0' in vnames_img) and ('extent_sat0' in vnames_img):
+        has_sat0 = True
     else:
-        has_sat_img = False
+        has_sat0 = False
 
-    if ('fnames_sat_img0' in vnames_img) and ('extent_sat_img0' in vnames_img):
-        has_sat_img0 = True
+    if ('fnames_sat1' in vnames_img) and ('extent_sat1' in vnames_img):
+        has_sat1 = True
     else:
-        has_sat_img0 = False
+        has_sat1 = False
 
-    if ('fnames_cam_img' in vnames_img):
-        has_cam_img = True
+    if ('fnames_cam0' in vnames_img):
+        has_cam0 = True
     else:
-        has_cam_img = False
+        has_cam0 = False
     #\----------------------------------------------------------------------------/#
 
 
@@ -1519,7 +1538,7 @@ def plot_video_frame(statements, test=False):
     alt_cmap = mpl.colormaps['jet']
     alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=6.0)
 
-    dlon = flt_sim0.flt_imgs[index_trk]['extent_sat_img'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat_img'][0]
+    dlon = flt_sim0.flt_imgs[index_trk]['extent_sat0'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat0'][0]
     Nscale = int(dlon/1.3155229999999989 * 15)
 
     arrow_prop = dict(
@@ -1567,7 +1586,7 @@ def plot_video_frame(statements, test=False):
     # map of flight track overlay satellite imagery
     proj0 = ccrs.Orthographic(
             central_longitude=lon_current,
-            central_latitude=80.0,
+            central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
             )
     ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect='auto')
 
@@ -1598,18 +1617,19 @@ def plot_video_frame(statements, test=False):
 
     # base plot
     #/----------------------------------------------------------------------------\#
-    if has_sat_img:
-        extent_half = flt_img0['extent_sat_img'][1] - flt_img0['extent_sat_img'][0]
-        extent_img = [lon_current-extent_half, lon_current+extent_half, flt_img0['extent_sat_img'][2], flt_img0['extent_sat_img'][3]]
+    if has_sat0:
+        lon_half = flt_img0['extent_sat0'][1] - flt_img0['extent_sat0'][0]
+        lat_half = flt_img0['extent_sat0'][3] - flt_img0['extent_sat0'][2]
+        # lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
+        # extent_img = [lon_current-lon_half, lon_current+lon_half, lat_mean-lon_half*np.cos(np.deg2rad(lat_mean)), lat_mean+lon_half*np.cos(np.deg2rad(lat_mean))]
+        extent_img = [lon_current-lon_half, lon_current+lon_half, flt_sim0.extent[2], flt_sim0.extent[3]]
         ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
 
-        fname_sat = flt_img0['fnames_sat_img'][index_pnt]
+        fname_sat = flt_img0['fnames_sat0'][index_pnt]
 
         img = mpl_img.imread(fname_sat)
-        logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
-        img[logic_black, -1] = 0.0
 
-        extent_ori = flt_img0['extent_sat_img_ori']
+        extent_ori = flt_img0['extent_sat0_ori']
         lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
         lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
@@ -1626,23 +1646,39 @@ def plot_video_frame(statements, test=False):
         lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
         img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
 
-        ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
+        ax_map.add_feature(cartopy.feature.OCEAN, zorder=0)
+        ax_map.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='none')
 
-        rect = mpatches.Rectangle((lon_current-1.0, lat_current-0.25), 2.0, 0.5, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree())
+        if img.ndim == 2:
+            logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
+            img[logic_black, -1] = 0.0
+            ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
+
+        fraction = 0.2
+        lon_half = lon_half*fraction
+        lat_half = lat_half*fraction
+        # lat_half = (flt_sim0.extent[3]-flt_sim0.extent[2])/2.0 * fraction
+        # lon_half = (flt_sim0.extent[1]-flt_sim0.extent[0])/2.0 * fraction
+        # lon_half = lat_half/np.cos(np.deg2rad((flt_sim0.extent[2]+flt_sim0.extent[3])/2.0))
+        lon_s = lon_current-lon_half*fraction
+        lon_e = lon_current+lon_half*fraction
+        lat_s = lon_current-lon_half*fraction
+        lat_e = lon_current+lon_half*fraction
+
+        rect = mpatches.Rectangle((lon_s, lat_s), lon_half*2.0, lon_half*2.0, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree())
         ax_map.add_patch(rect)
 
 
-    if has_sat_img0:
-        extent_img = lon_current-1.0, lon_current+1.0, lat_current-0.25, lat_current+0.25
+    if has_sat1:
+        extent_img = [lon_s, lon_e, lat_s, lat_e]
+
         ax_map0.set_extent(extent_img, crs=ccrs.PlateCarree())
 
-        fname_sat0 = flt_img0['fnames_sat_img0'][index_pnt]
+        fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
 
-        img = mpl_img.imread(fname_sat0)
-        logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
-        img[logic_black, -1] = 0.0
+        img = mpl_img.imread(fname_sat1)
 
-        extent_ori = flt_img0['extent_sat_img0_ori']
+        extent_ori = flt_img0['extent_sat1_ori']
         lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
         lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
@@ -1659,9 +1695,15 @@ def plot_video_frame(statements, test=False):
         lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
         img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
 
-        ax_map0.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
+        ax_map0.add_feature(cartopy.feature.OCEAN, zorder=0)
+        ax_map0.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='none')
 
-    if has_cam_img:
+        if img.ndim == 2:
+            logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
+            img[logic_black, -1] = 0.0
+            ax_map0.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
+
+    if has_cam0:
         # ang_cam_offset = -152.0 # for ORACLES
         ang_cam_offset = -233.0 # for ARCSIX
         cam_x_s = 5.0
@@ -1672,7 +1714,7 @@ def plot_video_frame(statements, test=False):
         cam_hist_x_e = 255.0
         cam_hist_bins = np.linspace(cam_hist_x_s, cam_hist_x_e, 31)
 
-        fname_cam = flt_img0['fnames_cam_img'][index_pnt]
+        fname_cam = flt_img0['fnames_cam0'][index_pnt]
         img = mpl_img.imread(fname_cam)[:-200, 540:-640, :]
 
         # if ('ang_hed' in vnames_trk):
@@ -1806,16 +1848,18 @@ def plot_video_frame(statements, test=False):
     # figure settings
     #/----------------------------------------------------------------------------\#
     title_fig = '%s UTC' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'))
+    if (_title_extra_ is not None) and (_title_extra_!=''):
+        title_fig = '%s (%s)' % (title_fig, _title_extra_)
     fig.suptitle(title_fig, y=0.96, fontsize=20)
     #\----------------------------------------------------------------------------/#
 
 
     # map plot settings
     #/----------------------------------------------------------------------------\#
-    if has_sat_img:
+    if has_sat0:
 
-        title_map = '%s at %s UTC' % (flt_img0['satID'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat_img'][index_pnt]).strftime('%H:%M'))
-        time_diff = np.abs(flt_img0['jday_sat_img'][index_pnt]-jday_current)*86400.0
+        title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
+        time_diff = np.abs(flt_img0['jday_sat0'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map.set_title(title_map, color='gray')
         else:
@@ -1840,9 +1884,9 @@ def plot_video_frame(statements, test=False):
 
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
-    if has_sat_img0:
+    if has_sat1:
         title_map0 = 'False Color 721'
-        time_diff = np.abs(flt_img0['jday_sat_img0'][index_pnt]-jday_current)*86400.0
+        time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map0.set_title(title_map0, color='gray')
         else:
@@ -1858,8 +1902,8 @@ def plot_video_frame(statements, test=False):
 
     # camera image plot settings
     #/----------------------------------------------------------------------------\#
-    if has_cam_img:
-        jday_cam  = flt_img0['jday_cam_img'][index_pnt]
+    if has_cam0:
+        jday_cam  = flt_img0['jday_cam0'][index_pnt]
         dtime_cam = er3t.util.jday_to_dtime(jday_cam)
 
         title_img = 'Camera at %s UTC' % (dtime_cam.strftime('%H:%M:%S'))
@@ -1953,9 +1997,10 @@ def plot_video_frame(statements, test=False):
     # acknowledgements
     #/----------------------------------------------------------------------------\#
     text1 = '\
-presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hirata, Arabella Chamberlain, Katey Dong, Jeffery Drouet, and Sebastian Schmidt\n\
+presented by ARCSIX SSFR Team: Hong Chen (one of the many who is proudly from the designated country, China), Vikas Nataraja, Yu-Wen Chen, Ken Hirata, Arabella Chamberlain, Katey Dong, Jeffery Drouet, and Sebastian Schmidt\n\
+Acknowledgements to ARCSIX Data System Team: Ryan Bennett; ARCSIX Passive Imagery Team: Kerry Meyer, Colten Peterson, and Steve Platnick\
 '
-    ax.annotate(text1, xy=(0.5, 0.24), fontsize=8, color='gray', xycoords='axes fraction', ha='center', va='center')
+    ax.annotate(text1, xy=(0.5, 0.25), fontsize=8, color='gray', xycoords='axes fraction', ha='center', va='center')
     ax.axis('off')
     #\----------------------------------------------------------------------------/#
 
@@ -1991,7 +2036,6 @@ def main_pre(
         wvl_step_ssfr=3,
         ):
 
-
     # date time stamp
     #/----------------------------------------------------------------------------\#
     date_s = date.strftime('%Y%m%d')
@@ -2012,11 +2056,11 @@ def main_pre(
     # force flight track to start at PSB
     #/--------------------------------------------------------------\#
     # location of Pituffik Space Base (PSB)
-    # lon0 = -68.70379848070486
-    # lat0 = 76.53111177550895+5.0
+    lon0 = -68.70379848070486
+    lat0 = 76.53111177550895+5.0
 
-    # lon = (lon-lon[~np.isnan(lon)][0]) + lon0
-    # lat = (lat-lat[~np.isnan(lat)][0]) + lat0
+    lon = (lon-lon[~np.isnan(lon)][0]) + lon0
+    lat = (lat-lat[~np.isnan(lat)][0]) + lat0
     #\--------------------------------------------------------------/#
 
     logic0 = (~np.isnan(jday) & ~np.isinf(sza))   & \
@@ -2036,63 +2080,85 @@ def main_pre(
     #\--------------------------------------------------------------/#
 
 
+    # read in nav data
+    #/--------------------------------------------------------------\#
+    fname_nav = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
+    if os.path.exists(fname_nav):
+        has_alp = True
+    else:
+        has_alp = False
+
+    if has_alp:
+        f_alp = h5py.File(fname_nav, 'r')
+        ang_hed = f_alp['ang_hed'][...][logic0][::time_step]
+        ang_pit = f_alp['ang_pit_s'][...][logic0][::time_step]
+        ang_rol = f_alp['ang_rol_s'][...][logic0][::time_step]
+        ang_pit_m = f_alp['ang_pit_m'][...][logic0][::time_step]
+        ang_rol_m = f_alp['ang_rol_m'][...][logic0][::time_step]
+        f_alp.close()
+    #\--------------------------------------------------------------/#
+
+
     # read in spns data
     #/--------------------------------------------------------------\#
     # fname_spns = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
     fname_spns = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
-    f_spns = h5py.File(fname_spns, 'r')
-    spns_tot_flux = f_spns['tot/flux'][...][logic0, :][::time_step, ::wvl_step_spns]
-    spns_tot_wvl  = f_spns['tot/wvl'][...][::wvl_step_spns]
-    spns_dif_flux = f_spns['dif/flux'][...][logic0, :][::time_step, ::wvl_step_spns]
-    spns_dif_wvl  = f_spns['dif/wvl'][...][::wvl_step_spns]
-    f_spns.close()
+    if os.path.exists(fname_spns):
+        has_spns = True
+    else:
+        has_spns = False
+
+    if has_spns:
+        f_spns = h5py.File(fname_spns, 'r')
+        spns_tot_flux = f_spns['tot/flux'][...][logic0, :][::time_step, ::wvl_step_spns]
+        spns_tot_wvl  = f_spns['tot/wvl'][...][::wvl_step_spns]
+        spns_dif_flux = f_spns['dif/flux'][...][logic0, :][::time_step, ::wvl_step_spns]
+        spns_dif_wvl  = f_spns['dif/wvl'][...][::wvl_step_spns]
+        f_spns.close()
     #\--------------------------------------------------------------/#
-    # print(spns_tot_flux.shape)
-    # print(spns_tot_wvl.shape)
-    # print(spns_dif_flux.shape)
-    # print(spns_dif_wvl.shape)
 
 
     # read in ssfr-a data
     #/--------------------------------------------------------------\#
     fname_ssfr1 = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr1_.upper(), _platform_.upper(), date_s)
-    f_ssfr1 = h5py.File(fname_ssfr1, 'r')
-    ssfr1_zen_flux = f_ssfr1['zen/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    ssfr1_zen_wvl  = f_ssfr1['zen/wvl'][...][::wvl_step_ssfr]
-    ssfr1_nad_flux = f_ssfr1['nad/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    ssfr1_nad_wvl  = f_ssfr1['nad/wvl'][...][::wvl_step_ssfr]
-    ssfr1_zen_toa  = f_ssfr1['zen/toa0'][...][::wvl_step_ssfr]
-    f_ssfr1.close()
+    if os.path.exists(fname_ssfr1):
+        has_ssfr1 = True
+    else:
+        has_ssfr1 = False
+
+    if has_ssfr1:
+        f_ssfr1 = h5py.File(fname_ssfr1, 'r')
+        ssfr1_zen_flux = f_ssfr1['zen/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+        ssfr1_zen_wvl  = f_ssfr1['zen/wvl'][...][::wvl_step_ssfr]
+        ssfr1_nad_flux = f_ssfr1['nad/flux'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+        ssfr1_nad_wvl  = f_ssfr1['nad/wvl'][...][::wvl_step_ssfr]
+        ssfr1_zen_toa  = f_ssfr1['zen/toa0'][...][::wvl_step_ssfr]
+        f_ssfr1.close()
     #\--------------------------------------------------------------/#
-    # print(ssfr_zen_flux.shape)
-    # print(ssfr_zen_wvl.shape)
-    # print(ssfr_nad_flux.shape)
-    # print(ssfr_nad_wvl.shape)
+
 
     # read in ssfr-b data
     #/--------------------------------------------------------------\#
-    # fname_ssfr2 = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr2_.upper(), _platform_.upper(), date_s)
-    # f_ssfr2 = h5py.File(fname_ssfr2, 'r')
-    # ssfr2_zen_rad = f_ssfr2['zen/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    # ssfr2_zen_wvl = f_ssfr2['zen/wvl'][...][::wvl_step_ssfr]
-    # ssfr2_nad_rad = f_ssfr2['nad/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
-    # ssfr2_nad_wvl = f_ssfr2['nad/wvl'][...][::wvl_step_ssfr]
-    # f_ssfr2.close()
-    #\--------------------------------------------------------------/#
+    fname_ssfr2 = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr2_.upper(), _platform_.upper(), date_s)
+    if os.path.exists(fname_ssfr2):
+        has_ssfr2 = True
+    else:
+        has_ssfr2 = False
 
-
-    # read in nav data
+    # !!!!!!!!!!!!!
+    # turn off SSFR-B
     #/--------------------------------------------------------------\#
-    fname_nav = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
-    f_nav = h5py.File(fname_nav, 'r')
-    ang_hed = f_nav['ang_hed'][...][logic0][::time_step]
-    ang_pit = f_nav['ang_pit_s'][...][logic0][::time_step]
-    ang_rol = f_nav['ang_rol_s'][...][logic0][::time_step]
-    ang_pit_m = f_nav['ang_pit_m'][...][logic0][::time_step]
-    ang_rol_m = f_nav['ang_rol_m'][...][logic0][::time_step]
-    f_nav.close()
+    has_ssfr2 = False
     #\--------------------------------------------------------------/#
 
+    if has_ssfr2:
+        f_ssfr2 = h5py.File(fname_ssfr2, 'r')
+        ssfr2_zen_rad = f_ssfr2['zen/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+        ssfr2_zen_wvl = f_ssfr2['zen/wvl'][...][::wvl_step_ssfr]
+        ssfr2_nad_rad = f_ssfr2['nad/rad'][...][logic0, :][::time_step, ::wvl_step_ssfr]
+        ssfr2_nad_wvl = f_ssfr2['nad/wvl'][...][::wvl_step_ssfr]
+        f_ssfr2.close()
+    #\--------------------------------------------------------------/#
 
 
     # pre-process the aircraft and satellite data
@@ -2117,27 +2183,32 @@ def main_pre(
     flt_trk['sza']  = sza[logic]
     flt_trk['tmhr'] = tmhr[logic]
     flt_trk['alt']  = alt[logic]/1000.0
-    flt_trk['ang_hed'] = ang_hed[logic]
-    flt_trk['ang_pit'] = ang_pit[logic]
-    flt_trk['ang_rol'] = ang_rol[logic]
-    flt_trk['ang_pit_m'] = ang_pit_m[logic]
-    flt_trk['ang_rol_m'] = ang_rol_m[logic]
 
-    flt_trk['f-down-total_spns']   = spns_tot_flux[logic, :]
-    flt_trk['f-down-diffuse_spns'] = spns_dif_flux[logic, :]
-    flt_trk['f-down-direct_spns']  = flt_trk['f-down-total_spns'] - flt_trk['f-down-diffuse_spns']
-    flt_trk['wvl_spns'] = spns_tot_wvl
+    if has_alp:
+        flt_trk['ang_hed'] = ang_hed[logic]
+        flt_trk['ang_pit'] = ang_pit[logic]
+        flt_trk['ang_rol'] = ang_rol[logic]
+        flt_trk['ang_pit_m'] = ang_pit_m[logic]
+        flt_trk['ang_rol_m'] = ang_rol_m[logic]
 
-    flt_trk['f-down_ssfr']   = ssfr1_zen_flux[logic, :]
-    flt_trk['f-up_ssfr']     = ssfr1_nad_flux[logic, :]
-    flt_trk['wvl_ssfr1_zen'] = ssfr1_zen_wvl
-    flt_trk['wvl_ssfr1_nad'] = ssfr1_nad_wvl
-    flt_trk['f-down_toa']    = ssfr1_zen_toa
+    if has_spns:
+        flt_trk['f-down-total_spns']   = spns_tot_flux[logic, :]
+        flt_trk['f-down-diffuse_spns'] = spns_dif_flux[logic, :]
+        flt_trk['f-down-direct_spns']  = flt_trk['f-down-total_spns'] - flt_trk['f-down-diffuse_spns']
+        flt_trk['wvl_spns'] = spns_tot_wvl
 
-    # flt_trk['r-down_ssfr']   = ssfr2_zen_rad[logic, :]
-    # flt_trk['r-up_ssfr']     = ssfr2_nad_rad[logic, :]
-    # flt_trk['wvl_ssfr2_zen'] = ssfr2_zen_wvl
-    # flt_trk['wvl_ssfr2_nad'] = ssfr2_nad_wvl
+    if has_ssfr1:
+        flt_trk['f-down_ssfr']   = ssfr1_zen_flux[logic, :]
+        flt_trk['f-up_ssfr']     = ssfr1_nad_flux[logic, :]
+        flt_trk['wvl_ssfr1_zen'] = ssfr1_zen_wvl
+        flt_trk['wvl_ssfr1_nad'] = ssfr1_nad_wvl
+        flt_trk['f-down_toa']    = ssfr1_zen_toa
+
+    if has_ssfr2:
+        flt_trk['r-down_ssfr']   = ssfr2_zen_rad[logic, :]
+        flt_trk['r-up_ssfr']     = ssfr2_nad_rad[logic, :]
+        flt_trk['wvl_ssfr2_zen'] = ssfr2_zen_wvl
+        flt_trk['wvl_ssfr2_nad'] = ssfr2_nad_wvl
 
     # partition the flight track into multiple mini flight track segments
     flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)
@@ -2147,9 +2218,9 @@ def main_pre(
     # process camera imagery
     #/----------------------------------------------------------------------------\#
     fdirs = er3t.util.get_all_folders(_fdir_cam_img_, pattern='*%4.4d*%2.2d*%2.2d*nac*jpg*' % (date.year, date.month, date.day))
-    fdir_cam = sorted(fdirs, key=os.path.getmtime)[-1]
-    fnames_cam = sorted(glob.glob('%s/*.jpg' % (fdir_cam)))
-    jday_cam = get_jday_cam_img(date, fnames_cam)
+    fdir_cam0 = sorted(fdirs, key=os.path.getmtime)[-1]
+    fnames_cam0 = sorted(glob.glob('%s/*.jpg' % (fdir_cam0)))
+    jday_cam0 = get_jday_cam_img(date, fnames_cam0)
     #\----------------------------------------------------------------------------/#
 
 
@@ -2157,7 +2228,7 @@ def main_pre(
     #/----------------------------------------------------------------------------\#
     date_sat_s  = date.strftime('%Y-%m-%d')
 
-    fnames_sat  = {
+    fnames_sat0  = {
             'ca_archipelago': {
                 'extent': [-158.00, -21.03, 76.38, 88.06],
                 },
@@ -2166,29 +2237,30 @@ def main_pre(
                 },
             }
 
-    fnames_sat0 = copy.deepcopy(fnames_sat)
+    fnames_sat1 = copy.deepcopy(fnames_sat0)
 
-    for key in fnames_sat.keys():
+    for key in fnames_sat0.keys():
 
         fdir_in = '%s/%s' % (_fdir_sat_img_vn_, key)
 
-        fnames_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
-        jday_sat_ , fnames_sat_  = process_sat_img_vn(fnames_tc)
-        fnames_sat[key]['jday']    = jday_sat_
-        fnames_sat[key]['fnames']  = fnames_sat_
-
         fnames_fc = er3t.util.get_all_files(fdir_in, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
-        jday_sat0_, fnames_sat0_ = process_sat_img_vn(fnames_fc)
-        fnames_sat0[key]['jday']   = jday_sat0_
-        fnames_sat0[key]['fnames'] = fnames_sat0_
+        jday_sat0_ , fnames_sat0_  = process_sat_img_vn(fnames_fc)
+        fnames_sat0[key]['jday']    = jday_sat0_
+        fnames_sat0[key]['fnames']  = fnames_sat0_
+
+        fnames_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
+        jday_sat1_, fnames_sat1_ = process_sat_img_vn(fnames_tc)
+        fnames_sat1[key]['jday']   = jday_sat1_
+        fnames_sat1[key]['fnames'] = fnames_sat1_
     #\----------------------------------------------------------------------------/#
+
 
 
     # process imagery
     #/----------------------------------------------------------------------------\#
     # create python dictionary to store corresponding satellite imagery data info
     #/--------------------------------------------------------------\#
-    extent = get_extent(flt_trk['lon'], flt_trk['lat'], margin=0.5, scale_lon=1.5)
+    extent = get_extent(flt_trk['lon'], flt_trk['lat'], margin=0.5)
 
     flt_imgs = []
     for i in range(len(flt_trks)):
@@ -2199,11 +2271,11 @@ def main_pre(
 
         region_contain = {}
         jday_diff = {}
-        for key in fnames_sat.keys():
-            region_contain[key] = contain_lonlat_check(flt_trk0['lon'], flt_trk0['lat'], fnames_sat[key]['extent'])
-            jday_diff[key] = np.abs(flt_trk0['jday0']-fnames_sat[key]['jday'][np.argmin(np.abs(flt_trk0['jday0']-fnames_sat[key]['jday']))])
+        for key in fnames_sat0.keys():
+            region_contain[key] = contain_lonlat_check(flt_trk0['lon'], flt_trk0['lat'], fnames_sat0[key]['extent'])
+            jday_diff[key] = np.abs(flt_trk0['jday0']-fnames_sat0[key]['jday'][np.argmin(np.abs(flt_trk0['jday0']-fnames_sat0[key]['jday']))])
 
-        key1, key2 = fnames_sat.keys()
+        key1, key2 = fnames_sat0.keys()
         if region_contain[key1] and (not region_contain[key2]):
             region_select = key1
         elif (not region_contain[key1]) and region_contain[key2]:
@@ -2219,39 +2291,38 @@ def main_pre(
                 region_select = _preferred_region_
 
 
-        flt_img['satID'] = []
+        flt_img['id_sat0'] = []
+        flt_img['fnames_sat0'] = []
+        flt_img['extent_sat0'] = extent
+        flt_img['extent_sat0_ori'] = fnames_sat0[region_select]['extent']
+        flt_img['jday_sat0']   = np.array([], dtype=np.float64)
 
-        flt_img['fnames_sat_img'] = []
-        flt_img['extent_sat_img'] = extent
-        flt_img['extent_sat_img_ori'] = fnames_sat[region_select]['extent']
-        flt_img['jday_sat_img']   = np.array([], dtype=np.float64)
+        flt_img['fnames_sat1'] = []
+        flt_img['extent_sat1'] = extent
+        flt_img['extent_sat1_ori'] = fnames_sat1[region_select]['extent']
+        flt_img['jday_sat1']   = np.array([], dtype=np.float64)
 
-        flt_img['fnames_sat_img0'] = []
-        flt_img['extent_sat_img0'] = extent
-        flt_img['extent_sat_img0_ori'] = fnames_sat0[region_select]['extent']
-        flt_img['jday_sat_img0']   = np.array([], dtype=np.float64)
-
-        flt_img['fnames_cam_img']  = []
-        flt_img['jday_cam_img'] = np.array([], dtype=np.float64)
+        flt_img['fnames_cam0']  = []
+        flt_img['jday_cam0'] = np.array([], dtype=np.float64)
 
         for j in range(flt_trks[i]['jday'].size):
-
-            jday_sat_ = fnames_sat[region_select]['jday']
-            fnames_sat_ = fnames_sat[region_select]['fnames']
-            index_sat = np.argmin(np.abs(jday_sat_-flt_trks[i]['jday'][j]))
-            flt_img['satID'].append(os.path.basename(fnames_sat_[index_sat]).split('_')[0].replace('-', ' '))
-            flt_img['fnames_sat_img'].append(fnames_sat_[index_sat])
-            flt_img['jday_sat_img'] = np.append(flt_img['jday_sat_img'], jday_sat_[index_sat])
 
             jday_sat0_ = fnames_sat0[region_select]['jday']
             fnames_sat0_ = fnames_sat0[region_select]['fnames']
             index_sat0 = np.argmin(np.abs(jday_sat0_-flt_trks[i]['jday'][j]))
-            flt_img['fnames_sat_img0'].append(fnames_sat0_[index_sat0])
-            flt_img['jday_sat_img0'] = np.append(flt_img['jday_sat_img0'], jday_sat0_[index_sat0])
+            flt_img['id_sat0'].append(os.path.basename(fnames_sat0_[index_sat0]).split('_')[0].replace('-', ' '))
+            flt_img['fnames_sat0'].append(fnames_sat0_[index_sat0])
+            flt_img['jday_sat0'] = np.append(flt_img['jday_sat0'], jday_sat0_[index_sat0])
 
-            index_cam = np.argmin(np.abs(jday_cam-flt_trks[i]['jday'][j]))
-            flt_img['fnames_cam_img'].append(fnames_cam[index_cam])
-            flt_img['jday_cam_img'] = np.append(flt_img['jday_cam_img'], jday_cam[index_cam])
+            jday_sat1_ = fnames_sat1[region_select]['jday']
+            fnames_sat1_ = fnames_sat1[region_select]['fnames']
+            index_sat1 = np.argmin(np.abs(jday_sat1_-flt_trks[i]['jday'][j]))
+            flt_img['fnames_sat1'].append(fnames_sat1_[index_sat1])
+            flt_img['jday_sat1'] = np.append(flt_img['jday_sat1'], jday_sat1_[index_sat1])
+
+            index_cam = np.argmin(np.abs(jday_cam0-flt_trks[i]['jday'][j]))
+            flt_img['fnames_cam0'].append(fnames_cam0[index_cam])
+            flt_img['jday_cam0'] = np.append(flt_img['jday_cam0'], jday_cam0[index_cam])
 
         flt_imgs.append(flt_img)
     #\--------------------------------------------------------------/#
@@ -2263,11 +2334,11 @@ def main_pre(
     sim0 = flt_sim(
             date=date,
             wavelength=wvl0,
+            extent=extent,
             flt_trks=flt_trks,
             flt_imgs=flt_imgs,
             fname=fname,
             overwrite=True,
-            overwrite_rtm=run_rtm,
             )
     #\----------------------------------------------------------------------------/#
 
@@ -2332,13 +2403,13 @@ if __name__ == '__main__':
 
         # research flights in the Arctic
         #/----------------------------------------------------------------------------\#
-        # main_pre(date)
-        main_vid(date, wvl0=_wavelength_)
+        main_pre(date)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
 
     # test
