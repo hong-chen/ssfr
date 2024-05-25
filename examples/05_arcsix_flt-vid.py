@@ -50,7 +50,7 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -1618,10 +1618,9 @@ def plot_video_frame(statements, test=False):
     # base plot
     #/----------------------------------------------------------------------------\#
     if has_sat0:
-        lon_half = flt_img0['extent_sat0'][1] - flt_img0['extent_sat0'][0]
-        lat_half = flt_img0['extent_sat0'][3] - flt_img0['extent_sat0'][2]
-        # lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
-        # extent_img = [lon_current-lon_half, lon_current+lon_half, lat_mean-lon_half*np.cos(np.deg2rad(lat_mean)), lat_mean+lon_half*np.cos(np.deg2rad(lat_mean))]
+        lon_half = (flt_img0['extent_sat0'][1] - flt_img0['extent_sat0'][0])/2.0
+        lat_half = (flt_img0['extent_sat0'][3] - flt_img0['extent_sat0'][2])/2.0
+        lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
         extent_img = [lon_current-lon_half, lon_current+lon_half, flt_sim0.extent[2], flt_sim0.extent[3]]
         ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
 
@@ -1654,18 +1653,14 @@ def plot_video_frame(statements, test=False):
             img[logic_black, -1] = 0.0
             ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
 
-        fraction = 0.2
-        lon_half = lon_half*fraction
-        lat_half = lat_half*fraction
-        # lat_half = (flt_sim0.extent[3]-flt_sim0.extent[2])/2.0 * fraction
-        # lon_half = (flt_sim0.extent[1]-flt_sim0.extent[0])/2.0 * fraction
-        # lon_half = lat_half/np.cos(np.deg2rad((flt_sim0.extent[2]+flt_sim0.extent[3])/2.0))
-        lon_s = lon_current-lon_half*fraction
-        lon_e = lon_current+lon_half*fraction
-        lat_s = lon_current-lon_half*fraction
-        lat_e = lon_current+lon_half*fraction
+        lon_half = 0.8
+        lat_half = 0.5
+        lon_s = lon_current-lon_half
+        lon_e = lon_current+lon_half
+        lat_s = lat_current-lat_half
+        lat_e = lat_current+lat_half
 
-        rect = mpatches.Rectangle((lon_s, lat_s), lon_half*2.0, lon_half*2.0, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree())
+        rect = mpatches.Rectangle((lon_s, lat_s), lon_half*2.0, lat_half*2.0, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree())
         ax_map.add_patch(rect)
 
 
@@ -1868,7 +1863,7 @@ def plot_video_frame(statements, test=False):
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
         g1 = ax_map.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-')
         g1.xlocator = FixedLocator(np.arange(-180, 181, 2.0))
-        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 1.0))
+        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
         g1.top_labels = False
         g1.right_labels = False
     #\----------------------------------------------------------------------------/#
@@ -1894,8 +1889,8 @@ def plot_video_frame(statements, test=False):
 
         ax_map0.coastlines(resolution='10m', color='black', lw=0.5)
         g2 = ax_map0.gridlines(lw=0.5, color='gray', ls='-')
-        g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 1.0))
-        g2.ylocator = FixedLocator(np.arange(-89.0, 89.1, 0.1))
+        g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 0.5))
+        g2.ylocator = FixedLocator(np.arange(-89.0, 89.1, 0.5))
     ax_map0.axis('off')
     #\----------------------------------------------------------------------------/#
 
@@ -2057,7 +2052,7 @@ def main_pre(
     #/--------------------------------------------------------------\#
     # location of Pituffik Space Base (PSB)
     lon0 = -68.70379848070486
-    lat0 = 76.53111177550895+5.0
+    lat0 = 76.53111177550895
 
     lon = (lon-lon[~np.isnan(lon)][0]) + lon0
     lat = (lat-lat[~np.isnan(lat)][0]) + lat0
@@ -2404,12 +2399,12 @@ if __name__ == '__main__':
         # research flights in the Arctic
         #/----------------------------------------------------------------------------\#
         main_pre(date)
-        # main_vid(date, wvl0=_wavelength_)
+        main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    # sys.exit()
+    sys.exit()
 
 
     # test
