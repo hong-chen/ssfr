@@ -50,7 +50,7 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -2328,7 +2328,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=5,
+        interval=10,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -2386,13 +2386,13 @@ if __name__ == '__main__':
 
         # research flights in the Arctic
         #/----------------------------------------------------------------------------\#
-        # main_pre(date)
-        # main_vid(date, wvl0=_wavelength_)
+        main_pre(date)
+        main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    # sys.exit()
+    sys.exit()
 
 
     # test
