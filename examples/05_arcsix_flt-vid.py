@@ -1630,8 +1630,8 @@ def plot_video_frame(statements, test=False):
         lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
         img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
 
-        ax_map.add_feature(cartopy.feature.OCEAN, zorder=0)
-        ax_map.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='none')
+        # ax_map.add_feature(cartopy.feature.OCEAN, zorder=0)
+        # ax_map.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='none')
 
         if img.ndim == 2:
             logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
@@ -1677,8 +1677,8 @@ def plot_video_frame(statements, test=False):
         lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
         img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
 
-        ax_map0.add_feature(cartopy.feature.OCEAN, zorder=0)
-        ax_map0.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='none')
+        # ax_map0.add_feature(cartopy.feature.OCEAN, zorder=0)
+        # ax_map0.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='none')
 
         if img.ndim == 2:
             logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
