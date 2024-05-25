@@ -55,6 +55,7 @@ import cartopy.crs as ccrs
 
 import er3t
 
+
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
@@ -66,10 +67,11 @@ _ssfr2_        = 'ssfr-b'
 _cam_          = 'nac'
 
 _fdir_main_       = 'data/%s/flt-vid' % _mission_
+_fdir_sat_img_    = 'data/%s/sat-img' % _mission_
+_fdir_cam_img_    = 'data/%s/2024-Spring/p3' % _mission_
+_wavelength_      = 555.0
+
 _fdir_sat_img_vn_ = 'data/%s/sat-img-vn' % _mission_
-_fdir_sat_img_ = 'data/%s/sat-img' % _mission_
-_fdir_cam_img_ = 'data/%s/2024-Spring/p3' % _mission_
-_wavelength_   = 555.0
 
 _preferred_region_ = 'ca_archipelago'
 _aspect_ = 'equal'
