@@ -50,7 +50,7 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -70,7 +70,9 @@ _fdir_sat_img_vn_ = 'data/%s/sat-img-vn' % _mission_
 _fdir_sat_img_ = 'data/%s/sat-img' % _mission_
 _fdir_cam_img_ = 'data/%s/2024-Spring/p3' % _mission_
 _wavelength_   = 555.0
+
 _preferred_region_ = 'ca_archipelago'
+_aspect_ = 'equal'
 
 _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_tmp_graph_ = 'tmp-graph_flt-vid'
@@ -266,7 +268,6 @@ def get_jday_cam_img(date, fnames):
 
 
 
-
 def get_jday_sat_img_vn(fnames):
 
     """
@@ -446,9 +447,6 @@ def contain_lonlat_check(
 
 
 
-
-
-
 class flt_sim:
 
     def __init__(
@@ -526,9 +524,6 @@ class flt_sim:
             if self.verbose:
                 print('Message [flt_sim]: Saving object into %s ...' % fname)
             pickle.dump(self, f)
-
-
-
 
 
 
@@ -1385,8 +1380,6 @@ def main_vid_wff(
 
 
 
-
-
 # for research flights in the Arctic
 #/----------------------------------------------------------------------------\#
 def plot_video_frame(statements, test=False):
@@ -1573,8 +1566,7 @@ def plot_video_frame(statements, test=False):
             central_longitude=lon_current,
             central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
             )
-    # ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect='auto')
-    ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect='equal')
+    ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect=_aspect_)
 
     # flight altitude next to the map
     divider = make_axes_locatable(ax_map)
@@ -1584,7 +1576,7 @@ def plot_video_frame(statements, test=False):
     ax_nav  = fig.add_subplot(gs[:2, 7:9])
 
     # a secondary map
-    ax_map0 = fig.add_subplot(gs[:5, 9:13], projection=proj0, aspect='auto')
+    ax_map0 = fig.add_subplot(gs[:5, 9:13], projection=proj0, aspect=_aspect_)
 
     # camera imagery
     ax_img  = fig.add_subplot(gs[:5, 13:])
@@ -1630,8 +1622,7 @@ def plot_video_frame(statements, test=False):
         lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
         img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
 
-        # ax_map.add_feature(cartopy.feature.OCEAN, zorder=0)
-        # ax_map.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='none')
+        ax_map.stock_img()
 
         if img.ndim == 2:
             logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
@@ -1677,8 +1668,7 @@ def plot_video_frame(statements, test=False):
         lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
         img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
 
-        # ax_map0.add_feature(cartopy.feature.OCEAN, zorder=0)
-        # ax_map0.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='none')
+        ax_map0.stock_img()
 
         if img.ndim == 2:
             logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
@@ -2387,12 +2377,12 @@ if __name__ == '__main__':
         # research flights in the Arctic
         #/----------------------------------------------------------------------------\#
         main_pre(date)
-        main_vid(date, wvl0=_wavelength_)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
 
     # test
