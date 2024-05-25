@@ -50,7 +50,7 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -226,21 +226,6 @@ def get_extent(lon, lat, margin=0.1):
 
     lon_c = (lon_min+lon_max)/2.0
     lat_c = (lat_min+lat_max)/2.0
-
-    # distance approach
-    #/----------------------------------------------------------------------------\#
-    # dist_x1 = er3t.util.cal_geodesic_dist(lon_min, lat_min, lon_max, lat_min)
-    # dist_x2 = er3t.util.cal_geodesic_dist(lon_min, lat_max, lon_max, lat_max)
-    # dist_y  = er3t.util.cal_geodesic_dist(lon_min, lat_min, lon_min, lat_max)
-    # dist_half = max([dist_x1, dist_x2, dist_y])/2.0 * (1.0+margin/2.0)
-
-    # lon0, _    = er3t.util.cal_geodesic_lonlat(lon_c, lat_c, dist_half, -90.0)
-    # lon1, _    = er3t.util.cal_geodesic_lonlat(lon_c, lat_c, dist_half,  90.0)
-    # _   , lat0 = er3t.util.cal_geodesic_lonlat(lon_c, lat_c, dist_half, 180.0)
-    # _   , lat1 = er3t.util.cal_geodesic_lonlat(lon_c, lat_c, dist_half,  0.0)
-
-    # extent = [lon0, lon1, lat0, lat1]
-    #\----------------------------------------------------------------------------/#
 
     deg_x = (lon_max-lon_min)*np.cos(np.deg2rad(lat_c))
     deg_y = (lat_max-lat_min)
@@ -1588,7 +1573,8 @@ def plot_video_frame(statements, test=False):
             central_longitude=lon_current,
             central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
             )
-    ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect='auto')
+    # ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect='auto')
+    ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect='equal')
 
     # flight altitude next to the map
     divider = make_axes_locatable(ax_map)
@@ -1618,9 +1604,8 @@ def plot_video_frame(statements, test=False):
     # base plot
     #/----------------------------------------------------------------------------\#
     if has_sat0:
-        lon_half = (flt_img0['extent_sat0'][1] - flt_img0['extent_sat0'][0])/2.0
-        lat_half = (flt_img0['extent_sat0'][3] - flt_img0['extent_sat0'][2])/2.0
-        lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
+        # lon_half = (flt_img0['extent_sat0'][1] - flt_img0['extent_sat0'][0])/2.0
+        lon_half = 11.0
         extent_img = [lon_current-lon_half, lon_current+lon_half, flt_sim0.extent[2], flt_sim0.extent[3]]
         ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
 
@@ -1632,8 +1617,8 @@ def plot_video_frame(statements, test=False):
         lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
         lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
-        extend_x = 5
-        extend_y = 0.5
+        extend_x = 0
+        extend_y = 0.0
         index_xs = np.where(np.linspace(extent_ori[0], extent_ori[1], img.shape[1])>=extent_img[0]-extend_x)[0][0]
         index_xe = np.where(np.linspace(extent_ori[0], extent_ori[1], img.shape[1])>=extent_img[1]+extend_x)[0][0]
         index_ys = np.where(np.linspace(extent_ori[2], extent_ori[3], img.shape[0])>=extent_img[2]-extend_y)[0][0]
@@ -1653,14 +1638,16 @@ def plot_video_frame(statements, test=False):
             img[logic_black, -1] = 0.0
             ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
 
-        lon_half = 0.8
-        lat_half = 0.5
-        lon_s = lon_current-lon_half
-        lon_e = lon_current+lon_half
-        lat_s = lat_current-lat_half
-        lat_e = lat_current+lat_half
+        lat_half = (flt_img0['extent_sat0'][3] - flt_img0['extent_sat0'][2])/2.0
+        # lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
+        lat_half0 = 0.5
+        lon_half0 = lat_half0*(lon_half/lat_half)
+        lon_s = lon_current-lon_half0
+        lon_e = lon_current+lon_half0
+        lat_s = lat_current-lat_half0
+        lat_e = lat_current+lat_half0
 
-        rect = mpatches.Rectangle((lon_s, lat_s), lon_half*2.0, lat_half*2.0, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree())
+        rect = mpatches.Rectangle((lon_s, lat_s), lon_half0*2.0, lat_half0*2.0, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree())
         ax_map.add_patch(rect)
 
 
@@ -1863,7 +1850,7 @@ def plot_video_frame(statements, test=False):
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
         g1 = ax_map.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-')
         g1.xlocator = FixedLocator(np.arange(-180, 181, 2.0))
-        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
+        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 1.0))
         g1.top_labels = False
         g1.right_labels = False
     #\----------------------------------------------------------------------------/#
@@ -1880,7 +1867,8 @@ def plot_video_frame(statements, test=False):
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
     if has_sat1:
-        title_map0 = 'False Color 721'
+        # title_map0 = 'False Color 721'
+        title_map0 = 'True Color'
         time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map0.set_title(title_map0, color='gray')
@@ -2398,13 +2386,13 @@ if __name__ == '__main__':
 
         # research flights in the Arctic
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
-        main_vid(date, wvl0=_wavelength_)
+        # main_pre(date)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
 
     # test
@@ -2416,7 +2404,6 @@ if __name__ == '__main__':
     statements = (flt_sim0, 0, 243, 1730)
     # statements = (flt_sim0, 1, 443, 1730)
     plot_video_frame(statements, test=True)
-    print(time_e-time_s)
     #\----------------------------------------------------------------------------/#
 
     pass
