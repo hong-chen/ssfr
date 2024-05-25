@@ -124,7 +124,7 @@ def check_continuity(data, threshold=0.1):
 
     return (np.abs(data[1:]-data[:-1]) < threshold)
 
-def partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0):
+def partition_flight_track(flt_trk, jday_edges, margin_x=0.2, margin_y=0.2):
 
     """
     Input:
@@ -213,7 +213,7 @@ def get_jday_sat_img(fnames):
 
     return np.array(jday)
 
-def get_extent(lon, lat, margin=0.1):
+def get_extent(lon, lat, margin=0.2):
 
     logic = check_continuity(lon, threshold=1.0) & check_continuity(lat, threshold=1.0)
     lon = lon[logic]
@@ -1283,7 +1283,7 @@ def main_pre_wff(
     # flt_trk['wvl_ssfr2_nad'] = ssfr2_nad_wvl
 
     # partition the flight track into multiple mini flight track segments
-    flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)
+    flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=0.2, margin_y=0.2)
     #\----------------------------------------------------------------------------/#
 
     # process imagery
@@ -2194,7 +2194,7 @@ def main_pre(
         flt_trk['wvl_ssfr2_nad'] = ssfr2_nad_wvl
 
     # partition the flight track into multiple mini flight track segments
-    flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=1.0, margin_y=1.0)
+    flt_trks = partition_flight_track(flt_trk, jday_edges, margin_x=0.2, margin_y=0.2)
     #\----------------------------------------------------------------------------/#
 
 
@@ -2243,7 +2243,7 @@ def main_pre(
     #/----------------------------------------------------------------------------\#
     # create python dictionary to store corresponding satellite imagery data info
     #/--------------------------------------------------------------\#
-    extent = get_extent(flt_trk['lon'], flt_trk['lat'], margin=0.5)
+    extent = get_extent(flt_trk['lon'], flt_trk['lat'], margin=0.2)
 
     flt_imgs = []
     for i in range(len(flt_trks)):
