@@ -50,7 +50,7 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -738,10 +738,13 @@ def plot_video_frame_wff(statements, test=False):
     # base plot
     #/----------------------------------------------------------------------------\#
     if has_sat0:
+        # extent_sat0 = [-75.92,-71.44,36.20,40.68] # WFF test flight #1
+        extent_sat0 = [-76.10,-74.58,37.46,38.98] # WFF test flight #2
         fname_sat = flt_img0['fnames_sat0'][index_pnt]
         img = mpl_img.imread(fname_sat)
-        ax_map.imshow(img, extent=flt_img0['extent_sat0'], origin='upper', aspect='auto', zorder=0)
-        rect = mpatches.Rectangle((lon_current-0.25, lat_current-0.25), 0.5, 0.5, lw=1.0, ec='k', fc='none')
+        # ax_map.imshow(img, extent=flt_img0['extent_sat0'], origin='upper', aspect='auto', zorder=0)
+        ax_map.imshow(img, extent=extent_sat0, origin='upper', aspect='auto', zorder=0)
+        rect = mpatches.Rectangle((lon_current-0.2, lat_current-0.2), 0.4, 0.4, lw=1.0, ec='k', fc='none')
         ax_map.add_patch(rect)
 
     if has_sat1:
@@ -901,8 +904,8 @@ def plot_video_frame_wff(statements, test=False):
     # map plot settings
     #/----------------------------------------------------------------------------\#
     if has_sat0:
-        ax_map.set_xlim(flt_img0['extent_sat0'][:2])
-        ax_map.set_ylim(flt_img0['extent_sat0'][2:])
+        ax_map.set_xlim(extent_sat0[:2])
+        ax_map.set_ylim(extent_sat0[2:])
 
         title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
         time_diff = np.abs(flt_img0['jday_sat0'][index_pnt]-jday_current)*86400.0
@@ -911,8 +914,8 @@ def plot_video_frame_wff(statements, test=False):
         else:
             ax_map.set_title(title_map)
 
-    ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 2.0)))
-    ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 2.0)))
+    ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 1.0)))
+    ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 1.0)))
     ax_map.set_xlabel('Longitude [$^\\circ$]')
     ax_map.set_ylabel('Latitude [$^\\circ$]')
     #\----------------------------------------------------------------------------/#
@@ -936,8 +939,8 @@ def plot_video_frame_wff(statements, test=False):
         else:
             ax_map0.set_title(title_map0)
 
-    ax_map0.set_xlim((lon_current-0.25, lon_current+0.25))
-    ax_map0.set_ylim((lat_current-0.25, lat_current+0.25))
+    ax_map0.set_xlim((lon_current-0.2, lon_current+0.2))
+    ax_map0.set_ylim((lat_current-0.2, lat_current+0.2))
     ax_map0.axis('off')
     #\----------------------------------------------------------------------------/#
 
@@ -1086,14 +1089,14 @@ def main_pre_wff(
     #/----------------------------------------------------------------------------\#
     # read in aircraft hsk data
     #/--------------------------------------------------------------\#
-    fname_flt = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
+    fname_hsk = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
 
-    f_flt = h5py.File(fname_flt, 'r')
-    jday   = f_flt['jday'][...]
-    tmhr   = f_flt['tmhr'][...]
-    sza    = f_flt['sza'][...]
-    lon    = f_flt['lon'][...]
-    lat    = f_flt['lat'][...]
+    f_hsk = h5py.File(fname_hsk, 'r')
+    jday   = f_hsk['jday'][...]
+    tmhr   = f_hsk['tmhr'][...]
+    sza    = f_hsk['sza'][...]
+    lon    = f_hsk['lon'][...]
+    lat    = f_hsk['lat'][...]
 
     logic0 = (~np.isnan(jday) & ~np.isinf(sza))   & \
              check_continuity(lon, threshold=1.0) & \
@@ -1111,9 +1114,9 @@ def main_pre_wff(
     lon  = lon[logic0][::time_step]
     lat  = lat[logic0][::time_step]
 
-    alt    = f_flt['alt'][...][logic0][::time_step]
+    alt    = f_hsk['alt'][...][logic0][::time_step]
 
-    f_flt.close()
+    f_hsk.close()
     #\--------------------------------------------------------------/#
     # print(tmhr.shape)
     # print(alt.shape)
@@ -1166,10 +1169,10 @@ def main_pre_wff(
     #\----------------------------------------------------------------------------/#
 
 
-    # read in nav data
+    # read in alp data
     #/--------------------------------------------------------------\#
-    fname_nav = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
-    f_alp = h5py.File(fname_nav, 'r')
+    fname_alp = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
+    f_alp = h5py.File(fname_alp, 'r')
     ang_hed = f_alp['ang_hed'][...][logic0][::time_step]
     ang_pit = f_alp['ang_pit_s'][...][logic0][::time_step]
     ang_rol = f_alp['ang_rol_s'][...][logic0][::time_step]
@@ -1343,7 +1346,7 @@ def main_pre_wff(
 def main_vid_wff(
         date,
         wvl0=_wavelength_,
-        interval=20,
+        interval=1,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -1373,7 +1376,7 @@ def main_vid_wff(
     statements = zip([flt_sim0]*indices_trk.size, indices_trk, indices_pnt, indices)
 
     with mp.Pool(processes=15) as pool:
-        r = list(tqdm(pool.imap(plot_video_frame, statements), total=indices_trk.size))
+        r = list(tqdm(pool.imap(plot_video_frame_wff, statements), total=indices_trk.size))
 
     # make video
     fname_mp4 = '%s-FLT-VID_%s_%s.mp4' % (_mission_.upper(), _platform_.upper(), date_s)
@@ -2018,14 +2021,14 @@ def main_pre(
 
     # read in aircraft hsk data
     #/----------------------------------------------------------------------------\#
-    fname_flt = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
+    fname_hsk = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
 
-    f_flt = h5py.File(fname_flt, 'r')
-    jday   = f_flt['jday'][...]
-    tmhr   = f_flt['tmhr'][...]
-    sza    = f_flt['sza'][...]
-    lon    = f_flt['lon'][...]
-    lat    = f_flt['lat'][...]
+    f_hsk = h5py.File(fname_hsk, 'r')
+    jday   = f_hsk['jday'][...]
+    tmhr   = f_hsk['tmhr'][...]
+    sza    = f_hsk['sza'][...]
+    lon    = f_hsk['lon'][...]
+    lat    = f_hsk['lat'][...]
 
     # !!!!!!!!!
     # force flight track to start at PSB
@@ -2049,22 +2052,22 @@ def main_pre(
     lon  = lon[logic0][::time_step]
     lat  = lat[logic0][::time_step]
 
-    alt    = f_flt['alt'][...][logic0][::time_step]
+    alt    = f_hsk['alt'][...][logic0][::time_step]
 
-    f_flt.close()
+    f_hsk.close()
     #\--------------------------------------------------------------/#
 
 
     # read in nav data
     #/--------------------------------------------------------------\#
-    fname_nav = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
-    if os.path.exists(fname_nav):
+    fname_alp = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
+    if os.path.exists(fname_alp):
         has_alp = True
     else:
         has_alp = False
 
     if has_alp:
-        f_alp = h5py.File(fname_nav, 'r')
+        f_alp = h5py.File(fname_alp, 'r')
         ang_hed = f_alp['ang_hed'][...][logic0][::time_step]
         ang_pit = f_alp['ang_pit_s'][...][logic0][::time_step]
         ang_rol = f_alp['ang_rol_s'][...][logic0][::time_step]
@@ -2371,20 +2374,20 @@ if __name__ == '__main__':
 
         # test flight at NASA WFF
         #/----------------------------------------------------------------------------\#
-        # main_pre_wff(date)
-        # main_vid_wff(date, wvl0=_wavelength_)
+        main_pre_wff(date)
+        main_vid_wff(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
 
         # research flights in the Arctic
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
+        # main_pre(date)
         # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    # sys.exit()
+    sys.exit()
 
 
     # test
@@ -2395,7 +2398,7 @@ if __name__ == '__main__':
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
     statements = (flt_sim0, 0, 243, 1730)
     # statements = (flt_sim0, 1, 443, 1730)
-    plot_video_frame(statements, test=True)
+    plot_video_frame_wff(statements, test=True)
     #\----------------------------------------------------------------------------/#
 
     pass

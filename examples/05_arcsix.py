@@ -1625,8 +1625,8 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 30), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration at NASA WFF (calibration abandoned)
-             datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
-             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
+             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
+             datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
             ]
     for date in dates[::-1]:
         main_process_data_v0(date, run=True)
