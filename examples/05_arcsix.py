@@ -1513,10 +1513,10 @@ def main_process_data_v0(date, run=True):
 
     # SPNS v0: raw data
     #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
-    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
-            fdir_out=fdir_out, run=run)
+    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
+    # fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
+    # fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
+    #         fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
 
     # SSFR-A v0: raw data
@@ -1626,11 +1626,13 @@ if __name__ == '__main__':
              # datetime.datetime(2023, 10, 31), # SPNS-B and SSFR-A at Skywatch
              # datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration at NASA WFF (calibration abandoned)
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
-             datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
+             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
+             datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
             ]
     for date in dates[::-1]:
         main_process_data_v0(date, run=True)
         # main_process_data_v0(date, run=False)
+        sys.exit()
 
         # run_offset_check(date)
 

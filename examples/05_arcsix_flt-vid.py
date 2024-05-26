@@ -754,7 +754,7 @@ def plot_video_frame_wff(statements, test=False):
 
     if has_cam0:
         # ang_cam_offset = -152.0 # for ORACLES
-        ang_cam_offset = -233.0 # for ARCSIX
+        ang_cam_offset = -53.0 # for ARCSIX
         cam_x_s = 5.0
         cam_x_e = 255.0*4.0
         cam_y_s = 0.0
@@ -1682,7 +1682,7 @@ def plot_video_frame(statements, test=False):
 
     if has_cam0:
         # ang_cam_offset = -152.0 # for ORACLES
-        ang_cam_offset = -233.0 # for ARCSIX
+        ang_cam_offset = -53.0 # for ARCSIX
         cam_x_s = 5.0
         cam_x_e = 255.0*4.0
         cam_y_s = 0.0
