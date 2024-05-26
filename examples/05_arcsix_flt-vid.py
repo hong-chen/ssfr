@@ -2374,20 +2374,20 @@ if __name__ == '__main__':
 
         # test flight at NASA WFF
         #/----------------------------------------------------------------------------\#
-        # main_pre_wff(date)
-        # main_vid_wff(date, wvl0=_wavelength_)
+        main_pre_wff(date)
+        main_vid_wff(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
 
         # research flights in the Arctic
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
-        main_vid(date, wvl0=_wavelength_)
+        # main_pre(date)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    # sys.exit()
+    sys.exit()
 
 
     # test
