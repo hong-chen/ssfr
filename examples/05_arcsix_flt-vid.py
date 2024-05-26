@@ -744,7 +744,7 @@ def plot_video_frame_wff(statements, test=False):
         img = mpl_img.imread(fname_sat)
         # ax_map.imshow(img, extent=flt_img0['extent_sat0'], origin='upper', aspect='auto', zorder=0)
         ax_map.imshow(img, extent=extent_sat0, origin='upper', aspect='auto', zorder=0)
-        rect = mpatches.Rectangle((lon_current-0.2, lat_current-0.2), 0.4, 0.4, lw=1.0, ec='k', fc='none')
+        rect = mpatches.Rectangle((lon_current-0.1, lat_current-0.1), 0.2, 0.2, lw=1.0, ec='k', fc='none')
         ax_map.add_patch(rect)
 
     if has_sat1:
@@ -914,8 +914,8 @@ def plot_video_frame_wff(statements, test=False):
         else:
             ax_map.set_title(title_map)
 
-    ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 1.0)))
-    ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 1.0)))
+    ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 0.5)))
+    ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 0.5)))
     ax_map.set_xlabel('Longitude [$^\\circ$]')
     ax_map.set_ylabel('Latitude [$^\\circ$]')
     #\----------------------------------------------------------------------------/#
@@ -939,8 +939,8 @@ def plot_video_frame_wff(statements, test=False):
         else:
             ax_map0.set_title(title_map0)
 
-    ax_map0.set_xlim((lon_current-0.2, lon_current+0.2))
-    ax_map0.set_ylim((lat_current-0.2, lat_current+0.2))
+    ax_map0.set_xlim((lon_current-0.1, lon_current+0.1))
+    ax_map0.set_ylim((lat_current-0.1, lat_current+0.1))
     ax_map0.axis('off')
     #\----------------------------------------------------------------------------/#
 
@@ -1948,9 +1948,9 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
 
     if alt_current < 1.0:
-        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.1f  m' % (lon_current, lat_current, alt_current*1000.0)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6d  m' % (lon_current, lat_current, alt_current*1000.0)
     else:
-        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.4f km' % (lon_current, lat_current, alt_current)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.3f km' % (lon_current, lat_current, alt_current)
     ax_tms.set_title(title_all)
 
     ax_tms.spines['right'].set_visible(False)
@@ -2374,20 +2374,20 @@ if __name__ == '__main__':
 
         # test flight at NASA WFF
         #/----------------------------------------------------------------------------\#
-        main_pre_wff(date)
-        main_vid_wff(date, wvl0=_wavelength_)
+        # main_pre_wff(date)
+        # main_vid_wff(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
 
         # research flights in the Arctic
         #/----------------------------------------------------------------------------\#
-        # main_pre(date)
-        # main_vid(date, wvl0=_wavelength_)
+        main_pre(date)
+        main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
 
     # test
