@@ -56,7 +56,8 @@ class read_spns:
         try:
             wvl = np.float_(np.array(lines[info_line-1].strip().split('\t')[1:]))
             self.data['wvl'] = wvl
-        except:
+        except Exception as error:
+            print(error)
             msg = '\nError [read_spns]: Cannot interpret the following header line:\n%s' % lines[info_line-1]
             raise OSError(msg)
         #\----------------------------------------------------------------------------/#
@@ -72,10 +73,12 @@ class read_spns:
             try:
                 line = lines[i].strip()
                 data = line.split('\t')
-                dtime                  = datetime.datetime.strptime(data[0], '%Y-%m-%d %H:%M:%S')
+                dtime_s = ' '.join(data[0].split(' ')[:2])
+                dtime                  = datetime.datetime.strptime(dtime_s, '%Y-%m-%d %H:%M:%S')
                 jday[i-skip_header]    = (dtime  - datetime.datetime(1, 1, 1)).total_seconds() / 86400.0 + 1.0
                 flux[i-skip_header, :] = np.float_(np.array(data[1:]))
-            except:
+            except Exception as error:
+                print(error)
                 if not quiet:
                     msg = '\nWarning [read_spns]: Cannot interpret the following line data (line #%d):\n%s' % (i+1, lines[i])
                     warnings.warn(msg)

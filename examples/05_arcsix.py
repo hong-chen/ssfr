@@ -1499,25 +1499,26 @@ def main_process_data_v0(date, run=True):
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
-    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=run)
+    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+    #         fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
 
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
-    fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
-            fdir_out=fdir_out, run=run)
+    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
+    # fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
+    # fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
+    #         fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
 
     # SPNS v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
-    # fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
-    #         fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
+    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
+            fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
+    sys.exit()
 
     # SSFR-A v0: raw data
     #/----------------------------------------------------------------------------\#
