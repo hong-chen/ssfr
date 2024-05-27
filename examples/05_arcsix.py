@@ -1444,7 +1444,7 @@ def run_offset_check(date):
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
-            description='SSFR-B Nadir Count vs. SSFR Nadir (745nm)',
+            description='SSFR-B Nadir Count vs. SSFR-A Nadir (745nm)',
             fname_html='ssfr-b_offset_check_%s.html' % (date_s))
     #\----------------------------------------------------------------------------/#
 
