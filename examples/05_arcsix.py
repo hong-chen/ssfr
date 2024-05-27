@@ -1318,6 +1318,9 @@ def run_offset_check(date):
     data_spns_v0['tot/jday'] += 1.0
     data_spns_v0['dif/jday'] += 1.0
 
+    # _offset_x_range_ = [-6000.0, 6000.0]
+    _offset_x_range_ = [-300.0, 300.0]
+
     # ALP pitch vs HSK pitch
     #/----------------------------------------------------------------------------\#
     # data_offset = {
@@ -1328,7 +1331,7 @@ def run_offset_check(date):
     #         }
     # ssfr.vis.find_offset_bokeh(
     #         data_offset,
-    #         offset_x_range=[-86400, 86400],
+    #         offset_x_range=_offset_x_range_,
     #         offset_y_range=[-10, 10],
     #         x_reset=True,
     #         y_reset=False,
@@ -1346,7 +1349,7 @@ def run_offset_check(date):
     #         }
     # ssfr.vis.find_offset_bokeh(
     #         data_offset,
-    #         offset_x_range=[-300, 300],
+    #         offset_x_range=_offset_x_range_,
     #         offset_y_range=[-10, 10],
     #         x_reset=True,
     #         y_reset=False,
@@ -1364,7 +1367,7 @@ def run_offset_check(date):
     #         }
     # ssfr.vis.find_offset_bokeh(
     #         data_offset,
-    #         # offset_x_range=[-300, 300],
+    #         # offset_x_range=_offset_x_range_,
     #         offset_x_range=[-86400, 86400],
     #         offset_y_range=[-10, 10],
     #         x_reset=True,
@@ -1393,7 +1396,7 @@ def run_offset_check(date):
             }
     ssfr.vis.find_offset_bokeh(
             data_offset,
-            offset_x_range=[-6000, 6000],
+            offset_x_range=_offset_x_range_,
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
@@ -1417,7 +1420,7 @@ def run_offset_check(date):
             }
     ssfr.vis.find_offset_bokeh(
             data_offset,
-            offset_x_range=[-6000, 6000],
+            offset_x_range=_offset_x_range_,
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
@@ -1440,7 +1443,7 @@ def run_offset_check(date):
             }
     ssfr.vis.find_offset_bokeh(
             data_offset,
-            offset_x_range=[-6000, 6000],
+            offset_x_range=_offset_x_range_,
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
@@ -1627,9 +1630,9 @@ if __name__ == '__main__':
         # main_process_data_v0(date, run=True)
         main_process_data_v0(date, run=False)
 
-        run_offset_check(date)
+        # run_offset_check(date)
 
-        # main_process_data_v1(date, run=True)
+        main_process_data_v1(date, run=True)
         # main_process_data_v1(date, run=False)
 
         # main_process_data_v2(date, run=True)
