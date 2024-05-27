@@ -63,8 +63,9 @@ _verbose_   = True
 _fnames_ = {}
 
 _alp_time_offset_ = {
-        '20240517': 5.55,
+        '20240517':   5.55,
         '20240521': -17.94,
+        '20240524': -18.39,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -1359,21 +1360,20 @@ def run_offset_check(date):
 
     # ALP altitude vs HSK altitude
     #/----------------------------------------------------------------------------\#
-    # data_offset = {
-    #         'x0': data_hsk['jday']*86400.0,
-    #         'y0': data_hsk['alt'],
-    #         'x1': data_alp['jday'][::10]*86400.0,
-    #         'y1': data_alp['alt'][::10],
-    #         }
-    # ssfr.vis.find_offset_bokeh(
-    #         data_offset,
-    #         # offset_x_range=_offset_x_range_,
-    #         offset_x_range=[-86400, 86400],
-    #         offset_y_range=[-10, 10],
-    #         x_reset=True,
-    #         y_reset=True,
-    #         description='ALP Altitude vs. HSK Altitude',
-    #         fname_html='alp-alt_offset_check_%s.html' % date_s)
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['alt'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['alt'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='ALP Altitude vs. HSK Altitude',
+            fname_html='alp-alt_offset_check_%s.html' % date_s)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1548,8 +1548,8 @@ def main_process_data_v1(date, run=True):
 
     # ALP v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
-    # fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-    #         fdir_out=fdir_out, run=run)
+    fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
 
     # SPNS v1: time synced with hsk time with time offset applied
