@@ -50,7 +50,7 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -84,7 +84,7 @@ _title_extra_ = 'ARCSIX Transit Flight'
 _tmhr_range_ = {
         '20240517': [19.20, 23.00],
         '20240521': [14.80, 17.50],
-        '20240524': [10.00, 17.80],
+        '20240524': [ 9.90, 17.90],
         }
 
 
@@ -1578,7 +1578,6 @@ def plot_video_frame(statements, test=False):
             central_latitude=lat_current,
             # central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
             )
-    # proj0 = ccrs.PlateCarree()
     ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect=_aspect_)
 
     # flight altitude next to the map
@@ -1616,31 +1615,36 @@ def plot_video_frame(statements, test=False):
         extent_img = [lon_current-lon_half, lon_current+lon_half, lat_current-lat_half, lat_current+lat_half]
         ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
 
-        # fname_sat = flt_img0['fnames_sat0'][index_pnt]
+        fname_sat = flt_img0['fnames_sat0'][index_pnt]
 
-        # img = mpl_img.imread(fname_sat)
+        img = mpl_img.imread(fname_sat)
 
-        # extent_ori = flt_img0['extent_sat0_ori']
-        # lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
-        # lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
+        extent_ori = flt_img0['extent_sat0_ori']
+        lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
+        lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
-        # extend_x = 0.1
-        # extend_y = 0.1
-        # index_xs = np.where(np.linspace(extent_ori[0], extent_ori[1], img.shape[1])>=extent_img[0]-extend_x)[0]
-        # index_xe = np.where(np.linspace(extent_ori[0], extent_ori[1], img.shape[1])>=extent_img[1]+extend_x)[0]
-        # index_ys = np.where(np.linspace(extent_ori[2], extent_ori[3], img.shape[0])>=extent_img[2]-extend_y)[0]
-        # index_ye = np.where(np.linspace(extent_ori[2], extent_ori[3], img.shape[0])>=extent_img[3]+extend_y)[0]
+        extend_x = 0.1
+        extend_y = 0.1
+        lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
+        lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
+        indices_x = np.where((lon_1d_>=(extent_img[0]-extend_x))&(lon_1d_<=(extent_img[1]+extend_x)))[0]
+        indices_y = np.where((lat_1d_>=(extent_img[2]-extend_y))&(lat_1d_<=(extent_img[3]+extend_y)))[0]
 
-        # lon_1d = lon_1d[index_xs:index_xe+1]
-        # lat_1d = lat_1d[index_ys:index_ye+1][::-1]
+        if indices_x.size>0 and indices_y.size>0:
 
-        # lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
-        # img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
+            index_xs = indices_x[0]
+            index_xe = indices_x[-1]
+            index_ys = indices_y[0]
+            index_ye = indices_y[-1]
+            lon_1d = lon_1d[index_xs:index_xe+1]
+            lat_1d = lat_1d[index_ys:index_ye+1][::-1]
 
-        # if img.ndim == 2:
-        #     logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
-        #     img[logic_black, -1] = 0.0
-        #     ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
+            lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
+            img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
+
+            logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
+            img[logic_black, -1] = 0.0
+            ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
 
         # ax_map.stock_img()
 
@@ -1648,7 +1652,7 @@ def plot_video_frame(statements, test=False):
         # lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
         # lat_half0 = 2.0
         # lon_half0 = lat_half0*(lon_half/lat_half)
-        lon_half0 = 2.5
+        lon_half0 = 3.0
         lat_half0 = 1.0
         lon_s = lon_current-lon_half0
         lon_e = lon_current+lon_half0
@@ -1664,32 +1668,36 @@ def plot_video_frame(statements, test=False):
 
         ax_map0.set_extent(extent_img, crs=ccrs.PlateCarree())
 
-        # fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
+        fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
 
-        # img = mpl_img.imread(fname_sat1)
+        img = mpl_img.imread(fname_sat1)
 
-        # extent_ori = flt_img0['extent_sat1_ori']
-        # lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
-        # lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
+        extent_ori = flt_img0['extent_sat1_ori']
+        lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
+        lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
-        # extend_x = 0.1
-        # extend_y = 0.1
-        # index_xs = np.where(np.linspace(extent_ori[0], extent_ori[1], img.shape[1])>=extent_img[0]-extend_x)[0][0]
-        # index_xe = np.where(np.linspace(extent_ori[0], extent_ori[1], img.shape[1])>=extent_img[1]+extend_x)[0][0]
-        # index_ys = np.where(np.linspace(extent_ori[2], extent_ori[3], img.shape[0])>=extent_img[2]-extend_y)[0][0]
-        # index_ye = np.where(np.linspace(extent_ori[2], extent_ori[3], img.shape[0])>=extent_img[3]+extend_y)[0][0]
+        extend_x = 0.1
+        extend_y = 0.1
+        lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
+        lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
+        indices_x = np.where((lon_1d_>=(extent_img[0]-extend_x))&(lon_1d_<=(extent_img[1]+extend_x)))[0]
+        indices_y = np.where((lat_1d_>=(extent_img[2]-extend_y))&(lat_1d_<=(extent_img[3]+extend_y)))[0]
 
-        # lon_1d = lon_1d[index_xs:index_xe+1]
-        # lat_1d = lat_1d[index_ys:index_ye+1][::-1]
+        if indices_x.size>0 and indices_y.size>0:
 
-        # lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
-        # img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
+            index_xs = indices_x[0]
+            index_xe = indices_x[-1]
+            index_ys = indices_y[0]
+            index_ye = indices_y[-1]
+            lon_1d = lon_1d[index_xs:index_xe+1]
+            lat_1d = lat_1d[index_ys:index_ye+1][::-1]
 
+            lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
+            img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
 
-        # if img.ndim == 2:
-        #     logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
-        #     img[logic_black, -1] = 0.0
-        #     ax_map0.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
+            logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
+            img[logic_black, -1] = 0.0
+            ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
 
         # ax_map0.stock_img()
 
@@ -1987,10 +1995,6 @@ def plot_video_frame(statements, test=False):
 
     # acknowledgements
     #/----------------------------------------------------------------------------\#
-#     text1 = '\
-# presented by ARCSIX SSFR Team: Hong Chen (one of the many who is proudly from the designated country, China), Vikas Nataraja, Yu-Wen Chen, Ken Hirata, Arabella Chamberlain, Katey Dong, Jeffery Drouet, and Sebastian Schmidt\n\
-# Acknowledgements to ARCSIX Data System Team: Ryan Bennett; ARCSIX Passive Imagery Team: Kerry Meyer, Colten Peterson, and Steve Platnick\
-# '
     text1 = '\
 presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hirata, Arabella Chamberlain, Katey Dong, Jeffery Drouet, and Sebastian Schmidt\n\
 '
@@ -2347,7 +2351,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=5,
+        interval=100,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -2406,13 +2410,13 @@ if __name__ == '__main__':
 
         # research flights in the Arctic
         #/----------------------------------------------------------------------------\#
-        main_pre(date)
-        main_vid(date, wvl0=_wavelength_)
+        # main_pre(date)
+        # main_vid(date, wvl0=_wavelength_)
         #\----------------------------------------------------------------------------/#
 
         pass
 
-    sys.exit()
+    # sys.exit()
 
 
     # test
