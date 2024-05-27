@@ -744,7 +744,8 @@ def plot_video_frame_wff(statements, test=False):
         img = mpl_img.imread(fname_sat)
         # ax_map.imshow(img, extent=flt_img0['extent_sat0'], origin='upper', aspect='auto', zorder=0)
         ax_map.imshow(img, extent=extent_sat0, origin='upper', aspect='auto', zorder=0)
-        rect = mpatches.Rectangle((lon_current-0.1, lat_current-0.1), 0.2, 0.2, lw=1.0, ec='k', fc='none')
+        # rect = mpatches.Rectangle((lon_current-0.1, lat_current-0.1), 0.2, 0.2, lw=1.0, ec='k', fc='none')
+        rect = mpatches.Rectangle((lon_current-0.25, lat_current-0.25), 0.5, 0.5, lw=1.0, ec='k', fc='none')
         ax_map.add_patch(rect)
 
     if has_sat1:
@@ -941,8 +942,10 @@ def plot_video_frame_wff(statements, test=False):
         else:
             ax_map0.set_title(title_map0)
 
-    ax_map0.set_xlim((lon_current-0.1, lon_current+0.1))
-    ax_map0.set_ylim((lat_current-0.1, lat_current+0.1))
+    ax_map0.set_xlim((lon_current-0.25, lon_current+0.25))
+    ax_map0.set_ylim((lat_current-0.25, lat_current+0.25))
+    # ax_map0.set_xlim((lon_current-0.1, lon_current+0.1))
+    # ax_map0.set_ylim((lat_current-0.1, lat_current+0.1))
     ax_map0.axis('off')
     #\----------------------------------------------------------------------------/#
 
