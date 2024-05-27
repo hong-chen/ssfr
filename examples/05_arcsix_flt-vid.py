@@ -1644,7 +1644,7 @@ def plot_video_frame(statements, test=False):
 
         lat_half = (flt_img0['extent_sat0'][3] - flt_img0['extent_sat0'][2])/2.0
         # lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
-        lat_half0 = 0.5
+        lat_half0 = 2.0
         lon_half0 = lat_half0*(lon_half/lat_half)
         lon_s = lon_current-lon_half0
         lon_e = lon_current+lon_half0
@@ -1844,12 +1844,12 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
 
-        title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
-        time_diff = np.abs(flt_img0['jday_sat0'][index_pnt]-jday_current)*86400.0
-        if time_diff > 301.0:
-            ax_map.set_title(title_map, color='gray')
-        else:
-            ax_map.set_title(title_map)
+        # title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
+        # time_diff = np.abs(flt_img0['jday_sat0'][index_pnt]-jday_current)*86400.0
+        # if time_diff > 301.0:
+        #     ax_map.set_title(title_map, color='gray')
+        # else:
+        #     ax_map.set_title(title_map)
 
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
         g1 = ax_map.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-')
@@ -1872,12 +1872,12 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat1:
         # title_map0 = 'False Color 721'
-        title_map0 = 'True Color'
-        time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
-        if time_diff > 301.0:
-            ax_map0.set_title(title_map0, color='gray')
-        else:
-            ax_map0.set_title(title_map0)
+        # title_map0 = 'True Color'
+        # time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
+        # if time_diff > 301.0:
+        #     ax_map0.set_title(title_map0, color='gray')
+        # else:
+        #     ax_map0.set_title(title_map0)
 
         ax_map0.coastlines(resolution='10m', color='black', lw=0.5)
         g2 = ax_map0.gridlines(lw=0.5, color='gray', ls='-')
