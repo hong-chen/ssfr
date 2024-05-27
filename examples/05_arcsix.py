@@ -1374,33 +1374,16 @@ def run_offset_check(date):
     #\----------------------------------------------------------------------------/#
 
 
-    # SPNS vs HSK altitude (other ideas, TOA)
-    #/----------------------------------------------------------------------------\#
-    index_wvl = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
-    data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
-
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_hsk['alt'],
-            'x1': data_spns_v0['tot/jday']*86400.0,
-            'y1': data_y1,
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=[-300, 300],
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=True,
-            description='SPNS Total vs. HSK Altitude (745 nm)',
-            fname_html='spns-alt_offset_check_%s.html' % date_s)
-    #\----------------------------------------------------------------------------/#
-
-
     # SPNS vs TOA
     #/----------------------------------------------------------------------------\#
     index_wvl = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
     data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
-    data_y0   = data_spns_v0['tot/toa0'][index_wvl]*np.cos(np.deg2rad(data_hsk['sza']))
+
+    mu = np.cos(np.deg2rad(data_hsk['sza']))
+    iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit'], data_hsk['ang_rol'], data_hsk['ang_hed'])
+    dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
+    factors = mu/dc
+    data_y0   = data_spns_v0['tot/toa0'][index_wvl]*np.cos(np.deg2rad(data_hsk['sza']))/factors
 
     data_offset = {
             'x0': data_hsk['jday']*86400.0,
@@ -1410,7 +1393,7 @@ def run_offset_check(date):
             }
     ssfr.vis.find_offset_bokeh(
             data_offset,
-            offset_x_range=[-300, 300],
+            offset_x_range=[-6000, 6000],
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
@@ -1644,9 +1627,9 @@ if __name__ == '__main__':
         # main_process_data_v0(date, run=True)
         main_process_data_v0(date, run=False)
 
-        # run_offset_check(date)
+        run_offset_check(date)
 
-        main_process_data_v1(date, run=True)
+        # main_process_data_v1(date, run=True)
         # main_process_data_v1(date, run=False)
 
         # main_process_data_v2(date, run=True)
