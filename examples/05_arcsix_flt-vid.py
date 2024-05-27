@@ -1644,10 +1644,12 @@ def plot_video_frame(statements, test=False):
 
         # ax_map.stock_img()
 
-        lat_half = (flt_img0['extent_sat0'][3] - flt_img0['extent_sat0'][2])/2.0
+        # lat_half = (flt_img0['extent_sat0'][3] - flt_img0['extent_sat0'][2])/2.0
         # lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
-        lat_half0 = 2.0
-        lon_half0 = lat_half0*(lon_half/lat_half)
+        # lat_half0 = 2.0
+        # lon_half0 = lat_half0*(lon_half/lat_half)
+        lon_half0 = 2.5
+        lat_half0 = 1.0
         lon_s = lon_current-lon_half0
         lon_e = lon_current+lon_half0
         lat_s = lat_current-lat_half0
@@ -2345,7 +2347,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=20,
+        interval=1,
         ):
 
     date_s = date.strftime('%Y%m%d')
