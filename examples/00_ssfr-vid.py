@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-_ssfr_         = 'ssfr-a'
-# _ssfr_         = 'ssfr-b'
+# _ssfr_         = 'ssfr-a'
+_ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -813,7 +813,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=3,
+        interval=5,
         ):
 
     date_s = date.strftime('%Y%m%d')

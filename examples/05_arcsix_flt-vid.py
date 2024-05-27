@@ -2347,7 +2347,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=1,
+        interval=5,
         ):
 
     date_s = date.strftime('%Y%m%d')
