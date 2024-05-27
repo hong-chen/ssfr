@@ -738,8 +738,8 @@ def plot_video_frame_wff(statements, test=False):
     # base plot
     #/----------------------------------------------------------------------------\#
     if has_sat0:
-        # extent_sat0 = [-75.92,-71.44,36.20,40.68] # WFF test flight #1
-        extent_sat0 = [-76.10,-74.58,37.46,38.98] # WFF test flight #2
+        extent_sat0 = [-75.92,-71.44,36.20,40.68] # WFF test flight #1
+        # extent_sat0 = [-76.10,-74.58,37.46,38.98] # WFF test flight #2
         fname_sat = flt_img0['fnames_sat0'][index_pnt]
         img = mpl_img.imread(fname_sat)
         # ax_map.imshow(img, extent=flt_img0['extent_sat0'], origin='upper', aspect='auto', zorder=0)
@@ -914,8 +914,10 @@ def plot_video_frame_wff(statements, test=False):
         else:
             ax_map.set_title(title_map)
 
-    ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 0.5)))
-    ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 0.5)))
+    ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 1.0)))
+    ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 1.0)))
+    # ax_map.xaxis.set_major_locator(FixedLocator(np.arange(-180.0, 180.1, 0.5)))
+    # ax_map.yaxis.set_major_locator(FixedLocator(np.arange(-90.0, 90.1, 0.5)))
     ax_map.set_xlabel('Longitude [$^\\circ$]')
     ax_map.set_ylabel('Latitude [$^\\circ$]')
     #\----------------------------------------------------------------------------/#
@@ -2366,8 +2368,8 @@ if __name__ == '__main__':
 
 
     dates = [
-            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
-            datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
+            datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
+            # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
         ]
 
     for date in dates[::-1]:

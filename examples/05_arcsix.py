@@ -1311,38 +1311,38 @@ def run_offset_check(date):
     #/----------------------------------------------------------------------------\#
     data_hsk = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
     data_alp = ssfr.util.load_h5(_fnames_['%s_alp_v0' % date_s])
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_hsk['ang_pit'],
-            'x1': data_alp['jday'][::10]*86400.0,
-            'y1': data_alp['ang_pit_s'][::10],
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=[-300, 300],
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=False,
-            description='ALP Pitch vs. HSK Pitch',
-            fname_html='alp-pit_offset_check_%s.html' % date_s)
+    # data_offset = {
+    #         'x0': data_hsk['jday']*86400.0,
+    #         'y0': data_hsk['ang_pit'],
+    #         'x1': data_alp['jday'][::10]*86400.0,
+    #         'y1': data_alp['ang_pit_s'][::10],
+    #         }
+    # ssfr.vis.find_offset_bokeh(
+    #         data_offset,
+    #         offset_x_range=[-86400, 86400],
+    #         offset_y_range=[-10, 10],
+    #         x_reset=True,
+    #         y_reset=False,
+    #         description='ALP Pitch vs. HSK Pitch',
+    #         fname_html='alp-pit_offset_check_%s.html' % date_s)
     #\----------------------------------------------------------------------------/#
 
     # ALP roll vs HSK roll
     #/----------------------------------------------------------------------------\#
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_hsk['ang_rol'],
-            'x1': data_alp['jday'][::10]*86400.0,
-            'y1': data_alp['ang_rol_s'][::10],
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=[-300, 300],
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=False,
-            description='ALP Roll vs. HSK Roll',
-            fname_html='alp-rol_offset_check_%s.html' % date_s)
+    # data_offset = {
+    #         'x0': data_hsk['jday']*86400.0,
+    #         'y0': data_hsk['ang_rol'],
+    #         'x1': data_alp['jday'][::10]*86400.0,
+    #         'y1': data_alp['ang_rol_s'][::10],
+    #         }
+    # ssfr.vis.find_offset_bokeh(
+    #         data_offset,
+    #         offset_x_range=[-300, 300],
+    #         offset_y_range=[-10, 10],
+    #         x_reset=True,
+    #         y_reset=False,
+    #         description='ALP Roll vs. HSK Roll',
+    #         fname_html='alp-rol_offset_check_%s.html' % date_s)
     #\----------------------------------------------------------------------------/#
 
     # ALP altitude vs HSK altitude
@@ -1355,13 +1355,15 @@ def run_offset_check(date):
             }
     ssfr.vis.find_offset_bokeh(
             data_offset,
-            offset_x_range=[-300, 300],
+            # offset_x_range=[-300, 300],
+            offset_x_range=[-86400, 86400],
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
             description='ALP Altitude vs. HSK Altitude',
             fname_html='alp-alt_offset_check_%s.html' % date_s)
     #\----------------------------------------------------------------------------/#
+    sys.exit()
 
     # SPNS vs HSK altitude (other ideas, TOA)
     #/----------------------------------------------------------------------------\#
@@ -1499,16 +1501,16 @@ def main_process_data_v0(date, run=True):
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-    #         fdir_out=fdir_out, run=run)
+    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+            fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
 
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
-    # fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
-    #         fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
+    fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
+            fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
 
     # SPNS v0: raw data
@@ -1518,7 +1520,6 @@ def main_process_data_v0(date, run=True):
     fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
             fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
-    sys.exit()
 
     # SSFR-A v0: raw data
     #/----------------------------------------------------------------------------\#
@@ -1633,11 +1634,10 @@ if __name__ == '__main__':
     for date in dates[::-1]:
         main_process_data_v0(date, run=True)
         # main_process_data_v0(date, run=False)
-        sys.exit()
 
-        # run_offset_check(date)
+        run_offset_check(date)
 
-        main_process_data_v1(date, run=True)
+        # main_process_data_v1(date, run=True)
         # main_process_data_v1(date, run=False)
 
         # main_process_data_v2(date, run=True)
