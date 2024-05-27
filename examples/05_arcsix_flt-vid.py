@@ -50,7 +50,7 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -73,7 +73,7 @@ _wavelength_      = 555.0
 
 _fdir_sat_img_vn_ = 'data/%s/sat-img-vn' % _mission_
 
-_preferred_region_ = 'ca_archipelago'
+_preferred_region_ = 'lincoln_sea'
 _aspect_ = 'auto'
 
 _fdir_data_ = 'data/%s/processed' % _mission_
@@ -242,7 +242,7 @@ def get_extent(lon, lat, margin=0.2):
     lat0 = lat_c-deg_half
     lat1 = lat_c+deg_half
 
-    extent = [lon0, lon1, max([lat0, 35.0]), min([lat1, 80.0])]
+    extent = [lon0, lon1, max([lat0, 35.0]), min([lat1, 89.9])]
 
     return extent
 
@@ -660,8 +660,8 @@ def plot_video_frame_wff(statements, test=False):
 
     # flight direction
     #/----------------------------------------------------------------------------\#
-    alt_cmap = mpl.colormaps['jet']
-    alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=6.0)
+    alt_cmap = mpl.colormaps['viridis']
+    alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=9.0)
 
     dlon = flt_sim0.flt_imgs[index_trk]['extent_sat0'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat0'][0]
     Nscale = int(dlon/1.3155229999999989 * 15)
@@ -852,18 +852,18 @@ def plot_video_frame_wff(statements, test=False):
         else:
             alpha_trans = 0.08
 
-        ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans)
-        ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
+        ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap='viridis', alpha=alpha_trans)
+        ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap='viridis')
 
-        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans)
-        ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet')
+        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap='viridis', alpha=alpha_trans)
+        ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap='viridis')
 
 
         if not plot_arrow:
             ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-            ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
+            ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap='viridis')
             # ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-            # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
+            # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap='viridis')
         else:
             color0 = alt_cmap(alt_norm(alt_current))
             arrow_prop['facecolor'] = color0
@@ -872,7 +872,7 @@ def plot_video_frame_wff(statements, test=False):
             # ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
 
         ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-        ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
+        ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap='viridis')
 
         for vname in vars_plot.keys():
 
@@ -1524,8 +1524,8 @@ def plot_video_frame(statements, test=False):
 
     # flight direction
     #/----------------------------------------------------------------------------\#
-    alt_cmap = mpl.colormaps['jet']
-    alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=6.0)
+    alt_cmap = mpl.colormaps['viridis']
+    alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=9.0)
 
     dlon = flt_sim0.flt_imgs[index_trk]['extent_sat0'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat0'][0]
     Nscale = int(dlon/1.3155229999999989 * 15)
@@ -1575,8 +1575,9 @@ def plot_video_frame(statements, test=False):
     # map of flight track overlay satellite imagery
     proj0 = ccrs.Orthographic(
             central_longitude=lon_current,
-            central_latitude=lat_current,
-            # central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
+            # central_latitude=lat_current,
+            # central_latitude=(76.0+flt_sim0.extent[3])/2.0,
+            central_latitude=(76.0+84.0)/2.0,
             )
     ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect=_aspect_)
 
@@ -1609,10 +1610,12 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
         # lon_half = (flt_img0['extent_sat0'][1] - flt_img0['extent_sat0'][0])/2.0
-        lon_half = 10.0
-        lat_half = 5.0
+        lon_half = 15.0
+        lat_half = 3.0
         # extent_img = [lon_current-lon_half, lon_current+lon_half, flt_sim0.extent[2], flt_sim0.extent[3]]
-        extent_img = [lon_current-lon_half, lon_current+lon_half, lat_current-lat_half, lat_current+lat_half]
+        # extent_img = [lon_current-lon_half, lon_current+lon_half, lat_current-1.0, lat_current+lat_half]
+        # extent_img = [lon_current-lon_half, lon_current+lon_half, 76.0, flt_sim0.extent[3]]
+        extent_img = [lon_current-lon_half, lon_current+lon_half, 76.0, 84.0]
         ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
 
         fname_sat = flt_img0['fnames_sat0'][index_pnt]
@@ -1623,14 +1626,14 @@ def plot_video_frame(statements, test=False):
         lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
         lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
-        extend_x = 0.1
-        extend_y = 0.1
+        extend_x = 0.0
+        extend_y = 0.0
         lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
         lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
         indices_x = np.where((lon_1d_>=(extent_img[0]-extend_x))&(lon_1d_<=(extent_img[1]+extend_x)))[0]
         indices_y = np.where((lat_1d_>=(extent_img[2]-extend_y))&(lat_1d_<=(extent_img[3]+extend_y)))[0]
 
-        if indices_x.size>0 and indices_y.size>0:
+        if indices_x.size>2 and indices_y.size>2:
 
             index_xs = indices_x[0]
             index_xe = indices_x[-1]
@@ -1652,8 +1655,8 @@ def plot_video_frame(statements, test=False):
         # lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
         # lat_half0 = 2.0
         # lon_half0 = lat_half0*(lon_half/lat_half)
-        lon_half0 = 3.0
-        lat_half0 = 1.0
+        lon_half0 = 2.5
+        lat_half0 = 0.5
         lon_s = lon_current-lon_half0
         lon_e = lon_current+lon_half0
         lat_s = lat_current-lat_half0
@@ -1676,14 +1679,14 @@ def plot_video_frame(statements, test=False):
         lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
         lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
-        extend_x = 0.1
-        extend_y = 0.1
+        extend_x = 0.0
+        extend_y = 0.0
         lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
         lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
         indices_x = np.where((lon_1d_>=(extent_img[0]-extend_x))&(lon_1d_<=(extent_img[1]+extend_x)))[0]
         indices_y = np.where((lat_1d_>=(extent_img[2]-extend_y))&(lat_1d_<=(extent_img[3]+extend_y)))[0]
 
-        if indices_x.size>0 and indices_y.size>0:
+        if indices_x.size>2 and indices_y.size>2:
 
             index_xs = indices_x[0]
             index_xe = indices_x[-1]
@@ -1698,11 +1701,11 @@ def plot_video_frame(statements, test=False):
             logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
             img[logic_black, -1] = 0.0
             ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
+            ax_map0.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
 
         # ax_map0.stock_img()
 
     if has_cam0:
-        # ang_cam_offset = -152.0 # for ORACLES
         ang_cam_offset = -53.0 # for ARCSIX
         cam_x_s = 5.0
         cam_x_e = 255.0*4.0
@@ -1799,18 +1802,18 @@ def plot_video_frame(statements, test=False):
         else:
             alpha_trans = 0.08
 
-        ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans, transform=ccrs.PlateCarree())
-        ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet', transform=ccrs.PlateCarree())
+        ax_map.scatter(         flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap='viridis', alpha=alpha_trans, transform=ccrs.PlateCarree())
+        cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap='viridis', transform=ccrs.PlateCarree())
 
-        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=6.0, cmap='jet', alpha=alpha_trans, transform=ccrs.PlateCarree())
-        ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=6.0, cmap='jet', transform=ccrs.PlateCarree())
+        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap='viridis', alpha=alpha_trans, transform=ccrs.PlateCarree())
+        ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap='viridis', transform=ccrs.PlateCarree())
 
 
         if not plot_arrow:
             ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
-            ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet', transform=ccrs.PlateCarree())
+            ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap='viridis', transform=ccrs.PlateCarree())
             # ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-            # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet')
+            # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap='viridis')
         else:
             color0 = alt_cmap(alt_norm(alt_current))
             arrow_prop['facecolor'] = color0
@@ -1819,7 +1822,7 @@ def plot_video_frame(statements, test=False):
             # ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
 
         ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
-        ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=6.0, cmap='jet', transform=ccrs.PlateCarree())
+        ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap='viridis', transform=ccrs.PlateCarree())
 
         for vname in vars_plot.keys():
 
@@ -1856,16 +1859,16 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
 
-        # title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
-        # time_diff = np.abs(flt_img0['jday_sat0'][index_pnt]-jday_current)*86400.0
-        # if time_diff > 301.0:
-        #     ax_map.set_title(title_map, color='gray')
-        # else:
-        #     ax_map.set_title(title_map)
+        title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
+        time_diff = np.abs(flt_img0['jday_sat0'][index_pnt]-jday_current)*86400.0
+        if time_diff > 301.0:
+            ax_map.set_title(title_map, color='gray')
+        else:
+            ax_map.set_title(title_map)
 
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
         g1 = ax_map.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-')
-        g1.xlocator = FixedLocator(np.arange(-180, 181, 2.0))
+        g1.xlocator = FixedLocator(np.arange(-180, 181, 4.0))
         g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
         g1.top_labels = False
         g1.right_labels = False
@@ -1883,17 +1886,17 @@ def plot_video_frame(statements, test=False):
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
     if has_sat1:
-        # title_map0 = 'False Color 721'
-        # title_map0 = 'True Color'
-        # time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
-        # if time_diff > 301.0:
-        #     ax_map0.set_title(title_map0, color='gray')
-        # else:
-        #     ax_map0.set_title(title_map0)
+        title_map0 = 'False Color 721'
+        title_map0 = 'True Color'
+        time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
+        if time_diff > 301.0:
+            ax_map0.set_title(title_map0, color='gray')
+        else:
+            ax_map0.set_title(title_map0)
 
         ax_map0.coastlines(resolution='10m', color='black', lw=0.5)
         g2 = ax_map0.gridlines(lw=0.5, color='gray', ls='-')
-        g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 0.5))
+        g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 1.0))
         g2.ylocator = FixedLocator(np.arange(-89.0, 89.1, 0.5))
     ax_map0.axis('off')
     #\----------------------------------------------------------------------------/#
@@ -1922,19 +1925,23 @@ def plot_video_frame(statements, test=False):
 
     # altitude/sza plot settings
     #/----------------------------------------------------------------------------\#
-    ax_alt.axhspan(0, (90.0-sza_current)/10.0, color='gold', lw=0.0, zorder=0, alpha=0.5)
+    cbar = fig.colorbar(cs_alt, cax=ax_alt)
+    ax_alt.set_ylim((0.0, 9.0))
+    ax_alt.axhspan(alt_current, 9.0, color='white', zorder=1)
 
     color0 = alt_cmap(alt_norm(alt_current))
-    ax_alt.axhline(alt_current, lw=2.0, color=color0, zorder=1)
+    ax_alt.axhline(alt_current, lw=1.0, color='black', zorder=2)
 
-    ax_alt.set_xlim((0.0, 1.0))
+    ax_alt.axhline(sza_current/10.0, lw=2.0, color='red', zorder=2)
+
+    # ax_alt.set_xlim((0.0, 1.0))
     ax_alt.set_ylim((0.0, 9.0))
     ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 3.0)))
     ax_alt.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
-    ax_alt.xaxis.set_ticks([])
-    ax_alt.yaxis.tick_right()
-    ax_alt.yaxis.set_label_position('right')
-    ax_alt.set_ylabel('Sun Elevation [$\\times 10^\\circ$] / Altitude [km]', rotation=270.0, labelpad=18)
+    # ax_alt.xaxis.set_ticks([])
+    # ax_alt.yaxis.tick_right()
+    # ax_alt.yaxis.set_label_position('right')
+    cbar.set_label('Sun Elevation [$\\times 10^\\circ$] / Altitude [km]', rotation=270.0, labelpad=18)
     #\----------------------------------------------------------------------------/#
 
 
@@ -2054,11 +2061,11 @@ def main_pre(
     # force flight track to start at PSB
     #/--------------------------------------------------------------\#
     # location of Pituffik Space Base (PSB)
-    # lon0 = -68.70379848070486
-    # lat0 = 76.53111177550895
+    lon0 = -68.70379848070486
+    lat0 = 76.53111177550895
 
-    # lon = (lon-lon[~np.isnan(lon)][0]) + lon0
-    # lat = (lat-lat[~np.isnan(lat)][0]) + lat0
+    lon = (lon-lon[~np.isnan(lon)][0]) + lon0
+    lat = (lat-lat[~np.isnan(lat)][0])/5.0 + lat0
     #\--------------------------------------------------------------/#
 
     logic0 = (~np.isnan(jday) & ~np.isinf(sza))   & \
@@ -2401,22 +2408,22 @@ if __name__ == '__main__':
 
     for date in dates[::-1]:
 
-        # test flight at NASA WFF
-        #/----------------------------------------------------------------------------\#
-        # main_pre_wff(date)
-        # main_vid_wff(date, wvl0=_wavelength_)
-        #\----------------------------------------------------------------------------/#
+        if date < datetime.datetime(2024, 5, 22):
+
+            #/----------------------------------------------------------------------------\#
+            main_pre_wff(date)
+            main_vid_wff(date, wvl0=_wavelength_)
+            #\----------------------------------------------------------------------------/#
+
+        else:
+
+            #/----------------------------------------------------------------------------\#
+            main_pre(date)
+            main_vid(date, wvl0=_wavelength_)
+            #\----------------------------------------------------------------------------/#
 
 
-        # research flights in the Arctic
-        #/----------------------------------------------------------------------------\#
-        # main_pre(date)
-        # main_vid(date, wvl0=_wavelength_)
-        #\----------------------------------------------------------------------------/#
-
-        pass
-
-    # sys.exit()
+    sys.exit()
 
 
     # test
