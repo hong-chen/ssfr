@@ -84,7 +84,7 @@ _title_extra_ = 'ARCSIX Transit Flight'
 _tmhr_range_ = {
         '20240517': [19.20, 23.00],
         '20240521': [14.80, 17.50],
-        '20240524': [0.0, 24.0],
+        '20240524': [10.00, 17.80],
         }
 
 
@@ -1610,8 +1610,10 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
         # lon_half = (flt_img0['extent_sat0'][1] - flt_img0['extent_sat0'][0])/2.0
-        lon_half = 11.0
-        extent_img = [lon_current-lon_half, lon_current+lon_half, flt_sim0.extent[2], flt_sim0.extent[3]]
+        lon_half = 10.0
+        lat_half = 5.0
+        # extent_img = [lon_current-lon_half, lon_current+lon_half, flt_sim0.extent[2], flt_sim0.extent[3]]
+        extent_img = [lon_current-lon_half, lon_current+lon_half, lat_current-lat_half, lat_current+lat_half]
         ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
 
         # fname_sat = flt_img0['fnames_sat0'][index_pnt]
