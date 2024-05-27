@@ -1856,7 +1856,7 @@ def plot_video_frame(statements, test=False):
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
         g1 = ax_map.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-')
         g1.xlocator = FixedLocator(np.arange(-180, 181, 2.0))
-        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 5.0))
+        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
         g1.top_labels = False
         g1.right_labels = False
     #\----------------------------------------------------------------------------/#
