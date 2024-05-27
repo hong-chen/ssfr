@@ -2401,8 +2401,8 @@ if __name__ == '__main__':
 
 
     dates = [
-            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1
-            # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2
+            # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
+            # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
         ]
 
