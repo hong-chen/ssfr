@@ -80,7 +80,7 @@ _cmap_   = 'gist_ncar'
 _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_tmp_graph_ = 'tmp-graph_flt-vid'
 
-_title_extra_ = 'ARCSIX Transit Flight'
+_title_extra_ = 'ARCSIX Research Flight #1'
 
 _tmhr_range_ = {
         '20240517': [19.20, 23.00],
@@ -1851,7 +1851,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     title_fig = '%s UTC' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'))
     if (_title_extra_ is not None) and (_title_extra_!=''):
-        title_fig = '%s (%s)' % (title_fig, _title_extra_)
+        title_fig = '%s\n%s' % (_title_extra_, title_fig)
     fig.suptitle(title_fig, y=0.96, fontsize=20)
     #\----------------------------------------------------------------------------/#
 
@@ -1970,7 +1970,7 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
     ax_tms.set_xlabel('Time [hour]')
 
-    ax_tms.set_ylim(bottom=0.0, top=ax_tms.get_ylim()[-1]+0.1)
+    ax_tms.set_ylim(bottom=0.0, top=ax_tms.get_ylim()[-1]+0.15)
     ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 3.1, 0.5)))
     ax_tms.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 3.1, 0.1)))
     ax_tms.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
