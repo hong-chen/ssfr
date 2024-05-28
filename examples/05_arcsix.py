@@ -1597,10 +1597,10 @@ def main_process_data_v2(date, run=True):
     # SPNS v2
     #/----------------------------------------------------------------------------\#
     # based on ALP v1
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
-    #         fdir_out=fdir_out, run=run)
     fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
-            fdir_out=fdir_out, run=False)
+            fdir_out=fdir_out, run=run)
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
+    #         fdir_out=fdir_out, run=True)
 
     # based on HSK v0
     # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
@@ -1612,7 +1612,7 @@ def main_process_data_v2(date, run=True):
     # SSFR v2
     #/----------------------------------------------------------------------------\#
     fname_ssfr1_v2 = cdata_arcsix_ssfr_v2(date, _fnames_['%s_ssfr1_v1' % date_s], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=False)
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=True)
     #\----------------------------------------------------------------------------/#
     _fnames_['%s_ssfr1_v2' % date_s] = fname_ssfr1_v2
 
