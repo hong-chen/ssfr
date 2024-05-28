@@ -38,6 +38,7 @@ import h5py
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from scipy import ndimage
+from PIL import ImageFile
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.path as mpl_path
@@ -55,6 +56,8 @@ mpl.use('Agg')
 
 import er3t
 
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
@@ -1626,7 +1629,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
         lon_half = 15.0
-        lat_half = 1.5
+        lat_half = 2.5
         lat_low = max([lat_current-lat_half, 76.0])
         lat_high= min([lat_low+lat_half*2.0, 87.0])
         lat_low = max([lat_high-lat_half*2.0, 76.0])
@@ -1667,7 +1670,7 @@ def plot_video_frame(statements, test=False):
     if has_sat1:
 
         lat_half0 = 0.25
-        lon_half0 = lat_half0*(lon_half/lat_half)
+        lon_half0 = lat_half0*(lon_half/lat_half)*2.0
         lon_s = lon_current-lon_half0
         lon_e = lon_current+lon_half0
         lat_s = lat_current-lat_half0
