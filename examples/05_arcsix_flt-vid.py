@@ -661,7 +661,7 @@ def plot_video_frame_wff(statements, test=False):
 
     # flight direction
     #/----------------------------------------------------------------------------\#
-    alt_cmap = mpl.colormaps['viridis']
+    alt_cmap = mpl.colormaps[_cmap_]
     alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=9.0)
 
     dlon = flt_sim0.flt_imgs[index_trk]['extent_sat0'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat0'][0]
@@ -1458,7 +1458,7 @@ def plot_video_frame(statements, test=False):
             }
     vars_plot['Altitude']   = {
             'vname':'alt',
-            'color':'purple',
+            'color':'gold',
             'zorder': 0,
             }
 
@@ -1525,7 +1525,7 @@ def plot_video_frame(statements, test=False):
 
     # flight direction
     #/----------------------------------------------------------------------------\#
-    alt_cmap = mpl.colormaps['viridis']
+    alt_cmap = mpl.colormaps[_cmap_]
     alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=9.0)
 
     dlon = flt_sim0.flt_imgs[index_trk]['extent_sat0'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat0'][0]
@@ -1590,7 +1590,7 @@ def plot_video_frame(statements, test=False):
     ax_nav  = fig.add_subplot(gs[:2, 7:9])
 
     # a secondary map
-    ax_map0 = fig.add_subplot(gs[:5, 9:13], projection=proj0, aspect=_aspect_)
+    ax_map0 = fig.add_subplot(gs[:5, 9:13], projection=ccrs.PlateCarree(), aspect=_aspect_)
 
     # camera imagery
     ax_img  = fig.add_subplot(gs[:5, 13:])
@@ -1627,8 +1627,8 @@ def plot_video_frame(statements, test=False):
         lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
         lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
-        extend_x = 0.0
-        extend_y = 0.0
+        extend_x = 0.05
+        extend_y = 0.05
         lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
         lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
         indices_x = np.where((lon_1d_>=(extent_img[0]-extend_x))&(lon_1d_<=(extent_img[1]+extend_x)))[0]
@@ -1680,8 +1680,8 @@ def plot_video_frame(statements, test=False):
         lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
         lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
-        extend_x = 0.0
-        extend_y = 0.0
+        extend_x = 0.05
+        extend_y = 0.05
         lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
         lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
         indices_x = np.where((lon_1d_>=(extent_img[0]-extend_x))&(lon_1d_<=(extent_img[1]+extend_x)))[0]
@@ -1928,10 +1928,10 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     cbar = fig.colorbar(cs_alt, cax=ax_alt)
     ax_alt.set_ylim((0.0, 9.0))
-    ax_alt.axhspan(alt_current, 9.0, color='white', zorder=1)
+    ax_alt.axhspan(alt_current, 9.0, lw=0.0, color='white', zorder=1, alpha=0.6)
 
     ax_alt.axhline(sza_current/10.0, lw=3.5, color='white', zorder=2)
-    ax_alt.axhline(sza_current/10.0, lw=2.0, color='gold', zorder=3)
+    ax_alt.axhline(sza_current/10.0, lw=1.5, color='black', zorder=3)
 
     # ax_alt.set_xlim((0.0, 1.0))
     ax_alt.set_ylim((0.0, 9.0))
@@ -1970,8 +1970,9 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
     ax_tms.set_xlabel('Time [hour]')
 
-    ax_tms.set_ylim(bottom=0.0)
-    ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
+    ax_tms.set_ylim(bottom=0.0, top=ax_tms.get_ylim()[-1]+0.1)
+    ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 3.1, 0.5)))
+    ax_tms.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 3.1, 0.1)))
     ax_tms.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
 
     if alt_current < 1.0:
@@ -1994,7 +1995,8 @@ def plot_video_frame(statements, test=False):
     ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
     ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
     ax_wvl.set_xlabel('Wavelength [nm]')
-    ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
+    ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 3.1, 0.5)))
+    ax_wvl.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 3.1, 0.1)))
     ax_wvl.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
     #\----------------------------------------------------------------------------/#
 
