@@ -311,12 +311,16 @@ def process_sat_img_vn(fnames_sat_, threshold=80.0):
         indices = np.where(jday_sat_==jday_sat0)[0]
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
 
-        img0 = mpl_img.imread(fname0)
-        logic_black = ~(np.sum(img0[:, :, :-1], axis=-1)>0.0)
-        p_coverage = (1.0-(logic_black.sum()/logic_black.size))*100.0
-        if p_coverage > threshold:
-            fnames_sat.append(fname0)
-            jday_sat.append(jday_sat0)
+        try:
+            img0 = mpl_img.imread(fname0)
+            logic_black = ~(np.sum(img0[:, :, :-1], axis=-1)>0.0)
+            p_coverage = (1.0-(logic_black.sum()/logic_black.size))*100.0
+            if p_coverage > threshold:
+                fnames_sat.append(fname0)
+                jday_sat.append(jday_sat0)
+        except Exception as error:
+            print(fname0)
+            print(error)
 
     return np.array(jday_sat), fnames_sat
 
@@ -1622,7 +1626,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
         lon_half = 15.0
-        lat_half = 3.0
+        lat_half = 2.5
         lat_low = max([lat_current-lat_half, 76.0])
         lat_high= min([lat_low+lat_half*2.0, 87.0])
         lat_low = max([lat_high-lat_half*2.0, 76.0])
@@ -1704,8 +1708,6 @@ def plot_video_frame(statements, test=False):
             img[logic_black, -1] = 0.0
             ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree(), zorder=1)
             ax_map0.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
-
-        # ax_map0.stock_img()
 
     if has_cam0:
         ang_cam_offset = -53.0 # for ARCSIX
