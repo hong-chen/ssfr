@@ -1154,6 +1154,8 @@ def cdata_arcsix_ssfr_v2(
             f_.close()
             #\----------------------------------------------------------------------------/#
 
+        # aux data processing ends here
+
         data_aux = ssfr.util.load_h5(fname_aux)
 
         # diffuse ratio
@@ -1175,6 +1177,8 @@ def cdata_arcsix_ssfr_v2(
         angles['ang_pit_offset'] = ang_pit_offset
         angles['ang_rol_offset'] = ang_rol_offset
         #\----------------------------------------------------------------------------/#
+
+        print('haha')
 
         sys.exit()
 
@@ -1609,7 +1613,7 @@ def main_process_data_v2(date, run=True):
     # SSFR v2
     #/----------------------------------------------------------------------------\#
     fname_ssfr1_v2 = cdata_arcsix_ssfr_v2(date, _fnames_['%s_ssfr1_v1' % date_s], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=False)
     #\----------------------------------------------------------------------------/#
     _fnames_['%s_ssfr1_v2' % date_s] = fname_ssfr1_v2
 
