@@ -1458,7 +1458,7 @@ def plot_video_frame(statements, test=False):
             }
     vars_plot['Altitude']   = {
             'vname':'alt',
-            'color':'darkorange',
+            'color':'orange',
             'zorder': 0,
             }
 
@@ -1576,9 +1576,9 @@ def plot_video_frame(statements, test=False):
     # map of flight track overlay satellite imagery
     proj0 = ccrs.Orthographic(
             central_longitude=lon_current,
-            # central_latitude=lat_current,
+            central_latitude=lat_current,
             # central_latitude=(76.0+flt_sim0.extent[3])/2.0,
-            central_latitude=(76.0+84.0)/2.0,
+            # central_latitude=(76.0+84.0)/2.0,
             )
     ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect=_aspect_)
 
@@ -1610,13 +1610,10 @@ def plot_video_frame(statements, test=False):
     # base plot
     #/----------------------------------------------------------------------------\#
     if has_sat0:
-        # lon_half = (flt_img0['extent_sat0'][1] - flt_img0['extent_sat0'][0])/2.0
-        lon_half = 15.0
-        lat_half = 3.0
-        # extent_img = [lon_current-lon_half, lon_current+lon_half, flt_sim0.extent[2], flt_sim0.extent[3]]
-        # extent_img = [lon_current-lon_half, lon_current+lon_half, lat_current-1.0, lat_current+lat_half]
-        # extent_img = [lon_current-lon_half, lon_current+lon_half, 76.0, flt_sim0.extent[3]]
-        extent_img = [lon_current-lon_half, lon_current+lon_half, 76.0, 84.0]
+        lon_half = 12.0
+        lat_half = 4.0
+        extent_img = [lon_current-lon_half, lon_current+lon_half, max([lat_current-lat_half, 76.0]), min([lat_current+lat_half, 87.0])]
+        # extent_img = [lon_current-lon_half, lon_current+lon_half, 76.0, 84.0]
         ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
 
         fname_sat = flt_img0['fnames_sat0'][index_pnt]
@@ -1852,7 +1849,7 @@ def plot_video_frame(statements, test=False):
     title_fig = '%s UTC' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'))
     if (_title_extra_ is not None) and (_title_extra_!=''):
         title_fig = '%s\n%s' % (_title_extra_, title_fig)
-    fig.suptitle(title_fig, y=0.96, fontsize=20)
+    fig.suptitle(title_fig, y=0.98, fontsize=20)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1935,8 +1932,8 @@ def plot_video_frame(statements, test=False):
 
     # ax_alt.set_xlim((0.0, 1.0))
     ax_alt.set_ylim((0.0, 9.0))
-    ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 3.0)))
-    ax_alt.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
+    ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
+    # ax_alt.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
     # ax_alt.xaxis.set_ticks([])
     # ax_alt.yaxis.tick_right()
     # ax_alt.yaxis.set_label_position('right')
@@ -2019,8 +2016,7 @@ presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hira
         if vname.lower() != 'altitude' and var_plot['plot?']:
             patches_legend.append(mpatches.Patch(color=var_plot['color'], label=vname))
     if len(patches_legend) > 0:
-        ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=8)
-        # ax_tms.legend(handles=patches_legend, bbox_to_anchor=(0.03, 1.23, 0.92, .102), loc=3, ncol=len(patches_legend), mode='expand', borderaxespad=0., frameon=True, handletextpad=0.2, fontsize=12)
+        ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=12)
     #\----------------------------------------------------------------------------/#
 
 
