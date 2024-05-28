@@ -1458,7 +1458,7 @@ def plot_video_frame(statements, test=False):
             }
     vars_plot['Altitude']   = {
             'vname':'alt',
-            'color':'gold',
+            'color':'darkorange',
             'zorder': 0,
             }
 
@@ -1663,8 +1663,8 @@ def plot_video_frame(statements, test=False):
         lat_s = lat_current-lat_half0
         lat_e = lat_current+lat_half0
 
-        rect = mpatches.Rectangle((lon_s, lat_s), lon_half0*2.0, lat_half0*2.0, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree())
-        ax_map.add_patch(rect)
+        # rect = mpatches.Rectangle((lon_s, lat_s), lon_half0*2.0, lat_half0*2.0, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree(), zorder=5)
+        # ax_map.add_patch(rect)
 
 
     if has_sat1:
@@ -1701,7 +1701,7 @@ def plot_video_frame(statements, test=False):
 
             logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
             img[logic_black, -1] = 0.0
-            ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
+            ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree(), zorder=1)
             ax_map0.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
 
         # ax_map0.stock_img()
