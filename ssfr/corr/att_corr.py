@@ -72,6 +72,12 @@ def att_corr(fnames,
     # if `diff_ratio` is not provided,
     #     factors = factors_dir
     ang_resp     = ssfr.util.load_h5(fnames['zen'])
+
+    if 'cos_resp' in ang_resp.keys():
+        tag = 'cos_resp'
+    else:
+        tag = 'ang_resp'
+
     wvl          = ang_resp['wvl']
     factors_dir  = np.zeros((dc.size, wvl.size), dtype=np.float64)
     for i, index in enumerate(indices):
@@ -85,7 +91,7 @@ def att_corr(fnames,
     else:
         factors_dif  = np.zeros((dc.size, wvl.size), dtype=np.float64)
         for i in range(wvl.size):
-            factors_dif[:, i] = 0.5 / ang_resp['ang_resp_int'][i]
+            factors_dif[:, i] = 0.5 / ang_resp['%s_int' % tag][i]
         corr_factors['zen'] = factors_dif*diff_ratio + factors_dir*(1.0-diff_ratio)
     #\----------------------------------------------------------------------------/#
 
@@ -93,10 +99,16 @@ def att_corr(fnames,
     #/----------------------------------------------------------------------------\#
     # use `ang_resp_int` for diffuse correction
     ang_resp     = ssfr.util.load_h5(fnames['nad'])
+
+    if 'cos_resp' in ang_resp.keys():
+        tag = 'cos_resp'
+    else:
+        tag = 'ang_resp'
+
     wvl          = ang_resp['wvl']
     factors_dif  = np.zeros((dc.size, wvl.size), dtype=np.float64)
     for i in range(wvl.size):
-        factors_dif[:, i] = 0.5 / ang_resp['ang_resp_int'][i]
+        factors_dif[:, i] = 0.5 / ang_resp['%s_int' % tag][i]
     corr_factors['nad'] = factors_dif
     #\----------------------------------------------------------------------------/#
 

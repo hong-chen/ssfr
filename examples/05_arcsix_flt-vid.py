@@ -1626,7 +1626,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
         lon_half = 15.0
-        lat_half = 2.5
+        lat_half = 1.5
         lat_low = max([lat_current-lat_half, 76.0])
         lat_high= min([lat_low+lat_half*2.0, 87.0])
         lat_low = max([lat_high-lat_half*2.0, 76.0])
@@ -1666,7 +1666,7 @@ def plot_video_frame(statements, test=False):
 
     if has_sat1:
 
-        lat_half0 = 0.5
+        lat_half0 = 0.25
         lon_half0 = lat_half0*(lon_half/lat_half)
         lon_s = lon_current-lon_half0
         lon_e = lon_current+lon_half0
@@ -1873,7 +1873,7 @@ def plot_video_frame(statements, test=False):
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
         g1 = ax_map.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-')
         g1.xlocator = FixedLocator(np.arange(-180, 181, 4.0))
-        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
+        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 1.0))
         g1.top_labels = False
         g1.right_labels = False
     #\----------------------------------------------------------------------------/#

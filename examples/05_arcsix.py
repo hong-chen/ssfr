@@ -1169,58 +1169,57 @@ def cdata_arcsix_ssfr_v2(
         angles = {}
         angles['sza'] = data_aux['sza']
         angles['saa'] = data_aux['saa']
-        angles['ang_pit']        = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
-        angles['ang_rol']        = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
-        angles['ang_hed']        = data_aux['ang_hed']
-        angles['ang_pit_m']      = data_aux['ang_pit_m']
-        angles['ang_rol_m']      = data_aux['ang_rol_m']
+        angles['ang_pit']   = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
+        angles['ang_rol']   = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
+        angles['ang_hed']   = data_aux['ang_hed']
+        angles['ang_pit_m'] = data_aux['ang_pit_m']
+        angles['ang_rol_m'] = data_aux['ang_rol_m']
         angles['ang_pit_offset'] = ang_pit_offset
         angles['ang_rol_offset'] = ang_rol_offset
         #\----------------------------------------------------------------------------/#
 
-        print('haha')
 
-        sys.exit()
+        # select calibration file for attitude correction
+        #/----------------------------------------------------------------------------\#
+        dset_s = 'dset1'
+        fdir_cal = '%s/ang-cal' % _fdir_cal_
+        fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+        fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+        #\----------------------------------------------------------------------------/#
+
+
+        # calculate attitude correction factors
+        #/----------------------------------------------------------------------------\#
+        fnames_cal = {
+                'zen': fname_cal_zen,
+                'nad': fname_cal_nad,
+                }
+        factors = ssfr.corr.att_corr(fnames_cal, angles, diff_ratio=diff_ratio)
+        #\----------------------------------------------------------------------------/#
 
         # save data
         #/----------------------------------------------------------------------------\#
         f = h5py.File(fname_h5, 'w')
-        for key in ['tmhr', 'jday', 'lon', 'lat', 'alt', 'sza', 'saa', 'ang_pit_s', 'ang_rol_s', 'ang_hed', 'ang_pit_m', 'ang_rol_m']:
+        for key in ['tmhr', 'jday', 'lon', 'lat', 'alt']:
             f.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
 
-        for dset_s in ['dset0', 'dset1']:
+        g1 = f.create_group('att_corr')
+        g1.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
+        g1.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+        for key in ['sza', 'saa', 'ang_pit_s', 'ang_rol_s', 'ang_hed', 'ang_pit_m', 'ang_rol_m']:
+            g1.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
 
-            g = f.create_group(dset_s)
+        # apply attitude correction
+        #/----------------------------------------------------------------------------\#
+        g2 = f.create_group('zen')
+        g2.create_dataset('flux', data=data_ssfr_v1['zen/flux']*factors['zen'], compression='gzip', compression_opts=9, chunks=True)
+        g2.create_dataset('wvl' , data=data_ssfr_v1['zen/wvl']                , compression='gzip', compression_opts=9, chunks=True)
+        g2.create_dataset('toa0', data=data_ssfr_v1['zen/toa0']               , compression='gzip', compression_opts=9, chunks=True)
 
-            # select calibration file for attitude correction
-            #/----------------------------------------------------------------------------\#
-            fdir_cal = '%s/ang-cal' % _fdir_cal_
-            fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
-            fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
-            #\----------------------------------------------------------------------------/#
-
-            # calculate attitude correction factors
-            #/----------------------------------------------------------------------------\#
-            fnames_cal = {
-                    'zen': fname_cal_zen,
-                    'nad': fname_cal_nad,
-                    }
-            factors = ssfr.corr.att_corr(fnames_cal, angles, diff_ratio=diff_ratio)
-            #\----------------------------------------------------------------------------/#
-
-            # g1 = g.create_group('att_corr')
-            # g1.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
-            # g1.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
-
-            # apply attitude correction
-            #/----------------------------------------------------------------------------\#
-            g.create_dataset('flux_zen', data=data_ssfr_v1['%s/flux_zen' % dset_s]*factors['zen'], compression='gzip', compression_opts=9, chunks=True)
-            g.create_dataset('wvl_zen' , data=data_ssfr_v1['%s/wvl_zen' % dset_s]                , compression='gzip', compression_opts=9, chunks=True)
-            g.create_dataset('toa0'    , data=data_ssfr_v1['%s/toa0' % dset_s]                   , compression='gzip', compression_opts=9, chunks=True)
-
-            g.create_dataset('flux_nad', data=data_ssfr_v1['%s/flux_nad' % dset_s]*factors['nad'], compression='gzip', compression_opts=9, chunks=True)
-            g.create_dataset('wvl_nad' , data=data_ssfr_v1['%s/wvl_nad' % dset_s]                , compression='gzip', compression_opts=9, chunks=True)
-            #\----------------------------------------------------------------------------/#
+        g3 = f.create_group('nad')
+        g3.create_dataset('flux', data=data_ssfr_v1['nad/flux']*factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+        g3.create_dataset('wvl' , data=data_ssfr_v1['nad/wvl']                , compression='gzip', compression_opts=9, chunks=True)
+        #\----------------------------------------------------------------------------/#
 
         f.close()
 
