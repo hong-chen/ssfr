@@ -1574,11 +1574,16 @@ def plot_video_frame(statements, test=False):
     ax = fig.add_subplot(gs[:, :])
 
     # map of flight track overlay satellite imagery
-    proj0 = ccrs.Orthographic(
-            central_longitude=lon_current,
-            central_latitude=lat_current,
-            # central_latitude=(76.0+flt_sim0.extent[3])/2.0,
-            # central_latitude=(76.0+84.0)/2.0,
+    # proj0 = ccrs.Orthographic(
+    #         central_longitude=(flt_sim0.extent[0]+flt_sim0.extent[1])/2.0,
+    #         central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
+    #         )
+    # proj0 = ccrs.NorthPolarStereo(
+    #         central_longitude=(flt_sim0.extent[0]+flt_sim0.extent[1])/2.0,
+    #         )
+    proj0 = ccrs.AzimuthalEquidistant(
+            central_longitude=(flt_sim0.extent[0]+flt_sim0.extent[1])/2.0,
+            central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
             )
     ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect=_aspect_)
 
@@ -1612,7 +1617,9 @@ def plot_video_frame(statements, test=False):
     if has_sat0:
         lon_half = 12.0
         lat_half = 4.0
-        extent_img = [lon_current-lon_half, lon_current+lon_half, max([lat_current-lat_half, 76.0]), min([lat_current+lat_half, 87.0])]
+        lat_low = max([lat_current-lat_half, 76.0])
+        lat_high= min([lat_low+lat_half*2.0, 87.0])
+        extent_img = [lon_current-lon_half, lon_current+lon_half, lat_low, lat_high]
         # extent_img = [lon_current-lon_half, lon_current+lon_half, 76.0, 84.0]
         ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
 
@@ -2016,7 +2023,7 @@ presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hira
         if vname.lower() != 'altitude' and var_plot['plot?']:
             patches_legend.append(mpatches.Patch(color=var_plot['color'], label=vname))
     if len(patches_legend) > 0:
-        ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=12)
+        ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=10)
     #\----------------------------------------------------------------------------/#
 
 
