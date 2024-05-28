@@ -1581,10 +1581,11 @@ def plot_video_frame(statements, test=False):
     # proj0 = ccrs.NorthPolarStereo(
     #         central_longitude=(flt_sim0.extent[0]+flt_sim0.extent[1])/2.0,
     #         )
-    proj0 = ccrs.AzimuthalEquidistant(
-            central_longitude=(flt_sim0.extent[0]+flt_sim0.extent[1])/2.0,
-            central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
-            )
+    # proj0 = ccrs.Orthographic(
+    #         central_longitude=lon_current,
+    #         central_latitude=lat_current,
+    #         )
+    proj0 = ccrs.PlateCarree()
     ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect=_aspect_)
 
     # flight altitude next to the map
@@ -1619,8 +1620,8 @@ def plot_video_frame(statements, test=False):
         lat_half = 4.0
         lat_low = max([lat_current-lat_half, 76.0])
         lat_high= min([lat_low+lat_half*2.0, 87.0])
+        lat_low = max([lat_high-lat_half*2.0, 76.0])
         extent_img = [lon_current-lon_half, lon_current+lon_half, lat_low, lat_high]
-        # extent_img = [lon_current-lon_half, lon_current+lon_half, 76.0, 84.0]
         ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
 
         fname_sat = flt_img0['fnames_sat0'][index_pnt]
@@ -1654,24 +1655,15 @@ def plot_video_frame(statements, test=False):
             img[logic_black, -1] = 0.0
             ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
 
-        # ax_map.stock_img()
+    if has_sat1:
 
-        # lat_half = (flt_img0['extent_sat0'][3] - flt_img0['extent_sat0'][2])/2.0
-        # lat_mean = (flt_img0['extent_sat0'][2] + flt_img0['extent_sat0'][3])/2.0
-        # lat_half0 = 2.0
-        # lon_half0 = lat_half0*(lon_half/lat_half)
-        lon_half0 = 2.5
         lat_half0 = 0.5
+        lon_half0 = lat_half0*(lon_half/lat_half)
         lon_s = lon_current-lon_half0
         lon_e = lon_current+lon_half0
         lat_s = lat_current-lat_half0
         lat_e = lat_current+lat_half0
 
-        # rect = mpatches.Rectangle((lon_s, lat_s), lon_half0*2.0, lat_half0*2.0, lw=1.0, ec='k', fc='none', transform=ccrs.PlateCarree(), zorder=5)
-        # ax_map.add_patch(rect)
-
-
-    if has_sat1:
         extent_img = [lon_s, lon_e, lat_s, lat_e]
 
         ax_map0.set_extent(extent_img, crs=ccrs.PlateCarree())
@@ -1944,7 +1936,7 @@ def plot_video_frame(statements, test=False):
     # ax_alt.xaxis.set_ticks([])
     # ax_alt.yaxis.tick_right()
     # ax_alt.yaxis.set_label_position('right')
-    cbar.set_label('Sun Elevation [$\\times 10^\\circ$] / Altitude [km]', rotation=270.0, labelpad=18)
+    cbar.set_label('Altitude [km] / Sun Elevation [$\\times 10^\\circ$]', rotation=270.0, labelpad=18)
     #\----------------------------------------------------------------------------/#
 
 
