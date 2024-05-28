@@ -1586,11 +1586,11 @@ def plot_video_frame(statements, test=False):
     #         central_longitude=(flt_sim0.extent[0]+flt_sim0.extent[1])/2.0,
     #         central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
     #         )
-    # proj0 = ccrs.Orthographic(
-    #         central_longitude=lon_current,
-    #         central_latitude=lat_current,
-    #         )
-    proj0 = ccrs.PlateCarree()
+    proj0 = ccrs.Orthographic(
+            central_longitude=lon_current,
+            central_latitude=lat_current,
+            )
+    # proj0 = ccrs.PlateCarree()
     ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect=_aspect_)
 
     # flight altitude next to the map
@@ -1621,8 +1621,8 @@ def plot_video_frame(statements, test=False):
     # base plot
     #/----------------------------------------------------------------------------\#
     if has_sat0:
-        lon_half = 12.0
-        lat_half = 4.0
+        lon_half = 15.0
+        lat_half = 3.0
         lat_low = max([lat_current-lat_half, 76.0])
         lat_high= min([lat_low+lat_half*2.0, 87.0])
         lat_low = max([lat_high-lat_half*2.0, 76.0])
