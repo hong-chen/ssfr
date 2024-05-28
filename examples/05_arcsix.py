@@ -1074,7 +1074,7 @@ def cdata_arcsix_ssfr_v2(
 
         data_ssfr_v1 = ssfr.util.load_h5(fname_ssfr_v1)
 
-        fname_aux = '%s/%s-%s_%s_v2-aux.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), date_s)
+        fname_aux = '%s/%s-%s_%s_%s_v2-aux.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), _platform_.upper(), date_s)
 
         if run_aux:
 
@@ -1084,10 +1084,10 @@ def cdata_arcsix_ssfr_v2(
 
             f_ = h5py.File(fname_aux, 'w')
 
-            wvl_ssfr_zen = data_ssfr_v1['dset0/wvl_zen']
+            wvl_ssfr_zen = data_ssfr_v1['zen/wvl']
             wvl_spns     = data_spns_v2['tot/wvl']
 
-            Nt, Nwvl = data_ssfr_v1['dset0/flux_zen'].shape
+            Nt, Nwvl = data_ssfr_v1['zen/flux'].shape
 
             diff_ratio = np.zeros((Nt, Nwvl), dtype=np.float64)
             diff_ratio[...] = np.nan
@@ -1175,6 +1175,8 @@ def cdata_arcsix_ssfr_v2(
         angles['ang_pit_offset'] = ang_pit_offset
         angles['ang_rol_offset'] = ang_rol_offset
         #\----------------------------------------------------------------------------/#
+
+        sys.exit()
 
         # save data
         #/----------------------------------------------------------------------------\#
@@ -1499,7 +1501,6 @@ def main_process_data_v0(date, run=True):
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
             fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
-    sys.exit()
 
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
@@ -1592,16 +1593,26 @@ def main_process_data_v2(date, run=True):
 
     # SPNS v2
     #/----------------------------------------------------------------------------\#
+    # based on ALP v1
     # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=run)
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
+            fdir_out=fdir_out, run=False)
+
+    # based on HSK v0
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
+    #         fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
-
-    fname_ssfr_v2 = cdata_arcsix_ssfr_v2(date, fname_ssfr_v1, _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
-            which_ssfr=which_ssfr, fdir_out=fdir_out, run=run)
-
     _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
+
+
+    # SSFR v2
+    #/----------------------------------------------------------------------------\#
+    fname_ssfr1_v2 = cdata_arcsix_ssfr_v2(date, _fnames_['%s_ssfr1_v1' % date_s], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+    _fnames_['%s_ssfr1_v2' % date_s] = fname_ssfr1_v2
+
 #\----------------------------------------------------------------------------/#
 
 if __name__ == '__main__':
@@ -1625,19 +1636,19 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration at NASA WFF (calibration abandoned)
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
-             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
+             datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
+             # datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
             ]
     for date in dates[::-1]:
-        main_process_data_v0(date, run=True)
-        # main_process_data_v0(date, run=False)
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
 
         # run_offset_check(date)
 
         # main_process_data_v1(date, run=True)
-        # main_process_data_v1(date, run=False)
+        main_process_data_v1(date, run=False)
 
-        # main_process_data_v2(date, run=True)
+        main_process_data_v2(date, run=True)
     #\----------------------------------------------------------------------------/#
 
     pass
