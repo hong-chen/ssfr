@@ -86,6 +86,7 @@ _tmhr_range_ = {
         '20240517': [19.20, 23.00],
         '20240521': [14.80, 17.50],
         '20240524': [ 9.90, 17.90],
+        '20240528': [11.90, 18.60],
         }
 
 
@@ -297,20 +298,27 @@ def get_jday_sat_img_vn(fnames):
 
     return np.array(jday)
 
-def process_sat_img_vn(fnames_sat_):
+def process_sat_img_vn(fnames_sat_, threshold=80.0):
 
     jday_sat_ = get_jday_sat_img_vn(fnames_sat_)
-    jday_sat = np.sort(np.unique(jday_sat_))
+    jday_sat_unique = np.sort(np.unique(jday_sat_))
 
     fnames_sat = []
+    jday_sat = []
 
-    for jday_sat0 in jday_sat:
+    for jday_sat0 in jday_sat_unique:
 
         indices = np.where(jday_sat_==jday_sat0)[0]
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1] # pick polar imager over geostationary imager
-        fnames_sat.append(fname0)
 
-    return jday_sat, fnames_sat
+        img0 = mpl_img.imread(fname0)
+        logic_black = ~(np.sum(img0[:, :, :-1], axis=-1)>0.0)
+        p_coverage = (1.0-(logic_black.sum()/logic_black.size))*100.0
+        if p_coverage > threshold:
+            fnames_sat.append(fname0)
+            jday_sat.append(jday_sat0)
+
+    return np.array(jday_sat), fnames_sat
 
 
 
@@ -1578,9 +1586,6 @@ def plot_video_frame(statements, test=False):
     #         central_longitude=(flt_sim0.extent[0]+flt_sim0.extent[1])/2.0,
     #         central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
     #         )
-    # proj0 = ccrs.NorthPolarStereo(
-    #         central_longitude=(flt_sim0.extent[0]+flt_sim0.extent[1])/2.0,
-    #         )
     # proj0 = ccrs.Orthographic(
     #         central_longitude=lon_current,
     #         central_latitude=lat_current,
@@ -2057,11 +2062,11 @@ def main_pre(
     # force flight track to start at PSB
     #/--------------------------------------------------------------\#
     # location of Pituffik Space Base (PSB)
-    lon0 = -68.70379848070486
-    lat0 = 76.53111177550895
+    # lon0 = -68.70379848070486
+    # lat0 = 76.53111177550895
 
-    lon = (lon-lon[~np.isnan(lon)][0]) + lon0
-    lat = (lat-lat[~np.isnan(lat)][0])/5.0 + lat0
+    # lon = (lon-lon[~np.isnan(lon)][0]) + lon0
+    # lat = (lat-lat[~np.isnan(lat)][0])/5.0 + lat0
     #\--------------------------------------------------------------/#
 
     logic0 = (~np.isnan(jday) & ~np.isinf(sza))   & \
@@ -2227,9 +2232,13 @@ def main_pre(
     # process camera imagery
     #/----------------------------------------------------------------------------\#
     fdirs = er3t.util.get_all_folders(_fdir_cam_img_, pattern='*%4.4d*%2.2d*%2.2d*nac*jpg*' % (date.year, date.month, date.day))
-    fdir_cam0 = sorted(fdirs, key=os.path.getmtime)[-1]
-    fnames_cam0 = sorted(glob.glob('%s/*.jpg' % (fdir_cam0)))
-    jday_cam0 = get_jday_cam_img(date, fnames_cam0)
+    if len(fdirs) > 0:
+        has_cam = True
+        fdir_cam0 = sorted(fdirs, key=os.path.getmtime)[-1]
+        fnames_cam0 = sorted(glob.glob('%s/*.jpg' % (fdir_cam0)))
+        jday_cam0 = get_jday_cam_img(date, fnames_cam0)
+    else:
+        has_cam = False
     #\----------------------------------------------------------------------------/#
 
 
@@ -2311,8 +2320,9 @@ def main_pre(
         flt_img['extent_sat1_ori'] = fnames_sat1[region_select]['extent']
         flt_img['jday_sat1']   = np.array([], dtype=np.float64)
 
-        flt_img['fnames_cam0']  = []
-        flt_img['jday_cam0'] = np.array([], dtype=np.float64)
+        if has_cam:
+            flt_img['fnames_cam0']  = []
+            flt_img['jday_cam0'] = np.array([], dtype=np.float64)
 
         for j in range(flt_trks[i]['jday'].size):
 
@@ -2329,9 +2339,10 @@ def main_pre(
             flt_img['fnames_sat1'].append(fnames_sat1_[index_sat1])
             flt_img['jday_sat1'] = np.append(flt_img['jday_sat1'], jday_sat1_[index_sat1])
 
-            index_cam = np.argmin(np.abs(jday_cam0-flt_trks[i]['jday'][j]))
-            flt_img['fnames_cam0'].append(fnames_cam0[index_cam])
-            flt_img['jday_cam0'] = np.append(flt_img['jday_cam0'], jday_cam0[index_cam])
+            if has_cam:
+                index_cam = np.argmin(np.abs(jday_cam0-flt_trks[i]['jday'][j]))
+                flt_img['fnames_cam0'].append(fnames_cam0[index_cam])
+                flt_img['jday_cam0'] = np.append(flt_img['jday_cam0'], jday_cam0[index_cam])
 
         flt_imgs.append(flt_img)
     #\--------------------------------------------------------------/#
@@ -2354,7 +2365,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=100,
+        interval=20,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -2399,7 +2410,8 @@ if __name__ == '__main__':
     dates = [
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
-            datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
+            # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
+            datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
         ]
 
     for date in dates[::-1]:

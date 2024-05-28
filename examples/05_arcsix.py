@@ -1499,6 +1499,7 @@ def main_process_data_v0(date, run=True):
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
             fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
+    sys.exit()
 
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
@@ -1624,15 +1625,16 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration at NASA WFF (calibration abandoned)
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
-             datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
+             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
+             datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
             ]
     for date in dates[::-1]:
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
+        main_process_data_v0(date, run=True)
+        # main_process_data_v0(date, run=False)
 
         # run_offset_check(date)
 
-        main_process_data_v1(date, run=True)
+        # main_process_data_v1(date, run=True)
         # main_process_data_v1(date, run=False)
 
         # main_process_data_v2(date, run=True)
