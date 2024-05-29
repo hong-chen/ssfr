@@ -1956,7 +1956,7 @@ def plot_video_frame(statements, test=False):
         spine.set_visible(False)
     ax_tms_alt.spines['right'].set_visible(True)
     ax_tms_alt.spines['right'].set_color(vars_plot['Altitude']['color'])
-    ax_tms_alt.tick_params(axis='y', colors=vars_plot['Altitude']['color'])
+    ax_tms_alt.tick_params(axis='y', which='both', colors=vars_plot['Altitude']['color'])
     #\----------------------------------------------------------------------------/#
 
 
@@ -2004,7 +2004,7 @@ def plot_video_frame(statements, test=False):
     ax_alt_tms.axhline(alt_current, lw=1.5, color=vars_plot['Altitude']['color'], zorder=1, alpha=0.9)
 
     ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
-    ax_alt_tms.set_xlim(ax_tms.get_ylim())
+    ax_alt_tms.set_xlim(left=ax_tms.get_ylim()[0]-0.0000001, right=ax_tms.get_ylim()[-1])
     ax_alt_tms.set_ylim(
             bottom=max([0.0, ax_alt_tms.get_ylim()[0]]),
             top=min([ax_alt_tms.get_ylim()[-1], 8.0]),
@@ -2020,7 +2020,7 @@ def plot_video_frame(statements, test=False):
     ax_alt_tms.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
     ax_alt_tms.spines['right'].set_visible(True)
     ax_alt_tms.spines['right'].set_color(vars_plot['Altitude']['color'])
-    ax_alt_tms.tick_params(axis='y', colors=vars_plot['Altitude']['color'])
+    ax_alt_tms.tick_params(axis='y', which='both', colors=vars_plot['Altitude']['color'])
     #\----------------------------------------------------------------------------/#
 
 
