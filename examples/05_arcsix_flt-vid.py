@@ -49,9 +49,10 @@ import matplotlib.gridspec as gridspec
 from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -1583,7 +1584,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     fig = plt.figure(figsize=(16, 9))
 
-    gs = gridspec.GridSpec(12, 17)
+    gs = gridspec.GridSpec(12, 19)
 
     # ax of all
     ax = fig.add_subplot(gs[:, :])
@@ -1598,26 +1599,27 @@ def plot_video_frame(statements, test=False):
             central_latitude=lat_current,
             )
     # proj0 = ccrs.PlateCarree()
-    ax_map = fig.add_subplot(gs[:8, :7], projection=proj0, aspect=_aspect_)
+    ax_map = fig.add_subplot(gs[:8, :8], projection=proj0, aspect=_aspect_)
 
     # flight altitude next to the map
-    divider = make_axes_locatable(ax_map)
-    ax_alt = divider.append_axes('right', size='4%', pad=0.0, axes_class=maxes.Axes)
+    divider_map = make_axes_locatable(ax_map)
+    ax_alt = divider_map.append_axes('right', size='4%', pad=0.0, axes_class=maxes.Axes)
+    ax_alt_tms = divider_map.append_axes('right', size='32%', pad=0.0, axes_class=maxes.Axes)
 
-    # aircraft and platform attitude status
-    ax_nav  = fig.add_subplot(gs[:2, 7:9])
+
 
     # a secondary map
-    ax_map0 = fig.add_subplot(gs[:5, 9:13], projection=ccrs.PlateCarree(), aspect=_aspect_)
+    ax_map0 = fig.add_subplot(gs[:5, 9:14], projection=ccrs.PlateCarree(), aspect=_aspect_)
 
     # camera imagery
-    ax_img  = fig.add_subplot(gs[:5, 13:])
+    ax_img  = fig.add_subplot(gs[:5, 14:])
     ax_img_hist = ax_img.twinx()
 
     # spetral irradiance
     ax_wvl  = fig.add_subplot(gs[5:8, 9:])
 
-    # time series
+    # aircraft and platform attitude status
+    ax_nav  = inset_axes(ax_wvl, width=1.0, height=0.7, loc='upper center')
     ax_tms = fig.add_subplot(gs[9:, :])
     ax_tms_alt  = ax_tms.twinx()
 
@@ -1815,7 +1817,6 @@ def plot_video_frame(statements, test=False):
         ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap=_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
         ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap=_cmap_, transform=ccrs.PlateCarree())
 
-
         if not plot_arrow:
             ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
             ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap=_cmap_, transform=ccrs.PlateCarree())
@@ -1850,6 +1851,16 @@ def plot_video_frame(statements, test=False):
                     ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=vars_plot[vname]['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
                 else:
                     ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+                    if vname not in ['SSFR-A↑', 'TOA↓']:
+                        if has_att:
+                            ang_pit_solid = flt_trk['ang_pit'][logic_solid]
+                            ang_rol_solid = flt_trk['ang_rol'][logic_solid]
+                            logic_stable = (np.abs(ang_pit_solid)<=5.0) & (np.abs(ang_rol_solid)<=2.5)
+                            ax_alt_tms.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.1)
+                            ax_alt_tms.scatter(tms_y[logic_solid][logic_stable] , flt_trk['alt'][logic_solid][logic_stable] , c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+
+                        else:
+                            ax_alt_tms.scatter(tms_y[logic_solid], flt_trk['alt'][logic_solid], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
 
 
@@ -1875,7 +1886,7 @@ def plot_video_frame(statements, test=False):
 
         ax_map.coastlines(resolution='10m', color='black', lw=0.5)
         g1 = ax_map.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-')
-        g1.xlocator = FixedLocator(np.arange(-180, 181, 4.0))
+        g1.xlocator = FixedLocator(np.arange(-180, 181, 10.0))
         g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 1.0))
         g1.top_labels = False
         g1.right_labels = False
@@ -1933,20 +1944,17 @@ def plot_video_frame(statements, test=False):
     # altitude/sza plot settings
     #/----------------------------------------------------------------------------\#
     cbar = fig.colorbar(cs_alt, cax=ax_alt)
-    ax_alt.set_ylim((0.0, 9.0))
     ax_alt.axhspan(alt_current, 9.0, lw=0.0, color='white', zorder=1, alpha=0.6)
 
     ax_alt.axhline(sza_current/10.0, lw=3.5, color='white', zorder=2)
     ax_alt.axhline(sza_current/10.0, lw=1.5, color='black', zorder=3)
 
-    # ax_alt.set_xlim((0.0, 1.0))
     ax_alt.set_ylim((0.0, 9.0))
-    ax_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
-    # ax_alt.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
-    # ax_alt.xaxis.set_ticks([])
+    ax_alt.xaxis.set_ticks([])
+    ax_alt.yaxis.set_ticks([])
     # ax_alt.yaxis.tick_right()
     # ax_alt.yaxis.set_label_position('right')
-    cbar.set_label('Altitude [km] / Sun Elevation [$\\times 10^\\circ$]', rotation=270.0, labelpad=18)
+    # cbar.set_label('Altitude [km] / Sun Elevation [$\\times 10^\\circ$]', rotation=270.0, labelpad=18)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1976,7 +1984,7 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
     ax_tms.set_xlabel('Time [hour]')
 
-    ax_tms.set_ylim(bottom=0.0, top=min([2.0, ax_tms.get_ylim()[-1]+0.15]))
+    ax_tms.set_ylim(bottom=0.0, top=min([1.5, ax_tms.get_ylim()[-1]+0.15]))
     ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 10.1, 0.5)))
     ax_tms.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
     ax_tms.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
@@ -1995,7 +2003,7 @@ def plot_video_frame(statements, test=False):
 
     # spectra plot setting
     #/----------------------------------------------------------------------------\#
-    ax_wvl.grid()
+    # ax_wvl.grid()
     ax_wvl.set_xlim((200, 2200))
     ax_wvl.set_ylim(ax_tms.get_ylim())
     ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
@@ -2003,8 +2011,22 @@ def plot_video_frame(statements, test=False):
     ax_wvl.set_xlabel('Wavelength [nm]')
     ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 10.1, 0.5)))
     ax_wvl.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
-    ax_wvl.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
     #\----------------------------------------------------------------------------/#
+
+
+    # profile plot
+    #/----------------------------------------------------------------------------\#
+    ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
+    ax_alt_tms.set_xlim(ax_tms.get_ylim())
+    ax_alt_tms.set_ylim((0, 9.0))
+    ax_alt_tms.yaxis.set_label_position('right')
+    ax_alt_tms.yaxis.tick_right()
+    ax_alt_tms.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
+    ax_alt_tms.xaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
+    ax_alt_tms.grid()
+    ax_alt_tms.set_ylabel('Altitude [km] / Sun Elevation [$\\times 10^\\circ$]', rotation=270.0, labelpad=18)
+    #\----------------------------------------------------------------------------/#
+
 
 
     # acknowledgements
@@ -2372,7 +2394,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=5,
+        interval=20,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -2433,13 +2455,13 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            # main_pre(date)
-            # main_vid(date, wvl0=_wavelength_)
+            main_pre(date)
+            main_vid(date, wvl0=_wavelength_)
             #\----------------------------------------------------------------------------/#
             pass
 
 
-    # sys.exit()
+    sys.exit()
 
 
     # test
