@@ -1038,9 +1038,9 @@ def plot_video_frame_wff(statements, test=False):
     ax_tms.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
 
     if alt_current < 1.0:
-        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.1f  m' % (lon_current, lat_current, alt_current*1000.0)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.1f  m, Solar Zenith %4.1f$^\\circ$' % (lon_current, lat_current, alt_current*1000.0, sza_current)
     else:
-        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.4f km' % (lon_current, lat_current, alt_current)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.4f km, Solar Zenith %4.1f$^\\circ$' % (lon_current, lat_current, alt_current, sza_current)
     ax_tms.set_title(title_all)
 
     ax_tms.spines['right'].set_visible(False)
@@ -2027,16 +2027,9 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     cbar = fig.colorbar(cs_alt, cax=ax_alt)
     ax_alt.axhspan(alt_current, 9.0, lw=0.0, color='white', zorder=1, alpha=0.6)
-
-    # ax_alt.axhline((90.0-sza_current)/10.0, lw=3.5, color='white', zorder=2)
-    # ax_alt.axhline((90.0-sza_current)/10.0, lw=1.5, color='black', zorder=3)
-
     ax_alt.set_ylim(ax_alt_tms.get_ylim())
     ax_alt.xaxis.set_ticks([])
     ax_alt.yaxis.set_ticks([])
-    # ax_alt.yaxis.tick_right()
-    # ax_alt.yaxis.set_label_position('right')
-    # cbar.set_label('Altitude [km] / Sun Elevation [$\\times 10^\\circ$]', rotation=270.0, labelpad=18)
     #\----------------------------------------------------------------------------/#
 
 
