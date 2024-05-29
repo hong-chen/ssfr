@@ -2009,7 +2009,7 @@ def plot_video_frame(statements, test=False):
     #         )
     ax_alt_tms.set_ylim(
             bottom=max([0.0, ax_alt_tms.get_ylim()[0]]),
-            top=min([max([ax_alt_tms.get_ylim()[-1]*1.3]), 8.0]),
+            top=min([ax_alt_tms.get_ylim()[-1]*1.3, 8.0]),
             )
     ax_alt_tms.yaxis.set_label_position('right')
     ax_alt_tms.yaxis.tick_right()
