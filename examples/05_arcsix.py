@@ -1601,14 +1601,14 @@ def main_process_data_v2(date, run=True):
     # SPNS v2
     #/----------------------------------------------------------------------------\#
     # based on ALP v1
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
-            fdir_out=fdir_out, run=run)
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
+    #         fdir_out=fdir_out, run=run)
     # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=True)
 
     # based on HSK v0
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
-    #         fdir_out=fdir_out, run=run)
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
     _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
 
@@ -1651,8 +1651,8 @@ if __name__ == '__main__':
 
         # run_offset_check(date)
 
-        main_process_data_v1(date, run=True)
-        # main_process_data_v1(date, run=False)
+        # main_process_data_v1(date, run=True)
+        main_process_data_v1(date, run=False)
 
         main_process_data_v2(date, run=True)
     #\----------------------------------------------------------------------------/#
