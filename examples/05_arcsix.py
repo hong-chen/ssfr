@@ -697,8 +697,6 @@ def cdata_arcsix_spns_v1(
         data_hsk= ssfr.util.load_h5(fname_hsk)
         #\----------------------------------------------------------------------------/#
 
-
-
         time_offset = _spns_time_offset_[date_s]
 
         # interpolate spn-s data to hsk time frame
@@ -770,10 +768,10 @@ def cdata_arcsix_spns_v2(
         mu = np.cos(np.deg2rad(data_hsk['sza']))
 
         try:
-            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_s']+ang_pit_offset, data_hsk['ang_rol_s']+ang_rol_offset, data_hsk['ang_hed'])
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit']+ang_pit_offset, data_hsk['ang_rol']+ang_rol_offset, data_hsk['ang_hed'])
         except Exception as error:
             print(error)
-            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit']+ang_pit_offset, data_hsk['ang_rol']+ang_rol_offset, data_hsk['ang_hed'])
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_s']+ang_pit_offset, data_hsk['ang_rol_s']+ang_rol_offset, data_hsk['ang_hed'])
         dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
 
         factors = mu / dc
@@ -1316,7 +1314,7 @@ def cdata_arcsix_ssfr_archive():
 #\----------------------------------------------------------------------------/#
 
 
-def run_offset_check(date):
+def run_time_offset_check(date):
 
     date_s = date.strftime('%Y%m%d')
     data_hsk = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
@@ -1458,6 +1456,79 @@ def run_offset_check(date):
             y_reset=True,
             description='SSFR-B Nadir Count vs. SSFR-A Nadir (745nm)',
             fname_html='ssfr-b_offset_check_%s.html' % (date_s))
+    #\----------------------------------------------------------------------------/#
+
+
+def run_angle_offset_check(
+        date,
+        ang_pit_offset=0.0,
+        ang_rol_offset=0.0,
+        wvl0=745.0,
+        ):
+
+    date_s = date.strftime('%Y%m%d')
+    data_hsk = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
+
+
+    # SPNS v1
+    #/----------------------------------------------------------------------------\#
+    data_spns_v1 = ssfr.util.load_h5(_fnames_['%s_spns_v1' % date_s])
+    index_wvl_spns = np.argmin(np.abs(wvl0-data_spns_v1['tot/wvl']))
+    data_y1 = data_spns_v1['tot/flux'][:, index_wvl_spns]
+    #\----------------------------------------------------------------------------/#
+
+
+    # SPNS v2
+    #/----------------------------------------------------------------------------\#
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=_fdir_out_,
+            run=True,
+            ang_pit_offset=ang_pit_offset,
+            ang_rol_offset=ang_rol_offset,
+            )
+    data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
+    data_y2 = data_spns_v2['tot/flux'][:, index_wvl_spns]
+    #\----------------------------------------------------------------------------/#
+
+
+    # SSFR-A v2
+    #/----------------------------------------------------------------------------\#
+    data_ssfr1_v2 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v2' % date_s])
+    index_wvl_ssfr = np.argmin(np.abs(wvl0-data_ssfr1_v2['zen/wvl']))
+    data_y0 = data_ssfr1_v2['zen/flux'][:, index_wvl_ssfr]
+    #\----------------------------------------------------------------------------/#
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(15, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+        ax1.scatter(data_hsk['tmhr'], data_y1, s=3, c='r', lw=0.0)
+        ax1.scatter(data_hsk['tmhr'], data_y0, s=3, c='k', lw=0.0)
+        ax1.scatter(data_hsk['tmhr'], data_y2, s=3, c='g', lw=0.0)
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
     #\----------------------------------------------------------------------------/#
 
 
@@ -1649,12 +1720,14 @@ if __name__ == '__main__':
         # main_process_data_v0(date, run=True)
         main_process_data_v0(date, run=False)
 
-        # run_offset_check(date)
+        # run_time_offset_check(date)
 
         # main_process_data_v1(date, run=True)
         main_process_data_v1(date, run=False)
 
-        main_process_data_v2(date, run=True)
+        # main_process_data_v2(date, run=True)
+        main_process_data_v2(date, run=False)
+        run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
     #\----------------------------------------------------------------------------/#
 
     pass
