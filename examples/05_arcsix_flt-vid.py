@@ -1542,7 +1542,7 @@ def plot_video_frame(statements, test=False):
     # flight direction
     #/----------------------------------------------------------------------------\#
     alt_cmap = mpl.colormaps[_cmap_]
-    alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=9.0)
+    alt_norm = mpl.colors.Normalize(vmin=0.0, vmax=8.0)
 
     dlon = flt_sim0.flt_imgs[index_trk]['extent_sat0'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat0'][0]
     Nscale = int(dlon/1.3155229999999989 * 15)
@@ -1811,17 +1811,17 @@ def plot_video_frame(statements, test=False):
         else:
             alpha_trans = 0.08
 
-        ax_map.scatter(         flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap=_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
-        cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap=_cmap_, transform=ccrs.PlateCarree())
+        ax_map.scatter(         flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=8.0, cmap=_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
+        cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=8.0, cmap=_cmap_, transform=ccrs.PlateCarree())
 
-        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap=_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
-        ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap=_cmap_, transform=ccrs.PlateCarree())
+        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=8.0, cmap=_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
+        ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=8.0, cmap=_cmap_, transform=ccrs.PlateCarree())
 
         if not plot_arrow:
             ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
-            ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap=_cmap_, transform=ccrs.PlateCarree())
+            ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=8.0, cmap=_cmap_, transform=ccrs.PlateCarree())
             # ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-            # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap=_cmap_)
+            # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=8.0, cmap=_cmap_)
         else:
             color0 = alt_cmap(alt_norm(alt_current))
             arrow_prop['facecolor'] = color0
@@ -1830,7 +1830,7 @@ def plot_video_frame(statements, test=False):
             # ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
 
         ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
-        ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=9.0, cmap=_cmap_, transform=ccrs.PlateCarree())
+        ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=0.0, vmax=8.0, cmap=_cmap_, transform=ccrs.PlateCarree())
 
         for vname in vars_plot.keys():
 
@@ -1975,9 +1975,9 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
 
     if alt_current < 1.0:
-        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6d  m' % (lon_current, lat_current, alt_current*1000.0)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.1f  m, Solar Zenith %4.1f$^\\circ$' % (lon_current, lat_current, alt_current*1000.0, sza_current)
     else:
-        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.3f km' % (lon_current, lat_current, alt_current)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.4f km, Solar Zenith %4.1f$^\\circ$' % (lon_current, lat_current, alt_current, sza_current)
     ax_tms.set_title(title_all)
 
     ax_tms.spines['right'].set_visible(False)
@@ -2001,15 +2001,13 @@ def plot_video_frame(statements, test=False):
 
     # profile plot
     #/----------------------------------------------------------------------------\#
+    ax_alt_tms.axhline(alt_current, lw=1.5, color='black', zorder=1, alpha=0.9)
+
     ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
     ax_alt_tms.set_xlim(ax_tms.get_ylim())
-    # ax_alt_tms.set_ylim(
-    #         bottom=max([0.0, min([ax_alt_tms.get_ylim()[0]*0.8, (90.0-sza_current)/10.0*0.8])]),
-    #         top=min([max([ax_alt_tms.get_ylim()[-1]*1.2, (90.0-sza_current)/10.0*1.2]), 9.0]),
-    #         )
     ax_alt_tms.set_ylim(
             bottom=max([0.0, ax_alt_tms.get_ylim()[0]]),
-            top=min([ax_alt_tms.get_ylim()[-1]*1.3, 8.0]),
+            top=min([ax_alt_tms.get_ylim()[-1], 8.0]),
             )
     ax_alt_tms.yaxis.set_label_position('right')
     ax_alt_tms.yaxis.tick_right()
@@ -2025,7 +2023,6 @@ def plot_video_frame(statements, test=False):
     # altitude/sza plot settings
     #/----------------------------------------------------------------------------\#
     cbar = fig.colorbar(cs_alt, cax=ax_alt)
-    ax_alt.axhspan(alt_current, 9.0, lw=0.0, color='white', zorder=1, alpha=0.6)
     ax_alt.set_ylim(ax_alt_tms.get_ylim())
     ax_alt.xaxis.set_ticks([])
     ax_alt.yaxis.set_ticks([])
