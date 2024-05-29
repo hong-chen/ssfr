@@ -2001,7 +2001,7 @@ def plot_video_frame(statements, test=False):
 
     # profile plot
     #/----------------------------------------------------------------------------\#
-    ax_alt_tms.axhline(alt_current, lw=1.5, color='black', zorder=1, alpha=0.9)
+    ax_alt_tms.axhline(alt_current, lw=1.5, color=vars_plot['Altitude']['color'], zorder=1, alpha=0.9)
 
     ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
     ax_alt_tms.set_xlim(ax_tms.get_ylim())
@@ -2016,7 +2016,11 @@ def plot_video_frame(statements, test=False):
     ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 1.0)))
     ax_alt_tms.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 8.1, 0.1)))
     ax_alt_tms.grid()
-    ax_alt_tms.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18)
+
+    ax_alt_tms.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
+    ax_alt_tms.spines['right'].set_visible(True)
+    ax_alt_tms.spines['right'].set_color(vars_plot['Altitude']['color'])
+    ax_alt_tms.tick_params(axis='y', colors=vars_plot['Altitude']['color'])
     #\----------------------------------------------------------------------------/#
 
 
