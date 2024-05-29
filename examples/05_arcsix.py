@@ -1331,38 +1331,38 @@ def run_time_offset_check(date):
 
     # ALP pitch vs HSK pitch
     #/----------------------------------------------------------------------------\#
-    # data_offset = {
-    #         'x0': data_hsk['jday']*86400.0,
-    #         'y0': data_hsk['ang_pit'],
-    #         'x1': data_alp['jday'][::10]*86400.0,
-    #         'y1': data_alp['ang_pit_s'][::10],
-    #         }
-    # ssfr.vis.find_offset_bokeh(
-    #         data_offset,
-    #         offset_x_range=_offset_x_range_,
-    #         offset_y_range=[-10, 10],
-    #         x_reset=True,
-    #         y_reset=False,
-    #         description='ALP Pitch vs. HSK Pitch',
-    #         fname_html='alp-pit_offset_check_%s.html' % date_s)
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['ang_pit'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['ang_pit_s'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=False,
+            description='ALP Pitch vs. HSK Pitch',
+            fname_html='alp-pit_offset_check_%s.html' % date_s)
     #\----------------------------------------------------------------------------/#
 
     # ALP roll vs HSK roll
     #/----------------------------------------------------------------------------\#
-    # data_offset = {
-    #         'x0': data_hsk['jday']*86400.0,
-    #         'y0': data_hsk['ang_rol'],
-    #         'x1': data_alp['jday'][::10]*86400.0,
-    #         'y1': data_alp['ang_rol_s'][::10],
-    #         }
-    # ssfr.vis.find_offset_bokeh(
-    #         data_offset,
-    #         offset_x_range=_offset_x_range_,
-    #         offset_y_range=[-10, 10],
-    #         x_reset=True,
-    #         y_reset=False,
-    #         description='ALP Roll vs. HSK Roll',
-    #         fname_html='alp-rol_offset_check_%s.html' % date_s)
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['ang_rol'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['ang_rol_s'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=False,
+            description='ALP Roll vs. HSK Roll',
+            fname_html='alp-rol_offset_check_%s.html' % date_s)
     #\----------------------------------------------------------------------------/#
 
     # ALP altitude vs HSK altitude
@@ -1720,7 +1720,8 @@ if __name__ == '__main__':
         # main_process_data_v0(date, run=True)
         main_process_data_v0(date, run=False)
 
-        # run_time_offset_check(date)
+        run_time_offset_check(date)
+        sys.exit()
 
         # main_process_data_v1(date, run=True)
         main_process_data_v1(date, run=False)

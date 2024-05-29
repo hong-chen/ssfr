@@ -1758,7 +1758,7 @@ def plot_video_frame(statements, test=False):
         x  = np.linspace(-10.0, 10.0, 101)
 
         slope0  = -np.tan(np.deg2rad(ang_rol0))
-        offset0 = ang_pit0
+        offset0 = ang_pit0+3.6  # 3.6 is offset between SPAN CPT and ARINC
         y0 = slope0*x + offset0
 
         ax_nav.plot(x[15:-15], y0[15:-15], lw=1.0, color='red', zorder=1, alpha=0.6)
@@ -2372,7 +2372,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=5,
+        interval=20,
         ):
 
     date_s = date.strftime('%Y%m%d')
