@@ -2004,7 +2004,7 @@ def plot_video_frame(statements, test=False):
     ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
     ax_alt_tms.set_xlim(ax_tms.get_ylim())
     ax_alt_tms.set_ylim(
-            bottom=max([0.0, ax_alt_tms.get_ylim()[0]*0.8]),
+            bottom=max([0.0, min([ax_alt_tms.get_ylim()[0]*0.8, (90.0-sza_current)/10.0*0.8])]),
             top=min([max([ax_alt_tms.get_ylim()[-1]*1.2, (90.0-sza_current)/10.0*1.2]), 9.0]),
             )
     ax_alt_tms.yaxis.set_label_position('right')
