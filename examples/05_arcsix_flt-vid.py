@@ -2003,7 +2003,10 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
     ax_alt_tms.set_xlim(ax_tms.get_ylim())
-    ax_alt_tms.set_ylim(bottom=max([0.0, ax_alt_tms.get_ylim()[0]-0.1]), top=max([ax_alt_tms.get_ylim()[-1]+0.1, sza_current/10.0+0.1, 9.0]))
+    ax_alt_tms.set_ylim(
+            bottom=max([0.0, ax_alt_tms.get_ylim()[0]-0.1]),
+            top=min([max([ax_alt_tms.get_ylim()[-1]+0.1, sza_current/10.0+0.1]), 9.0]),
+            )
     ax_alt_tms.yaxis.set_label_position('right')
     ax_alt_tms.yaxis.tick_right()
     ax_alt_tms.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
