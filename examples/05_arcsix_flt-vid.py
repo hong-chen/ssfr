@@ -2005,7 +2005,7 @@ def plot_video_frame(statements, test=False):
     ax_alt_tms.set_xlim(ax_tms.get_ylim())
     ax_alt_tms.set_ylim(
             bottom=max([0.0, ax_alt_tms.get_ylim()[0]*0.8]),
-            top=min([max([ax_alt_tms.get_ylim()[-1]*1.2, sza_current/10.0*1.2]), 9.0]),
+            top=min([max([ax_alt_tms.get_ylim()[-1]*1.2, (90.0-sza_current)/10.0*1.2]), 9.0]),
             )
     ax_alt_tms.yaxis.set_label_position('right')
     ax_alt_tms.yaxis.tick_right()
@@ -2021,8 +2021,8 @@ def plot_video_frame(statements, test=False):
     cbar = fig.colorbar(cs_alt, cax=ax_alt)
     ax_alt.axhspan(alt_current, 9.0, lw=0.0, color='white', zorder=1, alpha=0.6)
 
-    ax_alt.axhline(sza_current/10.0, lw=3.5, color='white', zorder=2)
-    ax_alt.axhline(sza_current/10.0, lw=1.5, color='black', zorder=3)
+    ax_alt.axhline((90.0-sza_current)/10.0, lw=3.5, color='white', zorder=2)
+    ax_alt.axhline((90.0-sza_current)/10.0, lw=1.5, color='black', zorder=3)
 
     ax_alt.set_ylim(ax_alt_tms.get_ylim())
     ax_alt.xaxis.set_ticks([])
