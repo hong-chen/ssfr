@@ -8,7 +8,7 @@ Acknowledgements:
     Pre-mission calibration and analysis:
         Hong Chen, Yu-Wen Chen, Ken Hirata, Sebastian Schmidt, Bruce Kindel
     In-field calibration and on-flight operation:
-        Arabella Chamberlain, Vikas Nataraja, Ken Hirata, Sebastian Schmidt
+        Vikas Nataraja, Jeffery Drouet, Arabella Chamberlain, Ken Hirata, Sebastian Schmidt
 """
 
 import os

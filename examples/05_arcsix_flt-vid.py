@@ -51,7 +51,7 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -1619,7 +1619,7 @@ def plot_video_frame(statements, test=False):
 
     # time series
     ax_tms = fig.add_subplot(gs[9:, :])
-    ax_tms_alt = ax_tms.twinx()
+    ax_tms_alt  = ax_tms.twinx()
 
     fig.subplots_adjust(hspace=10.0, wspace=10.0)
     #\----------------------------------------------------------------------------/#
@@ -2433,12 +2433,13 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            main_pre(date)
-            main_vid(date, wvl0=_wavelength_)
+            # main_pre(date)
+            # main_vid(date, wvl0=_wavelength_)
             #\----------------------------------------------------------------------------/#
+            pass
 
 
-    sys.exit()
+    # sys.exit()
 
 
     # test
