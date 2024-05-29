@@ -1949,7 +1949,7 @@ def plot_video_frame(statements, test=False):
     ax_alt.axhline(sza_current/10.0, lw=3.5, color='white', zorder=2)
     ax_alt.axhline(sza_current/10.0, lw=1.5, color='black', zorder=3)
 
-    ax_alt.set_ylim((0.0, 9.0))
+    ax_alt.set_ylim(bottom=0.0, top=ax_alt.get_ylim()[-1]+0.1)
     ax_alt.xaxis.set_ticks([])
     ax_alt.yaxis.set_ticks([])
     # ax_alt.yaxis.tick_right()
@@ -2018,7 +2018,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 9.1, 1.0)))
     ax_alt_tms.set_xlim(ax_tms.get_ylim())
-    ax_alt_tms.set_ylim((0, 9.0))
+    ax_alt_tms.set_ylim(ax_alt.get_ylim())
     ax_alt_tms.yaxis.set_label_position('right')
     ax_alt_tms.yaxis.tick_right()
     ax_alt_tms.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
