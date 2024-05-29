@@ -2067,11 +2067,11 @@ def main_pre(
     # force flight track to start at PSB
     #/--------------------------------------------------------------\#
     # location of Pituffik Space Base (PSB)
-    lon0 = -68.70379848070486
-    lat0 = 76.53111177550895
+    # lon0 = -68.70379848070486
+    # lat0 = 76.53111177550895
 
-    lon = (lon-lon[~np.isnan(lon)][0]) + lon0
-    lat = (lat-lat[~np.isnan(lat)][0])/5.0 + lat0
+    # lon = (lon-lon[~np.isnan(lon)][0]) + lon0
+    # lat = (lat-lat[~np.isnan(lat)][0])/5.0 + lat0
     #\--------------------------------------------------------------/#
 
     logic0 = (~np.isnan(jday) & ~np.isinf(sza))   & \
@@ -2417,8 +2417,8 @@ if __name__ == '__main__':
     dates = [
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
-            datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            # datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
+            # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
+            datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
         ]
 
     for date in dates[::-1]:

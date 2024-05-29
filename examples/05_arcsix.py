@@ -66,21 +66,25 @@ _alp_time_offset_ = {
         '20240517':   5.55,
         '20240521': -17.94,
         '20240524': -18.39,
+        '20240528': -17.19,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
         '20240521': 0.0,
         '20240524': 86400.0,
+        '20240528': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240517': 185.0,
         '20240521': 182.0,
         '20240524': -145.75,
+        '20240528': -156.26,
         }
 _ssfr2_time_offset_ = {
         '20240517': 115.0,
         '20240521': -6.0,
         '20240524': -208.22,
+        '20240528': -222.66,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -1321,8 +1325,8 @@ def run_offset_check(date):
     data_ssfr1_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v0' % date_s])
     data_ssfr2_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr2_v0' % date_s])
 
-    data_spns_v0['tot/jday'] += 1.0
-    data_spns_v0['dif/jday'] += 1.0
+    # data_spns_v0['tot/jday'] += 1.0
+    # data_spns_v0['dif/jday'] += 1.0
 
     # _offset_x_range_ = [-6000.0, 6000.0]
     _offset_x_range_ = [-300.0, 300.0]
@@ -1615,7 +1619,6 @@ def main_process_data_v2(date, run=True):
             which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=True)
     #\----------------------------------------------------------------------------/#
     _fnames_['%s_ssfr1_v2' % date_s] = fname_ssfr1_v2
-
 #\----------------------------------------------------------------------------/#
 
 if __name__ == '__main__':
@@ -1639,8 +1642,8 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 22), # ARCSIX pre-calibration at NASA WFF (calibration abandoned)
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
-             datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             # datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
+             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
+             datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
             ]
     for date in dates[::-1]:
         # main_process_data_v0(date, run=True)
@@ -1648,8 +1651,8 @@ if __name__ == '__main__':
 
         # run_offset_check(date)
 
-        # main_process_data_v1(date, run=True)
-        main_process_data_v1(date, run=False)
+        main_process_data_v1(date, run=True)
+        # main_process_data_v1(date, run=False)
 
         main_process_data_v2(date, run=True)
     #\----------------------------------------------------------------------------/#
