@@ -1584,7 +1584,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     fig = plt.figure(figsize=(16, 9))
 
-    gs = gridspec.GridSpec(12, 19)
+    gs = gridspec.GridSpec(12, 20)
 
     # ax of all
     ax = fig.add_subplot(gs[:, :])
@@ -1599,24 +1599,22 @@ def plot_video_frame(statements, test=False):
             central_latitude=lat_current,
             )
     # proj0 = ccrs.PlateCarree()
-    ax_map = fig.add_subplot(gs[:8, :8], projection=proj0, aspect=_aspect_)
+    ax_map = fig.add_subplot(gs[:8, :9], projection=proj0, aspect=_aspect_)
 
     # flight altitude next to the map
     divider_map = make_axes_locatable(ax_map)
     ax_alt = divider_map.append_axes('right', size='4%', pad=0.0, axes_class=maxes.Axes)
     ax_alt_tms = divider_map.append_axes('right', size='32%', pad=0.0, axes_class=maxes.Axes)
 
-
-
     # a secondary map
-    ax_map0 = fig.add_subplot(gs[:5, 9:14], projection=ccrs.PlateCarree(), aspect=_aspect_)
+    ax_map0 = fig.add_subplot(gs[:5, 10:15], projection=ccrs.PlateCarree(), aspect=_aspect_)
 
     # camera imagery
-    ax_img  = fig.add_subplot(gs[:5, 14:])
+    ax_img  = fig.add_subplot(gs[:5, 15:])
     ax_img_hist = ax_img.twinx()
 
     # spetral irradiance
-    ax_wvl  = fig.add_subplot(gs[5:8, 9:])
+    ax_wvl  = fig.add_subplot(gs[5:8, 10:])
 
     # aircraft and platform attitude status
     ax_nav  = inset_axes(ax_wvl, width=1.0, height=0.7, loc='upper center')
@@ -1851,7 +1849,7 @@ def plot_video_frame(statements, test=False):
                     ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=vars_plot[vname]['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
                 else:
                     ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
-                    if vname not in ['SSFR-A↑', 'TOA↓']:
+                    if vname not in ['TOA↓']:
                         if has_att:
                             ang_pit_solid = flt_trk['ang_pit'][logic_solid]
                             ang_rol_solid = flt_trk['ang_rol'][logic_solid]
@@ -2005,8 +2003,8 @@ def plot_video_frame(statements, test=False):
 
     ax_alt_tms.set_xlim(ax_tms.get_ylim())
     ax_alt_tms.set_ylim(
-            bottom=max([0.0, ax_alt_tms.get_ylim()[0]]),
-            top=min([ax_alt_tms.get_ylim()[-1], 8.0]),
+            bottom=max([0.0, ax_alt_tms.get_ylim()[0]-0.5]),
+            top=min([ax_alt_tms.get_ylim()[-1]+0.5, 8.0]),
             )
     ax_alt_tms.yaxis.set_label_position('right')
     ax_alt_tms.yaxis.tick_right()
@@ -2398,7 +2396,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=20,
+        interval=60,
         ):
 
     date_s = date.strftime('%Y%m%d')
