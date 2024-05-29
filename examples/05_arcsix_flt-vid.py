@@ -2008,17 +2008,16 @@ def plot_video_frame(statements, test=False):
     #         top=min([max([ax_alt_tms.get_ylim()[-1]*1.2, (90.0-sza_current)/10.0*1.2]), 9.0]),
     #         )
     ax_alt_tms.set_ylim(
-            bottom=max([0.0, min([ax_alt_tms.get_ylim()[0]*0.8])]),
-            top=min([max([ax_alt_tms.get_ylim()[-1]*1.2]), 8.0]),
+            bottom=max([0.0, ax_alt_tms.get_ylim()[0]]),
+            top=min([max([ax_alt_tms.get_ylim()[-1]*1.3]), 8.0]),
             )
     ax_alt_tms.yaxis.set_label_position('right')
     ax_alt_tms.yaxis.tick_right()
     ax_alt_tms.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
     ax_alt_tms.xaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
     ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 1.0)))
-    ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 0.1)))
+    ax_alt_tms.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 8.1, 0.1)))
     ax_alt_tms.grid()
-    # ax_alt_tms.set_ylabel('Altitude [km] / Sun Elevation [$\\times 10^\\circ$]', rotation=270.0, labelpad=18)
     ax_alt_tms.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18)
     #\----------------------------------------------------------------------------/#
 
