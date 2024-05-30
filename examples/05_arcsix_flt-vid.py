@@ -2400,7 +2400,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=60,
+        interval=10,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -2461,7 +2461,7 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            # main_pre(date)
+            main_pre(date)
             main_vid(date, wvl0=_wavelength_)
             #\----------------------------------------------------------------------------/#
             pass
