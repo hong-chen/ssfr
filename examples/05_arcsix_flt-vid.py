@@ -2461,8 +2461,10 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            main_pre(date)
-            main_vid(date, wvl0=_wavelength_)
+            # main_pre(date)
+            main_vid(date, wvl0=_wavelength_, interval=1)  # make complete video
+            # main_vid(date, wvl0=_wavelength_, interval=10) # make sharable video
+            # main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
             #\----------------------------------------------------------------------------/#
             pass
 
