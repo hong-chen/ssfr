@@ -1579,6 +1579,7 @@ def main_process_data_v0(date, run=True):
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
             fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
+    sys.exit()
 
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
