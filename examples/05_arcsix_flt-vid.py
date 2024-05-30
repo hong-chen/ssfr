@@ -1610,7 +1610,6 @@ def plot_video_frame(statements, test=False):
 
     # data histogram (shared x axis) next to the map
     ax_alt_hist = ax_alt_prof.twinx()
-    ax_alt_hist.axis('off')
 
 
     # a secondary map
@@ -1866,14 +1865,14 @@ def plot_video_frame(statements, test=False):
                             ang_rol_solid = flt_trk['ang_rol'][logic_solid]
                             logic_stable = (np.abs(ang_pit_solid)<=5.0) & (np.abs(ang_rol_solid)<=2.5)
                             ax_alt_prof.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.2)
-                            ax_alt_prof.scatter(tms_y[logic_solid][logic_stable] , flt_trk['alt'][logic_solid][logic_stable] , c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+                            ax_alt_prof.scatter(tms_y[logic_solid][logic_stable] , flt_trk['alt'][logic_solid][logic_stable] , c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder']*2)
 
                             hist_y, _ = np.histogram(tms_y[logic_solid][logic_stable], bins=hist_bins)
                             ax_alt_hist.bar(hist_x, hist_y, width=hist_bin_w, bottom=hist_bottoms[vname], color=var_plot['color'], alpha=0.5, lw=0.0, zorder=var_plot['zorder']-1)
                             hist_bottoms[vname] += hist_y
 
                             ax_tms.scatter(flt_trk['tmhr'][logic_solid][~logic_stable], tms_y[logic_solid][~logic_stable], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.4)
-                            ax_tms.scatter(flt_trk['tmhr'][logic_solid][logic_stable], tms_y[logic_solid][logic_stable], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+                            ax_tms.scatter(flt_trk['tmhr'][logic_solid][logic_stable], tms_y[logic_solid][logic_stable], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder']*2)
                         else:
                             ax_alt_prof.scatter(tms_y[logic_solid], flt_trk['alt'][logic_solid], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
 
@@ -2047,7 +2046,8 @@ def plot_video_frame(statements, test=False):
     # histogram plot
     #/----------------------------------------------------------------------------\#
     ax_alt_hist.set_xlim(ax_tms.get_ylim())
-    ax_alt_hist.set_ylim((0, 2000))
+    ax_alt_hist.set_ylim((0, 4000))
+    ax_alt_hist.axis('off')
     #\----------------------------------------------------------------------------/#
 
 
