@@ -1848,17 +1848,21 @@ def plot_video_frame(statements, test=False):
                 if vname == 'Altitude':
                     ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=vars_plot[vname]['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
                 else:
-                    ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+
                     if vname not in ['TOA↓']:
                         if has_att:
                             ang_pit_solid = flt_trk['ang_pit'][logic_solid]
                             ang_rol_solid = flt_trk['ang_rol'][logic_solid]
                             logic_stable = (np.abs(ang_pit_solid)<=5.0) & (np.abs(ang_rol_solid)<=2.5)
-                            ax_alt_tms.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.1)
+                            ax_alt_tms.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.2)
                             ax_alt_tms.scatter(tms_y[logic_solid][logic_stable] , flt_trk['alt'][logic_solid][logic_stable] , c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
-
+                            ax_tms.scatter(flt_trk['tmhr'][logic_solid][~logic_stable], tms_y[logic_solid][~logic_stable], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.4)
+                            ax_tms.scatter(flt_trk['tmhr'][logic_solid][logic_stable], tms_y[logic_solid][logic_stable], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
                         else:
                             ax_alt_tms.scatter(tms_y[logic_solid], flt_trk['alt'][logic_solid], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
+                            ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+                    else:
+                        ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
 
 
@@ -2457,7 +2461,7 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            main_pre(date)
+            # main_pre(date)
             main_vid(date, wvl0=_wavelength_)
             #\----------------------------------------------------------------------------/#
             pass
