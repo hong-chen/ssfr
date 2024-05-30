@@ -1601,10 +1601,17 @@ def plot_video_frame(statements, test=False):
     # proj0 = ccrs.PlateCarree()
     ax_map = fig.add_subplot(gs[:8, :9], projection=proj0, aspect=_aspect_)
 
-    # flight altitude next to the map
+    # altitude colorbar next to the map
     divider_map = make_axes_locatable(ax_map)
-    ax_alt = divider_map.append_axes('right', size='4%', pad=0.0, axes_class=maxes.Axes)
-    ax_alt_tms = divider_map.append_axes('right', size='32%', pad=0.0, axes_class=maxes.Axes)
+    ax_alt_cbar = divider_map.append_axes('right', size='4%', pad=0.0, axes_class=maxes.Axes)
+
+    # profile (shared y axis) next to the map
+    ax_alt_prof = divider_map.append_axes('right', size='32%', pad=0.0, axes_class=maxes.Axes)
+
+    # data histogram (shared x axis) next to the map
+    ax_alt_hist = ax_alt_prof.twinx()
+    ax_alt_hist.axis('off')
+
 
     # a secondary map
     ax_map0 = fig.add_subplot(gs[:5, 10:15], projection=ccrs.PlateCarree(), aspect=_aspect_)
@@ -1796,6 +1803,10 @@ def plot_video_frame(statements, test=False):
 
     # iterate through flight segments
     #/----------------------------------------------------------------------------\#
+    hist_bins = np.linspace(0.0, 2.0, 81)
+    hist_x = (hist_bins[1:]+hist_bins[:-1])/2.0
+    hist_bin_w = hist_bins[1]-hist_bins[0]
+    hist_bottoms = {key:0.0 for key in vars_plot.keys()}
     for itrk in range(index_trk+1):
 
         flt_trk = flt_sim0.flt_trks[itrk]
@@ -1854,12 +1865,22 @@ def plot_video_frame(statements, test=False):
                             ang_pit_solid = flt_trk['ang_pit'][logic_solid]
                             ang_rol_solid = flt_trk['ang_rol'][logic_solid]
                             logic_stable = (np.abs(ang_pit_solid)<=5.0) & (np.abs(ang_rol_solid)<=2.5)
-                            ax_alt_tms.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.2)
-                            ax_alt_tms.scatter(tms_y[logic_solid][logic_stable] , flt_trk['alt'][logic_solid][logic_stable] , c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+                            ax_alt_prof.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.2)
+                            ax_alt_prof.scatter(tms_y[logic_solid][logic_stable] , flt_trk['alt'][logic_solid][logic_stable] , c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+
+                            hist_y, _ = np.histogram(tms_y[logic_solid][logic_stable], bins=hist_bins)
+                            ax_alt_hist.bar(hist_x, hist_y, width=hist_bin_w, bottom=hist_bottoms[vname], color=var_plot['color'], alpha=0.5, lw=0.0, zorder=var_plot['zorder']-1)
+                            hist_bottoms[vname] += hist_y
+
                             ax_tms.scatter(flt_trk['tmhr'][logic_solid][~logic_stable], tms_y[logic_solid][~logic_stable], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.4)
                             ax_tms.scatter(flt_trk['tmhr'][logic_solid][logic_stable], tms_y[logic_solid][logic_stable], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
                         else:
-                            ax_alt_tms.scatter(tms_y[logic_solid], flt_trk['alt'][logic_solid], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
+                            ax_alt_prof.scatter(tms_y[logic_solid], flt_trk['alt'][logic_solid], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
+
+                            hist_y = np.histogram(tms_y[logic_solid], bins=hist_bins)
+                            ax_alt_hist.bar(hist_x, hist_y, width=hist_bin_w, bottom=hist_bottoms[vname], color=var_plot['color'], alpha=0.5, lw=0.0, zorder=var_plot['zorder']-1)
+                            hist_bottoms[vname] += hist_y
+
                             ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
                     else:
                         ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
@@ -1943,8 +1964,6 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
-
-
     # altitude (time series) plot settings
     #/----------------------------------------------------------------------------\#
     ax_tms_alt.set_ylim((0.0, 8.0))
@@ -2003,34 +2022,41 @@ def plot_video_frame(statements, test=False):
 
     # profile plot
     #/----------------------------------------------------------------------------\#
-    ax_alt_tms.axhline(alt_current, lw=1.5, color=vars_plot['Altitude']['color'], zorder=1, alpha=0.9)
+    ax_alt_prof.axhline(alt_current, lw=1.5, color=vars_plot['Altitude']['color'], zorder=1, alpha=0.9)
 
-    ax_alt_tms.set_xlim(ax_tms.get_ylim())
-    ax_alt_tms.set_ylim(
-            bottom=max([0.0, ax_alt_tms.get_ylim()[0]-0.5]),
-            top=min([ax_alt_tms.get_ylim()[-1]+0.5, 8.0]),
+    ax_alt_prof.set_xlim(ax_tms.get_ylim())
+    ax_alt_prof.set_ylim(
+            bottom=max([0.0, ax_alt_prof.get_ylim()[0]-0.5]),
+            top=min([ax_alt_prof.get_ylim()[-1]+0.5, 8.0]),
             )
-    ax_alt_tms.yaxis.set_label_position('right')
-    ax_alt_tms.yaxis.tick_right()
-    ax_alt_tms.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
-    ax_alt_tms.xaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
-    ax_alt_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 1.0)))
-    ax_alt_tms.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 8.1, 0.1)))
-    ax_alt_tms.grid()
+    ax_alt_prof.yaxis.set_label_position('right')
+    ax_alt_prof.yaxis.tick_right()
+    ax_alt_prof.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
+    ax_alt_prof.xaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
+    ax_alt_prof.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 1.0)))
+    ax_alt_prof.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 8.1, 0.1)))
+    ax_alt_prof.grid()
 
-    ax_alt_tms.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
-    ax_alt_tms.spines['right'].set_visible(True)
-    ax_alt_tms.spines['right'].set_color(vars_plot['Altitude']['color'])
-    ax_alt_tms.tick_params(axis='y', which='both', colors=vars_plot['Altitude']['color'])
+    ax_alt_prof.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
+    ax_alt_prof.spines['right'].set_visible(True)
+    ax_alt_prof.spines['right'].set_color(vars_plot['Altitude']['color'])
+    ax_alt_prof.tick_params(axis='y', which='both', colors=vars_plot['Altitude']['color'])
+    #\----------------------------------------------------------------------------/#
+
+
+    # histogram plot
+    #/----------------------------------------------------------------------------\#
+    ax_alt_hist.set_xlim(ax_tms.get_ylim())
+    ax_alt_hist.set_ylim((0, 2000))
     #\----------------------------------------------------------------------------/#
 
 
     # altitude/sza plot settings
     #/----------------------------------------------------------------------------\#
-    cbar = fig.colorbar(cs_alt, cax=ax_alt)
-    ax_alt.set_ylim(ax_alt_tms.get_ylim())
-    ax_alt.xaxis.set_ticks([])
-    ax_alt.yaxis.set_ticks([])
+    cbar = fig.colorbar(cs_alt, cax=ax_alt_cbar)
+    ax_alt_cbar.set_ylim(ax_alt_prof.get_ylim())
+    ax_alt_cbar.xaxis.set_ticks([])
+    ax_alt_cbar.yaxis.set_ticks([])
     #\----------------------------------------------------------------------------/#
 
 
