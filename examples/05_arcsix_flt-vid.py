@@ -1752,6 +1752,7 @@ def plot_video_frame(statements, test=False):
         ax_img.plot([255, 255], [0, 0.005], color='white', lw=1.0, ls='-')
 
     if has_att:
+
         ax_nav.axhspan(-10.0, 0.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
         ax_nav.axhspan(0.0,  10.0, lw=0.0, color='deepskyblue', zorder=0, alpha=0.3)
 
@@ -1864,7 +1865,7 @@ def plot_video_frame(statements, test=False):
                             ang_pit_solid = flt_trk['ang_pit'][logic_solid]
                             ang_rol_solid = flt_trk['ang_rol'][logic_solid]
                             logic_stable = (np.abs(ang_pit_solid)<=5.0) & (np.abs(ang_rol_solid)<=2.5)
-                            ax_alt_prof.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.2)
+                            ax_alt_prof.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.15)
                             ax_alt_prof.scatter(tms_y[logic_solid][logic_stable] , flt_trk['alt'][logic_solid][logic_stable] , c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder']*2)
 
                             hist_y, _ = np.histogram(tms_y[logic_solid][logic_stable], bins=hist_bins)
@@ -2046,7 +2047,7 @@ def plot_video_frame(statements, test=False):
     # histogram plot
     #/----------------------------------------------------------------------------\#
     ax_alt_hist.set_xlim(ax_tms.get_ylim())
-    ax_alt_hist.set_ylim((0, 4000))
+    ax_alt_hist.set_ylim((0, 5000))
     ax_alt_hist.axis('off')
     #\----------------------------------------------------------------------------/#
 
