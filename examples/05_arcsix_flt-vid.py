@@ -78,20 +78,18 @@ _wavelength_      = 555.0
 _fdir_sat_img_vn_ = 'data/%s/sat-img-vn' % _mission_
 
 _preferred_region_ = 'lincoln_sea'
-_aspect_ = 'auto'
-_alt_cmap_   = 'gist_ncar'
 
 _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_tmp_graph_ = 'tmp-graph_flt-vid'
 
-_title_extra_ = 'ARCSIX Research Flight #1'
+_title_extra_ = 'ARCSIX Research Flight #2'
 
 _tmhr_range_ = {
         '20240517': [19.20, 23.00],
         '20240521': [14.80, 17.50],
         '20240524': [ 9.90, 17.90],
         '20240528': [11.90, 18.60],
-        '20240530': [11.90, 18.60],
+        '20240530': [10.90, 18.30],
         }
 
 
@@ -1492,6 +1490,24 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
+    # plot settings
+    #/----------------------------------------------------------------------------\#
+    _aspect_ = 'auto'
+    _alt_cmap_ = 'gist_ncar'
+
+    _alt_base_ = 0.0
+    _alt_ceil_ = 8.0
+
+    _flux_base_ = 0.0
+    _flux_ceil_ = 1.5
+
+    hist_bins = np.linspace(0.0, 2.0, 81)
+    hist_x = (hist_bins[1:]+hist_bins[:-1])/2.0
+    hist_bin_w = hist_bins[1]-hist_bins[0]
+    hist_bottoms = {key:0.0 for key in vars_plot.keys()}
+    #\----------------------------------------------------------------------------/#
+
+
     # check data
     #/----------------------------------------------------------------------------\#
     has_trk = True
@@ -1589,21 +1605,6 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
-    # plot settings
-    #/----------------------------------------------------------------------------\#
-    _alt_cmap_ = 'gist_ncar'
-
-    _alt_base_ = 0.0
-    _alt_ceil_ = 8.0
-
-    _flux_base_ = 0.0
-    _flux_ceil_ = 1.5
-
-    hist_bins = np.linspace(0.0, 2.0, 81)
-    hist_x = (hist_bins[1:]+hist_bins[:-1])/2.0
-    hist_bin_w = hist_bins[1]-hist_bins[0]
-    hist_bottoms = {key:0.0 for key in vars_plot.keys()}
-    #\----------------------------------------------------------------------------/#
 
 
 
@@ -1814,7 +1815,9 @@ def plot_video_frame(statements, test=False):
                 else:
                     spec_y = flt_trk0[var_plot['vname']][index_pnt, :]
 
-                ax_wvl.scatter(wvl_x, spec_y, c=var_plot['color'], s=4, lw=0.0, zorder=var_plot['zorder'])
+                # ax_wvl.scatter(wvl_x, spec_y, c=var_plot['color'], s=4, lw=0.0, zorder=var_plot['zorder'])
+                ax_wvl.plot(wvl_x, spec_y,
+                        color=var_plot['color'], marker='o', markersize=2, lw=0.5, markeredgewidth=0.0, alpha=0.9, zorder=var_plot['zorder'])
 
                 wvl_index = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
                 ax_wvl.axvline(wvl_x[wvl_index], color=var_plot['color'], ls='-', lw=1.0, alpha=0.5, zorder=var_plot['zorder'])
@@ -1901,6 +1904,9 @@ def plot_video_frame(statements, test=False):
                     else:
                         ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
+
+
+    has_spectra = any([vars_plot[key]['plot?'] for key in vars_plot.keys() if vars_plot[key]['spectra?']])
 
 
     # figure settings
@@ -2006,10 +2012,13 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
     ax_tms.set_xlabel('Time [hour]')
 
-    ax_tms.set_ylim(bottom=_flux_base_, top=min([_flux_ceil_, ax_tms.get_ylim()[-1]+0.15]))
-    ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 10.1, 0.5)))
-    ax_tms.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
-    ax_tms.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
+    if has_spectra:
+        ax_tms.set_ylim(bottom=_flux_base_, top=min([_flux_ceil_, ax_tms.get_ylim()[-1]+0.15]))
+        ax_tms.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 10.1, 0.5)))
+        ax_tms.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
+        ax_tms.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
+    else:
+        ax_tms.yaxis.set_ticks([])
 
     if alt_current < 1.0:
         title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.1f  m, Solar Zenith %4.1f$^\\circ$' % (lon_current, lat_current, alt_current*1000.0, sza_current)
@@ -2025,13 +2034,16 @@ def plot_video_frame(statements, test=False):
 
     # spectra plot setting
     #/----------------------------------------------------------------------------\#
-    ax_wvl.set_xlim((200, 2200))
-    ax_wvl.set_ylim(ax_tms.get_ylim())
-    ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
-    ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
-    ax_wvl.set_xlabel('Wavelength [nm]')
-    ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 10.1, 0.5)))
-    ax_wvl.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
+    if has_spectra:
+        ax_wvl.set_xlim((200, 2200))
+        ax_wvl.set_ylim(ax_tms.get_ylim())
+        ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
+        ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
+        ax_wvl.set_xlabel('Wavelength [nm]')
+        ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 10.1, 0.5)))
+        ax_wvl.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
+    else:
+        ax_wvl.axis('off')
     #\----------------------------------------------------------------------------/#
 
 
@@ -2499,7 +2511,7 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            main_pre(date)
+            # main_pre(date)
             main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
             # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
             # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
@@ -2516,8 +2528,8 @@ if __name__ == '__main__':
     date_s = date.strftime('%Y%m%d')
     fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
-    # statements = (flt_sim0, 0, 100, 1730)
-    statements = (flt_sim0, 3, 443, 1730)
+    statements = (flt_sim0, 0, 100, 1730)
+    # statements = (flt_sim0, 3, 443, 1730)
     # plot_video_frame_wff(statements, test=True)
     plot_video_frame(statements, test=True)
     #\----------------------------------------------------------------------------/#
