@@ -91,6 +91,7 @@ _tmhr_range_ = {
         '20240521': [14.80, 17.50],
         '20240524': [ 9.90, 17.90],
         '20240528': [11.90, 18.60],
+        '20240530': [11.90, 18.60],
         }
 
 
@@ -1196,9 +1197,8 @@ def main_pre_wff(
     #/--------------------------------------------------------------\#
     fname_alp = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
     f_alp = h5py.File(fname_alp, 'r')
-    ang_hed = f_alp['ang_hed'][...][logic0][::time_step]
-    ang_pit = f_alp['ang_pit_s'][...][logic0][::time_step]
-    ang_rol = f_alp['ang_rol_s'][...][logic0][::time_step]
+    ang_pit_s = f_alp['ang_pit_s'][...][logic0][::time_step]
+    ang_rol_s = f_alp['ang_rol_s'][...][logic0][::time_step]
     ang_pit_m = f_alp['ang_pit_m'][...][logic0][::time_step]
     ang_rol_m = f_alp['ang_rol_m'][...][logic0][::time_step]
     f_alp.close()
@@ -1283,7 +1283,6 @@ def main_pre_wff(
     flt_trk['sza']  = sza[logic]
     flt_trk['tmhr'] = tmhr[logic]
     flt_trk['alt']  = alt[logic]/1000.0
-    flt_trk['ang_hed'] = ang_hed[logic]
     flt_trk['ang_pit'] = ang_pit[logic]
     flt_trk['ang_rol'] = ang_rol[logic]
     flt_trk['ang_pit_m'] = ang_pit_m[logic]
@@ -1765,18 +1764,21 @@ def plot_video_frame(statements, test=False):
         x  = np.linspace(-10.0, 10.0, 101)
 
         slope0  = -np.tan(np.deg2rad(ang_rol0))
-        offset0 = ang_pit0+3.6  # 3.6 is offset between SPAN CPT and ARINC
+        offset0 = ang_pit0
         y0 = slope0*x + offset0
 
         ax_nav.plot(x[15:-15], y0[15:-15], lw=1.0, color='red', zorder=1, alpha=0.6)
         ax_nav.scatter(x[50], y0[50], lw=0.0, s=40, c='red', zorder=1, alpha=0.6)
 
         if has_att_corr:
+            ang_pit_offset = 0.0
+            ang_rol_offset = 0.0
+
+            ang_pit0 = flt_trk0['ang_pit_s'][index_pnt]
+            ang_rol0 = flt_trk0['ang_rol_s'][index_pnt]
             ang_pit_m0 = flt_trk0['ang_pit_m'][index_pnt]
             ang_rol_m0 = flt_trk0['ang_rol_m'][index_pnt]
 
-            ang_pit_offset = 0.0
-            ang_rol_offset = 0.0
 
             slope1  = -np.tan(np.deg2rad(ang_rol0-ang_rol_m0+ang_rol_offset))
             offset1 = (ang_pit0-ang_pit_m0+ang_pit_offset)
@@ -2142,7 +2144,6 @@ def main_pre(
 
     alt    = f_hsk['alt'][...][logic0][::time_step]
 
-    ang_hed_ = f_hsk['ang_hed'][...][logic0][::time_step]
     ang_pit_ = f_hsk['ang_pit'][...][logic0][::time_step]
     ang_rol_ = f_hsk['ang_rol'][...][logic0][::time_step]
 
@@ -2160,9 +2161,8 @@ def main_pre(
 
     if has_alp:
         f_alp = h5py.File(fname_alp, 'r')
-        ang_hed = f_alp['ang_hed'][...][logic0][::time_step]
-        ang_pit = f_alp['ang_pit_s'][...][logic0][::time_step]
-        ang_rol = f_alp['ang_rol_s'][...][logic0][::time_step]
+        ang_pit_s = f_alp['ang_pit_s'][...][logic0][::time_step]
+        ang_rol_s = f_alp['ang_rol_s'][...][logic0][::time_step]
         ang_pit_m = f_alp['ang_pit_m'][...][logic0][::time_step]
         ang_rol_m = f_alp['ang_rol_m'][...][logic0][::time_step]
         f_alp.close()
@@ -2256,16 +2256,14 @@ def main_pre(
     flt_trk['tmhr'] = tmhr[logic]
     flt_trk['alt']  = alt[logic]/1000.0
 
+    flt_trk['ang_pit'] = ang_pit_[logic]
+    flt_trk['ang_rol'] = ang_rol_[logic]
+
     if has_alp:
-        flt_trk['ang_hed'] = ang_hed[logic]
-        flt_trk['ang_pit'] = ang_pit[logic]
-        flt_trk['ang_rol'] = ang_rol[logic]
+        flt_trk['ang_pit_s'] = ang_pit_s[logic]
+        flt_trk['ang_rol_s'] = ang_rol_s[logic]
         flt_trk['ang_pit_m'] = ang_pit_m[logic]
         flt_trk['ang_rol_m'] = ang_rol_m[logic]
-    else:
-        flt_trk['ang_hed'] = ang_hed_[logic]
-        flt_trk['ang_pit'] = ang_pit_[logic]
-        flt_trk['ang_rol'] = ang_rol_[logic]
 
     if has_spns:
         flt_trk['f-down-total_spns']   = spns_tot_flux[logic, :]
@@ -2473,7 +2471,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
+            datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea; clear-sky spiral
+            # datetime.datetime(2024, 5, 30), # ARCSIX research flight #2 over Lincoln Sea; cloud wall
         ]
 
     for date in dates[::-1]:
@@ -2488,10 +2487,10 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            # main_pre(date)
-            # main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
+            main_pre(date)
+            main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
             # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
-            main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
+            # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
