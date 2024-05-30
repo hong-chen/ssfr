@@ -82,14 +82,28 @@ _preferred_region_ = 'lincoln_sea'
 _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_tmp_graph_ = 'tmp-graph_flt-vid'
 
-_title_extra_ = 'ARCSIX Research Flight #1'
+_date_specs_ = {
+        '20240517': {
+            'tmhr_range': [19.20, 23.00],
+            'description': 'ARCSIX Test Flight #1'
+            },
+        '20240521': {
+            'tmhr_range': [14.80, 17.50],
+            'description': 'ARCSIX Test Flight #2'
+            },
+        '20240524': {
+            'tmhr_range': [ 9.90, 17.90],
+            'description': 'ARCSIX Transit Flight #1'
+            },
+        '20240528': {
+            'tmhr_range': [11.90, 18.60],
+            'description': 'ARCSIX Research Flight #1'
+            },
+        '20240530': {
+            'tmhr_range': [10.90, 18.30],
+            'description': 'ARCSIX Research Flight #2'
+            },
 
-_tmhr_range_ = {
-        '20240517': [19.20, 23.00],
-        '20240521': [14.80, 17.50],
-        '20240524': [ 9.90, 17.90],
-        '20240528': [11.90, 18.60],
-        '20240530': [10.90, 18.30],
         }
 
 
@@ -1123,7 +1137,7 @@ def main_pre_wff(
     logic0 = (~np.isnan(jday) & ~np.isinf(sza))   & \
              check_continuity(lon, threshold=1.0) & \
              check_continuity(lat, threshold=1.0) & \
-             (tmhr>=_tmhr_range_[date_s][0]) & (tmhr<=_tmhr_range_[date_s][1])
+             (tmhr>=_date_specs_[date_s]['tmhr_range'][0]) & (tmhr<=_date_specs_[date_s]['tmhr_range'][1])
 
     # print(jday[~logic0])
     # print(sza[~logic0])
@@ -1423,6 +1437,21 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
+    # param settings
+    #/----------------------------------------------------------------------------\#
+    tmhr_current = flt_trk0['tmhr'][index_pnt]
+    jday_current = flt_trk0['jday'][index_pnt]
+    lon_current  = flt_trk0['lon'][index_pnt]
+    lat_current  = flt_trk0['lat'][index_pnt]
+    alt_current  = flt_trk0['alt'][index_pnt]
+    sza_current  = flt_trk0['sza'][index_pnt]
+    dtime_current = er3t.util.jday_to_dtime(jday_current)
+
+    tmhr_length  = 0.5 # half an hour
+    tmhr_past    = tmhr_current-tmhr_length
+    #\----------------------------------------------------------------------------/#
+
+
     # general plot settings
     #/----------------------------------------------------------------------------\#
     vars_plot = OrderedDict()
@@ -1500,6 +1529,7 @@ def plot_video_frame(statements, test=False):
 
     _flux_base_ = 0.0
     _flux_ceil_ = 1.5
+    _title_extra_ = _date_specs_[dtime_current.strftime('%Y%m%d')]['description']
 
     hist_bins = np.linspace(0.0, 2.0, 81)
     hist_x = (hist_bins[1:]+hist_bins[:-1])/2.0
@@ -1536,21 +1566,8 @@ def plot_video_frame(statements, test=False):
         has_cam0 = True
     else:
         has_cam0 = False
-    #\----------------------------------------------------------------------------/#
 
-
-    # param settings
-    #/----------------------------------------------------------------------------\#
-    tmhr_current = flt_trk0['tmhr'][index_pnt]
-    jday_current = flt_trk0['jday'][index_pnt]
-    lon_current  = flt_trk0['lon'][index_pnt]
-    lat_current  = flt_trk0['lat'][index_pnt]
-    alt_current  = flt_trk0['alt'][index_pnt]
-    sza_current  = flt_trk0['sza'][index_pnt]
-    dtime_current = er3t.util.jday_to_dtime(jday_current)
-
-    tmhr_length  = 0.5 # half an hour
-    tmhr_past    = tmhr_current-tmhr_length
+    has_spectra = any([vars_plot[key]['plot?'] for key in vars_plot.keys() if vars_plot[key]['spectra?']])
     #\----------------------------------------------------------------------------/#
 
 
@@ -1580,7 +1597,10 @@ def plot_video_frame(statements, test=False):
     ax_alt_cbar = divider_map.append_axes('right', size='4%', pad=0.0, axes_class=maxes.Axes)
 
     # profile (shared y axis) next to the map
-    ax_alt_prof = divider_map.append_axes('right', size='32%', pad=0.0, axes_class=maxes.Axes)
+    if has_spectra:
+        ax_alt_prof = divider_map.append_axes('right', size='32%', pad=0.0, axes_class=maxes.Axes)
+    else:
+        ax_alt_prof = divider_map.append_axes('right', size='0.001%', pad=0.0, axes_class=maxes.Axes)
 
     # data histogram (shared x axis) next to the map
     ax_alt_hist = ax_alt_prof.twinx()
@@ -1906,9 +1926,6 @@ def plot_video_frame(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
-    has_spectra = any([vars_plot[key]['plot?'] for key in vars_plot.keys() if vars_plot[key]['spectra?']])
-
-
     # figure settings
     #/----------------------------------------------------------------------------\#
     title_fig = '%s UTC' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'))
@@ -2086,6 +2103,8 @@ def plot_video_frame(statements, test=False):
     # altitude/sza plot settings
     #/----------------------------------------------------------------------------\#
     cbar = fig.colorbar(cs_alt, cax=ax_alt_cbar)
+    ax_alt_cbar.axhline(alt_current, lw=2.0, color='white', zorder=1, alpha=0.6)
+    ax_alt_cbar.axhline(alt_current, lw=0.5, color=vars_plot['Altitude']['color'], zorder=2, alpha=1.0)
     ax_alt_cbar.set_ylim(ax_alt_prof.get_ylim())
     ax_alt_cbar.xaxis.set_ticks([])
     ax_alt_cbar.yaxis.set_ticks([])
@@ -2162,7 +2181,7 @@ def main_pre(
     logic0 = (~np.isnan(jday) & ~np.isinf(sza))   & \
              check_continuity(lon, threshold=1.0) & \
              check_continuity(lat, threshold=1.0) & \
-             (tmhr>=_tmhr_range_[date_s][0]) & (tmhr<=_tmhr_range_[date_s][1])
+             (tmhr>=_date_specs_[date_s]['tmhr_range'][0]) & (tmhr<=_date_specs_[date_s]['tmhr_range'][1])
 
     jday = jday[logic0][::time_step]
     tmhr = tmhr[logic0][::time_step]
@@ -2515,7 +2534,7 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            main_pre(date)
+            # main_pre(date)
             main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
             # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
             # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
