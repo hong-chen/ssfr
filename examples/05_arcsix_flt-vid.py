@@ -266,8 +266,8 @@ def get_jday_cam_img(date, fnames):
 
     jday = []
     for fname in fnames:
-        filename = os.path.basename(fname)
-        dtime_s_ = filename.split('.')[0].split(' ')[-1]
+        filename = os.path.basename(fname).split('.')[0]
+        dtime_s_ = filename[:23].split(' ')[-1]
         dtime_s = '%s_%s' % (date.strftime('%Y_%m_%d'), dtime_s_)
         dtime0 = datetime.datetime.strptime(dtime_s, '%Y_%m_%d_%H_%M_%SZ')
         jday0 = er3t.util.dtime_to_jday(dtime0)
