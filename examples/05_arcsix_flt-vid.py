@@ -82,7 +82,7 @@ _preferred_region_ = 'lincoln_sea'
 _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_tmp_graph_ = 'tmp-graph_flt-vid'
 
-_title_extra_ = 'ARCSIX Research Flight #2'
+_title_extra_ = 'ARCSIX Research Flight #1'
 
 _tmhr_range_ = {
         '20240517': [19.20, 23.00],
@@ -2050,19 +2050,23 @@ def plot_video_frame(statements, test=False):
     # profile plot
     #/----------------------------------------------------------------------------\#
     ax_alt_prof.axhline(alt_current, lw=1.0, color=vars_plot['Altitude']['color'], zorder=1, alpha=0.9)
+    ax_alt_prof.grid()
 
-    ax_alt_prof.set_xlim(ax_tms.get_ylim())
+    if has_spectra:
+        ax_alt_prof.set_xlim(ax_tms.get_ylim())
+        ax_alt_prof.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
+        ax_alt_prof.xaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
+    else:
+        ax_alt_prof.xaxis.set_ticks([])
+
     ax_alt_prof.set_ylim(
             bottom=max([_alt_base_, ax_alt_prof.get_ylim()[0]-0.5]),
             top=min([ax_alt_prof.get_ylim()[-1]+0.5, _alt_ceil_]),
             )
     ax_alt_prof.yaxis.set_label_position('right')
     ax_alt_prof.yaxis.tick_right()
-    ax_alt_prof.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
-    ax_alt_prof.xaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
     ax_alt_prof.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 1.0)))
     ax_alt_prof.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 8.1, 0.1)))
-    ax_alt_prof.grid()
 
     ax_alt_prof.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
     ax_alt_prof.spines['right'].set_visible(True)
@@ -2495,8 +2499,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            # datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea; clear-sky spiral
-            datetime.datetime(2024, 5, 30), # ARCSIX research flight #2 over Lincoln Sea; cloud wall
+            datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea; clear-sky spiral
+            # datetime.datetime(2024, 5, 30), # ARCSIX research flight #2 over Lincoln Sea; cloud wall
         ]
 
     for date in dates[::-1]:
