@@ -736,7 +736,7 @@ def cdata_arcsix_spns_v2(
         date,
         fname_spns_v1,
         fname_hsk, # interchangable with fname_alp_v1
-        wvl_range=[350.0, 900.0],
+        wvl_range=[400.0, 900.0],
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         fdir_out=_fdir_out_,
@@ -1579,7 +1579,6 @@ def main_process_data_v0(date, run=True):
     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
             fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
-    sys.exit()
 
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
@@ -1715,22 +1714,22 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
              # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             # datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
-             datetime.datetime(2024, 5, 30), # ARCSIX research flight #2 over Lincoln Sea
+             datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea
+             # datetime.datetime(2024, 5, 30), # ARCSIX research flight #2 over Lincoln Sea
             ]
     for date in dates[::-1]:
-        main_process_data_v0(date, run=True)
-        # main_process_data_v0(date, run=False)
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
 
-        run_time_offset_check(date)
-        sys.exit()
+        # run_time_offset_check(date)
+        # sys.exit()
 
         # main_process_data_v1(date, run=True)
         main_process_data_v1(date, run=False)
 
-        # main_process_data_v2(date, run=True)
-        main_process_data_v2(date, run=False)
-        run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
+        main_process_data_v2(date, run=True)
+        # main_process_data_v2(date, run=False)
+        # run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
     #\----------------------------------------------------------------------------/#
 
     pass
