@@ -68,6 +68,7 @@ _alp_time_offset_ = {
         '20240524': -18.39,
         '20240528': -17.19,
         '20240530': -17.41,
+        '20240531': -17.41,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -75,6 +76,7 @@ _spns_time_offset_ = {
         '20240524': 86400.0,
         '20240528': 0.0,
         '20240530': 0.0,
+        '20240531': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240517': 185.0,
@@ -82,6 +84,7 @@ _ssfr1_time_offset_ = {
         '20240524': -145.75,
         '20240528': -156.26,
         '20240530': -158.04,
+        '20240531': -161.38,
         }
 _ssfr2_time_offset_ = {
         '20240517': 115.0,
@@ -89,6 +92,7 @@ _ssfr2_time_offset_ = {
         '20240524': -208.22,
         '20240528': -222.66,
         '20240530': -229.45,
+        '20240531': -227.00,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -1725,11 +1729,11 @@ if __name__ == '__main__':
              datetime.datetime(2024, 5, 31), # ARCSIX science flight #3 over Lincoln Sea
             ]
     for date in dates[::-1]:
-        main_process_data_v0(date, run=True)
-        # main_process_data_v0(date, run=False)
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
 
-        run_time_offset_check(date)
-        sys.exit()
+        # run_time_offset_check(date)
+        # sys.exit()
 
         main_process_data_v1(date, run=True)
         # main_process_data_v1(date, run=False)
