@@ -344,7 +344,7 @@ def get_jday_sat_img_vn(fnames):
 
     return np.array(jday)
 
-def process_sat_img_vn(fnames_sat_, extent_target, threshold=80.0):
+def process_sat_img_vn(fnames_sat_, extent_target, threshold=95.0):
 
     """
     lincoln_sea/VIIRS-NOAA-21_TrueColor_2024-05-31-094200Z_(-120.00,36.69,77.94,88.88).png
@@ -387,6 +387,7 @@ def process_sat_img_vn(fnames_sat_, extent_target, threshold=80.0):
                 logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
 
                 p_coverage = (1.0-(logic_black.sum()/logic_black.size))*100.0
+
                 if p_coverage > threshold:
                     fnames_sat.append(fname0)
                     jday_sat.append(jday_sat0)
@@ -1733,7 +1734,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
         lon_half = 15.0
-        lat_half = 2.5
+        lat_half = 1.5
         lat_low = max([lat_current-lat_half, 76.0])
         lat_high= min([lat_low+lat_half*2.0, 87.0])
         lat_low = max([lat_high-lat_half*2.0, 76.0])
@@ -2922,7 +2923,7 @@ if __name__ == '__main__':
             #/----------------------------------------------------------------------------\#
             main_pre(date)
             main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
             # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
