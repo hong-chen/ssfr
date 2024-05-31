@@ -110,7 +110,7 @@ _date_specs_ = {
         '20240530': {
             'tmhr_range': [10.80, 18.30],
            'description': 'ARCSIX Research Flight #2',
-      'preferred_region': 'lincoln_sea',
+      'preferred_region': 'ca_archipelago',
             },
         }
 
@@ -2384,17 +2384,17 @@ def main_pre(
         fdir_in = '%s/%s' % (_fdir_sat_img_vn_, key)
 
         fnames_fc = er3t.util.get_all_files(fdir_in, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
-        jday_sat0_ , fnames_sat0_  = process_sat_img_vn(fnames_fc)
-        fnames_sat0[key]['jday']    = jday_sat0_
-        fnames_sat0[key]['fnames']  = fnames_sat0_
+        jday_sat00 , fnames_sat00  = process_sat_img_vn(fnames_fc)
+        fnames_sat0[key]['jday']    = jday_sat00
+        fnames_sat0[key]['fnames']  = fnames_sat00
 
         fnames_tc = er3t.util.get_all_files(fdir_in, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
-        jday_sat1_, fnames_sat1_ = process_sat_img_vn(fnames_tc)
-        fnames_sat1[key]['jday']   = jday_sat1_
-        fnames_sat1[key]['fnames'] = fnames_sat1_
+        jday_sat11, fnames_sat11 = process_sat_img_vn(fnames_tc)
+        fnames_sat1[key]['jday']   = jday_sat11
+        fnames_sat1[key]['fnames'] = fnames_sat11
     #\----------------------------------------------------------------------------/#
 
-
+    region_select = _date_specs_[date_s]['preferred_region']
 
     # process imagery
     #/----------------------------------------------------------------------------\#
@@ -2409,27 +2409,26 @@ def main_pre(
 
         flt_trk0 = flt_trks[i]
 
-        region_contain = {}
-        jday_diff = {}
-        for key in fnames_sat0.keys():
-            region_contain[key] = contain_lonlat_check(flt_trk0['lon'], flt_trk0['lat'], fnames_sat0[key]['extent'])
-            jday_diff[key] = np.abs(flt_trk0['jday0']-fnames_sat0[key]['jday'][np.argmin(np.abs(flt_trk0['jday0']-fnames_sat0[key]['jday']))])
+        # region_contain = {}
+        # jday_diff = {}
+        # for key in fnames_sat0.keys():
+        #     region_contain[key] = contain_lonlat_check(flt_trk0['lon'], flt_trk0['lat'], fnames_sat0[key]['extent'])
+        #     jday_diff[key] = np.abs(flt_trk0['jday0']-fnames_sat0[key]['jday'][np.argmin(np.abs(flt_trk0['jday0']-fnames_sat0[key]['jday']))])
 
-        key1, key2 = fnames_sat0.keys()
-        if region_contain[key1] and (not region_contain[key2]):
-            region_select = key1
-        elif (not region_contain[key1]) and region_contain[key2]:
-            region_select = key2
-        elif (not region_contain[key1]) and (not region_contain[key2]):
-            region_select = _date_specs_[date_s]['preferred_region']
-        elif region_contain[key1] and region_contain[key2]:
-            if jday_diff[key1] < jday_diff[key2]:
-                region_select = key1
-            elif jday_diff[key1] > jday_diff[key2]:
-                region_select = key2
-            else:
-                region_select = _date_specs_[date_s]['preferred_region']
-
+        # key1, key2 = fnames_sat0.keys()
+        # if region_contain[key1] and (not region_contain[key2]):
+        #     region_select = key1
+        # elif (not region_contain[key1]) and region_contain[key2]:
+        #     region_select = key2
+        # elif (not region_contain[key1]) and (not region_contain[key2]):
+        #     region_select = _date_specs_[date_s]['preferred_region']
+        # elif region_contain[key1] and region_contain[key2]:
+        #     if jday_diff[key1] < jday_diff[key2]:
+        #         region_select = key1
+        #     elif jday_diff[key1] > jday_diff[key2]:
+        #         region_select = key2
+        #     else:
+        #         region_select = _date_specs_[date_s]['preferred_region']
 
         flt_img['id_sat0'] = []
         flt_img['fnames_sat0'] = []
@@ -2446,23 +2445,23 @@ def main_pre(
             flt_img['fnames_cam0']  = []
             flt_img['jday_cam0'] = np.array([], dtype=np.float64)
 
-        for j in range(flt_trks[i]['jday'].size):
+        for j in range(flt_trk0['jday'].size):
 
-            jday_sat0_ = fnames_sat0[region_select]['jday']
+            jday_sat0_   = fnames_sat0[region_select]['jday']
             fnames_sat0_ = fnames_sat0[region_select]['fnames']
-            index_sat0 = np.argmin(np.abs(jday_sat0_-flt_trks[i]['jday'][j]))
+            index_sat0   = np.argmin(np.abs(jday_sat0_-flt_trk0['jday'][j]))
             flt_img['id_sat0'].append(os.path.basename(fnames_sat0_[index_sat0]).split('_')[0].replace('-', ' '))
             flt_img['fnames_sat0'].append(fnames_sat0_[index_sat0])
             flt_img['jday_sat0'] = np.append(flt_img['jday_sat0'], jday_sat0_[index_sat0])
 
             jday_sat1_ = fnames_sat1[region_select]['jday']
             fnames_sat1_ = fnames_sat1[region_select]['fnames']
-            index_sat1 = np.argmin(np.abs(jday_sat1_-flt_trks[i]['jday'][j]))
+            index_sat1 = np.argmin(np.abs(jday_sat1_-flt_trk0['jday'][j]))
             flt_img['fnames_sat1'].append(fnames_sat1_[index_sat1])
             flt_img['jday_sat1'] = np.append(flt_img['jday_sat1'], jday_sat1_[index_sat1])
 
             if has_cam:
-                index_cam = np.argmin(np.abs(jday_cam0-flt_trks[i]['jday'][j]))
+                index_cam = np.argmin(np.abs(jday_cam0-flt_trk0['jday'][j]))
                 flt_img['fnames_cam0'].append(fnames_cam0[index_cam])
                 flt_img['jday_cam0'] = np.append(flt_img['jday_cam0'], jday_cam0[index_cam])
 
