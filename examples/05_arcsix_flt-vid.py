@@ -1762,7 +1762,7 @@ def plot_video_frame(statements, test=False):
         lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
         lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
 
-        extend_x = 0.05
+        extend_x = 10.0
         extend_y = 0.05
         lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
         lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
@@ -2700,8 +2700,8 @@ def main_pre(
     tmhr_interval = 10.0/60.0
     half_interval = tmhr_interval/48.0
 
-    jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
-    jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
+    jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0)+1) * (half_interval*86400.0) / 86400.0
+    jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0)+1) * (half_interval*86400.0) / 86400.0
 
     jday_edges = np.arange(jday_s, jday_e+half_interval, half_interval*2.0)
 
