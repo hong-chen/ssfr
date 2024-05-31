@@ -52,7 +52,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -2549,15 +2549,15 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            # main_pre(date)
-            # main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
-            # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
+            main_pre(date)
+            main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
+            main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
 
-    # sys.exit()
+    sys.exit()
 
 
     # test
