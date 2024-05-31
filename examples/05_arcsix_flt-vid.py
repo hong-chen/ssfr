@@ -52,7 +52,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -1816,6 +1816,9 @@ def plot_video_frame(statements, test=False):
 
         ax_nav.plot(x[15:-15], y0[15:-15], lw=1.0, color='red', zorder=1, alpha=0.6)
         ax_nav.scatter(x[50], y0[50], lw=0.0, s=40, c='red', zorder=1, alpha=0.6)
+        ax_nav.text(-5.0, 7.5, 'P:%4.1f$^\\circ$' % ang_pit0, ha='center', va='center', color='red', zorder=2, fontsize=8)
+        ax_nav.text( 5.0, 7.5, 'R:%4.1f$^\\circ$' % ang_rol0, ha='center', va='center', color='red', zorder=2, fontsize=8)
+
 
         if has_att_corr:
             ang_pit_offset = 0.0
@@ -1826,12 +1829,15 @@ def plot_video_frame(statements, test=False):
             ang_pit_m0 = flt_trk0['ang_pit_m'][index_pnt]
             ang_rol_m0 = flt_trk0['ang_rol_m'][index_pnt]
 
-
-            slope1  = -np.tan(np.deg2rad(ang_rol0-ang_rol_m0+ang_rol_offset))
-            offset1 = (ang_pit0-ang_pit_m0+ang_pit_offset)
+            ang_pit_stage0 = ang_pit0-ang_pit_m0+ang_pit_offset
+            ang_rol_stage0 = ang_rol0-ang_rol_m0+ang_rol_offset
+            slope1  = -np.tan(np.deg2rad(ang_rol_stage0))
+            offset1 = (ang_pit_stage0)
             y1 = slope1*x + offset1
 
             ax_nav.plot(x[25:-25], y1[25:-25], lw=2.0, color='green', zorder=2, alpha=0.7)
+            ax_nav.text(-5.0, -8.5, 'P:%4.1f$^\\circ$' % ang_pit_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
+            ax_nav.text( 5.0, -8.5, 'R:%4.1f$^\\circ$' % ang_rol_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
 
     for vname in vars_plot.keys():
         var_plot = vars_plot[vname]
@@ -2296,8 +2302,8 @@ def main_pre(
     tmhr_interval = 10.0/60.0
     half_interval = tmhr_interval/48.0
 
-    jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
-    jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
+    jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
+    jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
 
     jday_edges = np.arange(jday_s, jday_e+half_interval, half_interval*2.0)
 
@@ -2543,15 +2549,15 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            main_pre(date)
-            main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
-            main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
+            # main_pre(date)
+            # main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
+            # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
             # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
 
-    sys.exit()
+    # sys.exit()
 
 
     # test
