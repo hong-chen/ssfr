@@ -108,7 +108,7 @@ _date_specs_ = {
             },
 
         '20240530': {
-            'tmhr_range': [10.90, 18.30],
+            'tmhr_range': [10.80, 18.30],
            'description': 'ARCSIX Research Flight #2',
       'preferred_region': 'lincoln_sea',
             },
@@ -2415,14 +2415,14 @@ def main_pre(
         elif (not region_contain[key1]) and region_contain[key2]:
             region_select = key2
         elif (not region_contain[key1]) and (not region_contain[key2]):
-            region_select = date_specs[date_s]['preferred_region']
+            region_select = _date_specs_[date_s]['preferred_region']
         elif region_contain[key1] and region_contain[key2]:
             if jday_diff[key1] < jday_diff[key2]:
                 region_select = key1
             elif jday_diff[key1] > jday_diff[key2]:
                 region_select = key2
             else:
-                region_select = date_specs[date_s]['preferred_region']
+                region_select = _date_specs_[date_s]['preferred_region']
 
 
         flt_img['id_sat0'] = []
