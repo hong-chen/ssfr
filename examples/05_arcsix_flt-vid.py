@@ -2303,7 +2303,7 @@ def main_pre(
     half_interval = tmhr_interval/48.0
 
     jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0)    ) * (half_interval*86400.0) / 86400.0
-    jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0) + 1) * (half_interval*86400.0) / 86400.0
+    jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0) + 2) * (half_interval*86400.0) / 86400.0
 
     jday_edges = np.arange(jday_s, jday_e+half_interval, half_interval*2.0)
 
@@ -2520,7 +2520,7 @@ def main_vid(
         r = list(tqdm(pool.imap(plot_video_frame, statements), total=indices_trk.size))
 
     # make video
-    fname_mp4 = '%s-FLT-VID_%s_%s.mp4' % (_mission_.upper(), _platform_.upper(), date_s)
+    fname_mp4 = '%s-FLT-VID_%s_%s_%2.2d.mp4' % (_mission_.upper(), _platform_.upper(), date_s, interval)
     os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
 #\----------------------------------------------------------------------------/#
 
@@ -2533,7 +2533,7 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            # datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea; clear-sky spiral
+            datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea; clear-sky spiral
             datetime.datetime(2024, 5, 30), # ARCSIX research flight #2 over Lincoln Sea; cloud wall
         ]
 
