@@ -87,30 +87,35 @@ _date_specs_ = {
             'tmhr_range': [19.20, 23.00],
            'description': 'ARCSIX Test Flight #1',
       'preferred_region': 'lincoln_sea',
+       'cam_time_offset': 0.0,
             },
 
         '20240521': {
             'tmhr_range': [14.80, 17.50],
            'description': 'ARCSIX Test Flight #2',
       'preferred_region': 'lincoln_sea',
+       'cam_time_offset': 0.0,
             },
 
         '20240524': {
             'tmhr_range': [ 9.90, 17.90],
            'description': 'ARCSIX Transit Flight #1',
       'preferred_region': 'lincoln_sea',
+       'cam_time_offset': 0.0,
             },
 
         '20240528': {
             'tmhr_range': [11.90, 18.60],
            'description': 'ARCSIX Science Flight #1',
       'preferred_region': 'lincoln_sea',
+       'cam_time_offset': 0.0,
             },
 
         '20240530': {
             'tmhr_range': [11.00, 18.20],
            'description': 'ARCSIX Science Flight #2',
       'preferred_region': 'ca_archipelago',
+       'cam_time_offset': 0.0,
             },
         }
 
@@ -364,37 +369,38 @@ def process_sat_img_vn(fnames_sat_, extent_target, threshold=95.0):
         extent_ori = [float(x) for x in os.path.basename(fname0).replace('.png', '').split('_')[-1].replace('(', '').replace(')', '').split(',')]
 
         try:
-            img = mpl_img.imread(fname0)
+            if 'SUOMI' not in fname0:
+                img = mpl_img.imread(fname0)
 
-            lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
-            lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
+                lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
+                lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
 
-            indices_x = np.where((lon_1d>=(extent_target[0]))&(lon_1d<=(extent_target[1])))[0]
-            indices_y = np.where((lat_1d>=(extent_target[2]))&(lat_1d<=(extent_target[3])))[0]
+                indices_x = np.where((lon_1d>=(extent_target[0]))&(lon_1d<=(extent_target[1])))[0]
+                indices_y = np.where((lat_1d>=(extent_target[2]))&(lat_1d<=(extent_target[3])))[0]
 
-            if indices_x.size>2 and indices_y.size>2:
+                if indices_x.size>2 and indices_y.size>2:
 
-                index_xs = indices_x[0]
-                index_xe = indices_x[-1]
-                index_ys = indices_y[0]
-                index_ye = indices_y[-1]
-                lon_1d = lon_1d[index_xs:index_xe+1]
-                lat_1d = lat_1d[index_ys:index_ye+1][::-1]
+                    index_xs = indices_x[0]
+                    index_xe = indices_x[-1]
+                    index_ys = indices_y[0]
+                    index_ye = indices_y[-1]
+                    lon_1d = lon_1d[index_xs:index_xe+1]
+                    lat_1d = lat_1d[index_ys:index_ye+1][::-1]
 
-                lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
-                img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
+                    lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
+                    img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
 
-                logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
+                    logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
 
-                p_coverage = (1.0-(logic_black.sum()/logic_black.size))*100.0
+                    p_coverage = (1.0-(logic_black.sum()/logic_black.size))*100.0
 
-                if p_coverage > threshold:
-                    fnames_sat.append(fname0)
-                    jday_sat.append(jday_sat0)
-                    # print(jday_sat0)
-                    # print(er3t.util.jday_to_dtime(jday_sat0))
-                    # print(fname0)
-                    # print(p_coverage)
+                    if p_coverage > threshold:
+                        fnames_sat.append(fname0)
+                        jday_sat.append(jday_sat0)
+                        # print(jday_sat0)
+                        # print(er3t.util.jday_to_dtime(jday_sat0))
+                        # print(fname0)
+                        # print(p_coverage)
 
         except Exception as error:
             print(fname0)
@@ -2743,7 +2749,7 @@ def main_pre(
         has_cam = True
         fdir_cam0 = sorted(fdirs, key=os.path.getmtime)[-1]
         fnames_cam0 = sorted(glob.glob('%s/*.jpg' % (fdir_cam0)))
-        jday_cam0 = get_jday_cam_img(date, fnames_cam0)
+        jday_cam0 = get_jday_cam_img(date, fnames_cam0) + _date_specs_[date_s]['cam_time_offset']/86400.0
     else:
         has_cam = False
     #\----------------------------------------------------------------------------/#
@@ -2783,27 +2789,6 @@ def main_pre(
         flt_img = {}
 
         flt_trk0 = flt_trks[i]
-
-        # region_contain = {}
-        # jday_diff = {}
-        # for key in fnames_sat0.keys():
-        #     region_contain[key] = contain_lonlat_check(flt_trk0['lon'], flt_trk0['lat'], fnames_sat0[key]['extent'])
-        #     jday_diff[key] = np.abs(flt_trk0['jday0']-fnames_sat0[key]['jday'][np.argmin(np.abs(flt_trk0['jday0']-fnames_sat0[key]['jday']))])
-
-        # key1, key2 = fnames_sat0.keys()
-        # if region_contain[key1] and (not region_contain[key2]):
-        #     region_select = key1
-        # elif (not region_contain[key1]) and region_contain[key2]:
-        #     region_select = key2
-        # elif (not region_contain[key1]) and (not region_contain[key2]):
-        #     region_select = _date_specs_[date_s]['preferred_region']
-        # elif region_contain[key1] and region_contain[key2]:
-        #     if jday_diff[key1] < jday_diff[key2]:
-        #         region_select = key1
-        #     elif jday_diff[key1] > jday_diff[key2]:
-        #         region_select = key2
-        #     else:
-        #         region_select = _date_specs_[date_s]['preferred_region']
 
         flt_img['id_sat0'] = []
         flt_img['fnames_sat0'] = []
