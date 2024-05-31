@@ -85,31 +85,31 @@ _fdir_tmp_graph_ = 'tmp-graph_flt-vid'
 _date_specs_ = {
         '20240517': {
             'tmhr_range': [19.20, 23.00],
-           'description': 'ARCSIX Test Flight #1'
+           'description': 'ARCSIX Test Flight #1',
       'preferred_region': 'lincoln_sea',
             },
 
         '20240521': {
             'tmhr_range': [14.80, 17.50],
-           'description': 'ARCSIX Test Flight #2'
+           'description': 'ARCSIX Test Flight #2',
       'preferred_region': 'lincoln_sea',
             },
 
         '20240524': {
             'tmhr_range': [ 9.90, 17.90],
-           'description': 'ARCSIX Transit Flight #1'
+           'description': 'ARCSIX Transit Flight #1',
       'preferred_region': 'lincoln_sea',
             },
 
         '20240528': {
             'tmhr_range': [11.90, 18.60],
-           'description': 'ARCSIX Research Flight #1'
+           'description': 'ARCSIX Research Flight #1',
       'preferred_region': 'lincoln_sea',
             },
 
         '20240530': {
             'tmhr_range': [10.90, 18.30],
-           'description': 'ARCSIX Research Flight #2'
+           'description': 'ARCSIX Research Flight #2',
       'preferred_region': 'lincoln_sea',
             },
         }
@@ -2543,8 +2543,8 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            # main_pre(date)
-            # main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
+            main_pre(date)
+            main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
             main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
             # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
