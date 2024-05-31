@@ -454,25 +454,26 @@ def cdata_arcsix_hsk_v0(
 
         # this would change if we are processing IWG file
         #/--------------------------------------------------------------\#
-        # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[0]
-        # data_hsk = ssfr.util.read_ict(fname)
-        # var_dict = {
-        #         'lon': 'longitude',
-        #         'lat': 'latitude',
-        #         'alt': 'gps_altitude',
-        #         'tmhr': 'tmhr',
-        #         'ang_pit': 'pitch_angle',
-        #         'ang_rol': 'roll_angle',
-        #         'ang_hed': 'true_heading',
-        #         }
         try:
-            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
-            data_hsk = ssfr.util.read_iwg_nsrc(fname)
+            # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
+            # data_hsk = ssfr.util.read_iwg_nsrc(fname)
+            # var_dict = {
+            #         'tmhr': 'tmhr',
+            #         'lon': 'longitude',
+            #         'lat': 'latitude',
+            #         'alt': 'gps_alt_msl',
+            #         'ang_pit': 'pitch_angle',
+            #         'ang_rol': 'roll_angle',
+            #         'ang_hed': 'true_heading',
+            #         }
+
+            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[0]
+            data_hsk = ssfr.util.read_ict(fname)
             var_dict = {
-                    'tmhr': 'tmhr',
                     'lon': 'longitude',
                     'lat': 'latitude',
-                    'alt': 'gps_alt_msl',
+                    'alt': 'gps_altitude',
+                    'tmhr': 'tmhr',
                     'ang_pit': 'pitch_angle',
                     'ang_rol': 'roll_angle',
                     'ang_hed': 'true_heading',
@@ -490,6 +491,7 @@ def cdata_arcsix_hsk_v0(
                     'ang_rol': 'roll',
                     'ang_hed': 'true_heading',
                     }
+
         print()
         print('Processing HSK file:', fname)
         print()
@@ -1722,8 +1724,8 @@ if __name__ == '__main__':
              datetime.datetime(2024, 5, 30), # ARCSIX research flight #2 over Lincoln Sea
             ]
     for date in dates[::-1]:
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
+        main_process_data_v0(date, run=True)
+        # main_process_data_v0(date, run=False)
 
         # run_time_offset_check(date)
         # sys.exit()

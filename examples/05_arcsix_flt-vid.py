@@ -75,35 +75,43 @@ _fdir_sat_img_    = 'data/%s/sat-img' % _mission_
 _fdir_cam_img_    = 'data/%s/2024-Spring/p3' % _mission_
 _wavelength_      = 555.0
 
+_fdir_data_ = 'data/%s/processed' % _mission_
+
 _fdir_sat_img_vn_ = 'data/%s/sat-img-vn' % _mission_
 
-_preferred_region_ = 'lincoln_sea'
-
-_fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_tmp_graph_ = 'tmp-graph_flt-vid'
+
 
 _date_specs_ = {
         '20240517': {
             'tmhr_range': [19.20, 23.00],
-            'description': 'ARCSIX Test Flight #1'
-            },
-        '20240521': {
-            'tmhr_range': [14.80, 17.50],
-            'description': 'ARCSIX Test Flight #2'
-            },
-        '20240524': {
-            'tmhr_range': [ 9.90, 17.90],
-            'description': 'ARCSIX Transit Flight #1'
-            },
-        '20240528': {
-            'tmhr_range': [11.90, 18.60],
-            'description': 'ARCSIX Research Flight #1'
-            },
-        '20240530': {
-            'tmhr_range': [10.90, 18.30],
-            'description': 'ARCSIX Research Flight #2'
+           'description': 'ARCSIX Test Flight #1'
+      'preferred_region': 'lincoln_sea',
             },
 
+        '20240521': {
+            'tmhr_range': [14.80, 17.50],
+           'description': 'ARCSIX Test Flight #2'
+      'preferred_region': 'lincoln_sea',
+            },
+
+        '20240524': {
+            'tmhr_range': [ 9.90, 17.90],
+           'description': 'ARCSIX Transit Flight #1'
+      'preferred_region': 'lincoln_sea',
+            },
+
+        '20240528': {
+            'tmhr_range': [11.90, 18.60],
+           'description': 'ARCSIX Research Flight #1'
+      'preferred_region': 'lincoln_sea',
+            },
+
+        '20240530': {
+            'tmhr_range': [10.90, 18.30],
+           'description': 'ARCSIX Research Flight #2'
+      'preferred_region': 'lincoln_sea',
+            },
         }
 
 
@@ -2407,14 +2415,14 @@ def main_pre(
         elif (not region_contain[key1]) and region_contain[key2]:
             region_select = key2
         elif (not region_contain[key1]) and (not region_contain[key2]):
-            region_select = _preferred_region_
+            region_select = date_specs[date_s]['preferred_region']
         elif region_contain[key1] and region_contain[key2]:
             if jday_diff[key1] < jday_diff[key2]:
                 region_select = key1
             elif jday_diff[key1] > jday_diff[key2]:
                 region_select = key2
             else:
-                region_select = _preferred_region_
+                region_select = date_specs[date_s]['preferred_region']
 
 
         flt_img['id_sat0'] = []
