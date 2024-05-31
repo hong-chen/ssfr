@@ -596,9 +596,9 @@ def plot_video_frame(statements, test=False):
             y0 = flt_trk0['temperature'][index_pnt, x0]
             ax_temp0.text(x0, y0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color='black', ha='center', va='center')
         else:
-            if temperatures[x0]['name'] == 'RH':
+            if temperatures[x0]['name'] not in ['N/A']:
                 y0 = flt_trk0['temperature'][index_pnt, x0]
-                ax_temp0.text(x0, -10.0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color=temp_color, ha='center', va='center')
+                ax_temp0.text(x0, -10.0, '%.1f%s' % (y0, temperatures[x0]['units']), fontsize=10, color='black', ha='center', va='center')
 
     ax_temp0.axhline(0.0, color=temp_color, lw=1.0, ls='-')
     ax_temp0.set_xlim(temp_x[0]-width/2.0, temp_x[-1]+width/2.0)
