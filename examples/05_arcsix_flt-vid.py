@@ -117,6 +117,13 @@ _date_specs_ = {
       'preferred_region': 'ca_archipelago',
        'cam_time_offset': 0.0,
             },
+
+        '20240531': {
+            'tmhr_range': [12.50, 19.50],
+           'description': 'ARCSIX Science Flight #3',
+      'preferred_region': 'ca_archipelago',
+       'cam_time_offset': 5.0,
+            },
         }
 
 
@@ -2890,8 +2897,9 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            datetime.datetime(2024, 5, 28), # ARCSIX science flight #1 over Lincoln Sea; clear-sky spiral
+            # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1 over Lincoln Sea; clear-sky spiral
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2 over Lincoln Sea; cloud wall
+            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3 over Lincoln Sea; cloud wall
         ]
 
     for date in dates[::-1]:
@@ -2908,7 +2916,7 @@ if __name__ == '__main__':
             #/----------------------------------------------------------------------------\#
             main_pre(date)
             main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
             # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
