@@ -103,13 +103,13 @@ _date_specs_ = {
 
         '20240528': {
             'tmhr_range': [11.90, 18.60],
-           'description': 'ARCSIX Research Flight #1',
+           'description': 'ARCSIX Science Flight #1',
       'preferred_region': 'lincoln_sea',
             },
 
         '20240530': {
             'tmhr_range': [11.00, 18.20],
-           'description': 'ARCSIX Research Flight #2',
+           'description': 'ARCSIX Science Flight #2',
       'preferred_region': 'ca_archipelago',
             },
         }
@@ -1734,7 +1734,7 @@ def plot_video_frame(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
         lon_half = 15.0
-        lat_half = 1.5
+        lat_half = 2.0
         lat_low = max([lat_current-lat_half, 76.0])
         lat_high= min([lat_low+lat_half*2.0, 87.0])
         lat_low = max([lat_high-lat_half*2.0, 76.0])
@@ -2905,8 +2905,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            datetime.datetime(2024, 5, 28), # ARCSIX research flight #1 over Lincoln Sea; clear-sky spiral
-            datetime.datetime(2024, 5, 30), # ARCSIX research flight #2 over Lincoln Sea; cloud wall
+            datetime.datetime(2024, 5, 28), # ARCSIX science flight #1 over Lincoln Sea; clear-sky spiral
+            datetime.datetime(2024, 5, 30), # ARCSIX science flight #2 over Lincoln Sea; cloud wall
         ]
 
     for date in dates[::-1]:
@@ -2923,7 +2923,7 @@ if __name__ == '__main__':
             #/----------------------------------------------------------------------------\#
             main_pre(date)
             main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
-            main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
+            # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
             # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
