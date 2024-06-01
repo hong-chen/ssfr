@@ -1902,8 +1902,9 @@ def plot_video_frame(statements, test=False):
             y1 = slope1*x + offset1
 
             ax_nav.plot(x[25:-25], y1[25:-25], lw=2.0, color='green', zorder=2, alpha=0.7)
-            ax_nav.text(-5.0, -8.5, 'P:%4.1f$^\\circ$' % ang_pit_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
-            ax_nav.text( 5.0, -8.5, 'R:%4.1f$^\\circ$' % ang_rol_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
+            if ~np.isnan(ang_pit_stage0) and ~np.isnan(ang_rol_stage0):
+                ax_nav.text(-5.0, -8.5, 'P:%4.1f$^\\circ$' % ang_pit_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
+                ax_nav.text( 5.0, -8.5, 'R:%4.1f$^\\circ$' % ang_rol_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
 
     for vname in vars_plot.keys():
         var_plot = vars_plot[vname]
