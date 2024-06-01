@@ -119,7 +119,7 @@ _date_specs_ = {
             },
 
         '20240531': {
-            'tmhr_range': [12.50, 19.50],
+            'tmhr_range': [12.40, 19.50],
            'description': 'ARCSIX Science Flight #3',
       'preferred_region': 'ca_archipelago',
        'cam_time_offset': 5.0,
@@ -1943,10 +1943,10 @@ def plot_video_frame(statements, test=False):
         flt_trk = flt_sim0.flt_trks[itrk]
         flt_img = flt_sim0.flt_imgs[itrk]
 
-        logic_in_img0 = (flt_trk['lon']>=extent_img0[0]) & (flt_trk['lon']<=extent_img0[1]) &
+        logic_in_img0 = (flt_trk['lon']>=extent_img0[0]) & (flt_trk['lon']<=extent_img0[1]) &\
                         (flt_trk['lat']>=extent_img0[2]) & (flt_trk['lat']<=extent_img0[3])
 
-        logic_in_img1 = (flt_trk['lon']>=extent_img1[0]) & (flt_trk['lon']<=extent_img1[1]) &
+        logic_in_img1 = (flt_trk['lon']>=extent_img1[0]) & (flt_trk['lon']<=extent_img1[1]) &\
                         (flt_trk['lat']>=extent_img1[2]) & (flt_trk['lat']<=extent_img1[3])
 
         logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<=tmhr_current)
@@ -2599,8 +2599,8 @@ if __name__ == '__main__':
             #/----------------------------------------------------------------------------\#
             main_pre(date)
             # main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
-            main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
-            # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
+            # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
