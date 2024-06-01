@@ -1729,8 +1729,8 @@ if __name__ == '__main__':
              datetime.datetime(2024, 5, 31), # ARCSIX science flight #3 over Lincoln Sea
             ]
     for date in dates[::-1]:
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
+        main_process_data_v0(date, run=True)
+        # main_process_data_v0(date, run=False)
 
         # run_time_offset_check(date)
         # sys.exit()
