@@ -1762,8 +1762,8 @@ def plot_video_frame(statements, test=False):
         lat_low = max([lat_current-lat_half, 76.0])
         lat_high= min([lat_low+lat_half*2.0, 87.0])
         lat_low = max([lat_high-lat_half*2.0, 76.0])
-        extent_img = [lon_current-lon_half, lon_current+lon_half, lat_low, lat_high]
-        ax_map.set_extent(extent_img, crs=ccrs.PlateCarree())
+        extent_img0 = [lon_current-lon_half, lon_current+lon_half, lat_low, lat_high]
+        ax_map.set_extent(extent_img0, crs=ccrs.PlateCarree())
 
         fname_sat0 = flt_img0['fnames_sat0'][index_pnt]
 
@@ -1777,8 +1777,8 @@ def plot_video_frame(statements, test=False):
         extend_y = 0.05
         lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
         lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
-        indices_x = np.where((lon_1d_>=(extent_img[0]-extend_x))&(lon_1d_<=(extent_img[1]+extend_x)))[0]
-        indices_y = np.where((lat_1d_>=(extent_img[2]-extend_y))&(lat_1d_<=(extent_img[3]+extend_y)))[0]
+        indices_x = np.where((lon_1d_>=(extent_img0[0]-extend_x))&(lon_1d_<=(extent_img0[1]+extend_x)))[0]
+        indices_y = np.where((lat_1d_>=(extent_img0[2]-extend_y))&(lat_1d_<=(extent_img0[3]+extend_y)))[0]
 
         if indices_x.size>2 and indices_y.size>2:
 
@@ -1805,9 +1805,9 @@ def plot_video_frame(statements, test=False):
         lat_s = lat_current-lat_half0
         lat_e = lat_current+lat_half0
 
-        extent_img = [lon_s, lon_e, lat_s, lat_e]
+        extent_img1 = [lon_s, lon_e, lat_s, lat_e]
 
-        ax_map0.set_extent(extent_img, crs=ccrs.PlateCarree())
+        ax_map0.set_extent(extent_img1, crs=ccrs.PlateCarree())
 
         fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
 
@@ -1821,8 +1821,8 @@ def plot_video_frame(statements, test=False):
         extend_y = 0.05
         lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
         lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
-        indices_x = np.where((lon_1d_>=(extent_img[0]-extend_x))&(lon_1d_<=(extent_img[1]+extend_x)))[0]
-        indices_y = np.where((lat_1d_>=(extent_img[2]-extend_y))&(lat_1d_<=(extent_img[3]+extend_y)))[0]
+        indices_x = np.where((lon_1d_>=(extent_img1[0]-extend_x))&(lon_1d_<=(extent_img1[1]+extend_x)))[0]
+        indices_y = np.where((lat_1d_>=(extent_img1[2]-extend_y))&(lat_1d_<=(extent_img1[3]+extend_y)))[0]
 
         if indices_x.size>2 and indices_y.size>2:
 
@@ -1943,78 +1943,90 @@ def plot_video_frame(statements, test=False):
         flt_trk = flt_sim0.flt_trks[itrk]
         flt_img = flt_sim0.flt_imgs[itrk]
 
+        logic_in_img0 = (flt_trk['lon']>=extent_img0[0]) & (flt_trk['lon']<=extent_img0[1]) &
+                        (flt_trk['lat']>=extent_img0[2]) & (flt_trk['lat']<=extent_img0[3])
+
+        logic_in_img1 = (flt_trk['lon']>=extent_img1[0]) & (flt_trk['lon']<=extent_img1[1]) &
+                        (flt_trk['lat']>=extent_img1[2]) & (flt_trk['lat']<=extent_img1[3])
+
         logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<=tmhr_current)
         logic_trans = np.logical_not(logic_solid)
 
-        if itrk == index_trk:
-            alpha_trans = 0.0
-        else:
-            alpha_trans = 0.08
+        if logic_in_img0.sum() > 0:
 
-        ax_map.scatter(         flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
-        cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
+            if itrk == index_trk:
+                alpha_trans = 0.0
+            else:
+                alpha_trans = 0.08
 
-        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
-        ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
+            ax_map.scatter(         flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
+            cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
 
-        if not plot_arrow:
-            ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
-            ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
-            # ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-            # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_)
-        else:
-            color0 = alt_cmap(alt_norm(alt_current))
-            arrow_prop['facecolor'] = color0
-            arrow_prop['relpos'] = (lon_current, lat_current)
-            ax_map.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3, transform=ccrs.PlateCarree())
-            # ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
+            if not plot_arrow:
+                ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
+                ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
+                # ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
+                # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_)
+            else:
+                color0 = alt_cmap(alt_norm(alt_current))
+                arrow_prop['facecolor'] = color0
+                arrow_prop['relpos'] = (lon_current, lat_current)
+                ax_map.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3, transform=ccrs.PlateCarree())
+                # ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
 
-        ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
-        ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
+        if logic_in_img1.sum() > 0:
 
-        for vname in vars_plot.keys():
+            ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
+            ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
 
-            var_plot = vars_plot[vname]
+            ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
+            ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
 
-            if var_plot['plot?']:
-                if 'vname_wvl' in var_plot.keys():
-                    wvl_x  = flt_trk[var_plot['vname_wvl']]
-                    index_wvl = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
-                    if 'toa' in var_plot['vname']:
-                        tms_y = flt_trk[var_plot['vname']][index_wvl] * np.cos(np.deg2rad(flt_trk['sza']))
-                    else:
-                        tms_y = flt_trk[var_plot['vname']][:, index_wvl]
-                else:
-                    tms_y = flt_trk[var_plot['vname']]
+        if logic_solid.sum() > 0:
 
-                if vname == 'Altitude':
-                    ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=vars_plot[vname]['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
-                else:
+            for vname in vars_plot.keys():
 
-                    if vname not in ['TOA↓']:
-                        if has_att:
-                            ang_pit_solid = flt_trk['ang_pit'][logic_solid]
-                            ang_rol_solid = flt_trk['ang_rol'][logic_solid]
-                            logic_stable = (np.abs(ang_pit_solid)<=5.0) & (np.abs(ang_rol_solid)<=2.5)
-                            ax_alt_prof.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.15)
-                            ax_alt_prof.scatter(tms_y[logic_solid][logic_stable] , flt_trk['alt'][logic_solid][logic_stable] , c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder']*2)
+                var_plot = vars_plot[vname]
 
-                            hist_y, _ = np.histogram(tms_y[logic_solid][logic_stable], bins=hist_bins)
-                            ax_alt_hist.bar(hist_x, hist_y, width=hist_bin_w, bottom=hist_bottoms[vname], color=var_plot['color'], alpha=0.5, lw=0.0, zorder=var_plot['zorder']-1)
-                            hist_bottoms[vname] += hist_y
-
-                            ax_tms.scatter(flt_trk['tmhr'][logic_solid][~logic_stable], tms_y[logic_solid][~logic_stable], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.4)
-                            ax_tms.scatter(flt_trk['tmhr'][logic_solid][logic_stable], tms_y[logic_solid][logic_stable], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder']*2)
+                if var_plot['plot?']:
+                    if 'vname_wvl' in var_plot.keys():
+                        wvl_x  = flt_trk[var_plot['vname_wvl']]
+                        index_wvl = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
+                        if 'toa' in var_plot['vname']:
+                            tms_y = flt_trk[var_plot['vname']][index_wvl] * np.cos(np.deg2rad(flt_trk['sza']))
                         else:
-                            ax_alt_prof.scatter(tms_y[logic_solid], flt_trk['alt'][logic_solid], c=vars_plot[vname]['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
-
-                            hist_y = np.histogram(tms_y[logic_solid], bins=hist_bins)
-                            ax_alt_hist.bar(hist_x, hist_y, width=hist_bin_w, bottom=hist_bottoms[vname], color=var_plot['color'], alpha=0.5, lw=0.0, zorder=var_plot['zorder']-1)
-                            hist_bottoms[vname] += hist_y
-
-                            ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+                            tms_y = flt_trk[var_plot['vname']][:, index_wvl]
                     else:
-                        ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+                        tms_y = flt_trk[var_plot['vname']]
+
+                    if vname == 'Altitude':
+                        ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=var_plot['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
+                    else:
+
+                        if vname not in ['TOA↓']:
+                            if has_att:
+                                ang_pit_solid = flt_trk['ang_pit'][logic_solid]
+                                ang_rol_solid = flt_trk['ang_rol'][logic_solid]
+                                logic_stable = (np.abs(ang_pit_solid)<=5.0) & (np.abs(ang_rol_solid)<=2.5)
+                                ax_alt_prof.scatter(tms_y[logic_solid][~logic_stable], flt_trk['alt'][logic_solid][~logic_stable], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.15)
+                                ax_alt_prof.scatter(tms_y[logic_solid][logic_stable] , flt_trk['alt'][logic_solid][logic_stable] , c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder']*2)
+
+                                hist_y, _ = np.histogram(tms_y[logic_solid][logic_stable], bins=hist_bins)
+                                ax_alt_hist.bar(hist_x, hist_y, width=hist_bin_w, bottom=hist_bottoms[vname], color=var_plot['color'], alpha=0.5, lw=0.0, zorder=var_plot['zorder']-1)
+                                hist_bottoms[vname] += hist_y
+
+                                ax_tms.scatter(flt_trk['tmhr'][logic_solid][~logic_stable], tms_y[logic_solid][~logic_stable], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.4)
+                                ax_tms.scatter(flt_trk['tmhr'][logic_solid][logic_stable], tms_y[logic_solid][logic_stable], c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder']*2)
+                            else:
+                                ax_alt_prof.scatter(tms_y[logic_solid], flt_trk['alt'][logic_solid], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
+
+                                hist_y = np.histogram(tms_y[logic_solid], bins=hist_bins)
+                                ax_alt_hist.bar(hist_x, hist_y, width=hist_bin_w, bottom=hist_bottoms[vname], color=var_plot['color'], alpha=0.5, lw=0.0, zorder=var_plot['zorder']-1)
+                                hist_bottoms[vname] += hist_y
+
+                                ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+                        else:
+                            ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
 
 
@@ -2232,7 +2244,7 @@ presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hira
         plt.show()
         sys.exit()
     else:
-        plt.savefig('%s/%5.5d.png' % (_fdir_tmp_graph_, n), bbox_inches='tight')
+        plt.savefig('%s/%5.5d.png' % (_fdir_tmp_graph_, n), bbox_inches='tight', dpi=150)
         plt.close(fig)
 
 def main_pre(
@@ -2587,8 +2599,8 @@ if __name__ == '__main__':
             #/----------------------------------------------------------------------------\#
             main_pre(date)
             # main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
-            main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
+            main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
+            # main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
