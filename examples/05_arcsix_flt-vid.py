@@ -1941,6 +1941,8 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # iterate through flight segments
     #/----------------------------------------------------------------------------\#
+    ste_trans = 4
+    ste_solid = 2
     for itrk in range(index_trk+1):
 
         flt_trk = flt_sim0.flt_trks[itrk]
@@ -1960,10 +1962,10 @@ def plot_video_frame_arcsix(statements, test=False):
             if itrk == index_trk:
                 alpha_trans = 0.0
             else:
-                alpha_trans = 0.08
+                alpha_trans = 0.15
 
-            ax_map.scatter(         flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
-            cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
+            ax_map.scatter(         flt_trk['lon'][logic_trans][::step_trans], flt_trk['lat'][logic_trans][::step_trans], c=flt_trk['alt'][logic_trans][::step_trans], s=0.5, lw=0.0, zorder=1, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans, transform=ccrs.PlateCarree())
+            cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid][::step_solid], flt_trk['lat'][logic_solid][::step_solid], c=flt_trk['alt'][logic_solid][::step_solid], s=1  , lw=0.0, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
 
             if not plot_arrow:
                 ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
