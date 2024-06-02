@@ -940,9 +940,10 @@ def plot_video_frame_wff(statements, test=False):
                 ax_wvl.axvline(wvl_x[wvl_index], color=var_plot['color'], ls='-', lw=1.0, alpha=0.5, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
 
-
     # iterate through flight segments
     #/----------------------------------------------------------------------------\#
+    ste_trans = 4
+    ste_solid = 2
     for itrk in range(index_trk+1):
 
         flt_trk = flt_sim0.flt_trks[itrk]
@@ -956,8 +957,8 @@ def plot_video_frame_wff(statements, test=False):
         else:
             alpha_trans = 0.08
 
-        ax_map.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap=_alt_cmap_, alpha=alpha_trans)
-        ax_map.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap=_alt_cmap_)
+        ax_map.scatter(flt_trk['lon'][logic_trans][::step_trans], flt_trk['lat'][logic_trans][::step_trans], c=flt_trk['alt'][logic_trans][::step_trans], s=0.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap=_alt_cmap_, alpha=alpha_trans)
+        ax_map.scatter(flt_trk['lon'][logic_solid][::step_solid], flt_trk['lat'][logic_solid][::step_solid], c=flt_trk['alt'][logic_solid][::step_solid], s=1  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap=_alt_cmap_)
 
         ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=1, vmin=0.0, vmax=9.0, cmap=_alt_cmap_, alpha=alpha_trans)
         ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=2, vmin=0.0, vmax=9.0, cmap=_alt_cmap_)
