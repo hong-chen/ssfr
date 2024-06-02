@@ -2402,8 +2402,8 @@ def main_pre_arcsix(
     tmhr_interval = 10.0/60.0
     half_interval = tmhr_interval/48.0
 
-    jday_s = ((jday[0]  * 86400.0) // (10.0) + 1) * (10.0) / 86400.0
-    jday_e = ((jday[-1] * 86400.0) // (10.0)    ) * (10.0) / 86400.0
+    jday_s = ((jday[0]  * 86400.0) // (60.0) + 1) * (60.0) / 86400.0
+    jday_e = ((jday[-1] * 86400.0) // (60.0)    ) * (60.0) / 86400.0
 
     jday_edges = np.arange(jday_s, jday_e+half_interval, half_interval*2.0)
 
@@ -2616,8 +2616,8 @@ if __name__ == '__main__':
 
             #/----------------------------------------------------------------------------\#
             main_pre_arcsix(date)
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
             main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
