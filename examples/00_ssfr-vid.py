@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-# _ssfr_         = 'ssfr-a'
-_ssfr_         = 'ssfr-b'
+_ssfr_         = 'ssfr-a'
+# _ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -620,39 +620,52 @@ def plot_video_frame(statements, test=False):
         logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<=tmhr_current)
         logic_trans = np.logical_not(logic_solid)
 
-        if itrk == index_trk:
-            alpha_trans = 0.0
-        else:
-            alpha_trans = 0.08
+        if logic_solid.sum() > 0:
 
-        for key in axes_spec.keys():
+            if itrk == index_trk:
+                alpha_trans = 0.0
+            else:
+                alpha_trans = 0.08
 
-            vname = '%s|raw' % key
-            vname0 = '%s|dc' % key
+            for key in axes_spec.keys():
 
-            var_plot = vars_plot[vname]
-            var_plot0 = vars_plot[vname0]
+                vname = '%s|raw' % key
+                vname0 = '%s|dc' % key
 
-            if var_plot['plot?']:
+                var_plot = vars_plot[vname]
+                var_plot0 = vars_plot[vname0]
 
-                tms_y = flt_trk[var_plot['vname']][:, Nchan[key]]
-                tms_y0 = flt_trk[var_plot['vname']][:, Nchan[key]] - flt_trk[var_plot0['vname']][:, Nchan[key]]
+                if var_plot['plot?']:
 
-                ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=15, lw=0.0, zorder=var_plot['zorder'], alpha=0.8)
-                ax_tms.plot(flt_trk['tmhr'][logic_solid], tms_y0[logic_solid], lw=0.5, color=var_plot0['color'], zorder=10, alpha=1.0)
+                    tms_y = flt_trk[var_plot['vname']][:, Nchan[key]]
+                    tms_y0 = flt_trk[var_plot['vname']][:, Nchan[key]] - flt_trk[var_plot0['vname']][:, Nchan[key]]
 
-        ax_tms.vlines(flt_trk['tmhr'][logic_solid][flt_trk['shutter'][logic_solid]==1], ymin=count_base, ymax=count_ceil, color='black', alpha=0.3, lw=2.0, zorder=0)
-        ax_tms.vlines(flt_trk['tmhr'][logic_solid][flt_trk['shutter_dc'][logic_solid]==-1], ymin=count_base, ymax=count_ceil, color='red', alpha=0.3, lw=2.0, zorder=0)
+                    ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=vars_plot[vname]['color'], s=15, lw=0.0, zorder=var_plot['zorder'], alpha=0.8)
+                    ax_tms.plot(flt_trk['tmhr'][logic_solid], tms_y0[logic_solid], lw=0.5, color=var_plot0['color'], zorder=10, alpha=1.0)
+
+            ax_tms.vlines(flt_trk['tmhr'][logic_solid][flt_trk['shutter'][logic_solid]==1], ymin=count_base, ymax=count_ceil, color='black', alpha=0.3, lw=2.0, zorder=0)
+            ax_tms.vlines(flt_trk['tmhr'][logic_solid][flt_trk['shutter_dc'][logic_solid]==-1], ymin=count_base, ymax=count_ceil, color='red', alpha=0.3, lw=2.0, zorder=0)
 
     ax_tms.axhline(count_base, color='red', alpha=0.2, zorder=0)
     ax_tms.axhline(count_ceil, color='red', alpha=0.2, zorder=0)
 
-
+    # ax_tms.grid()
     ax_tms.set_xlim((tmhr_past-0.0000001, tmhr_current+0.0000001))
-    ax_tms.xaxis.set_major_locator(FixedLocator([tmhr_past, tmhr_current-0.5*tmhr_length, tmhr_current]))
-    ax_tms.xaxis.set_minor_locator(FixedLocator(np.arange(tmhr_past, tmhr_current+0.001, 5.0/60.0)))
-    ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
+    xticks = np.linspace(tmhr_past, tmhr_current, 7)
+    ax_tms.xaxis.set_major_locator(FixedLocator(xticks))
+    ax_tms.xaxis.set_minor_locator(FixedLocator(np.arange(tmhr_past, tmhr_current+0.001, 1.0/60.0)))
+    xtick_labels = ['' for i in range(xticks.size)]
+    xtick_labels[0]  = '%.4f' % tmhr_past
+    xtick_labels[-1] = '%.4f' % tmhr_current
+    index_center = int(xticks.size//2)
+    xtick_labels[index_center] = '%.4f' % xticks[index_center]
+    ax_tms.set_xticklabels(xtick_labels)
     ax_tms.set_xlabel('Time [hour]')
+
+    text_left = ' ← %d minutes ago' % (tmhr_length*60.0)
+    ax_tms.annotate(text_left, xy=(0.03, -0.15), fontsize=12, color='gray', xycoords='axes fraction', ha='left', va='center')
+    text_right = 'Current → '
+    ax_tms.annotate(text_right, xy=(0.97, -0.15), fontsize=12, color='gray', xycoords='axes fraction', ha='right', va='center')
 
     ax_tms.set_ylim((count_base-5000, count_ceil+5000))
     ax_tms.set_ylabel('Digital Counts')
@@ -673,7 +686,7 @@ def plot_video_frame(statements, test=False):
         plt.show()
         sys.exit()
     else:
-        plt.savefig('%s/%5.5d.png' % (_fdir_tmp_graph_, n), bbox_inches='tight')
+        plt.savefig('%s/%5.5d.png' % (_fdir_tmp_graph_, n), bbox_inches='tight', dpi=120)
         plt.close(fig)
 
 
