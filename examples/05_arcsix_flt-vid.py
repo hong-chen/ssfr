@@ -1932,7 +1932,7 @@ def plot_video_frame_arcsix(statements, test=False):
                     spec_y = flt_trk0[var_plot['vname']][index_pnt, :]
 
                 ax_wvl.plot(wvl_x, spec_y,
-                        color=var_plot['color'], marker='o', markersize=1, lw=0.5, markeredgewidth=0.0, alpha=0.7, zorder=var_plot['zorder'])
+                        color=var_plot['color'], marker='o', markersize=1.2, lw=0.5, markeredgewidth=0.0, alpha=0.85, zorder=var_plot['zorder'])
 
                 wvl_index = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
                 ax_wvl.axvline(wvl_x[wvl_index], color=var_plot['color'], ls='-', lw=1.0, alpha=0.5, zorder=var_plot['zorder'])
