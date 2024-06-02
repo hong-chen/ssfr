@@ -2400,8 +2400,8 @@ def main_pre_arcsix(
     tmhr_interval = 10.0/60.0
     half_interval = tmhr_interval/48.0
 
-    jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0)) * (half_interval*86400.0) / 86400.0
-    jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0)+1) * (half_interval*86400.0) / 86400.0
+    jday_s = ((jday[0]  * 86400.0) // (10.0) + 1) * (10.0) / 86400.0
+    jday_e = ((jday[-1] * 86400.0) // (10.0)    ) * (10.0) / 86400.0
 
     jday_edges = np.arange(jday_s, jday_e+half_interval, half_interval*2.0)
 
