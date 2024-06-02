@@ -825,6 +825,90 @@ def cdata_arcsix_spns_v2(
         f.close()
 
     return fname_h5
+
+def cdata_arcsix_spns_ra(
+        date,
+        fname_spns_v1,
+        fname_hsk, # interchangable with fname_alp_v1
+        wvl_range=[400.0, 900.0],
+        ang_pit_offset=0.0,
+        ang_rol_offset=0.0,
+        fdir_out=_fdir_out_,
+        run=True,
+        ):
+
+    """
+    Apply attitude correction to account for aircraft attitude (pitch, roll, heading)
+    """
+
+    date_s = date.strftime('%Y%m%d')
+
+    fname_h5 = '%s/%s-SPN-S_%s_%s_RA.h5' % (fdir_out, _mission_.upper(), _platform_.upper(), date_s)
+
+    if run:
+
+        # read spn-s v1
+        #/----------------------------------------------------------------------------\#
+        data_spns_v1 = ssfr.util.load_h5(fname_spns_v1)
+        #/----------------------------------------------------------------------------\#
+
+        # read hsk v0
+        #/----------------------------------------------------------------------------\#
+        data_hsk = ssfr.util.load_h5(fname_hsk)
+        #/----------------------------------------------------------------------------\#
+
+        # correction factor
+        #/----------------------------------------------------------------------------\#
+        mu = np.cos(np.deg2rad(data_hsk['sza']))
+
+        try:
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit']+ang_pit_offset, data_hsk['ang_rol']+ang_rol_offset, data_hsk['ang_hed'])
+        except Exception as error:
+            print(error)
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_s']+ang_pit_offset, data_hsk['ang_rol_s']+ang_rol_offset, data_hsk['ang_hed'])
+        dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
+
+        factors = mu / dc
+        #\----------------------------------------------------------------------------/#
+
+        # attitude correction
+        #/----------------------------------------------------------------------------\#
+        f_dn_dir = data_spns_v1['tot/flux'] - data_spns_v1['dif/flux']
+        f_dn_dir_corr = np.zeros_like(f_dn_dir)
+        f_dn_tot_corr = np.zeros_like(f_dn_dir)
+        for iwvl in range(data_spns_v1['tot/wvl'].size):
+            f_dn_dir_corr[..., iwvl] = f_dn_dir[..., iwvl]*factors
+            f_dn_tot_corr[..., iwvl] = f_dn_dir_corr[..., iwvl] + data_spns_v1['dif/flux'][..., iwvl]
+        #\----------------------------------------------------------------------------/#
+
+        f = h5py.File(fname_h5, 'w')
+
+        for key in data_hsk.keys():
+            f[key] = data_hsk[key]
+
+        g0 = f.create_group('att_corr')
+        g0['mu'] = mu
+        g0['dc'] = dc
+        g0['factors'] = factors
+
+        if wvl_range is None:
+            wvl_range = [0.0, 2200.0]
+
+        logic_wvl_dif = (data_spns_v1['dif/wvl']>=wvl_range[0]) & (data_spns_v1['dif/wvl']<=wvl_range[1])
+        logic_wvl_tot = (data_spns_v1['tot/wvl']>=wvl_range[0]) & (data_spns_v1['tot/wvl']<=wvl_range[1])
+
+        g1 = f.create_group('dif')
+        g1['wvl']   = data_spns_v1['dif/wvl'][logic_wvl_dif]
+        dset0 = g1.create_dataset('flux', data=data_spns_v1['dif/flux'][:, logic_wvl_dif], compression='gzip', compression_opts=9, chunks=True)
+
+        g2 = f.create_group('tot')
+        g2['wvl']   = data_spns_v1['tot/wvl'][logic_wvl_tot]
+        g2['toa0']  = data_spns_v1['tot/toa0'][logic_wvl_tot]
+        dset0 = g2.create_dataset('flux', data=f_dn_tot_corr[:, logic_wvl_tot], compression='gzip', compression_opts=9, chunks=True)
+
+        f.close()
+
+    return fname_h5
 #\----------------------------------------------------------------------------/#
 
 # functions for processing SSFR
@@ -1700,6 +1784,33 @@ def main_process_data_v2(date, run=True):
             which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=True)
     #\----------------------------------------------------------------------------/#
     _fnames_['%s_ssfr1_v2' % date_s] = fname_ssfr1_v2
+
+def main_process_data_ra(date, run=True):
+
+    """
+    ra: in-field data to be uploaded to https://www-air.larc.nasa.gov/cgi-bin/ArcView/arcsix
+    """
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    # SPNS RA
+    #/----------------------------------------------------------------------------\#
+    fname_spns_ra = cdata_arcsix_spns_ra(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+    _fnames_['%s_spns_ra' % date_s] = fname_spns_ra
+
+
+    # SSFR RA
+    #/----------------------------------------------------------------------------\#
+    fname_ssfr1_ra = cdata_arcsix_ssfr_ra(date, _fnames_['%s_ssfr1_v1' % date_s], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=True)
+    #\----------------------------------------------------------------------------/#
+    _fnames_['%s_ssfr1_ra' % date_s] = fname_ssfr1_ra
 #\----------------------------------------------------------------------------/#
 
 if __name__ == '__main__':
