@@ -942,8 +942,8 @@ def plot_video_frame_wff(statements, test=False):
 
     # iterate through flight segments
     #/----------------------------------------------------------------------------\#
-    ste_trans = 4
-    ste_solid = 2
+    step_trans = 4
+    step_solid = 2
     for itrk in range(index_trk+1):
 
         flt_trk = flt_sim0.flt_trks[itrk]
@@ -1941,8 +1941,8 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # iterate through flight segments
     #/----------------------------------------------------------------------------\#
-    ste_trans = 4
-    ste_solid = 2
+    step_trans = 4
+    step_solid = 2
     for itrk in range(index_trk+1):
 
         flt_trk = flt_sim0.flt_trks[itrk]
