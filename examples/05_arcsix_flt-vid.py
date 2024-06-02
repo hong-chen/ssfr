@@ -1941,8 +1941,8 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # iterate through flight segments
     #/----------------------------------------------------------------------------\#
-    step_trans = 4
-    step_solid = 2
+    step_trans = 6
+    step_solid = 3
     for itrk in range(index_trk+1):
 
         flt_trk = flt_sim0.flt_trks[itrk]
