@@ -1608,6 +1608,7 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     _aspect_ = 'auto'
     _alt_cmap_ = 'gist_ncar'
+    _dpi_      = 120
 
     _alt_base_ = 0.0
     _alt_ceil_ = 8.0
@@ -1756,14 +1757,15 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # base plot
     #/----------------------------------------------------------------------------\#
+    lon_half = 15.0
+    lat_half = 2.0
+    lat_low  = max([lat_current-lat_half, 76.0])
+    lat_high = min([lat_low+lat_half*2.0, 87.0])
+    lat_low  = max([lat_high-lat_half*2.0, 76.0])
+    extent_img0 = [lon_current-lon_half, lon_current+lon_half, lat_low, lat_high]
+    ax_map.set_extent(extent_img0, crs=ccrs.PlateCarree())
+
     if has_sat0:
-        lon_half = 15.0
-        lat_half = 2.0
-        lat_low = max([lat_current-lat_half, 76.0])
-        lat_high= min([lat_low+lat_half*2.0, 87.0])
-        lat_low = max([lat_high-lat_half*2.0, 76.0])
-        extent_img0 = [lon_current-lon_half, lon_current+lon_half, lat_low, lat_high]
-        ax_map.set_extent(extent_img0, crs=ccrs.PlateCarree())
 
         fname_sat0 = flt_img0['fnames_sat0'][index_pnt]
 
@@ -1796,18 +1798,17 @@ def plot_video_frame_arcsix(statements, test=False):
             img[logic_black, -1] = 0.0
             ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree())
 
+
+    lat_half0 = 0.25
+    lon_half0 = lat_half0*(lon_half/lat_half)*2.0
+    lon_s = lon_current-lon_half0
+    lon_e = lon_current+lon_half0
+    lat_s = lat_current-lat_half0
+    lat_e = lat_current+lat_half0
+    extent_img1 = [lon_s, lon_e, lat_s, lat_e]
+    ax_map0.set_extent(extent_img1, crs=ccrs.PlateCarree())
+
     if has_sat1:
-
-        lat_half0 = 0.25
-        lon_half0 = lat_half0*(lon_half/lat_half)*2.0
-        lon_s = lon_current-lon_half0
-        lon_e = lon_current+lon_half0
-        lat_s = lat_current-lat_half0
-        lat_e = lat_current+lat_half0
-
-        extent_img1 = [lon_s, lon_e, lat_s, lat_e]
-
-        ax_map0.set_extent(extent_img1, crs=ccrs.PlateCarree())
 
         fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
 
@@ -1898,6 +1899,7 @@ def plot_video_frame_arcsix(statements, test=False):
 
 
         if has_att_corr:
+
             ang_pit_offset = 0.0
             ang_rol_offset = 0.0
 
@@ -1918,6 +1920,7 @@ def plot_video_frame_arcsix(statements, test=False):
                 ax_nav.text( 5.0, -8.5, 'R:%4.1f$^\\circ$' % ang_rol_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
 
     for vname in vars_plot.keys():
+
         var_plot = vars_plot[vname]
         if var_plot['plot?']:
             if 'vname_wvl' in var_plot.keys():
@@ -1927,7 +1930,6 @@ def plot_video_frame_arcsix(statements, test=False):
                 else:
                     spec_y = flt_trk0[var_plot['vname']][index_pnt, :]
 
-                # ax_wvl.scatter(wvl_x, spec_y, c=var_plot['color'], s=4, lw=0.0, zorder=var_plot['zorder'])
                 ax_wvl.plot(wvl_x, spec_y,
                         color=var_plot['color'], marker='o', markersize=2, lw=0.5, markeredgewidth=0.0, alpha=0.9, zorder=var_plot['zorder'])
 
@@ -1989,6 +1991,7 @@ def plot_video_frame_arcsix(statements, test=False):
                 var_plot = vars_plot[vname]
 
                 if var_plot['plot?']:
+
                     if 'vname_wvl' in var_plot.keys():
                         wvl_x  = flt_trk[var_plot['vname_wvl']]
                         index_wvl = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
@@ -2000,7 +2003,9 @@ def plot_video_frame_arcsix(statements, test=False):
                         tms_y = flt_trk[var_plot['vname']]
 
                     if vname == 'Altitude':
+
                         ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=var_plot['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
+
                     else:
 
                         if vname not in ['TOA↓']:
@@ -2244,7 +2249,7 @@ presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hira
         plt.show()
         sys.exit()
     else:
-        plt.savefig('%s/%5.5d.png' % (_fdir_tmp_graph_, n), bbox_inches='tight', dpi=150)
+        plt.savefig('%s/%5.5d.png' % (_fdir_tmp_graph_, n), bbox_inches='tight', dpi=_dpi_)
         plt.close(fig)
 
 def main_pre_arcsix(
