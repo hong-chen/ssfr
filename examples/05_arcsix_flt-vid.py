@@ -1504,9 +1504,9 @@ def main_vid_wff(
 
 
 
-# for research flights in the Arctic
+# for science flights in the Arctic
 #/----------------------------------------------------------------------------\#
-def plot_video_frame(statements, test=False):
+def plot_video_frame_arcsix(statements, test=False):
 
     if test:
         time_s = time.time()
@@ -2247,7 +2247,7 @@ presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hira
         plt.savefig('%s/%5.5d.png' % (_fdir_tmp_graph_, n), bbox_inches='tight', dpi=150)
         plt.close(fig)
 
-def main_pre(
+def main_pre_arcsix(
         date,
         wvl0=_wavelength_,
         run_rtm=False,
@@ -2531,7 +2531,7 @@ def main_pre(
             )
     #\----------------------------------------------------------------------------/#
 
-def main_vid(
+def main_vid_arcsix(
         date,
         wvl0=_wavelength_,
         interval=10,
@@ -2564,7 +2564,7 @@ def main_vid(
     statements = zip([flt_sim0]*indices_trk.size, indices_trk, indices_pnt, indices)
 
     with mp.Pool(processes=15) as pool:
-        r = list(tqdm(pool.imap(plot_video_frame, statements), total=indices_trk.size))
+        r = list(tqdm(pool.imap(plot_video_frame_arcsix, statements), total=indices_trk.size))
 
     # make video
     fname_mp4 = '%s-FLT-VID_%s_%s_%2.2d.mp4' % (_mission_.upper(), _platform_.upper(), date_s, interval)
@@ -2575,14 +2575,13 @@ def main_vid(
 
 if __name__ == '__main__':
 
-
     dates = [
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1 over Lincoln Sea; clear-sky spiral
-            # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2 over Lincoln Sea; cloud wall
-            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3 over Lincoln Sea; cloud wall
+            # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
+            # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
+            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley
         ]
 
     for date in dates[::-1]:
@@ -2597,10 +2596,10 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            main_pre(date)
-            # main_vid(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid(date, wvl0=_wavelength_, interval=20) # make sharable video
-            main_vid(date, wvl0=_wavelength_, interval=5)  # make complete video
+            main_pre_arcsix(date)
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
