@@ -663,9 +663,9 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_xlabel('Time [hour]')
 
     text_left = ' ← %d minutes ago' % (tmhr_length*60.0)
-    ax_tms.annotate(text_left, xy=(0.03, -0.15), fontsize=12, color='gray', xycoords='axes fraction', ha='left', va='center')
+    ax_tms.annotate(text_left, xy=(0.03, -0.12), fontsize=12, color='gray', xycoords='axes fraction', ha='left', va='center')
     text_right = 'Current → '
-    ax_tms.annotate(text_right, xy=(0.97, -0.15), fontsize=12, color='gray', xycoords='axes fraction', ha='right', va='center')
+    ax_tms.annotate(text_right, xy=(0.97, -0.12), fontsize=12, color='gray', xycoords='axes fraction', ha='right', va='center')
 
     ax_tms.set_ylim((count_base-5000, count_ceil+5000))
     ax_tms.set_ylabel('Digital Counts')
