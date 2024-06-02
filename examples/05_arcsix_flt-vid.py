@@ -2133,10 +2133,21 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     ax_tms.grid()
     ax_tms.set_xlim((tmhr_past-0.0000001, tmhr_current+0.0000001))
-    ax_tms.xaxis.set_major_locator(FixedLocator([tmhr_past, tmhr_current-0.5*tmhr_length, tmhr_current]))
+    xticks = np.linspace(tmhr_past, tmhr_current, 7)
+    ax_tms.xaxis.set_major_locator(FixedLocator(xticks))
     ax_tms.xaxis.set_minor_locator(FixedLocator(np.arange(tmhr_past, tmhr_current+0.001, 1.0/60.0)))
-    ax_tms.set_xticklabels(['%.4f' % (tmhr_past), '%.4f' % (tmhr_current-0.5*tmhr_length), '%.4f' % tmhr_current])
+    xtick_labels = ['' for i in range(xticks.size)]
+    xtick_labels[0]  = '%.4f' % tmhr_past
+    xtick_labels[-1] = '%.4f' % tmhr_current
+    index_center = int(xticks.size//2)
+    xtick_labels[index_center] = '%.4f' % xticks[index_center]
+    ax_tms.set_xticklabels(xtick_labels)
     ax_tms.set_xlabel('Time [hour]')
+
+    text_left = ' ← %d minutes ago' % (tmhr_length*60.0)
+    ax_tms.annotate(text_left, xy=(0.03, -0.15), fontsize=12, color='gray', xycoords='axes fraction', ha='left', va='center')
+    text_right = 'Current → '
+    ax_tms.annotate(text_right, xy=(0.97, -0.15), fontsize=12, color='gray', xycoords='axes fraction', ha='right', va='center')
 
     if has_spectra:
         ax_tms.set_ylim(bottom=_flux_base_, top=min([_flux_ceil_, ax_tms.get_ylim()[-1]+0.15]))
@@ -2388,7 +2399,7 @@ def main_pre_arcsix(
     tmhr_interval = 10.0/60.0
     half_interval = tmhr_interval/48.0
 
-    jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0)+1) * (half_interval*86400.0) / 86400.0
+    jday_s = ((jday[0]  * 86400.0) // (half_interval*86400.0)) * (half_interval*86400.0) / 86400.0
     jday_e = ((jday[-1] * 86400.0) // (half_interval*86400.0)+1) * (half_interval*86400.0) / 86400.0
 
     jday_edges = np.arange(jday_s, jday_e+half_interval, half_interval*2.0)
@@ -2584,8 +2595,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
-            # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
+            datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
+            datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
             datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley
         ]
 
@@ -2601,10 +2612,10 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            # main_pre_arcsix(date)
+            main_pre_arcsix(date)
             # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
-            main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
@@ -2621,7 +2632,7 @@ if __name__ == '__main__':
     statements = (flt_sim0, 0, 100, 1730)
     # statements = (flt_sim0, 3, 443, 1730)
     # plot_video_frame_wff(statements, test=True)
-    plot_video_frame(statements, test=True)
+    plot_video_frame_arcsix(statements, test=True)
     #\----------------------------------------------------------------------------/#
 
     pass
