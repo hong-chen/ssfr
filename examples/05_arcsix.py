@@ -948,7 +948,7 @@ def cdata_arcsix_spns_archive(
             'jday': {
                 'data': data_v2['jday'],
                 'unit': 'day',
-                'description': 'UTC time in decimal day from 0001-01-01',
+                'description': 'UTC time in decimal day from 0001-01-01 00:00:00',
                 },
 
             'tmhr': {
@@ -1603,7 +1603,7 @@ def cdata_arcsix_ssfr_archive(
             'jday': {
                 'data': data_v2['jday'],
                 'unit': 'day',
-                'description': 'UTC time in decimal day from 0001-01-01',
+                'description': 'UTC time in decimal day from 0001-01-01 00:00:00',
                 },
 
             'tmhr': {
