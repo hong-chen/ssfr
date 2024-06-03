@@ -16,6 +16,7 @@ import sys
 import glob
 import datetime
 import warnings
+from collections import OrderedDict
 from tqdm import tqdm
 import h5py
 import numpy as np
@@ -69,6 +70,7 @@ _alp_time_offset_ = {
         '20240528': -17.19,
         '20240530': -17.41,
         '20240531': -17.41,
+        '20240603': -17.41,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -77,6 +79,7 @@ _spns_time_offset_ = {
         '20240528': 0.0,
         '20240530': 0.0,
         '20240531': 0.0,
+        '20240603': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240517': 185.0,
@@ -85,6 +88,7 @@ _ssfr1_time_offset_ = {
         '20240528': -156.26,
         '20240530': -158.04,
         '20240531': -161.38,
+        '20240603': -170.42,
         }
 _ssfr2_time_offset_ = {
         '20240517': 115.0,
@@ -93,6 +97,7 @@ _ssfr2_time_offset_ = {
         '20240528': -222.66,
         '20240530': -229.45,
         '20240531': -227.00,
+        '20240603': -241.66,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -746,7 +751,7 @@ def cdata_arcsix_spns_v2(
         date,
         fname_spns_v1,
         fname_hsk, # interchangable with fname_alp_v1
-        wvl_range=[400.0, 900.0],
+        wvl_range=None,
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         fdir_out=_fdir_out_,
@@ -799,13 +804,16 @@ def cdata_arcsix_spns_v2(
 
         f = h5py.File(fname_h5, 'w')
 
-        for key in data_hsk.keys():
-            f[key] = data_hsk[key]
 
         g0 = f.create_group('att_corr')
         g0['mu'] = mu
         g0['dc'] = dc
         g0['factors'] = factors
+        for key in data_hsk.keys():
+            if key in ['sza', 'saa', 'ang_pit', 'ang_rol', 'ang_hed']:
+                g0[key] = data_hsk[key]
+            else:
+                f[key] = data_hsk[key]
 
         if wvl_range is None:
             wvl_range = [0.0, 2200.0]
@@ -826,86 +834,230 @@ def cdata_arcsix_spns_v2(
 
     return fname_h5
 
-def cdata_arcsix_spns_ra(
+def cdata_arcsix_spns_archive(
         date,
-        fname_spns_v1,
-        fname_hsk, # interchangable with fname_alp_v1
-        wvl_range=[400.0, 900.0],
+        fname_spns_v2,
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
+        wvl_range=[400.0, 800.0],
+        platform_info = 'p3',
+        principal_investigator_info = 'Chen, Hong',
+        affiliation_info = 'University of Colorado Boulder',
+        instrument_info = 'SPN-S (Sunshine Pyranometer - Spectral)',
+        mission_info = 'ARCSIX 2024 (Spring)',
+        project_info = '',
+        file_format_index = '1001',
+        file_volume_number = '1, 1',
+        data_interval = '1.0',
+        scale_factor = '1.0',
+        fill_value = 'NaN',
+        version='RA',
         fdir_out=_fdir_out_,
         run=True,
         ):
 
-    """
-    Apply attitude correction to account for aircraft attitude (pitch, roll, heading)
-    """
 
+    # placeholder for additional information such as calibration
+    #/----------------------------------------------------------------------------\#
+    #\----------------------------------------------------------------------------/#
+
+
+    # date info
+    #/----------------------------------------------------------------------------\#
     date_s = date.strftime('%Y%m%d')
+    date_today = datetime.date.today()
+    date_info  = '%4.4d, %2.2d, %2.2d, %4.4d, %2.2d, %2.2d' % (date.year, date.month, date.day, date_today.year, date_today.month, date_today.day)
+    #\----------------------------------------------------------------------------/#
 
-    fname_h5 = '%s/%s-SPN-S_%s_%s_RA.h5' % (fdir_out, _mission_.upper(), _platform_.upper(), date_s)
 
+    # version info
+    #/----------------------------------------------------------------------------\#
+    version = version.upper()
+    version_info = {
+            'RA': 'field data',
+            }
+    version_info = version_info[version]
+    #\----------------------------------------------------------------------------/#
+
+
+    # data info
+    #/----------------------------------------------------------------------------\#
+    data_info = 'Shortwave Total and Diffuse Downwelling Spectral Irradiance from %s %s' % (platform_info.upper(), instrument_info)
+    #\----------------------------------------------------------------------------/#
+
+
+    # routine comments
+    #/----------------------------------------------------------------------------\#
+    comments_routine_list = OrderedDict({
+            'PI_CONTACT_INFO': 'Address: University of Colorado Boulder, LASP, 3665 Discovery Drive, Boulder, CO 80303; E-mail: hong.chen@lasp.colorado.edu and sebastian.schmidt@lasp.colorado.edu',
+            'PLATFORM': platform_info.upper(),
+            'LOCATION': 'N/A',
+            'ASSOCIATED_DATA': 'N/A',
+            'INSTRUMENT_INFO': instrument_info,
+            'DATA_INFO': 'Reported are only of a selected wavelength range (%d-%d nm), time/lat/lon/alt/pitch/roll/heading from aircraft, sza calculated from time/lon/lat.' % (wvl_range[0], wvl_range[1]),
+            'UNCERTAINTY': 'Nominal SPN-S uncertainty (shortwave): total: N/A; diffuse: N/A',
+            'ULOD_FLAG': '-7777',
+            'ULOD_VALUE': 'N/A',
+            'LLOD_FLAG': '-8888',
+            'LLOD_VALUE': 'N/A',
+            'DM_CONTACT_INFO': 'N/A',
+            'PROJECT_INFO': 'ARCSIX field experiment (Spring deployment) out of Pituffik, Greenland, May - June 2024',
+            'STIPULATIONS_ON_USE': 'This is initial in-field release of the ARCSIX-2024 data set. Please consult the PI, both for updates to the data set, and for the proper and most recent interpretation of the data for specific science use.',
+            'OTHER_COMMENTS': 'Minimal corrections were applied.\n',
+            'REVISION': version,
+            version: version_info
+            })
+
+    comments_routine = '\n'.join(['%s: %s' % (var0, comments_routine_list[var0]) for var0 in comments_routine_list.keys()])
+    #\----------------------------------------------------------------------------/#
+
+
+    # special comments
+    #/----------------------------------------------------------------------------\#
+    comments_special = {
+            '20240528': '',
+            '20240530': 'Noticed icing on dome after flight',
+            '20240531': '',
+            '20240603': '',
+            }
+    comments_special = comments_special[date_s]
+
+    if comments_special != '':
+        Nspecial = len(comments_special.split('\n'))
+    else:
+        Nspecial = 0
+    #\----------------------------------------------------------------------------/#
+
+
+    # data processing
+    #/----------------------------------------------------------------------------\#
+    data_v2 = ssfr.util.load_h5(fname_spns_v2)
+    data_v2['tot/flux'][data_v2['tot/flux']<0.0] = np.nan
+    data_v2['dif/flux'][data_v2['dif/flux']<0.0] = np.nan
+
+    logic_tot = (data_v2['tot/wvl']>=wvl_range[0]) & (data_v2['tot/wvl']<=wvl_range[1])
+    logic_dif = (data_v2['dif/wvl']>=wvl_range[0]) & (data_v2['dif/wvl']<=wvl_range[1])
+
+    data = OrderedDict({
+            'Time_start': {
+                'data': data_v2['tmhr']*3600.0,
+                'unit': 'second',
+                'description': 'UTC time in seconds from the midnight 00:00:00',
+                },
+
+            'jday': {
+                'data': data_v2['jday'],
+                'unit': 'day',
+                'description': 'UTC time in decimal day from 0001-01-01',
+                },
+
+            'tmhr': {
+                'data': data_v2['tmhr'],
+                'unit': 'hour',
+                'description': 'UTC time in decimal hour from the midnight 00:00:00',
+                },
+
+            'lon': {
+                'data': data_v2['lon'],
+                'unit': 'degree',
+                'description': 'longitude',
+                },
+
+            'lat': {
+                'data': data_v2['lat'],
+                'unit': 'degree',
+                'description': 'latitude',
+                },
+
+            'alt': {
+                'data': data_v2['alt'],
+                'unit': 'meter',
+                'description': 'altitude',
+                },
+
+            'sza': {
+                'data': data_v2['att_corr/sza'],
+                'unit': 'degree',
+                'description': 'solar zenith angle',
+                },
+
+            'tot/flux': {
+                'data': data_v2['tot/flux'][:, logic_tot],
+                'unit': 'W m^-2 nm^-1',
+                'description': 'total downwelling spectral irradiance',
+                },
+
+            'tot/toa0': {
+                'data': data_v2['tot/toa0'][logic_tot],
+                'unit': 'W m^-2 nm^-1',
+                'description': 'Kurucz reference total downwelling spectral irradiance',
+                },
+
+            'tot/wvl': {
+                'data': data_v2['tot/wvl'][logic_tot],
+                'unit': 'nm',
+                'description': 'wavelength for total downwelling spectral irradiance',
+                },
+
+            'dif/flux': {
+                'data': data_v2['dif/flux'][:, logic_dif],
+                'unit': 'W m^-2 nm^-1',
+                'description': 'diffuse downwelling spectral irradiance',
+                },
+
+            'dif/wvl': {
+                'data': data_v2['dif/wvl'][logic_dif],
+                'unit': 'nm',
+                'description': 'wavelength for diffuse downwelling spectral irradiance',
+                },
+            })
+    for key in data.keys():
+        data[key]['description'] = '%s: %s, %s' % (key, data[key]['unit'], data[key]['description'])
+
+    Nvar = len(data.keys())
+    comments_routine = '%s\n%s' % (comments_routine, ','.join(data.keys()))
+    Nroutine = len(comments_routine.split('\n'))
+    #\----------------------------------------------------------------------------/#
+
+
+    header_list = [file_format_index,
+                   principal_investigator_info,
+                   affiliation_info,       # Organization/affiliation of PI.
+                   data_info,              # Data source description (e.g., instrument name, platform name, model name, etc.).
+                   mission_info,           # Mission name (usually the mission acronym).
+                   file_volume_number,     # File volume number, number of file volumes (these integer values are used when the data require more than one file per day; for data that require only one file these values are set to 1, 1) - comma delimited.
+                   date_info,              # UTC date when data begin, UTC date of data reduction or revision - comma delimited (yyyy, mm, dd, yyyy, mm, dd).
+                   data_interval,          # Data Interval (This value describes the time spacing (in seconds) between consecutive data records. It is the (constant) interval between values of the independent variable. For 1 Hz data the data interval value is 1 and for 10 Hz data the value is 0.1. All intervals longer than 1 second must be reported as Start and Stop times, and the Data Interval value is set to 0. The Mid-point time is required when it is not at the average of Start and Stop times. For additional information see Section 2.5 below.).
+                   data['Time_start']['description'],                # Description or name of independent variable (This is the name chosen for the start time. It always refers to the number of seconds UTC from the start of the day on which measurements began. It should be noted here that the independent variable should monotonically increase even when crossing over to a second day.).
+                   str(Nvar-1),                                      # Number of variables (Integer value showing the number of dependent variables: the total number of columns of data is this value plus one.).
+                   ', '.join([scale_factor for i in range(Nvar-1)]), # Scale factors (1 for most cases, except where grossly inconvenient) - comma delimited.
+                   ', '.join([fill_value for i in range(Nvar-1)]),   # Missing data indicators (This is -9999 (or -99999, etc.) for any missing data condition, except for the main time (independent) variable which is never missing) - comma delimited.
+                   '\n'.join([data[vname]['description'] for vname in data.keys() if vname != 'Time_start']), # Variable names and units (Short variable name and units are required, and optional long descriptive name, in that order, and separated by commas. If the variable is unitless, enter the keyword "none" for its units. Each short variable name and units (and optional long name) are entered on one line. The short variable name must correspond exactly to the name used for that variable as a column header, i.e., the last header line prior to start of data.).
+                   str(Nspecial),                                   # Number of SPECIAL comment lines (Integer value indicating the number of lines of special comments, NOT including this line.).
+                   comments_special,
+                   str(Nroutine),
+                   comments_routine,
+                ]
+
+
+    header = '\n'.join([header0 for header0 in header_list if header0 != ''])
+
+    Nline = len(header.split('\n'))
+    header = '%d, %s' % (Nline, header)
+
+    print(header)
+
+    fname_h5 = '%s/%s-SPNS_%s_%s_%s.h5' % (fdir_out, _mission_.upper(), _platform_.upper(), date_s, version.upper())
     if run:
-
-        # read spn-s v1
-        #/----------------------------------------------------------------------------\#
-        data_spns_v1 = ssfr.util.load_h5(fname_spns_v1)
-        #/----------------------------------------------------------------------------\#
-
-        # read hsk v0
-        #/----------------------------------------------------------------------------\#
-        data_hsk = ssfr.util.load_h5(fname_hsk)
-        #/----------------------------------------------------------------------------\#
-
-        # correction factor
-        #/----------------------------------------------------------------------------\#
-        mu = np.cos(np.deg2rad(data_hsk['sza']))
-
-        try:
-            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit']+ang_pit_offset, data_hsk['ang_rol']+ang_rol_offset, data_hsk['ang_hed'])
-        except Exception as error:
-            print(error)
-            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_s']+ang_pit_offset, data_hsk['ang_rol_s']+ang_rol_offset, data_hsk['ang_hed'])
-        dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
-
-        factors = mu / dc
-        #\----------------------------------------------------------------------------/#
-
-        # attitude correction
-        #/----------------------------------------------------------------------------\#
-        f_dn_dir = data_spns_v1['tot/flux'] - data_spns_v1['dif/flux']
-        f_dn_dir_corr = np.zeros_like(f_dn_dir)
-        f_dn_tot_corr = np.zeros_like(f_dn_dir)
-        for iwvl in range(data_spns_v1['tot/wvl'].size):
-            f_dn_dir_corr[..., iwvl] = f_dn_dir[..., iwvl]*factors
-            f_dn_tot_corr[..., iwvl] = f_dn_dir_corr[..., iwvl] + data_spns_v1['dif/flux'][..., iwvl]
-        #\----------------------------------------------------------------------------/#
-
         f = h5py.File(fname_h5, 'w')
 
-        for key in data_hsk.keys():
-            f[key] = data_hsk[key]
+        dset = f.create_dataset('header', data=header)
+        dset.attrs['description'] = 'header follows ICT format'
 
-        g0 = f.create_group('att_corr')
-        g0['mu'] = mu
-        g0['dc'] = dc
-        g0['factors'] = factors
-
-        if wvl_range is None:
-            wvl_range = [0.0, 2200.0]
-
-        logic_wvl_dif = (data_spns_v1['dif/wvl']>=wvl_range[0]) & (data_spns_v1['dif/wvl']<=wvl_range[1])
-        logic_wvl_tot = (data_spns_v1['tot/wvl']>=wvl_range[0]) & (data_spns_v1['tot/wvl']<=wvl_range[1])
-
-        g1 = f.create_group('dif')
-        g1['wvl']   = data_spns_v1['dif/wvl'][logic_wvl_dif]
-        dset0 = g1.create_dataset('flux', data=data_spns_v1['dif/flux'][:, logic_wvl_dif], compression='gzip', compression_opts=9, chunks=True)
-
-        g2 = f.create_group('tot')
-        g2['wvl']   = data_spns_v1['tot/wvl'][logic_wvl_tot]
-        g2['toa0']  = data_spns_v1['tot/toa0'][logic_wvl_tot]
-        dset0 = g2.create_dataset('flux', data=f_dn_tot_corr[:, logic_wvl_tot], compression='gzip', compression_opts=9, chunks=True)
-
+        for key in data.keys():
+            dset = f.create_dataset(key, data=data[key]['data'], compression='gzip', compression_opts=9, chunks=True)
+            dset.attrs['description'] = data[key]['description']
+            dset.attrs['unit'] = data[key]['unit']
         f.close()
 
     return fname_h5
@@ -1321,9 +1473,31 @@ def cdata_arcsix_ssfr_v2(
 
     return fname_h5
 
-def cdata_arcsix_ssfr_archive():
+def cdata_arcsix_ssfr_archive(
+        date,
+        fname_ssfr_v2,
+        which_ssfr='ssfr-a',
+        ang_pit_offset=0.0,
+        ang_rol_offset=0.0,
+        wvl_range=[350.0, 2000.0],
+        platform_info = 'P3',
+        principal_investigator_info = 'Chen, Hong',
+        affiliation_info = 'University of Colorado Boulder',
+        instrument_info = 'SSFR-A (Solar Spectral Flux Radiometer - Alvin)',
+        mission_info = 'ARCSIX 2024 (Spring)',
+        project_info = '',
+        file_format_index = '1001',
+        file_volume_number = '1, 1',
+        data_interval = '1.0',
+        scale_factor = '1.0',
+        fill_value = 'NaN',
+        version='RA',
+        fdir_out=_fdir_out_,
+        run=True,
+        ):
 
-    # header
+
+    # placeholder for additional information such as calibration
     #/----------------------------------------------------------------------------\#
     # comments_list = []
     # comments_list.append('Bandwidth of Silicon channels (wavelength < 950nm) as defined by the FWHM: 6 nm')
@@ -1342,69 +1516,206 @@ def cdata_arcsix_ssfr_archive():
     # print()
     #\----------------------------------------------------------------------------/#
 
-    # create hsk file for ssfr (nasa data archive)
+
+    # date info
     #/----------------------------------------------------------------------------\#
-    fname_ssfr = '%s/ssfr_%s_hsk.h5' % (fdir_processed, date_s)
-    # f = h5py.File(fname_ssfr, 'w')
-
-    # dset = f.create_dataset('comments', data=comments)
-    # dset.attrs['description'] = 'comments on the data'
-
-    # dset = f.create_dataset('info', data=version_info)
-    # dset.attrs['description'] = 'information on the version'
-
-    # dset = f.create_dataset('utc', data=data_hsk['tmhr'])
-    # dset.attrs['description'] = 'universal time (numbers above 24 are for the next day)'
-    # dset.attrs['unit'] = 'decimal hour'
-
-    # dset = f.create_dataset('altitude', data=data_hsk['gps_altitude'])
-    # dset.attrs['description'] = 'altitude above sea level (GPS altitude)'
-    # dset.attrs['unit'] = 'meter'
-
-    # dset = f.create_dataset('longitude', data=data_hsk['longitude'])
-    # dset.attrs['description'] = 'longitude'
-    # dset.attrs['unit'] = 'degree'
-
-    # dset = f.create_dataset('latitude', data=data_hsk['latitude'])
-    # dset.attrs['description'] = 'latitude'
-    # dset.attrs['unit'] = 'degree'
-
-    # dset = f.create_dataset('zen_wvl', data=ssfr_v0.zen_wvl)
-    # dset.attrs['description'] = 'center wavelengths of zenith channels (bandwidth see info)'
-    # dset.attrs['unit'] = 'nm'
-
-    # dset = f.create_dataset('nad_wvl', data=ssfr_v0.nad_wvl)
-    # dset.attrs['description'] = 'center wavelengths of nadir channels (bandwidth see info)'
-    # dset.attrs['unit'] = 'nm'
-
-    # dset = f.create_dataset('zen_flux', data=zen_flux)
-    # dset.attrs['description'] = 'downwelling shortwave spectral irradiance'
-    # dset.attrs['unit'] = 'W / m2 / nm'
-
-    # dset = f.create_dataset('nad_flux', data=nad_flux)
-    # dset.attrs['description'] = 'upwelling shortwave spectral irradiance'
-    # dset.attrs['unit'] = 'W / m2 / nm'
-
-    # dset = f.create_dataset('pitch', data=pitch)
-    # dset.attrs['description'] = 'aircraft pitch angle (positive values indicate nose up)'
-    # dset.attrs['unit'] = 'degree'
-
-    # dset = f.create_dataset('roll', data=roll)
-    # dset.attrs['description'] = 'aircraft roll angle (positive values indicate right wing down)'
-    # dset.attrs['unit'] = 'degree'
-
-    # dset = f.create_dataset('heading', data=heading)
-    # dset.attrs['description'] = 'aircraft heading angle (positive values clockwise, w.r.t north)'
-    # dset.attrs['unit'] = 'degree'
-
-    # dset = f.create_dataset('sza', data=sza)
-    # dset.attrs['description'] = 'solar zenith angle'
-    # dset.attrs['unit'] = 'degree'
-
-    # f.close()
+    date_s = date.strftime('%Y%m%d')
+    date_today = datetime.date.today()
+    date_info  = '%4.4d, %2.2d, %2.2d, %4.4d, %2.2d, %2.2d' % (date.year, date.month, date.day, date_today.year, date_today.month, date_today.day)
     #\----------------------------------------------------------------------------/#
 
-    return fname_ssfr
+
+    # version info
+    #/----------------------------------------------------------------------------\#
+    version = version.upper()
+    version_info = {
+            'RA': 'field data',
+            }
+    version_info = version_info[version]
+    #\----------------------------------------------------------------------------/#
+
+
+    # data info
+    #/----------------------------------------------------------------------------\#
+    data_info = 'Shortwave Total Downwelling and Upwelling Spectral Irradiance from %s %s' % (platform_info.upper(), instrument_info)
+    #\----------------------------------------------------------------------------/#
+
+
+    # routine comments
+    #/----------------------------------------------------------------------------\#
+    comments_routine_list = OrderedDict({
+            'PI_CONTACT_INFO': 'Address: University of Colorado Boulder, LASP, 3665 Discovery Drive, Boulder, CO 80303; E-mail: hong.chen@lasp.colorado.edu and sebastian.schmidt@lasp.colorado.edu',
+            'PLATFORM': platform_info.upper(),
+            'LOCATION': 'N/A',
+            'ASSOCIATED_DATA': 'N/A',
+            'INSTRUMENT_INFO': instrument_info,
+            'DATA_INFO': 'Reported are only of a selected wavelength range (%d-%d nm), pitch/roll from leveling platform INS or aircraft, time/lat/lon/alt/heading from aircraft, sza calculated from time/lon/lat.' % (wvl_range[0], wvl_range[1]),
+            'UNCERTAINTY': 'Nominal SSFR uncertainty (shortwave): nadir: N/A; zenith: N/A',
+            'ULOD_FLAG': '-7777',
+            'ULOD_VALUE': 'N/A',
+            'LLOD_FLAG': '-8888',
+            'LLOD_VALUE': 'N/A',
+            'DM_CONTACT_INFO': 'N/A',
+            'PROJECT_INFO': 'ARCSIX field experiment (Spring deployment) out of Pituffik, Greenland, May - June 2024',
+            'STIPULATIONS_ON_USE': 'This is initial in-field release of the ARCSIX-2024 data set. Please consult the PI, both for updates to the data set, and for the proper and most recent interpretation of the data for specific science use.',
+            'OTHER_COMMENTS': 'Minimal corrections were applied.\n',
+            'REVISION': version,
+            version: version_info
+            })
+
+    comments_routine = '\n'.join(['%s: %s' % (var0, comments_routine_list[var0]) for var0 in comments_routine_list.keys()])
+    #\----------------------------------------------------------------------------/#
+
+
+    # special comments
+    #/----------------------------------------------------------------------------\#
+    comments_special = {
+            '20240528': '',
+            '20240530': 'Noticed icing on zenith light collector dome after flight',
+            '20240531': 'Encountered temperature control issue (after around 1:30 UTC)',
+            '20240603': '',
+            }
+    comments_special = comments_special[date_s]
+
+    if comments_special != '':
+        Nspecial = len(comments_special.split('\n'))
+    else:
+        Nspecial = 0
+    #\----------------------------------------------------------------------------/#
+
+
+    # data processing
+    #/----------------------------------------------------------------------------\#
+    data_v2 = ssfr.util.load_h5(fname_ssfr_v2)
+    data_v2['zen/flux'][data_v2['zen/flux']<0.0] = np.nan
+    data_v2['nad/flux'][data_v2['nad/flux']<0.0] = np.nan
+
+    logic_zen = (data_v2['zen/wvl']>=wvl_range[0]) & (data_v2['zen/wvl']<=wvl_range[1])
+    logic_nad = (data_v2['nad/wvl']>=wvl_range[0]) & (data_v2['nad/wvl']<=wvl_range[1])
+
+    data = OrderedDict({
+            'Time_start': {
+                'data': data_v2['tmhr']*3600.0,
+                'unit': 'second',
+                'description': 'UTC time in seconds from the midnight 00:00:00',
+                },
+
+            'jday': {
+                'data': data_v2['jday'],
+                'unit': 'day',
+                'description': 'UTC time in decimal day from 0001-01-01',
+                },
+
+            'tmhr': {
+                'data': data_v2['tmhr'],
+                'unit': 'hour',
+                'description': 'UTC time in decimal hour from the midnight 00:00:00',
+                },
+
+            'lon': {
+                'data': data_v2['lon'],
+                'unit': 'degree',
+                'description': 'longitude',
+                },
+
+            'lat': {
+                'data': data_v2['lat'],
+                'unit': 'degree',
+                'description': 'latitude',
+                },
+
+            'alt': {
+                'data': data_v2['alt'],
+                'unit': 'meter',
+                'description': 'altitude',
+                },
+
+            'sza': {
+                'data': data_v2['att_corr/sza'],
+                'unit': 'degree',
+                'description': 'solar zenith angle',
+                },
+
+            'zen/flux': {
+                'data': data_v2['zen/flux'][:, logic_zen],
+                'unit': 'W m^-2 nm^-1',
+                'description': 'total downwelling spectral irradiance (zenith)',
+                },
+
+            'zen/toa0': {
+                'data': data_v2['zen/toa0'][logic_zen],
+                'unit': 'W m^-2 nm^-1',
+                'description': 'Kurucz reference total downwelling spectral irradiance (zenith)',
+                },
+
+            'zen/wvl': {
+                'data': data_v2['zen/wvl'][logic_zen],
+                'unit': 'nm',
+                'description': 'wavelength for total downwelling spectral irradiance (zenith)',
+                },
+
+            'nad/flux': {
+                'data': data_v2['nad/flux'][:, logic_nad],
+                'unit': 'W m^-2 nm^-1',
+                'description': 'total upwelling spectral irradiance (nadir)',
+                },
+
+            'nad/wvl': {
+                'data': data_v2['nad/wvl'][logic_nad],
+                'unit': 'nm',
+                'description': 'wavelength for total upwelling spectral irradiance (nadir)',
+                },
+            })
+    for key in data.keys():
+        data[key]['description'] = '%s: %s, %s' % (key, data[key]['unit'], data[key]['description'])
+
+    Nvar = len(data.keys())
+    comments_routine = '%s\n%s' % (comments_routine, ','.join(data.keys()))
+    Nroutine = len(comments_routine.split('\n'))
+    #\----------------------------------------------------------------------------/#
+
+
+    header_list = [file_format_index,
+                   principal_investigator_info,
+                   affiliation_info,       # Organization/affiliation of PI.
+                   data_info,              # Data source description (e.g., instrument name, platform name, model name, etc.).
+                   mission_info,           # Mission name (usually the mission acronym).
+                   file_volume_number,     # File volume number, number of file volumes (these integer values are used when the data require more than one file per day; for data that require only one file these values are set to 1, 1) - comma delimited.
+                   date_info,              # UTC date when data begin, UTC date of data reduction or revision - comma delimited (yyyy, mm, dd, yyyy, mm, dd).
+                   data_interval,          # Data Interval (This value describes the time spacing (in seconds) between consecutive data records. It is the (constant) interval between values of the independent variable. For 1 Hz data the data interval value is 1 and for 10 Hz data the value is 0.1. All intervals longer than 1 second must be reported as Start and Stop times, and the Data Interval value is set to 0. The Mid-point time is required when it is not at the average of Start and Stop times. For additional information see Section 2.5 below.).
+                   data['Time_start']['description'],                # Description or name of independent variable (This is the name chosen for the start time. It always refers to the number of seconds UTC from the start of the day on which measurements began. It should be noted here that the independent variable should monotonically increase even when crossing over to a second day.).
+                   str(Nvar-1),                                      # Number of variables (Integer value showing the number of dependent variables: the total number of columns of data is this value plus one.).
+                   ', '.join([scale_factor for i in range(Nvar-1)]), # Scale factors (1 for most cases, except where grossly inconvenient) - comma delimited.
+                   ', '.join([fill_value for i in range(Nvar-1)]),   # Missing data indicators (This is -9999 (or -99999, etc.) for any missing data condition, except for the main time (independent) variable which is never missing) - comma delimited.
+                   '\n'.join([data[vname]['description'] for vname in data.keys() if vname != 'Time_start']), # Variable names and units (Short variable name and units are required, and optional long descriptive name, in that order, and separated by commas. If the variable is unitless, enter the keyword "none" for its units. Each short variable name and units (and optional long name) are entered on one line. The short variable name must correspond exactly to the name used for that variable as a column header, i.e., the last header line prior to start of data.).
+                   str(Nspecial),                                   # Number of SPECIAL comment lines (Integer value indicating the number of lines of special comments, NOT including this line.).
+                   comments_special,
+                   str(Nroutine),
+                   comments_routine,
+                ]
+
+
+    header = '\n'.join([header0 for header0 in header_list if header0 != ''])
+
+    Nline = len(header.split('\n'))
+    header = '%d, %s' % (Nline, header)
+
+    print(header)
+
+    fname_h5 = '%s/%s-SSFR_%s_%s_%s.h5' % (fdir_out, _mission_.upper(), _platform_.upper(), date_s, version.upper())
+    if run:
+        f = h5py.File(fname_h5, 'w')
+
+        dset = f.create_dataset('header', data=header)
+        dset.attrs['description'] = 'header follows ICT format'
+
+        for key in data.keys():
+            dset = f.create_dataset(key, data=data[key]['data'], compression='gzip', compression_opts=9, chunks=True)
+            dset.attrs['description'] = data[key]['description']
+            dset.attrs['unit'] = data[key]['unit']
+        f.close()
+
+    return fname_h5
 #\----------------------------------------------------------------------------/#
 
 
@@ -1551,7 +1862,6 @@ def run_time_offset_check(date):
             description='SSFR-B Nadir Count vs. SSFR-A Nadir (745nm)',
             fname_html='ssfr-b_offset_check_%s.html' % (date_s))
     #\----------------------------------------------------------------------------/#
-
 
 def run_angle_offset_check(
         date,
@@ -1785,7 +2095,7 @@ def main_process_data_v2(date, run=True):
     #\----------------------------------------------------------------------------/#
     _fnames_['%s_ssfr1_v2' % date_s] = fname_ssfr1_v2
 
-def main_process_data_ra(date, run=True):
+def main_process_data_archive(date, run=True):
 
     """
     ra: in-field data to be uploaded to https://www-air.larc.nasa.gov/cgi-bin/ArcView/arcsix
@@ -1799,16 +2109,16 @@ def main_process_data_ra(date, run=True):
 
     # SPNS RA
     #/----------------------------------------------------------------------------\#
-    fname_spns_ra = cdata_arcsix_spns_ra(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
+    fname_spns_ra = cdata_arcsix_spns_archive(date, _fnames_['%s_spns_v2' % date_s],
             fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
-    _fnames_['%s_spns_ra' % date_s] = fname_spns_ra
+    # _fnames_['%s_spns_ra' % date_s] = fname_spns_ra
 
 
     # SSFR RA
     #/----------------------------------------------------------------------------\#
-    fname_ssfr1_ra = cdata_arcsix_ssfr_ra(date, _fnames_['%s_ssfr1_v1' % date_s], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=True)
+    fname_ssfr1_ra = cdata_arcsix_ssfr_archive(date, _fnames_['%s_ssfr1_v2' % date_s],
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
     _fnames_['%s_ssfr1_ra' % date_s] = fname_ssfr1_ra
 #\----------------------------------------------------------------------------/#
@@ -1835,23 +2145,26 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
              # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1 over Lincoln Sea
-             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2 over Lincoln Sea
-             datetime.datetime(2024, 5, 31), # ARCSIX science flight #3 over Lincoln Sea
+             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
+             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
+             datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley
+             datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
             ]
     for date in dates[::-1]:
-        main_process_data_v0(date, run=True)
-        # main_process_data_v0(date, run=False)
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
 
         # run_time_offset_check(date)
         # sys.exit()
 
-        main_process_data_v1(date, run=True)
-        # main_process_data_v1(date, run=False)
+        # main_process_data_v1(date, run=True)
+        main_process_data_v1(date, run=False)
 
-        main_process_data_v2(date, run=True)
-        # main_process_data_v2(date, run=False)
+        # main_process_data_v2(date, run=True)
+        main_process_data_v2(date, run=False)
         # run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
+
+        main_process_data_archive(date, run=True)
     #\----------------------------------------------------------------------------/#
 
     pass

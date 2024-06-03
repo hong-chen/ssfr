@@ -108,21 +108,28 @@ _date_specs_ = {
             'tmhr_range': [11.90, 18.60],
            'description': 'ARCSIX Science Flight #1',
       'preferred_region': 'lincoln_sea',
-       'cam_time_offset': 0.0,
+       'cam_time_offset': 2.0,
             },
 
         '20240530': {
             'tmhr_range': [11.00, 18.20],
            'description': 'ARCSIX Science Flight #2',
       'preferred_region': 'ca_archipelago',
-       'cam_time_offset': 0.0,
+       'cam_time_offset': 2.0,
             },
 
         '20240531': {
             'tmhr_range': [12.40, 19.50],
            'description': 'ARCSIX Science Flight #3',
       'preferred_region': 'ca_archipelago',
-       'cam_time_offset': 5.0,
+       'cam_time_offset': 6.0,
+            },
+
+        '20240603': {
+            'tmhr_range': [10.90, 18.10],
+           'description': 'ARCSIX Science Flight #4',
+      'preferred_region': 'lincoln_sea',
+       'cam_time_offset': 0.0,
             },
         }
 
@@ -1609,7 +1616,7 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     _aspect_ = 'auto'
     _alt_cmap_ = 'gist_ncar'
-    _dpi_      = 120
+    _dpi_      = 150
 
     _alt_base_ = 0.0
     _alt_ceil_ = 8.0
@@ -1964,7 +1971,7 @@ def plot_video_frame_arcsix(statements, test=False):
             else:
                 alpha_trans = 0.30
 
-            ax_map.scatter(         flt_trk['lon'][logic_trans][::step_trans], flt_trk['lat'][logic_trans][::step_trans], c=flt_trk['alt'][logic_trans][::step_trans], s=0.5, lw=0.0, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans*2.0, transform=ccrs.PlateCarree())
+            ax_map.scatter(         flt_trk['lon'][logic_trans][::step_trans], flt_trk['lat'][logic_trans][::step_trans], c=flt_trk['alt'][logic_trans][::step_trans], s=0.5, lw=0.05, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans*3.0, transform=ccrs.PlateCarree(), ec='black')
             cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid][::step_solid], flt_trk['lat'][logic_solid][::step_solid], c=flt_trk['alt'][logic_solid][::step_solid], s=1  , lw=0.0, zorder=3, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
 
             if not plot_arrow:
@@ -2078,7 +2085,7 @@ def plot_video_frame_arcsix(statements, test=False):
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
     if has_sat1:
-        title_map0 = 'False Color 721'
+        # title_map0 = 'False Color 367'
         title_map0 = 'True Color'
         time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
@@ -2240,7 +2247,12 @@ def plot_video_frame_arcsix(statements, test=False):
     text1 = '\
 presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hirata, Arabella Chamberlain, Katey Dong, Jeffery Drouet, and Sebastian Schmidt\n\
 '
-    ax.annotate(text1, xy=(0.5, 0.25), fontsize=8, color='gray', xycoords='axes fraction', ha='center', va='center')
+    ax.annotate(text1, xy=(0.5, 0.26), fontsize=8, color='gray', xycoords='axes fraction', ha='center', va='center')
+
+    text2 = '\
+IN-FIELD USE ONLY\n\
+'
+    ax.annotate(text2, xy=(0.5, 0.23), fontsize=10, color='red', xycoords='axes fraction', ha='center', va='center')
     ax.axis('off')
     #\----------------------------------------------------------------------------/#
 
@@ -2333,7 +2345,8 @@ def main_pre_arcsix(
 
     # read in spns data
     #/--------------------------------------------------------------\#
-    fname_spns = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
+    fname_spns = '%s/%s-SPNS_%s_%s_RA.h5' % (_fdir_data_, _mission_.upper(), _platform_.upper(), date_s)
+    # fname_spns = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
     # fname_spns = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
     if os.path.exists(fname_spns):
         has_spns = True
@@ -2352,7 +2365,8 @@ def main_pre_arcsix(
 
     # read in ssfr-a data
     #/--------------------------------------------------------------\#
-    fname_ssfr1 = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _ssfr1_.upper(), _platform_.upper(), date_s)
+    fname_ssfr1 = '%s/%s-SSFR_%s_%s_RA.h5' % (_fdir_data_, _mission_.upper(), _platform_.upper(), date_s)
+    # fname_ssfr1 = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _ssfr1_.upper(), _platform_.upper(), date_s)
     # fname_ssfr1 = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr1_.upper(), _platform_.upper(), date_s)
     if os.path.exists(fname_ssfr1):
         has_ssfr1 = True
@@ -2372,7 +2386,8 @@ def main_pre_arcsix(
 
     # read in ssfr-b data
     #/--------------------------------------------------------------\#
-    fname_ssfr2 = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _ssfr2_.upper(), _platform_.upper(), date_s)
+    fname_ssfr2 = '%s/%s-%s_%s_%s_RA.h5' % (_fdir_data_, _mission_.upper(), _ssfr2_.upper(), _platform_.upper(), date_s)
+    # fname_ssfr2 = '%s/%s-%s_%s_%s_v2.h5' % (_fdir_data_, _mission_.upper(), _ssfr2_.upper(), _platform_.upper(), date_s)
     # fname_ssfr2 = '%s/%s-%s_%s_%s_v1.h5' % (_fdir_data_, _mission_.upper(), _ssfr2_.upper(), _platform_.upper(), date_s)
     if os.path.exists(fname_ssfr2):
         has_ssfr2 = True
@@ -2474,13 +2489,14 @@ def main_pre_arcsix(
     fnames_sat0 = {}
     fnames_sat1 = {}
 
-    fnames_fc = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
-    jday_sat00 , fnames_sat00  = process_sat_img_vn(fnames_fc, extent_target)
+    # fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
+    fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor367*%s*Z*.png' % date_sat_s)
+    jday_sat00 , fnames_sat00  = process_sat_img_vn(fnames_sat00, extent_target)
     fnames_sat0['jday']    = jday_sat00
     fnames_sat0['fnames']  = fnames_sat00
 
-    fnames_tc = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
-    jday_sat11, fnames_sat11 = process_sat_img_vn(fnames_tc, extent_target)
+    fnames_sat11 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
+    jday_sat11, fnames_sat11 = process_sat_img_vn(fnames_sat11, extent_target)
     fnames_sat1['jday']   = jday_sat11
     fnames_sat1['fnames'] = fnames_sat11
     #\----------------------------------------------------------------------------/#
@@ -2588,6 +2604,7 @@ def main_vid_arcsix(
     # make video
     fname_mp4 = '%s-FLT-VID_%s_%s_%2.2d.mp4' % (_mission_.upper(), _platform_.upper(), date_s, interval)
     os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
+    # os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -q:v 1 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
 #\----------------------------------------------------------------------------/#
 
 
@@ -2601,6 +2618,7 @@ if __name__ == '__main__':
             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
             datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley
+            datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
         ]
 
     for date in dates[::-1]:
@@ -2618,7 +2636,7 @@ if __name__ == '__main__':
             main_pre_arcsix(date)
             main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
             main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
