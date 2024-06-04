@@ -2602,9 +2602,11 @@ def main_vid_arcsix(
         r = list(tqdm(pool.imap(plot_video_frame_arcsix, statements), total=indices_trk.size))
 
     # make video
-    fname_mp4 = '%s-FLT-VID_%s_%s_%2.2d.mp4' % (_mission_.upper(), _platform_.upper(), date_s, interval)
+    if interval > 5:
+        fname_mp4 = '%s-FLT-VID_%s_%s_%2.2d.mp4' % (_mission_.upper(), _platform_.upper(), date_s, interval)
+    else:
+        fname_mp4 = '%s_SSFR_Flight-Video.mp4' % (date_s)
     os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 18 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
-    # os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -q:v 1 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
 #\----------------------------------------------------------------------------/#
 
 
