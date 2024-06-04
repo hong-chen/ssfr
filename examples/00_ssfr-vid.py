@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-_ssfr_         = 'ssfr-a'
-# _ssfr_         = 'ssfr-b'
+# _ssfr_         = 'ssfr-a'
+_ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -861,7 +861,7 @@ def main_vid(
 
     # make video
     fname_mp4 = '%s-%s-VID_%s_%s.mp4' % (_mission_.upper(), _ssfr_.upper(), _platform_.upper(), date_s)
-    os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
+    os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 18 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
 
 
 if __name__ == '__main__':
@@ -873,7 +873,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1
             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2
-            datetime.datetime(2024, 5, 31), # ARCSIX science flight #2
+            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3
+            datetime.datetime(2024, 6, 3), # ARCSIX science flight #4
         ]
 
     for date in dates[::-1]:
