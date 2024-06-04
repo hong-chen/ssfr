@@ -2603,7 +2603,7 @@ def main_vid_arcsix(
 
     # make video
     fname_mp4 = '%s-FLT-VID_%s_%s_%2.2d.mp4' % (_mission_.upper(), _platform_.upper(), date_s, interval)
-    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
+    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 18 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
     # os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -q:v 1 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
 #\----------------------------------------------------------------------------/#
 
@@ -2615,9 +2615,9 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
-            datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
-            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley
+            # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
+            # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
+            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley
             datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
         ]
 
