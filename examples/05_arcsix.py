@@ -36,6 +36,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # mpl.use('TkAgg')
 
 
+
 import ssfr
 
 
@@ -103,13 +104,9 @@ _ssfr2_time_offset_ = {
 
 
 
-
-
-
-
 # functions for ssfr calibrations
 #/----------------------------------------------------------------------------\#
-def wvl_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
+def wvl_cal_old(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
     fdir_data = '/argus/field/arcsix/cal/wvl-cal'
 
@@ -174,7 +171,7 @@ def wvl_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
-def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
+def rad_cal_old(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
     fdir_data = 'data/arcsix/cal/rad-cal'
 
@@ -185,7 +182,6 @@ def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
     fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
     fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
-
 
     date_cal_s   = '2023-11-16'
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -206,7 +202,7 @@ def rad_cal(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
         f.close()
 
-def ang_cal(fdir):
+def ang_cal_old(fdir):
 
     """
 
@@ -247,13 +243,8 @@ def ang_cal(fdir):
         filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
 
         ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
-#\----------------------------------------------------------------------------/#
 
-
-
-# instrument calibrations
-#/----------------------------------------------------------------------------\#
-def main_calibration():
+def main_calibration_old():
 
     """
     Notes:
@@ -273,169 +264,225 @@ def main_calibration():
 
     # radiometric calibration
     #/----------------------------------------------------------------------------\#
-    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
-    #     for lc_tag in ['zen', 'nad']:
-    #         for lamp_tag in ['1324']:
-    #             rad_cal(ssfr_tag, lc_tag, lamp_tag)
+    for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+        for lc_tag in ['zen', 'nad']:
+            for lamp_tag in ['1324']:
+                rad_cal(ssfr_tag, lc_tag, lamp_tag)
     #\----------------------------------------------------------------------------/#
 
     # angular calibration
     #/----------------------------------------------------------------------------\#
-    fdirs = [
-            '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
-            '/argus/field/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
-            '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
-            '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
-            '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
-            '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
-            ]
-    for fdir in fdirs:
-        ang_cal(fdir)
+    # fdirs = [
+    #         '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
+    #         '/argus/field/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
+    #         '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
+    #         '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
+    #         '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
+    #         '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
+    #         ]
+    # for fdir in fdirs:
+    #     ang_cal(fdir)
+    #\----------------------------------------------------------------------------/#
+    sys.exit()
+#\----------------------------------------------------------------------------/#
+
+
+
+# instrument calibrations
+#/----------------------------------------------------------------------------\#
+def rad_cal(
+        fdir_pri,
+        fdir_tra,
+        fdir_sec=None,
+        spec_reverse=False,
+        ):
+
+    # get calibration files of primary
+    #/----------------------------------------------------------------------------\#
+    # date_cal_s_pri, ssfr_tag_pri, lc_tag_pri, cal_tag_pri, lamp_tag_pri, si_int_tag_pri, in_int_tag_pri = os.path.basename(fdir_pri).split('_')
+    tags_pri = os.path.basename(fdir_pri).split('_')
+    fnames_pri_ = sorted(glob.glob('%s/*.SKS' % (fdir_pri)))
+    fnames_pri = [fnames_pri_[-1]]
+    if len(fnames_pri) > 1:
+        msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_pri, fnames_pri[0])
+        warnings.warn(msg)
     #\----------------------------------------------------------------------------/#
 
-def test_data_a(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
-    fdir_data = '/argus/field/arcsix/cal/rad-cal'
+    # get calibration files of transfer
+    #/----------------------------------------------------------------------------\#
+    # date_cal_s_tra, ssfr_tag_tra, lc_tag_tra, cal_tag_tra, lamp_tag_tra, si_int_tag_tra, in_int_tag_tra = os.path.basename(fdir_tra).split('_')
+    tags_tra = os.path.basename(fdir_tra).split('_')
+    fnames_tra_ = sorted(glob.glob('%s/*.SKS' % (fdir_tra)))
+    fnames_tra = [fnames_tra_[-1]]
+    if len(fnames_tra) > 1:
+        msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_tra, fnames_tra[0])
+        warnings.warn(msg)
+    #\----------------------------------------------------------------------------/#
 
-    indices_spec = {
-            'zen': [0, 1],
-            'nad': [2, 3]
-            }
 
-    fdir =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, ssfr_tag, lc_tag, lamp_tag)))[0]
-    fnames = sorted(glob.glob('%s/*00001.SKS' % (fdir)))
+    # placeholder for calibration files of transfer
+    #/----------------------------------------------------------------------------\#
+    if fdir_sec is None:
+        fdir_sec = fdir_tra
+    # date_cal_s_sec, ssfr_tag_sec, lc_tag_sec, cal_tag_sec, lamp_tag_sec, si_int_tag_sec, in_int_tag_sec = os.path.basename(fdir_sec).split('_')
+    tags_sec = os.path.basename(fdir_sec).split('_')
+    fnames_sec_ = sorted(glob.glob('%s/*.SKS' % (fdir_sec)))
+    fnames_sec = [fnames_sec_[-1]]
+    if len(fnames_sec) > 1:
+        msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_sec, fnames_sec[0])
+        warnings.warn(msg)
+    #\----------------------------------------------------------------------------/#
 
+    if (tags_pri[1]==tags_tra[1]):
+        ssfr_tag = tags_pri[1]
+    if (tags_pri[2]==tags_tra[2]):
+        lc_tag = tags_pri[2]
 
-    date_cal_s   = '2023-11-16'
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
 
-    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames)
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames_pri)
+
     for i in range(ssfr_.Ndset):
         dset_tag = 'dset%d' % i
         dset_ = getattr(ssfr_, dset_tag)
         int_time = dset_['info']['int_time']
 
-        fname = '%s/cal/%s|RAD-CAL-PRI|LASP|%s|%s|%s-SI%3.3d-IN%3.3d|%s.h5' % (ssfr.common.fdir_data, date_cal_s, ssfr_tag.upper(), lc_tag.upper(), dset_tag.upper(), int_time['%s|si' % lc_tag], int_time['%s|in' % lc_tag], date_today_s)
-        f = h5py.File(fname, 'w')
+        if len(tags_pri) == 7:
+            cal_tag = '%s_%s' % (tags_pri[0], tags_pri[4])
+        elif len(tags_pri) == 8:
+            cal_tag = '%s_%s_%s' % (tags_pri[0], tags_pri[4], tags_pri[7])
 
-        resp_pri = ssfr.cal.cal_rad_resp(fnames, which_ssfr='lasp|%s' % ssfr_tag.lower(), which_lc=lc_tag.lower(), int_time=int_time, which_lamp=lamp_tag.lower())
+        if len(tags_tra) == 7:
+            cal_tag = '%s|%s_%s' % (cal_tag, tags_tra[0], tags_tra[4])
+        elif len(tags_tra) == 8:
+            cal_tag = '%s|%s_%s_%s' % (cal_tag, tags_tra[0], tags_tra[4], tags_tra[7])
 
-        for key in resp_pri.keys():
-            f[key] = resp_pri[key]
+        filename_tag = '%s|%s|%s' % (cal_tag, date_today_s, dset_tag)
 
-        f.close()
+        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=tags_pri[4], filename_tag=filename_tag, verbose=True, spec_reverse=spec_reverse)
 
-def test_data_b(
-        date,
-        fdir_data=_fdir_out_,
-        fdir_out=_fdir_out_,
-        pitch_angle=0.0,
-        roll_angle=0.0,
-        ):
+def main_calibration_rad():
 
-    date_s = date.strftime('%Y-%m-%d')
+    """
+    Notes:
+        irradiance setup:
+            SSFR-A (Alvin)
+              - zenith: LC4 + black plastic cased fiber
+              - nadir : LC6 + stainless steel cased fiber
 
-    fname_h5 = '%s/%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _ssfr_.upper(), date_s)
-    f = h5py.File(fname_h5, 'w')
+        irradiance backup setup:
+            SSFR-B (Belana)
+              - zenith: LC4 + black plastic cased fiber
+              - nadir : LC6 + stainless steel cased fiber
 
-    fname_h5 = '%s/%s_%s_%s_v1.h5' % (fdir_data, _mission_.upper(), _ssfr_.upper(), date_s)
-    f_ = h5py.File(fname_h5, 'r')
-    tmhr = f_['tmhr'][...]
-    for dset_s in f_.keys():
+    Available options for primary calibrations (pre-mission):
+        data/arcsix/cal/rad-cal/2023-11-16_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2023-11-16_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_restart
+        data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-506_si-080-120_in-250-350
 
-        if 'dset' in dset_s:
+        data/arcsix/cal/rad-cal/2023-11-16_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2023-11-16_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-27_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350
 
-            # primary calibration (from pre-mission arcsix in lab on 2023-11-16)
-            #/----------------------------------------------------------------------------\#
-            wvls = ssfr.lasp_ssfr.get_ssfr_wavelength()
-            wvl_start = 350.0
-            wvl_end   = 2200.0
-            wvl_join  = 950.0
+    Available options for transfer (pre-mission):
+        data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri
 
-            # zenith wavelength
-            #/----------------------------------------------------------------------------\#
-            logic_zen_si = (wvls['zen|si'] >= wvl_start) & (wvls['zen|si'] <= wvl_join)
-            logic_zen_in = (wvls['zen|in'] >  wvl_join)  & (wvls['zen|in'] <= wvl_end)
+        data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350
 
-            wvl_zen = np.concatenate((wvls['zen|si'][logic_zen_si], wvls['zen|in'][logic_zen_in]))
+        data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350_after-pri
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350_before-pri
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350_fiber-zen
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350_spec-zen
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350_after-pri
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350_before-pri
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350_fiber-nad
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350_restart
+        data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350_spec-nad
 
-            indices_sort_zen = np.argsort(wvl_zen)
-            wvl_zen = wvl_zen[indices_sort_zen]
-            #\----------------------------------------------------------------------------/#
+    Avaiable options for secondary calibrations (or known as field calibrations):
+        data/arcsix/cal/rad-cal/2024-05-26_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
+        data/arcsix/cal/rad-cal/2024-05-27_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
+        data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
+        data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
 
-            # nadir wavelength
-            #/----------------------------------------------------------------------------\#
-            logic_nad_si = (wvls['nad|si'] >= wvl_start) & (wvls['nad|si'] <= wvl_join)
-            logic_nad_in = (wvls['nad|in'] >  wvl_join)  & (wvls['nad|in'] <= wvl_end)
+        data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
+        data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
+    """
 
-            wvl_nad = np.concatenate((wvls['nad|si'][logic_nad_si], wvls['nad|in'][logic_nad_in]))
+    # radiometric calibration
+    #/----------------------------------------------------------------------------\#
+    fdir_cal = '%s/rad-cal' % _fdir_cal_
 
-            indices_sort_nad = np.argsort(wvl_nad)
-            wvl_nad = wvl_nad[indices_sort_nad]
-            #\----------------------------------------------------------------------------/#
+    # primary calibrations (pre-mission)
+    #/----------------------------------------------------------------------------\#
+    # fdirs_pri_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*pri-cal_lamp-1324*si-080-120*in-250-350*')
+    # fdirs_pri_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*pri-cal_lamp-506*si-080-120*in-250-350*')
+    # for fdir_pri in fdirs_pri_cal:
+    #     print(fdir_pri)
+    #\----------------------------------------------------------------------------/#
 
-            fnames_zen = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|ZEN|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
-            fnames_nad = sorted(glob.glob('%s/cal/*RAD-CAL-PRI|LASP|%s|NAD|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.upper(), dset_s.upper())))
-            if len(fnames_zen) == 1 and len(fnames_nad) == 1:
-                fname_zen = fnames_zen[0]
-                fname_nad = fnames_nad[0]
+    # transfer (pre-mission)
+    #/----------------------------------------------------------------------------\#
+    # fdirs_transfer = ssfr.util.get_all_folders(fdir_cal, pattern='*transfer_lamp-150c*si-080-120*in-250-350*')
+    # fdirs_transfer = ssfr.util.get_all_folders(fdir_cal, pattern='*transfer_lamp-150e*si-080-120*in-250-350*')
+    # for fdir_transfer in fdirs_transfer:
+    #     print(fdir_transfer)
+    #\----------------------------------------------------------------------------/#
 
-                f_zen = h5py.File(fname_zen, 'r')
-                sec_resp_zen_si = f_zen['zen|si'][...]
-                sec_resp_zen_in = f_zen['zen|in'][...]
-                f_zen.close()
+    # secondary calibrations (in-field)
+    #/----------------------------------------------------------------------------\#
+    # fdirs_sec_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*sec-cal_lamp-150c*si-080-120*in-250-350*')
+    # fdirs_sec_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*sec-cal_lamp-150e*si-080-120*in-250-350*')
+    # for fdir_sec_cal in fdirs_sec_cal:
+    #     print(fdir_sec_cal)
+    #\----------------------------------------------------------------------------/#
 
-                f_nad = h5py.File(fname_nad, 'r')
-                sec_resp_nad_si = f_nad['nad|si'][...]
-                sec_resp_nad_in = f_nad['nad|in'][...]
-                f_nad.close()
+    sys.exit()
 
-                sec_resp_zen = np.concatenate((sec_resp_zen_si[logic_zen_si], sec_resp_zen_in[logic_zen_in]))[indices_sort_zen]
-                sec_resp_nad = np.concatenate((sec_resp_nad_si[logic_nad_si], sec_resp_nad_in[logic_nad_in]))[indices_sort_nad]
-            #\----------------------------------------------------------------------------/#
+    # fdirs_pri = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/2024-03-29*SSFR-A*pri-cal*si-080-120_in-250-350*'))
 
-            # zenith
-            #/--------------------------------------------------------------\#
-            cnt_zen = f_['%s/cnt_zen' % dset_s][...]
-            wvl_zen = f_['%s/wvl_zen' % dset_s][...]
+    for fdir_pri in fdirs_pri:
 
-            # sec_resp_zen = np.interp(wvl_zen, wvl_resp_zen_, sec_resp_zen_)
+        tags_pri = os.path.basename(fdir_pri).split('_')
 
-            flux_zen = cnt_zen.copy()
-            for i in range(tmhr.size):
-                if np.isnan(cnt_zen[i, :]).sum() == 0:
-                    flux_zen[i, :] = cnt_zen[i, :] / sec_resp_zen
-            #\--------------------------------------------------------------/#
+        date_cal_pri = datetime.datetime.strptime(tags_pri[0], '%Y-%m-%d')
 
-            # nadir
-            #/--------------------------------------------------------------\#
-            cnt_nad = f_['%s/cnt_nad' % dset_s][...]
-            wvl_nad = f_['%s/wvl_nad' % dset_s][...]
+        if date_cal_pri == datetime.datetime(2024, 3, 29):
+            fdirs_tra = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/2024-03-29*%s*%s*transfer*%s*%s*' % (tags_pri[1], tags_pri[2], tags_pri[5], tags_pri[6])))
 
-            # sec_resp_nad = np.interp(wvl_nad, wvl_resp_nad_, sec_resp_nad_)
-
-            flux_nad = cnt_nad.copy()
-            for i in range(tmhr.size):
-                if np.isnan(cnt_nad[i, :]).sum() == 0:
-                    flux_nad[i, :] = cnt_nad[i, :] / sec_resp_nad
-            #\--------------------------------------------------------------/#
-
-            g = f.create_group(dset_s)
-            g['flux_zen'] = flux_zen
-            g['flux_nad'] = flux_nad
-            g['wvl_zen']  = wvl_zen
-            g['wvl_nad']  = wvl_nad
-
-        else:
-
-            f[dset_s] = f_[dset_s][...]
-
-    f_.close()
-
-    f.close()
-
-    return
+            if len(fdirs_tra) >= 1:
+                for fdir_tra in fdirs_tra:
+                    print('='*50)
+                    print(fdir_pri)
+                    print(fdir_tra)
+                    if (fdir_tra.split('_')[-1][:4] != 'spec'):
+                        rad_cal(fdir_pri, fdir_tra, spec_reverse=False)
+                    else:
+                        rad_cal(fdir_pri, fdir_tra, spec_reverse=True)
+                    print('='*50)
+                    print()
+    #\----------------------------------------------------------------------------/#
+    sys.exit()
 #\----------------------------------------------------------------------------/#
+
+
 
 # functions for processing HSK and ALP
 #/----------------------------------------------------------------------------\#
@@ -1719,222 +1766,6 @@ def cdata_arcsix_ssfr_archive(
 #\----------------------------------------------------------------------------/#
 
 
-def run_time_offset_check(date):
-
-    date_s = date.strftime('%Y%m%d')
-    data_hsk = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
-    data_alp = ssfr.util.load_h5(_fnames_['%s_alp_v0' % date_s])
-    data_spns_v0 = ssfr.util.load_h5(_fnames_['%s_spns_v0' % date_s])
-    data_ssfr1_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v0' % date_s])
-    data_ssfr2_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr2_v0' % date_s])
-
-    # data_spns_v0['tot/jday'] += 1.0
-    # data_spns_v0['dif/jday'] += 1.0
-
-    # _offset_x_range_ = [-6000.0, 6000.0]
-    _offset_x_range_ = [-300.0, 300.0]
-
-    # ALP pitch vs HSK pitch
-    #/----------------------------------------------------------------------------\#
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_hsk['ang_pit'],
-            'x1': data_alp['jday'][::10]*86400.0,
-            'y1': data_alp['ang_pit_s'][::10],
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=False,
-            description='ALP Pitch vs. HSK Pitch',
-            fname_html='alp-pit_offset_check_%s.html' % date_s)
-    #\----------------------------------------------------------------------------/#
-
-    # ALP roll vs HSK roll
-    #/----------------------------------------------------------------------------\#
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_hsk['ang_rol'],
-            'x1': data_alp['jday'][::10]*86400.0,
-            'y1': data_alp['ang_rol_s'][::10],
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=False,
-            description='ALP Roll vs. HSK Roll',
-            fname_html='alp-rol_offset_check_%s.html' % date_s)
-    #\----------------------------------------------------------------------------/#
-
-    # ALP altitude vs HSK altitude
-    #/----------------------------------------------------------------------------\#
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_hsk['alt'],
-            'x1': data_alp['jday'][::10]*86400.0,
-            'y1': data_alp['alt'][::10],
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=True,
-            description='ALP Altitude vs. HSK Altitude',
-            fname_html='alp-alt_offset_check_%s.html' % date_s)
-    #\----------------------------------------------------------------------------/#
-
-
-    # SPNS vs TOA
-    #/----------------------------------------------------------------------------\#
-    index_wvl = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
-    data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
-
-    mu = np.cos(np.deg2rad(data_hsk['sza']))
-    iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit'], data_hsk['ang_rol'], data_hsk['ang_hed'])
-    dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
-    factors = mu/dc
-    data_y0   = data_spns_v0['tot/toa0'][index_wvl]*np.cos(np.deg2rad(data_hsk['sza']))/factors
-
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_y0,
-            'x1': data_spns_v0['tot/jday']*86400.0,
-            'y1': data_y1,
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=True,
-            description='SPNS Total vs. TOA (745 nm)',
-            fname_html='spns-toa_offset_check_%s.html' % date_s)
-    #\----------------------------------------------------------------------------/#
-
-
-    # SSFR-A vs SPNS
-    #/----------------------------------------------------------------------------\#
-    index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
-    data_y0 = data_spns_v0['tot/flux'][:, index_wvl_spns]
-
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_zen']))
-    data_y1 = data_ssfr1_v0['spec/cnt_zen'][:, index_wvl_ssfr]
-    data_offset = {
-            'x0': data_spns_v0['tot/jday']*86400.0,
-            'y0': data_y0,
-            'x1': data_ssfr1_v0['raw/jday']*86400.0,
-            'y1': data_y1,
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=True,
-            description='SSFR-A Zenith Count vs. SPNS Total (745nm)',
-            fname_html='ssfr-a_offset_check_%s.html' % (date_s))
-    #\----------------------------------------------------------------------------/#
-
-    # SSFR-B vs SSFR-A
-    #/----------------------------------------------------------------------------\#
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_nad']))
-    data_y0 = data_ssfr1_v0['spec/cnt_nad'][:, index_wvl_ssfr]
-
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr2_v0['spec/wvl_nad']))
-    data_y1 = data_ssfr2_v0['spec/cnt_nad'][:, index_wvl_ssfr]
-    data_offset = {
-            'x0': data_ssfr1_v0['raw/jday']*86400.0,
-            'y0': data_y0,
-            'x1': data_ssfr2_v0['raw/jday']*86400.0,
-            'y1': data_y1,
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=True,
-            description='SSFR-B Nadir Count vs. SSFR-A Nadir (745nm)',
-            fname_html='ssfr-b_offset_check_%s.html' % (date_s))
-    #\----------------------------------------------------------------------------/#
-
-def run_angle_offset_check(
-        date,
-        ang_pit_offset=0.0,
-        ang_rol_offset=0.0,
-        wvl0=745.0,
-        ):
-
-    date_s = date.strftime('%Y%m%d')
-    data_hsk = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
-
-
-    # SPNS v1
-    #/----------------------------------------------------------------------------\#
-    data_spns_v1 = ssfr.util.load_h5(_fnames_['%s_spns_v1' % date_s])
-    index_wvl_spns = np.argmin(np.abs(wvl0-data_spns_v1['tot/wvl']))
-    data_y1 = data_spns_v1['tot/flux'][:, index_wvl_spns]
-    #\----------------------------------------------------------------------------/#
-
-
-    # SPNS v2
-    #/----------------------------------------------------------------------------\#
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            fdir_out=_fdir_out_,
-            run=True,
-            ang_pit_offset=ang_pit_offset,
-            ang_rol_offset=ang_rol_offset,
-            )
-    data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
-    data_y2 = data_spns_v2['tot/flux'][:, index_wvl_spns]
-    #\----------------------------------------------------------------------------/#
-
-
-    # SSFR-A v2
-    #/----------------------------------------------------------------------------\#
-    data_ssfr1_v2 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v2' % date_s])
-    index_wvl_ssfr = np.argmin(np.abs(wvl0-data_ssfr1_v2['zen/wvl']))
-    data_y0 = data_ssfr1_v2['zen/flux'][:, index_wvl_ssfr]
-    #\----------------------------------------------------------------------------/#
-
-    # figure
-    #/----------------------------------------------------------------------------\#
-    if True:
-        plt.close('all')
-        fig = plt.figure(figsize=(15, 6))
-        # fig.suptitle('Figure')
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
-        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
-        ax1.scatter(data_hsk['tmhr'], data_y1, s=3, c='r', lw=0.0)
-        ax1.scatter(data_hsk['tmhr'], data_y0, s=3, c='k', lw=0.0)
-        ax1.scatter(data_hsk['tmhr'], data_y2, s=3, c='g', lw=0.0)
-        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        #\--------------------------------------------------------------/#
-        # save figure
-        #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
-    #\----------------------------------------------------------------------------/#
-
 
 # main program
 #/----------------------------------------------------------------------------\#
@@ -2112,7 +1943,7 @@ def main_process_data_archive(date, run=True):
     fname_spns_ra = cdata_arcsix_spns_archive(date, _fnames_['%s_spns_v2' % date_s],
             fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
-    # _fnames_['%s_spns_ra' % date_s] = fname_spns_ra
+    _fnames_['%s_spns_ra' % date_s] = fname_spns_ra
 
 
     # SSFR RA
@@ -2123,11 +1954,234 @@ def main_process_data_archive(date, run=True):
     _fnames_['%s_ssfr1_ra' % date_s] = fname_ssfr1_ra
 #\----------------------------------------------------------------------------/#
 
+
+
+def run_time_offset_check(date):
+
+    date_s = date.strftime('%Y%m%d')
+    data_hsk = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
+    data_alp = ssfr.util.load_h5(_fnames_['%s_alp_v0' % date_s])
+    data_spns_v0 = ssfr.util.load_h5(_fnames_['%s_spns_v0' % date_s])
+    data_ssfr1_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v0' % date_s])
+    data_ssfr2_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr2_v0' % date_s])
+
+    # data_spns_v0['tot/jday'] += 1.0
+    # data_spns_v0['dif/jday'] += 1.0
+
+    # _offset_x_range_ = [-6000.0, 6000.0]
+    _offset_x_range_ = [-300.0, 300.0]
+
+    # ALP pitch vs HSK pitch
+    #/----------------------------------------------------------------------------\#
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['ang_pit'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['ang_pit_s'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=False,
+            description='ALP Pitch vs. HSK Pitch',
+            fname_html='alp-pit_offset_check_%s.html' % date_s)
+    #\----------------------------------------------------------------------------/#
+
+    # ALP roll vs HSK roll
+    #/----------------------------------------------------------------------------\#
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['ang_rol'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['ang_rol_s'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=False,
+            description='ALP Roll vs. HSK Roll',
+            fname_html='alp-rol_offset_check_%s.html' % date_s)
+    #\----------------------------------------------------------------------------/#
+
+    # ALP altitude vs HSK altitude
+    #/----------------------------------------------------------------------------\#
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['alt'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['alt'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='ALP Altitude vs. HSK Altitude',
+            fname_html='alp-alt_offset_check_%s.html' % date_s)
+    #\----------------------------------------------------------------------------/#
+
+
+    # SPNS vs TOA
+    #/----------------------------------------------------------------------------\#
+    index_wvl = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
+    data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
+
+    mu = np.cos(np.deg2rad(data_hsk['sza']))
+    iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit'], data_hsk['ang_rol'], data_hsk['ang_hed'])
+    dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
+    factors = mu/dc
+    data_y0   = data_spns_v0['tot/toa0'][index_wvl]*np.cos(np.deg2rad(data_hsk['sza']))/factors
+
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_spns_v0['tot/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SPNS Total vs. TOA (745 nm)',
+            fname_html='spns-toa_offset_check_%s.html' % date_s)
+    #\----------------------------------------------------------------------------/#
+
+
+    # SSFR-A vs SPNS
+    #/----------------------------------------------------------------------------\#
+    index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
+    data_y0 = data_spns_v0['tot/flux'][:, index_wvl_spns]
+
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_zen']))
+    data_y1 = data_ssfr1_v0['spec/cnt_zen'][:, index_wvl_ssfr]
+    data_offset = {
+            'x0': data_spns_v0['tot/jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_ssfr1_v0['raw/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SSFR-A Zenith Count vs. SPNS Total (745nm)',
+            fname_html='ssfr-a_offset_check_%s.html' % (date_s))
+    #\----------------------------------------------------------------------------/#
+
+    # SSFR-B vs SSFR-A
+    #/----------------------------------------------------------------------------\#
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_nad']))
+    data_y0 = data_ssfr1_v0['spec/cnt_nad'][:, index_wvl_ssfr]
+
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr2_v0['spec/wvl_nad']))
+    data_y1 = data_ssfr2_v0['spec/cnt_nad'][:, index_wvl_ssfr]
+    data_offset = {
+            'x0': data_ssfr1_v0['raw/jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_ssfr2_v0['raw/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SSFR-B Nadir Count vs. SSFR-A Nadir (745nm)',
+            fname_html='ssfr-b_offset_check_%s.html' % (date_s))
+    #\----------------------------------------------------------------------------/#
+
+    sys.exit()
+
+def run_angle_offset_check(
+        date,
+        ang_pit_offset=0.0,
+        ang_rol_offset=0.0,
+        wvl0=745.0,
+        ):
+
+    date_s = date.strftime('%Y%m%d')
+    data_hsk = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
+
+
+    # SPNS v1
+    #/----------------------------------------------------------------------------\#
+    data_spns_v1 = ssfr.util.load_h5(_fnames_['%s_spns_v1' % date_s])
+    index_wvl_spns = np.argmin(np.abs(wvl0-data_spns_v1['tot/wvl']))
+    data_y1 = data_spns_v1['tot/flux'][:, index_wvl_spns]
+    #\----------------------------------------------------------------------------/#
+
+
+    # SPNS v2
+    #/----------------------------------------------------------------------------\#
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=_fdir_out_,
+            run=True,
+            ang_pit_offset=ang_pit_offset,
+            ang_rol_offset=ang_rol_offset,
+            )
+    data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
+    data_y2 = data_spns_v2['tot/flux'][:, index_wvl_spns]
+    #\----------------------------------------------------------------------------/#
+
+
+    # SSFR-A v2
+    #/----------------------------------------------------------------------------\#
+    data_ssfr1_v2 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v2' % date_s])
+    index_wvl_ssfr = np.argmin(np.abs(wvl0-data_ssfr1_v2['zen/wvl']))
+    data_y0 = data_ssfr1_v2['zen/flux'][:, index_wvl_ssfr]
+    #\----------------------------------------------------------------------------/#
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(15, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+        ax1.scatter(data_hsk['tmhr'], data_y1, s=3, c='r', lw=0.0)
+        ax1.scatter(data_hsk['tmhr'], data_y0, s=3, c='k', lw=0.0)
+        ax1.scatter(data_hsk['tmhr'], data_y2, s=3, c='g', lw=0.0)
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+    #\----------------------------------------------------------------------------/#
+    sys.exit()
+
+
+
+
 if __name__ == '__main__':
 
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
 
-    # main_calibration()
+    # main_calibration_rad()
 
     # data procesing
     #/----------------------------------------------------------------------------\#
@@ -2145,23 +2199,22 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
              # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
-             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
-             datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley
+             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
+             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
+             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley
              datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
             ]
+
     for date in dates[::-1]:
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
+        main_process_data_v0(date, run=True)
+        main_process_data_v1(date, run=True)
+        main_process_data_v2(date, run=True)
+
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v2(date, run=False)
 
         # run_time_offset_check(date)
-        # sys.exit()
-
-        # main_process_data_v1(date, run=True)
-        main_process_data_v1(date, run=False)
-
-        # main_process_data_v2(date, run=True)
-        main_process_data_v2(date, run=False)
         # run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
 
         main_process_data_archive(date, run=True)
