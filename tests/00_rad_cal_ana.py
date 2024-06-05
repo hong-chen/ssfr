@@ -324,6 +324,59 @@ def field_lamp_150e_consis_check_20240329(int_si=120):
     #\----------------------------------------------------------------------------/#
 
 
+def field_calibration_check(
+        ssfr_tag='ssfr-a',
+        lc_tag='zen',
+        int_time={'si':80.0, 'in':250.0},
+        ):
+
+
+    tag = '%s|%s|si-%3.3d|in-%3.3d' % (ssfr_tag, lc_tag, int_time['si'], int_time['in'])
+    fnames = sorted(glob.glob('../examples/data/arcsix/cal/rad-cal/*pituffik*%s*.h5' % tag))
+
+    # colors = plt.cm.jet(np.linspace(0.0, 1.0, len(fnames)))
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(16, 8))
+
+        ax1 = fig.add_subplot(111)
+
+        for i, fname in enumerate(fnames):
+            tags = os.path.basename(fname).replace('.h5', '').split('|')
+            f = h5py.File(fname, 'r')
+            wvl = f['wvl'][...]
+            sec_resp = f['sec_resp'][...]
+            pri_resp = f['pri_resp'][...]
+            f.close()
+
+            if i == 0:
+                ax1.plot(wvl, pri_resp, marker='o', markersize=2, lw=0.5, label='%s (Primary)' % tags[0])
+
+            ax1.plot(wvl, sec_resp, marker='o', markersize=2, lw=0.5, label='%s (Secondary)' % tags[2])
+
+        ax1.set_xlabel('Wavelength [nm]')
+        ax1.set_ylabel('Irradiance [$W m^{-2} nm^{-1}$]')
+        ax1.set_xlim((200, 2400))
+        if lc_tag == 'zen':
+            ax1.set_ylim((0, 300))
+        else:
+            ax1.set_ylim((0, 600))
+        plt.legend(fontsize=12)
+        fig.suptitle('Field Calibration (%s|%s|%s|%s)' % (ssfr_tag.upper(), lc_tag.upper(), tags[-2].upper(), tags[-1].upper()), fontsize=24)
+
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s_%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag, lc_tag, tags[-2], tags[-1]), bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
+
+
 if __name__ == '__main__':
 
     # fig_belana_darks_si()
@@ -341,9 +394,12 @@ if __name__ == '__main__':
 
 
     # main_calibration_20240329()
-    field_lamp_150c_consis_check_20240329(int_si=80)
-    field_lamp_150e_consis_check_20240329(int_si=80)
-    field_lamp_150c_consis_check_20240329(int_si=120)
-    field_lamp_150e_consis_check_20240329(int_si=120)
+    # field_lamp_150c_consis_check_20240329(int_si=80)
+    # field_lamp_150e_consis_check_20240329(int_si=80)
+    # field_lamp_150c_consis_check_20240329(int_si=120)
+    # field_lamp_150e_consis_check_20240329(int_si=120)
 
+    for lc_tag in ['zen', 'nad']:
+        for int_time in [{'si':80, 'in':250}, {'si':120, 'in':350}]:
+            field_calibration_check(lc_tag=lc_tag, int_time=int_time)
     pass
