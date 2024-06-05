@@ -129,7 +129,7 @@ _date_specs_ = {
             'tmhr_range': [10.90, 18.10],
            'description': 'ARCSIX Science Flight #4',
       'preferred_region': 'lincoln_sea',
-       'cam_time_offset': 6.0,
+       'cam_time_offset': 0.0,
             },
         }
 
