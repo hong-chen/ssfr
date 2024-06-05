@@ -142,7 +142,7 @@ class read_alp:
         for i, fname in enumerate(fnames):
 
             if self.verbose:
-                msg = '    reading %3d/%3d <%s> ...' % (i, Nfile, fname)
+                msg = '    reading %3d/%3d <%s> ...' % (i+1, Nfile, fname)
                 print(msg)
 
             dataAll0 = read_alp_raw(fname, vnames=vnames, dataLen=248, verbose=False)

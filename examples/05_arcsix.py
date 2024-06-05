@@ -2193,7 +2193,7 @@ if __name__ == '__main__':
 
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
 
-    main_calibration_rad()
+    # main_calibration_rad()
 
     # data procesing
     #/----------------------------------------------------------------------------\#
@@ -2213,20 +2213,21 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
              # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
              # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
-             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley
-             datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
+             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley for BRDF
+             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
+             datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley for BRDF
             ]
 
     for date in dates[::-1]:
         main_process_data_v0(date, run=True)
-        main_process_data_v1(date, run=True)
-        main_process_data_v2(date, run=True)
+        # main_process_data_v1(date, run=True)
+        # main_process_data_v2(date, run=True)
 
         # main_process_data_v1(date, run=False)
         # main_process_data_v0(date, run=False)
         # main_process_data_v2(date, run=False)
 
-        # run_time_offset_check(date)
+        run_time_offset_check(date)
         # run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
 
         main_process_data_archive(date, run=True)

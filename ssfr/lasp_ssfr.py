@@ -292,7 +292,7 @@ class read_ssfr:
         for i, fname in enumerate(fnames):
 
             if self.verbose:
-                msg = '    reading %3d/%3d <%s> ...' % (i, Nfile, fname)
+                msg = '    reading %3d/%3d <%s> ...' % (i+1, Nfile, fname)
                 print(msg)
 
             data0 = read_ssfr_raw(fname, verbose=False)
