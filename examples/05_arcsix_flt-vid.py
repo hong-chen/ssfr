@@ -1596,6 +1596,11 @@ def plot_video_frame_arcsix(statements, test=False):
             'color':'orange',
             'zorder': 0,
             }
+    vars_plot['KT19 T↑']   = {
+            'vname':'t-up_kt19',
+            'color':'purple',
+            'zorder': 1,
+            }
 
     for vname in vars_plot.keys():
 
@@ -1646,12 +1651,17 @@ def plot_video_frame_arcsix(statements, test=False):
     else:
         has_att_corr = False
 
-    if ('fnames_sat0' in vnames_img) and ('extent_sat0' in vnames_img):
+    if ('t-up_kt19' in  vnames_trk):
+        has_kt19 = True
+    else:
+        has_kt19 = False
+
+    if ('fnames_sat0' in vnames_img):
         has_sat0 = True
     else:
         has_sat0 = False
 
-    if ('fnames_sat1' in vnames_img) and ('extent_sat1' in vnames_img):
+    if ('fnames_sat1' in vnames_img):
         has_sat1 = True
     else:
         has_sat1 = False
@@ -1699,7 +1709,6 @@ def plot_video_frame_arcsix(statements, test=False):
     # data histogram (shared x axis) next to the map
     ax_alt_hist = ax_alt_prof.twinx()
 
-
     # a secondary map
     ax_map0 = fig.add_subplot(gs[:5, 10:15], projection=ccrs.PlateCarree(), aspect=_aspect_)
 
@@ -1712,14 +1721,13 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # aircraft and platform attitude status
     ax_nav  = inset_axes(ax_wvl, width=1.0, height=0.7, loc='upper center')
+
+    # time series
     ax_tms = fig.add_subplot(gs[9:, :])
     ax_tms_alt  = ax_tms.twinx()
 
     fig.subplots_adjust(hspace=10.0, wspace=10.0)
     #\----------------------------------------------------------------------------/#
-
-
-
 
 
     # flight direction
@@ -2303,6 +2311,7 @@ def main_pre_arcsix(
     lon    = f_hsk['lon'][...]
     lat    = f_hsk['lat'][...]
 
+    hsk_keys = f_hsk.keys()
 
     logic0 = (~np.isnan(jday) & ~np.isnan(sza) & ~np.isinf(sza))  & \
              check_continuity(lon, threshold=1.0) & \
@@ -2323,6 +2332,20 @@ def main_pre_arcsix(
 
     f_hsk.close()
     #\--------------------------------------------------------------/#
+
+
+    # read kt19
+    #/----------------------------------------------------------------------------\#
+    if 'ir_surf_temp' in hsk_keys:
+        has_kt19 = True
+    else:
+        has_kt19 = False
+
+    if has_kt19:
+        f_hsk = h5py.File(fname_hsk, 'r')
+        kt19_nad_temp = f_hsk['ir_surf_temp'][...][logic0][::time_step]
+        f_hsk.close()
+    #\----------------------------------------------------------------------------/#
 
 
     # read in nav data
@@ -2435,6 +2458,9 @@ def main_pre_arcsix(
 
     flt_trk['ang_pit'] = ang_pit[logic]
     flt_trk['ang_rol'] = ang_rol[logic]
+
+    if has_kt19:
+        flt_trk['t-up_kt19'] = kt19_nad_temp[logic]
 
     if has_alp:
         flt_trk['ang_pit_s'] = ang_pit_s[logic]
@@ -2637,8 +2663,8 @@ if __name__ == '__main__':
             #/----------------------------------------------------------------------------\#
             main_pre_arcsix(date)
             main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
-            main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 

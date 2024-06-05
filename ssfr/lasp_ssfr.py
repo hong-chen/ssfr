@@ -363,6 +363,7 @@ class read_ssfr:
             print(msg)
 
         #/----------------------------------------------------------------------------\#
+        self.dset_info = {}
         for idset in range(self.Ndset):
 
             # seperate data by integration times
@@ -381,7 +382,7 @@ class read_ssfr:
             #\----------------------------------------------------------------------------/#
 
             dset_name = 'dset%d' % idset
-            paired_info = [item for pair in zip([self.spec_info[i] for i in range(self.Nspec)], int_time_dset[idset], np.sum(saturation, axis=0)) for item in pair]
+            paired_info = [item for pair in zip([self.spec_info[i] for i in range(self.Nspec)], int_time_dset[idset, :], np.sum(saturation, axis=0)) for item in pair]
             if self.verbose:
                 msg = '    %-6s (%5d samples, %5d lights and %5d darks):\n\
          %s=%3dms (%5d saturated)\n\
@@ -389,6 +390,8 @@ class read_ssfr:
          %s=%3dms (%5d saturated)\n\
          %s=%3dms (%5d saturated)' % (dset_name, logic.sum(), logic_light.sum(), logic_dark.sum(), *paired_info)
                 print(msg)
+
+            self.dset_info[dset_name] = {self.spec_info[i]:int_time_dset[idset, i] for i in range(self.Nspec)}
         #\----------------------------------------------------------------------------/#
 
     def dark_corr(

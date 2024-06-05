@@ -299,7 +299,6 @@ def rad_cal(
 
     # get calibration files of primary
     #/----------------------------------------------------------------------------\#
-    # date_cal_s_pri, ssfr_tag_pri, lc_tag_pri, cal_tag_pri, lamp_tag_pri, si_int_tag_pri, in_int_tag_pri = os.path.basename(fdir_pri).split('_')
     tags_pri = os.path.basename(fdir_pri).split('_')
     fnames_pri_ = sorted(glob.glob('%s/*.SKS' % (fdir_pri)))
     fnames_pri = [fnames_pri_[-1]]
@@ -311,7 +310,6 @@ def rad_cal(
 
     # get calibration files of transfer
     #/----------------------------------------------------------------------------\#
-    # date_cal_s_tra, ssfr_tag_tra, lc_tag_tra, cal_tag_tra, lamp_tag_tra, si_int_tag_tra, in_int_tag_tra = os.path.basename(fdir_tra).split('_')
     tags_tra = os.path.basename(fdir_tra).split('_')
     fnames_tra_ = sorted(glob.glob('%s/*.SKS' % (fdir_tra)))
     fnames_tra = [fnames_tra_[-1]]
@@ -325,7 +323,6 @@ def rad_cal(
     #/----------------------------------------------------------------------------\#
     if fdir_sec is None:
         fdir_sec = fdir_tra
-    # date_cal_s_sec, ssfr_tag_sec, lc_tag_sec, cal_tag_sec, lamp_tag_sec, si_int_tag_sec, in_int_tag_sec = os.path.basename(fdir_sec).split('_')
     tags_sec = os.path.basename(fdir_sec).split('_')
     fnames_sec_ = sorted(glob.glob('%s/*.SKS' % (fdir_sec)))
     fnames_sec = [fnames_sec_[-1]]
@@ -334,10 +331,14 @@ def rad_cal(
         warnings.warn(msg)
     #\----------------------------------------------------------------------------/#
 
-    if (tags_pri[1]==tags_tra[1]):
+
+    # tags
+    #/----------------------------------------------------------------------------\#
+    if (tags_pri[1]==tags_tra[1]) and (tags_tra[1]==tags_sec[1]):
         ssfr_tag = tags_pri[1]
-    if (tags_pri[2]==tags_tra[2]):
+    if (tags_pri[2]==tags_tra[2]) and (tags_tra[2]==tags_sec[2]):
         lc_tag = tags_pri[2]
+    #\----------------------------------------------------------------------------/#
 
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
 
@@ -345,8 +346,7 @@ def rad_cal(
 
     for i in range(ssfr_.Ndset):
         dset_tag = 'dset%d' % i
-        dset_ = getattr(ssfr_, dset_tag)
-        int_time = dset_['info']['int_time']
+        int_time = ssfr_.dset_info[dset_tag]
 
         if len(tags_pri) == 7:
             cal_tag = '%s_%s' % (tags_pri[0], tags_pri[4])
@@ -358,7 +358,12 @@ def rad_cal(
         elif len(tags_tra) == 8:
             cal_tag = '%s|%s_%s_%s' % (cal_tag, tags_tra[0], tags_tra[4], tags_tra[7])
 
-        filename_tag = '%s|%s|%s' % (cal_tag, date_today_s, dset_tag)
+        if len(tags_sec) == 7:
+            cal_tag = '%s|%s_%s' % (cal_tag, tags_sec[0], tags_sec[4])
+        elif len(tags_sec) == 8:
+            cal_tag = '%s|%s_%s_%s' % (cal_tag, tags_sec[0], tags_sec[4], tags_sec[7])
+
+        filename_tag = '%s|%s_processed-for-arcsix' % (cal_tag, date_today_s)
 
         ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=tags_pri[4], filename_tag=filename_tag, verbose=True, spec_reverse=spec_reverse)
 
@@ -385,6 +390,7 @@ def main_calibration_rad():
         data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350
         data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350
         data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_restart
+
         data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350
         data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350
         data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-506_si-080-120_in-250-350
@@ -454,30 +460,35 @@ def main_calibration_rad():
     #     print(fdir_sec_cal)
     #\----------------------------------------------------------------------------/#
 
-    sys.exit()
+    fdirs_pri = [
+            {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+             'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+            ]
 
-    # fdirs_pri = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/2024-03-29*SSFR-A*pri-cal*si-080-120_in-250-350*'))
+    fdirs_tra = [
+            {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
+             'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
+            ]
+    fdirs_sec = [
+            {'zen': 'data/arcsix/cal/rad-cal/2024-05-27_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+             'nad': 'data/arcsix/cal/rad-cal/2024-05-26_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+            {'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+             'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+            ]
 
     for fdir_pri in fdirs_pri:
+        for fdir_tra in fdirs_tra:
+            for fdir_sec in fdirs_sec:
+                for spec_tag in fdir_sec.keys():
+                    fdir_pri0 = fdir_pri[spec_tag]
+                    fdir_tra0 = fdir_tra[spec_tag]
+                    fdir_sec0 = fdir_sec[spec_tag]
 
-        tags_pri = os.path.basename(fdir_pri).split('_')
-
-        date_cal_pri = datetime.datetime.strptime(tags_pri[0], '%Y-%m-%d')
-
-        if date_cal_pri == datetime.datetime(2024, 3, 29):
-            fdirs_tra = sorted(glob.glob('/argus/field/arcsix/cal/rad-cal/2024-03-29*%s*%s*transfer*%s*%s*' % (tags_pri[1], tags_pri[2], tags_pri[5], tags_pri[6])))
-
-            if len(fdirs_tra) >= 1:
-                for fdir_tra in fdirs_tra:
-                    print('='*50)
-                    print(fdir_pri)
-                    print(fdir_tra)
-                    if (fdir_tra.split('_')[-1][:4] != 'spec'):
-                        rad_cal(fdir_pri, fdir_tra, spec_reverse=False)
-                    else:
-                        rad_cal(fdir_pri, fdir_tra, spec_reverse=True)
-                    print('='*50)
-                    print()
+                    print(spec_tag)
+                    print(fdir_pri0)
+                    print(fdir_tra0)
+                    print(fdir_sec0)
+                    rad_cal(fdir_pri0, fdir_tra0, fdir_sec=fdir_sec0, spec_reverse=False)
     #\----------------------------------------------------------------------------/#
     sys.exit()
 #\----------------------------------------------------------------------------/#
@@ -533,6 +544,7 @@ def cdata_arcsix_hsk_v0(
                     'ang_pit': 'pitch_angle',
                     'ang_rol': 'roll_angle',
                     'ang_hed': 'true_heading',
+                    'ir_surf_temp': 'ir_surf_temp',
                     }
         except Exception as error:
             print(error)
@@ -2181,7 +2193,7 @@ if __name__ == '__main__':
 
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
 
-    # main_calibration_rad()
+    main_calibration_rad()
 
     # data procesing
     #/----------------------------------------------------------------------------\#
