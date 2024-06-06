@@ -2645,8 +2645,9 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
-            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley
-            datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
+            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
+            # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
+            datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; cloud wall, surface BRDF
         ]
 
     for date in dates[::-1]:
@@ -2663,8 +2664,8 @@ if __name__ == '__main__':
             #/----------------------------------------------------------------------------\#
             main_pre_arcsix(date)
             main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
