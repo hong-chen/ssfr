@@ -2654,7 +2654,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
-            datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; cloud wall, surface BRDF
+            # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
+            datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
         ]
 
     for date in dates[::-1]:
