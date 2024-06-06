@@ -72,6 +72,7 @@ _alp_time_offset_ = {
         '20240530': -17.41,
         '20240531': -17.41,
         '20240603': -17.41,
+        '20240605': -17.58,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -81,6 +82,7 @@ _spns_time_offset_ = {
         '20240530': 0.0,
         '20240531': 0.0,
         '20240603': 0.0,
+        '20240605': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240517': 185.0,
@@ -90,6 +92,7 @@ _ssfr1_time_offset_ = {
         '20240530': -158.04,
         '20240531': -161.38,
         '20240603': -170.42,
+        '20240605': -176.88,
         }
 _ssfr2_time_offset_ = {
         '20240517': 115.0,
@@ -99,6 +102,7 @@ _ssfr2_time_offset_ = {
         '20240530': -229.45,
         '20240531': -227.00,
         '20240603': -241.66,
+        '20240605': -250.48,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -2219,18 +2223,21 @@ if __name__ == '__main__':
             ]
 
     for date in dates[::-1]:
-        main_process_data_v0(date, run=True)
-        # main_process_data_v1(date, run=True)
-        # main_process_data_v2(date, run=True)
 
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
+
+        # run_time_offset_check(date)
+
+        main_process_data_v1(date, run=True)
         # main_process_data_v1(date, run=False)
-        # main_process_data_v0(date, run=False)
+
+        main_process_data_v2(date, run=True)
         # main_process_data_v2(date, run=False)
 
-        run_time_offset_check(date)
         # run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
 
-        main_process_data_archive(date, run=True)
+        # main_process_data_archive(date, run=True)
     #\----------------------------------------------------------------------------/#
 
     pass
