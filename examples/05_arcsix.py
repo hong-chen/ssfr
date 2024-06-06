@@ -982,6 +982,7 @@ def cdata_arcsix_spns_archive(
             '20240530': 'Noticed icing on dome after flight',
             '20240531': '',
             '20240603': '',
+            '20240605': '',
             }
     comments_special = comments_special[date_s]
 
@@ -1637,6 +1638,7 @@ def cdata_arcsix_ssfr_archive(
             '20240530': 'Noticed icing on zenith light collector dome after flight',
             '20240531': 'Encountered temperature control issue (after around 1:30 UTC)',
             '20240603': '',
+            '20240605': '',
             }
     comments_special = comments_special[date_s]
 
@@ -2229,15 +2231,15 @@ if __name__ == '__main__':
 
         # run_time_offset_check(date)
 
-        main_process_data_v1(date, run=True)
-        # main_process_data_v1(date, run=False)
+        # main_process_data_v1(date, run=True)
+        main_process_data_v1(date, run=False)
 
-        main_process_data_v2(date, run=True)
-        # main_process_data_v2(date, run=False)
+        # main_process_data_v2(date, run=True)
+        main_process_data_v2(date, run=False)
 
         # run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
 
-        # main_process_data_archive(date, run=True)
+        main_process_data_archive(date, run=True)
     #\----------------------------------------------------------------------------/#
 
     pass
