@@ -220,9 +220,9 @@ class read_ssfr:
             dark_extend=1,
             light_extend=1,
             which_ssfr=None,
-            wvl_s=350.0,
-            wvl_e=2200.0,
-            wvl_j=950.0,
+            wvl_s=ssfr.common.ssfr_default['wvl_range'][0],
+            wvl_e=ssfr.common.ssfr_default['wvl_range'][1],
+            wvl_j=ssfr.common.ssfr_default['wvl_joint'],
             verbose=ssfr.common.karg['verbose'],
             ):
 
@@ -403,10 +403,35 @@ class read_ssfr:
             dark_fallback=True,
             ):
 
+        """
+        shutter =
+          0: 'open', shutter open, taking light measurements
+
+          1: 'close', shutter close, taking dark measurements
+
+         10: 'excluded', excluded data at dark/light cycle change
+         99: 'unknown', inconsistent dark status among four spectrometers or default setting
+
+        -10: 'interp_begin', if using 'interp' and light cycle is detected at the very beginning and we don't have dark cycle before for interpolation, use average darks from the next dark cycle
+        -11: 'interp_end', if using 'interp' and light cycle is detected at the very end and we don't have dark cycle before for interpolation, use average darks from the previous dark cycle
+        -20: 'fallback', in case we don't have any measured darks for a specific integration time, use average darks (also averaged over integration time) from other integration times
+        """
+
+        shutter_mode = {
+                'open': 0,
+                'close': 1,
+                'interp_begin': -10,
+                'interp_end': -11,
+                'fallback': -20,
+                'excluded': 10,
+                'unknown': 99,
+                }
+        self.shutter_mode = shutter_mode
 
         shutter_dark_corr_spec = np.zeros((self.data_raw['shutter'].size, self.Nspec), dtype=self.data_raw['shutter'].dtype)
-        shutter_dark_corr_spec[...] = -2
-        count_dark_corr      = np.zeros_like(self.data_raw['count_raw'])
+        shutter_dark_corr_spec[...] = shutter_mode['unknown']
+
+        count_dark_corr = np.zeros_like(self.data_raw['count_raw'])
         count_dark_corr[...] = fill_value
 
         fail_list = []
@@ -423,8 +448,8 @@ class read_ssfr:
             int_time = np.unique(self.data_raw['int_time'][:, ispec])
             for int_time0 in int_time:
                 logic = (self.data_raw['int_time'][:, ispec]==int_time0)
-                logic_light = (logic & ((self.data_raw['shutter']==0)))
-                logic_dark  = (logic & ((self.data_raw['shutter']==1)))
+                logic_light = (logic & ((self.data_raw['shutter']==shutter_mode['open'])))
+                logic_dark  = (logic & ((self.data_raw['shutter']==shutter_mode['close'])))
 
                 if logic_dark.sum() > 0:
 
@@ -456,11 +481,11 @@ class read_ssfr:
 
                 ispec, int_time0, logic_light = item
 
-                logic_dark = (shutter_dark_corr_spec[:, ispec] == 1)
+                logic_dark = (shutter_dark_corr_spec[:, ispec] == shutter_mode['close'])
                 darks = (self.data_raw['count_raw'][logic_dark, :, ispec]-self.count_base) / (self.data_raw['int_time'][logic_dark, np.newaxis, ispec]) * int_time0 + self.count_base
                 dark_mean = np.mean(darks, axis=0)
 
-                shutter_dark_corr_spec[logic_light, ispec] = 0
+                shutter_dark_corr_spec[logic_light, ispec] = shutter_mode['fallback']
                 count_dark_corr[logic_light, :, ispec] = self.data_raw['count_raw'][logic_light, :, ispec] - dark_mean[np.newaxis, :]
                 msg = '\nWarning [read_ssfr]: using average darks for %s=%3dms (where no darks were found) at indices\n    %s' % (self.spec_info[ispec], int_time0, np.where(logic_light)[0])
                 warnings.warn(msg)
@@ -471,12 +496,19 @@ class read_ssfr:
         # we only keep the when correction for four spectrometers are all successful
         #/----------------------------------------------------------------------------\#
         shutter_dark_corr = np.zeros_like(self.data_raw['shutter'])
-        shutter_dark_corr[np.sum(shutter_dark_corr_spec==0, axis=-1)==self.Nspec] = 0
-        shutter_dark_corr[np.sum(shutter_dark_corr_spec==1, axis=-1)==self.Nspec] = 1
-        shutter_dark_corr[np.sum(shutter_dark_corr_spec<0 , axis=-1)>0] = -1
+        shutter_dark_corr[...] = shutter_mode['unknown']
+        for key in shutter_mode.keys():
+            if key != 'unknown':
+                shutter_dark_corr[np.sum(shutter_dark_corr_spec==shutter_mode[key], axis=-1)==self.Nspec] = shutter_mode[key]
 
-        logic_fill = (shutter_dark_corr!=0)
+        logic_fill = (shutter_dark_corr>0)
         count_dark_corr[logic_fill, :, :] = fill_value
+
+        if self.verbose:
+            msg = '\nMessage [read_ssfr]:'
+            print(msg)
+            for key in shutter_mode.keys():
+                print('Shutter status %-12s [=%4d]: %6d/%6d samples.' % (key, shutter_mode[key], (shutter_dark_corr==shutter_mode[key]).sum(), shutter_dark_corr.size))
         #\----------------------------------------------------------------------------/#
 
         self.data_raw['shutter_dark-corr'] = shutter_dark_corr

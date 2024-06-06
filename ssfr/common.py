@@ -8,7 +8,7 @@ karg = {
         'verbose': True,
         }
 
-input_list = {
+ssfr_default = {
         'which_ssfr': 'lasp',
           'which_lc': 'zenith',
          'wvl_joint': 950.0,

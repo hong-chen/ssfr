@@ -644,7 +644,7 @@ def plot_video_frame(statements, test=False):
                     ax_tms.plot(flt_trk['tmhr'][logic_solid], tms_y0[logic_solid], lw=0.5, color=var_plot0['color'], zorder=10, alpha=1.0)
 
             ax_tms.vlines(flt_trk['tmhr'][logic_solid][flt_trk['shutter'][logic_solid]==1], ymin=count_base, ymax=count_ceil, color='black', alpha=0.3, lw=2.0, zorder=0)
-            ax_tms.vlines(flt_trk['tmhr'][logic_solid][flt_trk['shutter_dc'][logic_solid]==-1], ymin=count_base, ymax=count_ceil, color='red', alpha=0.3, lw=2.0, zorder=0)
+            ax_tms.vlines(flt_trk['tmhr'][logic_solid][flt_trk['shutter_dc'][logic_solid]==10], ymin=count_base, ymax=count_ceil, color='red', alpha=0.3, lw=2.0, zorder=0)
 
     ax_tms.axhline(count_base, color='red', alpha=0.2, zorder=0)
     ax_tms.axhline(count_ceil, color='red', alpha=0.2, zorder=0)
