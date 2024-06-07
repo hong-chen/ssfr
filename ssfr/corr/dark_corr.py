@@ -208,7 +208,7 @@ def dark_corr(
         for iChan in range(Ny):
             y_fit = data[logic_fit, iChan]
             coef  = np.polyfit(x_fit, y_fit, 5)
-            dark_corr[logic_light, iChan] = data[logic_light, iChan] - np.polyval(coef, x[logic_light])
+            data_corr[logic_light, iChan] = data[logic_light, iChan] - np.polyval(coef, x[logic_light])
 
     else:
         msg = '\nError [dark_corr]: <mode=%s> has not been implemented yet.' % mode

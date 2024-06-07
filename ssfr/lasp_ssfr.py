@@ -401,6 +401,7 @@ class read_ssfr:
             light_extend=1,
             fill_value=np.nan,
             dark_fallback=True,
+            temp_threshold=25.0,
             ):
 
         """
@@ -464,6 +465,28 @@ class read_ssfr:
                             shutter_mode=shutter_mode,
                             fill_value=fill_value
                             )
+
+                    if ispec in [0, 1]:
+                        x_temp = self.data_raw['temp'][:, 1]
+                    elif ispec in [2, 3]:
+                        x_temp = self.data_raw['temp'][:, 2]
+                    logic_temp = logic & (x_temp>temp_threshold)
+
+                    if logic_temp.sum() > 600:
+                        msg = '\nWarning [read_ssfr]: Temperature anomaly detected, performing temperature dependent dark correction for data with temperature >25 Celcius ...'
+                        warnings.warn(msg)
+                        shutter_dark_corr_spec[logic_temp, ispec], count_dark_corr[logic_temp, :, ispec] = \
+                                ssfr.corr.dark_corr(
+                                x_temp[logic_temp],
+                                self.data_raw['shutter'][logic_temp],
+                                self.data_raw['count_raw'][logic_temp, :, ispec],
+                                mode='temp',
+                                dark_extend=dark_extend,
+                                light_extend=light_extend,
+                                shutter_mode=shutter_mode,
+                                temp_threshold=temp_threshold,
+                                fill_value=fill_value
+                                )
 
                 else:
 

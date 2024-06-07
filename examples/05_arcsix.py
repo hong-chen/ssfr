@@ -1150,8 +1150,6 @@ def cdata_arcsix_ssfr_v0(
 
         ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames_ssfr, dark_corr_mode='interp', which_ssfr='lasp|%s' % which_ssfr.lower())
 
-        sys.exit()
-
         # data that are useful
         #   wvl_zen [nm]
         #   cnt_zen [counts/ms]
@@ -1831,30 +1829,30 @@ def main_process_data_v0(date, run=True):
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-    #         fdir_out=fdir_out, run=run)
+    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
+    _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
     #\----------------------------------------------------------------------------/#
 
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
-    # fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
-    #         fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
+    fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
+    _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
     #\----------------------------------------------------------------------------/#
 
     # SPNS v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
-    # fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
-    #         fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
+    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
+    _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
     #\----------------------------------------------------------------------------/#
 
     # SSFR-A v0: raw data
@@ -1869,14 +1867,13 @@ def main_process_data_v0(date, run=True):
 
     # SSFR-B v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr2_))
-    # fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
-    #         which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr2_))
+    fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
+            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
+    _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
     #\----------------------------------------------------------------------------/#
-
 
 def main_process_data_v1(date, run=True):
 
@@ -2310,22 +2307,22 @@ if __name__ == '__main__':
 
     for date in dates[::-1]:
 
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
+        main_process_data_v0(date, run=True)
+        # main_process_data_v0(date, run=False)
 
-        dark_corr_temp(date)
+        # dark_corr_temp(date)
 
         # run_time_offset_check(date)
 
-        # main_process_data_v1(date, run=True)
+        main_process_data_v1(date, run=True)
         # main_process_data_v1(date, run=False)
 
-        # main_process_data_v2(date, run=True)
+        main_process_data_v2(date, run=True)
         # main_process_data_v2(date, run=False)
 
         # run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
 
-        # main_process_data_archive(date, run=False)
+        main_process_data_archive(date, run=True)
     #\----------------------------------------------------------------------------/#
 
     pass

@@ -52,7 +52,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -2652,8 +2652,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
-            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
-            datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
+            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
+            # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
         ]
@@ -2670,15 +2670,15 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            main_pre_arcsix(date)
+            # main_pre_arcsix(date)
             # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
             # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
 
-    # sys.exit()
+    sys.exit()
 
 
     # test
