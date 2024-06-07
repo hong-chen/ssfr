@@ -873,10 +873,10 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1
             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2
-            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3
+            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4
             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5
-            datetime.datetime(2024, 6, 6), # ARCSIX science flight #6
+            # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6
         ]
 
     for date in dates[::-1]:
