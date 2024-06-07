@@ -1150,6 +1150,8 @@ def cdata_arcsix_ssfr_v0(
 
         ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames_ssfr, dark_corr_mode='interp', which_ssfr='lasp|%s' % which_ssfr.lower())
 
+        sys.exit()
+
         # data that are useful
         #   wvl_zen [nm]
         #   cnt_zen [counts/ms]
@@ -2197,6 +2199,80 @@ def run_angle_offset_check(
     #\----------------------------------------------------------------------------/#
     sys.exit()
 
+def dark_corr_temp(date, iChan=100):
+
+    date_s = date.strftime('%Y%m%d')
+    data_ssfr1_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v0' % date_s])
+
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        logic_dark = (data_ssfr1_v0['raw/shutter_dark-corr']==1) & (data_ssfr1_v0['raw/int_time'][:, 1]==350.0)
+        counts_zen_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 200, 1]
+        counts_nad_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 200, 3]
+
+        tmhr = data_ssfr1_v0['raw/tmhr'][logic_dark]
+
+        # InGaAs temperatures
+        temp_zen_in = data_ssfr1_v0['raw/temp'][logic_dark, 1]
+        temp_nad_in = data_ssfr1_v0['raw/temp'][logic_dark, 2]
+
+        # TEC temperatures
+        # temp_zen_in = data_ssfr1_v0['raw/temp'][logic_dark, 5]
+        # temp_nad_in = data_ssfr1_v0['raw/temp'][logic_dark, 6]
+
+        logic_fit = (temp_zen_in>25.0)
+        coef = np.polyfit(temp_zen_in[logic_fit], counts_zen_in[logic_fit], 4)
+
+        xx = np.linspace(temp_zen_in[logic_fit].min(), temp_zen_in[logic_fit].max(), 1000)
+        yy = np.polyval(coef, xx)
+
+
+        plt.close('all')
+        fig = plt.figure(figsize=(13, 13))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(221)
+
+        ax1.scatter(temp_zen_in, counts_zen_in)
+        ax1.plot(xx, yy, color='r')
+        ax1.set_title('Zenith')
+        ax1.set_xlabel('InGaAs Temperature')
+        ax1.set_ylabel('Counts')
+        # ax1.scatter(tmhr, temp_zen_in, s=6, c='r', lw=0.0)
+        # ax1.scatter(tmhr, temp_nad_in, s=6, c='b', lw=0.0)
+
+        ax2 = fig.add_subplot(122)
+        ax2.scatter(temp_nad_in, counts_nad_in)
+        ax2.set_title('Nadir')
+        ax2.set_xlabel('InGaAs Temperature')
+        ax2.set_ylabel('Counts')
+        # ax2.scatter(tmhr, counts_zen_in, s=6, c='r', lw=0.0)
+        # ax2.scatter(tmhr, counts_nad_in, s=6, c='b', lw=0.0)
+
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #\--------------------------------------------------------------/#
+        # save figure
+        #/--------------------------------------------------------------\#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        plt.show()
+        sys.exit()
+    #\----------------------------------------------------------------------------/#
+    sys.exit()
+
 
 
 
@@ -2222,18 +2298,20 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
              # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
-             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
+             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
+             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
              datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
-             datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
-             datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
+             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
+             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
              # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
             ]
 
     for date in dates[::-1]:
 
-        main_process_data_v0(date, run=True)
-        # main_process_data_v0(date, run=False)
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
+
+        # dark_corr_temp(date)
 
         # run_time_offset_check(date)
 

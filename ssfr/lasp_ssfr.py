@@ -461,6 +461,7 @@ class read_ssfr:
                             mode=dark_corr_mode,
                             dark_extend=dark_extend,
                             light_extend=light_extend,
+                            shutter_mode=shutter_mode,
                             fill_value=fill_value
                             )
 
@@ -508,7 +509,9 @@ class read_ssfr:
             msg = '\nMessage [read_ssfr]:'
             print(msg)
             for key in shutter_mode.keys():
-                print('Shutter status %-12s [=%4d]: %6d/%6d samples.' % (key, shutter_mode[key], (shutter_dark_corr==shutter_mode[key]).sum(), shutter_dark_corr.size))
+                Ncount = (shutter_dark_corr==shutter_mode[key]).sum()
+                if Ncount > 0:
+                    print('Shutter status %-12s [=%4d]: %6d/%6d samples.' % (key, shutter_mode[key], Ncount, shutter_dark_corr.size))
         #\----------------------------------------------------------------------------/#
 
         self.data_raw['shutter_dark-corr'] = shutter_dark_corr

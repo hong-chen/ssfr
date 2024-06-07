@@ -7,6 +7,7 @@ from scipy import stats
 __all__ = ['dark_corr']
 
 
+
 def dark_corr(
         x0,
         shutter0,
@@ -18,6 +19,7 @@ def dark_corr(
         dark_threshold=5,
         shutter_mode={'open':0, 'close':1},
         fill_value=np.nan,
+        temp_threshold=25.0,
         verbose=False
         ):
 
@@ -194,6 +196,19 @@ def dark_corr(
                         slope, intercept, r_value, p_value, std_err = stats.linregress(interp_x, interp_y)
                         dark_offset = target_x*slope + intercept
                         data_corr[crange[0]:crange[1], iChan] = data[crange[0]:crange[1], iChan] - dark_offset
+
+    elif mode == 'temp':
+
+        msg = '\nWarnings [dark_corr]: Performing temperature dependent correction, please make sure input <x> is a temperature variable ...'
+        warnings.warn(msg)
+
+        logic_fit = logic_dark & (x>temp_threshold)
+
+        x_fit = x[logic_fit]
+        for iChan in range(Ny):
+            y_fit = data[logic_fit, iChan]
+            coef  = np.polyfit(x_fit, y_fit, 4)
+            dark_corr[logic_light, iChan] = data[logic_light, iChan] - np.polyval(coef, x[logic_light])
 
     else:
         msg = '\nError [dark_corr]: <mode=%s> has not been implemented yet.' % mode
