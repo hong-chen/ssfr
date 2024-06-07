@@ -1246,13 +1246,35 @@ def cdata_arcsix_ssfr_v1(
                 # select calibration file (can later be adjusted for different integration time sets)
                 #/----------------------------------------------------------------------------\#
                 fdir_cal = '%s/rad-cal' % _fdir_cal_
-                # fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
-                fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*zen*' % (which_ssfr.lower())), key=os.path.getmtime)[-1]
+
+                jday_today = ssfr.util.dtime_to_jday(date)
+
+                int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
+                int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
+
+                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
+                jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
+                for i in range(jday_cal_zen.size):
+                    dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
+                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                    jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0)
+                fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
                 data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
-                # fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
-                fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*%s*nad*' % (which_ssfr.lower())), key=os.path.getmtime)[-1]
+                msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using <%s> for SSFR-A zenith ...' % (os.path.basename(fname_cal_zen))
+                print(msg)
+
+                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
+                jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
+                for i in range(jday_cal_nad.size):
+                    dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
+                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                    jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0)
+                fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+
+                msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using <%s> for SSFR-A nadir ...' % (os.path.basename(fname_cal_nad))
+                print(msg)
                 #\----------------------------------------------------------------------------/#
             elif which_ssfr == 'ssfr-b':
                 factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.0
@@ -1893,30 +1915,34 @@ def main_process_data_v1(date, run=True):
     #/----------------------------------------------------------------------------\#
     fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
     #\----------------------------------------------------------------------------/#
 
     # SPNS v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
     fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
     #\----------------------------------------------------------------------------/#
 
     # SSFR-A v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
     fname_ssfr1_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr1_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
             which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_ssfr1_v1' % date_s] = fname_ssfr1_v1
     #\----------------------------------------------------------------------------/#
 
     # SSFR-B v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
     fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr2_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
             which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
     #\----------------------------------------------------------------------------/#
 
-    _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
-    _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
-    _fnames_['%s_ssfr1_v1' % date_s] = fname_ssfr1_v1
-    _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
 
 def main_process_data_v2(date, run=True):
 
@@ -2303,11 +2329,11 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
              # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
-             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
-             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
-             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
-             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
+             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
+             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
+             datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
+             datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
+             datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
              datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
             ]
 

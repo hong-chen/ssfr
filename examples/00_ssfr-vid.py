@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-# _ssfr_         = 'ssfr-a'
-_ssfr_         = 'ssfr-b'
+_ssfr_         = 'ssfr-a'
+# _ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
