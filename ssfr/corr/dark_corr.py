@@ -207,7 +207,7 @@ def dark_corr(
         x_fit = x[logic_fit]
         for iChan in range(Ny):
             y_fit = data[logic_fit, iChan]
-            coef  = np.polyfit(x_fit, y_fit, 4)
+            coef  = np.polyfit(x_fit, y_fit, 5)
             dark_corr[logic_light, iChan] = data[logic_light, iChan] - np.polyval(coef, x[logic_light])
 
     else:

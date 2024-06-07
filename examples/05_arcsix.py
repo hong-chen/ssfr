@@ -2209,8 +2209,10 @@ def dark_corr_temp(date, iChan=100):
     #/----------------------------------------------------------------------------\#
     if True:
         logic_dark = (data_ssfr1_v0['raw/shutter_dark-corr']==1) & (data_ssfr1_v0['raw/int_time'][:, 1]==350.0)
-        counts_zen_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 200, 1]
-        counts_nad_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 200, 3]
+        # counts_zen_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 200, 1]
+        # counts_nad_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 200, 3]
+        counts_zen_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 10, 0]
+        counts_nad_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 10, 2]
 
         tmhr = data_ssfr1_v0['raw/tmhr'][logic_dark]
 
@@ -2223,7 +2225,7 @@ def dark_corr_temp(date, iChan=100):
         # temp_nad_in = data_ssfr1_v0['raw/temp'][logic_dark, 6]
 
         logic_fit = (temp_zen_in>25.0)
-        coef = np.polyfit(temp_zen_in[logic_fit], counts_zen_in[logic_fit], 4)
+        coef = np.polyfit(temp_zen_in[logic_fit], counts_zen_in[logic_fit], 5)
 
         xx = np.linspace(temp_zen_in[logic_fit].min(), temp_zen_in[logic_fit].max(), 1000)
         yy = np.polyval(coef, xx)
@@ -2311,7 +2313,7 @@ if __name__ == '__main__':
         # main_process_data_v0(date, run=True)
         main_process_data_v0(date, run=False)
 
-        # dark_corr_temp(date)
+        dark_corr_temp(date)
 
         # run_time_offset_check(date)
 
