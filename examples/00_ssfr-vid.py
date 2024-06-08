@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-_ssfr_         = 'ssfr-a'
-# _ssfr_         = 'ssfr-b'
+# _ssfr_         = 'ssfr-a'
+_ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -663,9 +663,9 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_xlabel('Time [hour]')
 
     text_left = ' ← %d minutes ago' % (tmhr_length*60.0)
-    ax_tms.annotate(text_left, xy=(0.03, -0.12), fontsize=12, color='gray', xycoords='axes fraction', ha='left', va='center')
+    ax_tms.annotate(text_left, xy=(0.03, -0.13), fontsize=12, color='gray', xycoords='axes fraction', ha='left', va='center')
     text_right = 'Current → '
-    ax_tms.annotate(text_right, xy=(0.97, -0.12), fontsize=12, color='gray', xycoords='axes fraction', ha='right', va='center')
+    ax_tms.annotate(text_right, xy=(0.97, -0.13), fontsize=12, color='gray', xycoords='axes fraction', ha='right', va='center')
 
     ax_tms.set_ylim((count_base-5000, count_ceil+5000))
     ax_tms.set_ylabel('Digital Counts')
@@ -873,10 +873,11 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1
             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2
-            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3
+            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4
             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5
             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6
+            datetime.datetime(2024, 6, 7), # ARCSIX science flight #7
         ]
 
     for date in dates[::-1]:

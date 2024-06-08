@@ -33,7 +33,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-# mpl.use('TkAgg')
+# mpl.use('Agg')
 
 
 
@@ -74,6 +74,7 @@ _alp_time_offset_ = {
         '20240603': -17.41,
         '20240605': -17.58,
         '20240606': -18.08,
+        '20240607': -17.45,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -85,6 +86,7 @@ _spns_time_offset_ = {
         '20240603': 0.0,
         '20240605': 0.0,
         '20240606': 0.0,
+        '20240607': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240517': 185.0,
@@ -96,6 +98,7 @@ _ssfr1_time_offset_ = {
         '20240603': -170.42,
         '20240605': -176.88,
         '20240606': -180.41,
+        '20240607': -181.44,
         }
 _ssfr2_time_offset_ = {
         '20240517': 115.0,
@@ -107,6 +110,7 @@ _ssfr2_time_offset_ = {
         '20240603': -241.66,
         '20240605': -250.48,
         '20240606': -256.90,
+        '20240607': -255.45,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -988,6 +992,7 @@ def cdata_arcsix_spns_archive(
             '20240603': '',
             '20240605': '',
             '20240606': '',
+            '20240607': '',
             }
     comments_special = comments_special[date_s]
 
@@ -1667,6 +1672,7 @@ def cdata_arcsix_ssfr_archive(
             '20240603': '',
             '20240605': '',
             '20240606': '',
+            '20240607': '',
             }
     comments_special = comments_special[date_s]
 
@@ -2228,81 +2234,108 @@ def run_angle_offset_check(
     #\----------------------------------------------------------------------------/#
     sys.exit()
 
-def dark_corr_temp(date, iChan=100):
+def dark_corr_temp(date, iChan=100, idset=0):
 
     date_s = date.strftime('%Y%m%d')
     data_ssfr1_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v0' % date_s])
 
+    tmhr = data_ssfr1_v0['raw/tmhr']
+    x_temp_zen = data_ssfr1_v0['raw/temp'][:, 1]
+    x_temp_nad = data_ssfr1_v0['raw/temp'][:, 2]
+    shutter = data_ssfr1_v0['raw/shutter_dark-corr']
+    dset_num = data_ssfr1_v0['raw/dset_num']
+
+    logic_dark = (shutter==1) & (dset_num==idset)
+    logic_light = (shutter==0) & (dset_num==idset)
 
     # figure
     #/----------------------------------------------------------------------------\#
     if True:
-        logic_dark = (data_ssfr1_v0['raw/shutter_dark-corr']==1) & (data_ssfr1_v0['raw/int_time'][:, 1]==350.0)
-        # counts_zen_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 200, 1]
-        # counts_nad_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 200, 3]
-        counts_zen_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 10, 0]
-        counts_nad_in = data_ssfr1_v0['raw/count_raw'][logic_dark, 10, 2]
-
-        tmhr = data_ssfr1_v0['raw/tmhr'][logic_dark]
-
-        # InGaAs temperatures
-        temp_zen_in = data_ssfr1_v0['raw/temp'][logic_dark, 1]
-        temp_nad_in = data_ssfr1_v0['raw/temp'][logic_dark, 2]
-
-        # TEC temperatures
-        # temp_zen_in = data_ssfr1_v0['raw/temp'][logic_dark, 5]
-        # temp_nad_in = data_ssfr1_v0['raw/temp'][logic_dark, 6]
-
-        logic_fit = (temp_zen_in>25.0)
-        coef = np.polyfit(temp_zen_in[logic_fit], counts_zen_in[logic_fit], 5)
-
-        xx = np.linspace(temp_zen_in[logic_fit].min(), temp_zen_in[logic_fit].max(), 1000)
-        yy = np.polyval(coef, xx)
 
 
         plt.close('all')
-        fig = plt.figure(figsize=(13, 13))
-        # fig.suptitle('Figure')
+        fig = plt.figure(figsize=(13, 19))
+        fig.suptitle('Channel #%d' % iChan)
         # plot
         #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(221)
+        ax0 = fig.add_subplot(12,1,1)
+        ax00 = fig.add_subplot(12,1,2)
+        ax000 = fig.add_subplot(12,1,3)
+        ax0000 = fig.add_subplot(12,1,4)
 
-        ax1.scatter(temp_zen_in, counts_zen_in)
-        ax1.plot(xx, yy, color='r')
-        ax1.set_title('Zenith')
-        ax1.set_xlabel('InGaAs Temperature')
+        ax1 = fig.add_subplot(323)
+        logic_fit = (x_temp_zen>25.0) & logic_dark
+        logic_x   = (x_temp_zen>25.0) & logic_light
+        coef = np.polyfit(x_temp_zen[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 0], 5)
+        xx = np.linspace(x_temp_zen[logic_x].min(), x_temp_zen[logic_x].max(), 1000)
+        yy = np.polyval(coef, xx)
+
+        ax1.scatter(x_temp_zen[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 0]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 0], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
+        ax1.plot(xx, yy, color='gray', zorder=1)
+        ax1.scatter(x_temp_zen[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 0], color='k', s=10, alpha=0.2, zorder=2)
+        ax1.set_title('Zenith Silicon (%.2f nm)' % data_ssfr1_v0['raw/wvl_zen_si'][iChan])
+        ax1.set_xlabel('Zenith InGaAs Temperature')
         ax1.set_ylabel('Counts')
-        # ax1.scatter(tmhr, temp_zen_in, s=6, c='r', lw=0.0)
-        # ax1.scatter(tmhr, temp_nad_in, s=6, c='b', lw=0.0)
 
-        ax2 = fig.add_subplot(122)
-        ax2.scatter(temp_nad_in, counts_nad_in)
-        ax2.set_title('Nadir')
-        ax2.set_xlabel('InGaAs Temperature')
+        ax0.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 0]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 0], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
+
+        logic_fit = (x_temp_zen>25.0) & logic_dark
+        logic_x   = (x_temp_zen>25.0) & logic_light
+        coef = np.polyfit(x_temp_zen[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 1], 5)
+        xx = np.linspace(x_temp_zen[logic_x].min(), x_temp_zen[logic_x].max(), 1000)
+        yy = np.polyval(coef, xx)
+
+        ax2 = fig.add_subplot(324)
+        ax2.scatter(x_temp_zen[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 1]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 1], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
+        ax2.plot(xx, yy, color='gray', zorder=1)
+        ax2.scatter(x_temp_zen[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 1], color='k', s=10, alpha=0.2, zorder=2)
+        ax2.set_title('Zenith InGaAs (%.2f nm)' % data_ssfr1_v0['raw/wvl_zen_in'][iChan])
+        ax2.set_xlabel('Zenith InGaAs Temperature')
         ax2.set_ylabel('Counts')
-        # ax2.scatter(tmhr, counts_zen_in, s=6, c='r', lw=0.0)
-        # ax2.scatter(tmhr, counts_nad_in, s=6, c='b', lw=0.0)
 
-        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-        # ax1.set_xlim(())
-        # ax1.set_ylim(())
-        # ax1.set_xlabel('')
-        # ax1.set_ylabel('')
-        # ax1.set_title('')
-        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        ax00.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 1]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 1], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
+
+        logic_fit = (x_temp_nad>25.0) & logic_dark
+        logic_x   = (x_temp_nad>25.0) & logic_light
+        coef = np.polyfit(x_temp_nad[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 2], 5)
+        xx = np.linspace(x_temp_nad[logic_x].min(), x_temp_nad[logic_x].max(), 1000)
+        yy = np.polyval(coef, xx)
+
+        ax3 = fig.add_subplot(325)
+        ax3.scatter(x_temp_nad[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 2]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 2], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
+        ax3.plot(xx, yy, color='gray', zorder=1)
+        ax3.scatter(x_temp_nad[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 2], color='k', s=10, alpha=0.2, zorder=2)
+        ax3.set_title('Nadir Silicon (%.2f nm)' % data_ssfr1_v0['raw/wvl_nad_si'][iChan])
+        ax3.set_xlabel('Nadir InGaAs Temperature')
+        ax3.set_ylabel('Counts')
+
+        ax000.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 2]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 2], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
+
+        logic_fit = (x_temp_nad>25.0) & logic_dark
+        logic_x   = (x_temp_nad>25.0) & logic_light
+        coef = np.polyfit(x_temp_nad[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 3], 5)
+        xx = np.linspace(x_temp_nad[logic_x].min(), x_temp_nad[logic_x].max(), 1000)
+        yy = np.polyval(coef, xx)
+
+        ax4 = fig.add_subplot(326)
+        ax4.scatter(x_temp_nad[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 3]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 3], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
+        ax4.plot(xx, yy, color='gray', zorder=1)
+        ax4.scatter(x_temp_nad[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 3], color='k', s=10, alpha=0.2, zorder=2)
+        ax4.set_title('Nadir InGaAs (%.2f nm)' % data_ssfr1_v0['raw/wvl_nad_in'][iChan])
+        ax4.set_xlabel('Nadir InGaAs Temperature')
+        ax4.set_ylabel('Counts')
+
+        ax0000.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 3]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 3], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
         #\--------------------------------------------------------------/#
         # save figure
         #/--------------------------------------------------------------\#
-        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        fig.subplots_adjust(hspace=0.3, wspace=0.4)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s_dset%d_%3.3d.png' % (_metadata['Function'], idset, iChan), bbox_inches='tight', metadata=_metadata, dpi=150)
         #\--------------------------------------------------------------/#
         plt.show()
         sys.exit()
     #\----------------------------------------------------------------------------/#
-    sys.exit()
 
 
 
@@ -2329,12 +2362,13 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
              # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
-             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
-             datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
-             datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
-             datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
-             datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
+             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
+             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
+             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
+             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
+             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
+             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
+             datetime.datetime(2024, 6, 7), # ARCSIX science flight #7, cloud wall
             ]
 
     for date in dates[::-1]:
@@ -2342,7 +2376,8 @@ if __name__ == '__main__':
         # main_process_data_v0(date, run=True)
         main_process_data_v0(date, run=False)
 
-        # dark_corr_temp(date)
+        # for iChan in range(256):
+        #     dark_corr_temp(date, iChan=iChan, idset=0)
 
         # run_time_offset_check(date)
 

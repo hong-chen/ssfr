@@ -35,6 +35,7 @@ import multiprocessing as mp
 import pickle
 from tqdm import tqdm
 import h5py
+from netCDF4 import Dataset
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 from scipy import ndimage
@@ -52,7 +53,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -142,6 +143,13 @@ _date_specs_ = {
         '20240606': {
             'tmhr_range': [10.90, 19.90],
            'description': 'ARCSIX Science Flight #6',
+      'preferred_region': 'lincoln_sea',
+       'cam_time_offset': 0.0,
+            },
+
+        '20240607': {
+            'tmhr_range': [10.90, 20.90],
+           'description': 'ARCSIX Science Flight #7',
       'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
@@ -2314,6 +2322,8 @@ def main_pre_arcsix(
     date_s = date.strftime('%Y%m%d')
     #\----------------------------------------------------------------------------/#
 
+
+
     # read in aircraft hsk data
     #/----------------------------------------------------------------------------\#
     fname_hsk = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
@@ -2346,6 +2356,54 @@ def main_pre_arcsix(
 
     f_hsk.close()
     #\--------------------------------------------------------------/#
+
+    # read marli
+    #/----------------------------------------------------------------------------\#
+    # fname_marli = er3t.util.get_all_files('data/arcsix/2024-Spring/p3/aux/marli', pattern='*%s*.cdf' % (date_s))[0]
+    # f = Dataset(fname_marli, 'r')
+    # tmhr0_ = f.variables['time'][...]
+    # h0_ = f.variables['H'][...]
+    # tmhr_, h_ = np.meshgrid(tmhr0_, h0_, indexing='ij')
+    # h_ += np.nanmax(np.interp(tmhr0_, tmhr, alt/1000.0))
+    # # for i in range(tmhr0_.size):
+    # #     h_[i, :] += np.interp(tmhr_[i], tmhr, alt/1000.0)
+    # # p_ch1_ = f.variables['P_ch1'][...]
+    # p_ch1_ = f.variables['LSR'][...]
+    # # p_ch1_ = f.variables['WVMR'][...]
+    # print(np.nanmin(p_ch1_))
+    # print(np.nanmax(p_ch1_))
+
+    # # figure
+    # #/----------------------------------------------------------------------------\#
+    # if True:
+    #     plt.close('all')
+    #     fig = plt.figure(figsize=(8, 6))
+    #     # fig.suptitle('Figure')
+    #     # plot
+    #     #/--------------------------------------------------------------\#
+    #     ax1 = fig.add_subplot(111)
+    #     # cs = ax1.imshow(p_ch1_.T, origin='lower', cmap='jet', zorder=0, vmin=0.0, vmax=4.0) #, extent=extent, vmin=0.0, vmax=0.5)
+    #     cs = ax1.pcolormesh(tmhr_, h_, p_ch1_, cmap='jet', zorder=0, vmin=0.0, vmax=4.0) #, extent=extent, vmin=0.0, vmax=0.5)
+    #     # ax1.scatter(x, y, s=6, c='k', lw=0.0)
+    #     # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+    #     # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+    #     # ax1.set_xlim(())
+    #     # ax1.set_ylim((0, 8.0))
+    #     # ax1.set_xlabel('')
+    #     # ax1.set_ylabel('')
+    #     # ax1.set_title('')
+    #     # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+    #     # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+    #     #\--------------------------------------------------------------/#
+    #     # save figure
+    #     #/--------------------------------------------------------------\#
+    #     # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+    #     # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+    #     # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+    #     #\--------------------------------------------------------------/#
+    #     plt.show()
+    #     sys.exit()
+    #\----------------------------------------------------------------------------/#
 
 
     # read kt19
@@ -2661,8 +2719,9 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
-            datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
-            datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
+            # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
+            # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
+            datetime.datetime(2024, 6, 7), # ARCSIX science flight #7; cloud wall
         ]
 
     for date in dates[::-1]:
@@ -2679,8 +2738,8 @@ if __name__ == '__main__':
             #/----------------------------------------------------------------------------\#
             main_pre_arcsix(date)
             main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
