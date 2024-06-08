@@ -148,7 +148,7 @@ _date_specs_ = {
             },
 
         '20240607': {
-            'tmhr_range': [13.20, 18.80],
+            'tmhr_range': [13.20, 19.00],
            'description': 'ARCSIX Science Flight #7',
       'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
@@ -2736,7 +2736,7 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            # main_pre_arcsix(date)
+            main_pre_arcsix(date)
             main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
             main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
             main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
