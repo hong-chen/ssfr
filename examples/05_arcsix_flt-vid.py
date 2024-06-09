@@ -53,7 +53,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -450,6 +450,7 @@ def process_marli(date, run=True):
     date_s = date.strftime('%Y%m%d')
 
     try:
+    # if True:
         fname = er3t.util.get_all_files('data/arcsix/2024-Spring/p3/aux/marli', pattern='*%s*.cdf' % (date_s))[0]
 
         fname_hsk = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
@@ -481,6 +482,10 @@ def process_marli(date, run=True):
 
         h_nan = np.sum(np.isnan(h_2d_new), axis=-1)
         h_1d_new = h_2d_new[np.argmin(h_nan), :]
+        indices_nan = np.where(np.isnan(h_1d_new))[0]
+        dh = h_1d_new[indices_nan[0]-1]-h_1d_new[indices_nan[0]-2]
+        h_1d_new[indices_nan] = h_1d_new[indices_nan[0]-1] + dh*(indices_nan-indices_nan[0]+1)
+
         tmhr_2d_new, h_2d_new = np.meshgrid(tmhr_1d, h_1d_new, indexing='ij')
         h_2d_new /= 1000.0
 
@@ -494,7 +499,6 @@ def process_marli(date, run=True):
             #/--------------------------------------------------------------\#
             ax1 = fig.add_subplot(111)
             cs = ax1.pcolormesh(tmhr_2d_new, h_2d_new, data_2d_new, cmap='viridis', zorder=0, vmin=0.0, vmax=4.0) #, extent=extent, vmin=0.0, vmax=0.5)
-            # ax1.scatter(tmhr, alt/1000.0, c='black', lw=0.0, s=2)
             ax1.axis('off')
             ax1.set_xlim((np.nanmin(tmhr_2d_new), np.nanmax(tmhr_2d_new)))
             ax1.set_ylim((np.nanmin(h_2d_new), np.nanmax(h_2d_new)))
@@ -506,6 +510,7 @@ def process_marli(date, run=True):
             _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
             fig.savefig(fname_png, bbox_inches='tight', metadata=_metadata, pad_inches=0.0, dpi=200)
             #\--------------------------------------------------------------/#
+            plt.show()
         #\----------------------------------------------------------------------------/#
     except Exception as error:
         print(error)
@@ -2771,8 +2776,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
-            datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
+            datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
+            # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
@@ -2792,9 +2797,9 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            # main_pre_arcsix(date)
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
+            main_pre_arcsix(date)
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
             main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
