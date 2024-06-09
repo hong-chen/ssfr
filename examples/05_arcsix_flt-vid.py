@@ -462,9 +462,9 @@ def process_marli(date, run=True):
         # read marli
         #/----------------------------------------------------------------------------\#
         f = Dataset(fname, 'r')
-        tmhr_1d = f.variables['time'][...]
-        h_1d = f.variables['H'][...]*1000.0
-        data_2d = f.variables['LSR'][...]
+        tmhr_1d = np.array(f.variables['time'][...].data, dtype=np.float64)
+        h_1d = np.array(f.variables['H'][...].data*1000.0, dtype=np.float64)
+        data_2d = np.array(f.variables['LSR'][...].data, dtype=np.float64)
         f.close()
 
         tmhr_2d, h_2d = np.meshgrid(tmhr_1d, h_1d, indexing='ij')
@@ -482,9 +482,11 @@ def process_marli(date, run=True):
 
         h_nan = np.sum(np.isnan(h_2d_new), axis=-1)
         h_1d_new = h_2d_new[np.argmin(h_nan), :]
+
         indices_nan = np.where(np.isnan(h_1d_new))[0]
-        dh = h_1d_new[indices_nan[0]-1]-h_1d_new[indices_nan[0]-2]
-        h_1d_new[indices_nan] = h_1d_new[indices_nan[0]-1] + dh*(indices_nan-indices_nan[0]+1)
+        if indices_nan.size > 0:
+            dh = h_1d_new[indices_nan[0]-1]-h_1d_new[indices_nan[0]-2]
+            h_1d_new[indices_nan] = h_1d_new[indices_nan[0]-1] + dh*(indices_nan-indices_nan[0]+1)
 
         tmhr_2d_new, h_2d_new = np.meshgrid(tmhr_1d, h_1d_new, indexing='ij')
         h_2d_new /= 1000.0
@@ -2457,7 +2459,6 @@ def main_pre_arcsix(
     else:
         has_marli = False
     #\----------------------------------------------------------------------------/#
-    sys.exit()
 
 
     # read kt19
@@ -2777,10 +2778,10 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
-            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
+            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
-            # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
-            # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
+            datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
+            datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
             # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7; cloud wall
         ]
 
