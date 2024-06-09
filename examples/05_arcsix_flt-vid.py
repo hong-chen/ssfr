@@ -2358,7 +2358,7 @@ def plot_video_frame_arcsix(statements, test=False):
     # altitude (time series) plot settings
     #/----------------------------------------------------------------------------\#
     if has_kt19:
-        ax_tms_alt.set_ylim(bottom=-(ax_alt_prof.get_ylim()[-1]-ax_alt_prof.get_ylim()[0])*0.1, top=ax_alt_prof.get_ylim()[-1])
+        ax_tms_alt.set_ylim(bottom=-(ax_alt_prof.get_ylim()[-1])*0.1, top=ax_alt_prof.get_ylim()[-1])
     else:
         ax_tms_alt.set_ylim(bottom=0.0, top=ax_alt_prof.get_ylim()[-1])
 
