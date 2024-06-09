@@ -466,6 +466,7 @@ def process_marli(date, run=True):
         h_1d = np.array(f.variables['H'][...].data*1000.0, dtype=np.float64)
         data_2d = np.array(f.variables['LSR'][...].data, dtype=np.float64)
         f.close()
+        data_2d[data_2d<=0.0] = np.nan
 
         tmhr_2d, h_2d = np.meshgrid(tmhr_1d, h_1d, indexing='ij')
 
@@ -499,7 +500,7 @@ def process_marli(date, run=True):
             # plot
             #/--------------------------------------------------------------\#
             ax1 = fig.add_subplot(111)
-            cs = ax1.pcolormesh(tmhr_2d_new, h_2d_new, data_2d_new, cmap='viridis', zorder=0, vmin=0.0, vmax=4.0) #, extent=extent, vmin=0.0, vmax=0.5)
+            cs = ax1.pcolormesh(tmhr_2d_new, h_2d_new, data_2d_new, cmap='viridis', zorder=0, vmin=0.0, vmax=100.0) #, extent=extent, vmin=0.0, vmax=0.5)
             ax1.axis('off')
             ax1.set_xlim((np.nanmin(tmhr_2d_new), np.nanmax(tmhr_2d_new)))
             ax1.set_ylim((np.nanmin(h_2d_new), np.nanmax(h_2d_new)))
@@ -2777,7 +2778,7 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
-            # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
+            datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
             datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
             datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
