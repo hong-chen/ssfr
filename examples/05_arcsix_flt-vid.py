@@ -53,7 +53,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -494,7 +494,6 @@ def process_marli(date, run=True):
         if run:
             plt.close('all')
             fig = plt.figure(figsize=(24, 4))
-            # fig.suptitle('Figure')
             # plot
             #/--------------------------------------------------------------\#
             ax1 = fig.add_subplot(111)
@@ -510,7 +509,6 @@ def process_marli(date, run=True):
             _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
             fig.savefig(fname_png, bbox_inches='tight', metadata=_metadata, pad_inches=0.0, dpi=200)
             #\--------------------------------------------------------------/#
-            plt.show()
         #\----------------------------------------------------------------------------/#
     except Exception as error:
         print(error)
@@ -2459,6 +2457,7 @@ def main_pre_arcsix(
     else:
         has_marli = False
     #\----------------------------------------------------------------------------/#
+    sys.exit()
 
 
     # read kt19
