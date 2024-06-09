@@ -114,7 +114,7 @@ _date_specs_ = {
             },
 
         '20240530': {
-            'tmhr_range': [11.00, 18.20],
+            'tmhr_range': [10.90, 18.30],
            'description': 'ARCSIX Science Flight #2',
       'preferred_region': 'ca_archipelago',
        'cam_time_offset': 2.0,
@@ -493,8 +493,8 @@ def process_marli(date, run=True):
             # plot
             #/--------------------------------------------------------------\#
             ax1 = fig.add_subplot(111)
-            cs = ax1.pcolormesh(tmhr_2d_new, h_2d_new, data_2d_new, cmap='spring', zorder=0, vmin=0.0, vmax=4.0) #, extent=extent, vmin=0.0, vmax=0.5)
-            ax1.scatter(tmhr, alt/1000.0, c='orange', lw=0.0, s=2)
+            cs = ax1.pcolormesh(tmhr_2d_new, h_2d_new, data_2d_new, cmap='viridis', zorder=0, vmin=0.0, vmax=4.0) #, extent=extent, vmin=0.0, vmax=0.5)
+            # ax1.scatter(tmhr, alt/1000.0, c='black', lw=0.0, s=2)
             ax1.axis('off')
             ax1.set_xlim((np.nanmin(tmhr_2d_new), np.nanmax(tmhr_2d_new)))
             ax1.set_ylim((np.nanmin(h_2d_new), np.nanmax(h_2d_new)))
@@ -2126,7 +2126,7 @@ def plot_video_frame_arcsix(statements, test=False):
                     if vname == 'Altitude':
 
                         if has_lid0:
-                            ax_tms_alt.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
+                            ax_tms_alt.plot(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], color=var_plot['color'], lw=1.0, zorder=var_plot['zorder'])
                         else:
                             ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=var_plot['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
 
@@ -2236,21 +2236,6 @@ def plot_video_frame_arcsix(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
-    # altitude (time series) plot settings
-    #/----------------------------------------------------------------------------\#
-    ax_tms_alt.set_ylim((0.0, 8.0))
-    ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 8.1, 2.0)))
-    ax_tms_alt.yaxis.tick_right()
-    ax_tms_alt.yaxis.set_label_position('right')
-    ax_tms_alt.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
-
-    ax_tms_alt.set_frame_on(True)
-    for spine in ax_tms_alt.spines.values():
-        spine.set_visible(False)
-    ax_tms_alt.spines['right'].set_visible(True)
-    ax_tms_alt.spines['right'].set_color(vars_plot['Altitude']['color'])
-    ax_tms_alt.tick_params(axis='y', which='both', colors=vars_plot['Altitude']['color'])
-    #\----------------------------------------------------------------------------/#
 
 
     # time series plot settings
@@ -2356,10 +2341,31 @@ def plot_video_frame_arcsix(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
+    # altitude (time series) plot settings
+    #/----------------------------------------------------------------------------\#
+    if has_lid0:
+        ax_tms_alt.set_ylim(bottom=0.0, top=ax_alt_prof.get_ylim()[-1])
+    else:
+        ax_tms_alt.yaxis.set_major_locator(ax_alt_prof.get_ylim())
+    ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 1.0)))
+    ax_tms_alt.yaxis.set_minor_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 0.5)))
+    ax_tms_alt.yaxis.tick_right()
+    ax_tms_alt.yaxis.set_label_position('right')
+    ax_tms_alt.set_ylabel('Altitude [km]', rotation=270.0, labelpad=18, color=vars_plot['Altitude']['color'])
+
+    ax_tms_alt.set_frame_on(True)
+    for spine in ax_tms_alt.spines.values():
+        spine.set_visible(False)
+    ax_tms_alt.spines['right'].set_visible(True)
+    ax_tms_alt.spines['right'].set_color(vars_plot['Altitude']['color'])
+    ax_tms_alt.tick_params(axis='y', which='both', colors=vars_plot['Altitude']['color'])
+    #\----------------------------------------------------------------------------/#
+
+
     # acknowledgements
     #/----------------------------------------------------------------------------\#
     text1 = '\
-presented by ARCSIX SSFR Team | MetNav data from Ryan Bennett | MARLi data from Zhien Wang\n\
+presented by ARCSIX SSFR Team - H. Chen, V. Nataraja, A. Chamberlain, J. Drouet, Y.-W. Chen, K. Hirata, K. Dong, and S. Schmidt | MetNav - R. Bennett | MARLi - Z. Wang\n\
 '
     ax.annotate(text1, xy=(0.5, 0.26), fontsize=8, color='gray', xycoords='axes fraction', ha='center', va='center')
 
@@ -2767,7 +2773,7 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
-            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
+            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
