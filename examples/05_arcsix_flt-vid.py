@@ -53,7 +53,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-mpl.use('Agg')
+# mpl.use('Agg')
 
 
 import er3t
@@ -1696,7 +1696,7 @@ def plot_video_frame_arcsix(statements, test=False):
             }
     vars_plot['KT19 T↑']   = {
             'vname':'t-up_kt19',
-            'color':'purple',
+            'color':'none',
             'zorder': 1,
             }
 
@@ -1719,10 +1719,13 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     _aspect_ = 'auto'
     _alt_cmap_ = 'gist_ncar'
+    _temp_cmap_ = 'bwr'
     _dpi_      = 150
 
     _alt_base_ = 0.0
     _alt_ceil_ = 8.0
+    _temp_base_ = -20.0
+    _temp_ceil_ = 20.0
 
     _flux_base_ = 0.0
     _flux_ceil_ = 1.5
@@ -1837,6 +1840,9 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     alt_cmap = mpl.colormaps[_alt_cmap_]
     alt_norm = mpl.colors.Normalize(vmin=_alt_base_, vmax=_alt_ceil_)
+
+    temp_cmap = mpl.colormaps[_temp_cmap_]
+    temp_norm = mpl.colors.Normalize(vmin=_temp_base_, vmax=_temp_ceil_)
 
     dlon = flt_sim0.flt_imgs[index_trk]['extent_sat0'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat0'][0]
     Nscale = int(dlon/1.3155229999999989 * 15)
@@ -2138,7 +2144,7 @@ def plot_video_frame_arcsix(statements, test=False):
 
                     else:
 
-                        if vname not in ['TOA↓']:
+                        if vname not in ['TOA↓', 'KT19 T↑']:
                             if has_att:
                                 ang_pit_solid = flt_trk['ang_pit'][logic_solid]
                                 ang_rol_solid = flt_trk['ang_rol'][logic_solid]
@@ -2160,6 +2166,8 @@ def plot_video_frame_arcsix(statements, test=False):
                                 hist_bottoms[vname] += hist_y
 
                                 ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
+                        elif vname in ['KT19 T↑']:
+                            ax_tms_alt.bar(flt_trk['tmhr'][logic_solid], np.repeat(-10.0, logic_solid.sum()), width=1.0/3600.0, bottom=0.0, color=temp_cmap(temp_norm(tms_y[logic_solid])), lw=0.0, zorder=var_plot['zorder'])
                         else:
                             ax_tms.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder'])
     #\----------------------------------------------------------------------------/#
@@ -2349,10 +2357,11 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # altitude (time series) plot settings
     #/----------------------------------------------------------------------------\#
-    if has_lid0:
-        ax_tms_alt.set_ylim(bottom=0.0, top=ax_alt_prof.get_ylim()[-1])
+    if has_kt19:
+        ax_tms_alt.set_ylim(bottom=-(ax_alt_prof.get_ylim()[-1]-ax_alt_prof.get_ylim()[0])*0.1, top=ax_alt_prof.get_ylim()[-1])
     else:
-        ax_tms_alt.yaxis.set_major_locator(ax_alt_prof.get_ylim())
+        ax_tms_alt.set_ylim(bottom=0.0, top=ax_alt_prof.get_ylim()[-1])
+
     ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 1.0)))
     ax_tms_alt.yaxis.set_minor_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 0.5)))
     ax_tms_alt.yaxis.tick_right()
@@ -2388,7 +2397,7 @@ IN-FIELD USE ONLY\n\
     patches_legend = []
     for vname in vars_plot.keys():
         var_plot = vars_plot[vname]
-        if vname.lower() != 'altitude' and var_plot['plot?']:
+        if (vname not in ['Altitude', 'KT19 T↑']) and var_plot['plot?']:
             patches_legend.append(mpatches.Patch(color=var_plot['color'], label=vname))
     if len(patches_legend) > 0:
         ax_wvl.legend(handles=patches_legend, loc='upper right', fontsize=10)
@@ -2429,7 +2438,7 @@ def main_pre_arcsix(
     lon    = f_hsk['lon'][...]
     lat    = f_hsk['lat'][...]
 
-    hsk_keys = f_hsk.keys()
+    hsk_keys = [key for key in f_hsk.keys()]
 
     logic0 = (~np.isnan(jday) & ~np.isnan(sza) & ~np.isinf(sza))  & \
              check_continuity(lon, threshold=1.0) & \
@@ -2781,7 +2790,7 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall, (No MARLi)
-            datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF (No MARLi)
+            # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF (No MARLi)
             datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
             # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7; cloud wall
         ]
@@ -2798,15 +2807,15 @@ if __name__ == '__main__':
         else:
 
             #/----------------------------------------------------------------------------\#
-            main_pre_arcsix(date)
-            main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
-            main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            # main_pre_arcsix(date)
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
 
-    sys.exit()
+    # sys.exit()
 
 
     # test
