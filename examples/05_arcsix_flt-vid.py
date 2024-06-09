@@ -53,7 +53,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -74,6 +74,7 @@ _cam_          = 'nac'
 _fdir_main_       = 'data/%s/flt-vid' % _mission_
 _fdir_sat_img_    = 'data/%s/sat-img' % _mission_
 _fdir_cam_img_    = 'data/%s/2024-Spring/p3' % _mission_
+_fdir_lid_img_    = 'data/%s/lid-img' % _mission_
 _wavelength_      = 555.0
 
 _fdir_data_ = 'data/%s/processed' % _mission_
@@ -443,6 +444,75 @@ def process_sat_img_vn(fnames_sat_, extent_target, threshold=95.0):
             print(error)
 
     return np.array(jday_sat), fnames_sat
+
+def process_marli(date, run=True):
+
+    date_s = date.strftime('%Y%m%d')
+
+    try:
+        fname = er3t.util.get_all_files('data/arcsix/2024-Spring/p3/aux/marli', pattern='*%s*.cdf' % (date_s))[0]
+
+        fname_hsk = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
+        f_hsk = h5py.File(fname_hsk, 'r')
+        tmhr = f_hsk['tmhr'][...]
+        alt  = f_hsk['alt'][...]
+        f_hsk.close()
+
+        # read marli
+        #/----------------------------------------------------------------------------\#
+        f = Dataset(fname, 'r')
+        tmhr_1d = f.variables['time'][...]
+        h_1d = f.variables['H'][...]*1000.0
+        data_2d = f.variables['LSR'][...]
+        f.close()
+
+        tmhr_2d, h_2d = np.meshgrid(tmhr_1d, h_1d, indexing='ij')
+
+        h_2d_new = np.zeros_like(h_2d)
+        h_2d_new[...] = np.nan
+        data_2d_new = np.zeros_like(data_2d)
+        data_2d_new[...] = np.nan
+        for i in range(tmhr_1d.size):
+            h_1d_new = h_2d[i, :] + np.interp(tmhr_1d[i], tmhr, alt)
+            logic = h_1d_new >= 0.0
+
+            h_2d_new[i, 0:logic.sum()] = h_1d_new[logic]
+            data_2d_new[i, 0:logic.sum()] = data_2d[i, logic]
+
+        h_nan = np.sum(np.isnan(h_2d_new), axis=-1)
+        h_1d_new = h_2d_new[np.argmin(h_nan), :]
+        tmhr_2d_new, h_2d_new = np.meshgrid(tmhr_1d, h_1d_new, indexing='ij')
+        h_2d_new /= 1000.0
+
+        # figure
+        #/----------------------------------------------------------------------------\#
+        if run:
+            plt.close('all')
+            fig = plt.figure(figsize=(24, 4))
+            # fig.suptitle('Figure')
+            # plot
+            #/--------------------------------------------------------------\#
+            ax1 = fig.add_subplot(111)
+            cs = ax1.pcolormesh(tmhr_2d_new, h_2d_new, data_2d_new, cmap='spring', zorder=0, vmin=0.0, vmax=4.0) #, extent=extent, vmin=0.0, vmax=0.5)
+            ax1.scatter(tmhr, alt/1000.0, c='orange', lw=0.0, s=2)
+            ax1.axis('off')
+            ax1.set_xlim((np.nanmin(tmhr_2d_new), np.nanmax(tmhr_2d_new)))
+            ax1.set_ylim((np.nanmin(h_2d_new), np.nanmax(h_2d_new)))
+            #\--------------------------------------------------------------/#
+            extent_tag = '(%.4f,%.4f,%.4f,%.4f)' % (np.nanmin(tmhr_2d_new), np.nanmax(tmhr_2d_new), np.nanmin(h_2d_new), np.nanmax(h_2d_new))
+            fname_png = '%s/MARLI-P3B_LSR_%s_%s.png' % (_fdir_lid_img_, date.strftime('%Y-%m-%d'), extent_tag)
+            # save figure
+            #/--------------------------------------------------------------\#
+            _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            fig.savefig(fname_png, bbox_inches='tight', metadata=_metadata, pad_inches=0.0, dpi=200)
+            #\--------------------------------------------------------------/#
+        #\----------------------------------------------------------------------------/#
+    except Exception as error:
+        print(error)
+        fname_png = None
+
+    return fname_png
+
 
 
 
@@ -1693,6 +1763,11 @@ def plot_video_frame_arcsix(statements, test=False):
     else:
         has_cam0 = False
 
+    if ('fnames_lid0' in vnames_img):
+        has_lid0 = True
+    else:
+        has_lid0 = False
+
     has_spectra = any([vars_plot[key]['plot?'] for key in vars_plot.keys() if vars_plot[key]['spectra?']])
     #\----------------------------------------------------------------------------/#
 
@@ -1973,6 +2048,12 @@ def plot_video_frame_arcsix(statements, test=False):
 
                 wvl_index = np.argmin(np.abs(wvl_x-flt_sim0.wvl0))
                 ax_wvl.axvline(wvl_x[wvl_index], color=var_plot['color'], ls='-', lw=1.0, alpha=0.5, zorder=var_plot['zorder'])
+
+    if has_lid0:
+        fname_lid0 = flt_img0['fnames_lid0'][index_pnt]
+        img = mpl_img.imread(fname_lid0)
+        extent_lid0 = [float(x) for x in os.path.basename(fname_lid0).replace('.png', '').split('_')[-1].replace('(', '').replace(')', '').split(',')]
+        ax_tms_alt.imshow(img, extent=extent_lid0, aspect='auto', alpha=0.5, zorder=0)
     #\----------------------------------------------------------------------------/#
 
 
@@ -2044,7 +2125,10 @@ def plot_video_frame_arcsix(statements, test=False):
 
                     if vname == 'Altitude':
 
-                        ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=var_plot['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
+                        if has_lid0:
+                            ax_tms_alt.scatter(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
+                        else:
+                            ax_tms_alt.fill_between(flt_trk['tmhr'][logic_solid], tms_y[logic_solid], facecolor=var_plot['color'], alpha=0.25, lw=0.0, zorder=var_plot['zorder'])
 
                     else:
 
@@ -2275,7 +2359,7 @@ def plot_video_frame_arcsix(statements, test=False):
     # acknowledgements
     #/----------------------------------------------------------------------------\#
     text1 = '\
-presented by ARCSIX SSFR Team - Hong Chen, Vikas Nataraja, Yu-Wen Chen, Ken Hirata, Arabella Chamberlain, Katey Dong, Jeffery Drouet, and Sebastian Schmidt\n\
+presented by ARCSIX SSFR Team | MetNav data from Ryan Bennett | MARLi data from Zhien Wang\n\
 '
     ax.annotate(text1, xy=(0.5, 0.26), fontsize=8, color='gray', xycoords='axes fraction', ha='center', va='center')
 
@@ -2322,8 +2406,6 @@ def main_pre_arcsix(
     date_s = date.strftime('%Y%m%d')
     #\----------------------------------------------------------------------------/#
 
-
-
     # read in aircraft hsk data
     #/----------------------------------------------------------------------------\#
     fname_hsk = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
@@ -2357,52 +2439,14 @@ def main_pre_arcsix(
     f_hsk.close()
     #\--------------------------------------------------------------/#
 
-    # read marli
-    #/----------------------------------------------------------------------------\#
-    # fname_marli = er3t.util.get_all_files('data/arcsix/2024-Spring/p3/aux/marli', pattern='*%s*.cdf' % (date_s))[0]
-    # f = Dataset(fname_marli, 'r')
-    # tmhr0_ = f.variables['time'][...]
-    # h0_ = f.variables['H'][...]
-    # tmhr_, h_ = np.meshgrid(tmhr0_, h0_, indexing='ij')
-    # h_ += np.nanmax(np.interp(tmhr0_, tmhr, alt/1000.0))
-    # # for i in range(tmhr0_.size):
-    # #     h_[i, :] += np.interp(tmhr_[i], tmhr, alt/1000.0)
-    # # p_ch1_ = f.variables['P_ch1'][...]
-    # p_ch1_ = f.variables['LSR'][...]
-    # # p_ch1_ = f.variables['WVMR'][...]
-    # print(np.nanmin(p_ch1_))
-    # print(np.nanmax(p_ch1_))
 
-    # # figure
-    # #/----------------------------------------------------------------------------\#
-    # if True:
-    #     plt.close('all')
-    #     fig = plt.figure(figsize=(8, 6))
-    #     # fig.suptitle('Figure')
-    #     # plot
-    #     #/--------------------------------------------------------------\#
-    #     ax1 = fig.add_subplot(111)
-    #     # cs = ax1.imshow(p_ch1_.T, origin='lower', cmap='jet', zorder=0, vmin=0.0, vmax=4.0) #, extent=extent, vmin=0.0, vmax=0.5)
-    #     cs = ax1.pcolormesh(tmhr_, h_, p_ch1_, cmap='jet', zorder=0, vmin=0.0, vmax=4.0) #, extent=extent, vmin=0.0, vmax=0.5)
-    #     # ax1.scatter(x, y, s=6, c='k', lw=0.0)
-    #     # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
-    #     # ax1.plot([0, 1], [0, 1], color='k', ls='--')
-    #     # ax1.set_xlim(())
-    #     # ax1.set_ylim((0, 8.0))
-    #     # ax1.set_xlabel('')
-    #     # ax1.set_ylabel('')
-    #     # ax1.set_title('')
-    #     # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-    #     # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-    #     #\--------------------------------------------------------------/#
-    #     # save figure
-    #     #/--------------------------------------------------------------\#
-    #     # fig.subplots_adjust(hspace=0.3, wspace=0.3)
-    #     # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-    #     # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-    #     #\--------------------------------------------------------------/#
-    #     plt.show()
-    #     sys.exit()
+    # marli
+    #/----------------------------------------------------------------------------\#
+    fname_marli = process_marli(date)
+    if fname_marli is not None:
+        has_marli = True
+    else:
+        has_marli = False
     #\----------------------------------------------------------------------------/#
 
 
@@ -2626,6 +2670,9 @@ def main_pre_arcsix(
             flt_img['fnames_cam0']  = []
             flt_img['jday_cam0'] = np.array([], dtype=np.float64)
 
+        if has_marli:
+            flt_img['fnames_lid0']  = []
+
         for j in range(flt_trk0['jday'].size):
 
             jday_sat0_   = fnames_sat0['jday']
@@ -2645,6 +2692,9 @@ def main_pre_arcsix(
                 index_cam = np.argmin(np.abs(jday_cam0-flt_trk0['jday'][j]))
                 flt_img['fnames_cam0'].append(fnames_cam0[index_cam])
                 flt_img['jday_cam0'] = np.append(flt_img['jday_cam0'], jday_cam0[index_cam])
+
+            if has_marli:
+                flt_img['fnames_lid0'].append(fname_marli)
 
         flt_imgs.append(flt_img)
     #\--------------------------------------------------------------/#
@@ -2715,13 +2765,13 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
-            # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
-            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
+            datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
+            datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
+            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall
             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF
             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
-            datetime.datetime(2024, 6, 7), # ARCSIX science flight #7; cloud wall
+            # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7; cloud wall
         ]
 
     for date in dates[::-1]:
@@ -2739,7 +2789,7 @@ if __name__ == '__main__':
             main_pre_arcsix(date)
             main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
             main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
@@ -2753,7 +2803,7 @@ if __name__ == '__main__':
     date_s = date.strftime('%Y%m%d')
     fname = '%s/%s-FLT-VID_%s_%s_v0.pk' % (_fdir_main_, _mission_.upper(), _platform_.upper(), date_s)
     flt_sim0 = flt_sim(fname=fname, overwrite=False)
-    statements = (flt_sim0, 0, 100, 1730)
+    statements = (flt_sim0, 3, 400, 1730)
     # statements = (flt_sim0, 3, 443, 1730)
     # plot_video_frame_wff(statements, test=True)
     plot_video_frame_arcsix(statements, test=True)

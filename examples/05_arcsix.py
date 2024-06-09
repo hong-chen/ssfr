@@ -985,16 +985,13 @@ def cdata_arcsix_spns_archive(
 
     # special comments
     #/----------------------------------------------------------------------------\#
-    comments_special = {
-            '20240528': '',
+    comments_special_dict = {
             '20240530': 'Noticed icing on dome after flight',
-            '20240531': '',
-            '20240603': '',
-            '20240605': '',
-            '20240606': '',
-            '20240607': '',
             }
-    comments_special = comments_special[date_s]
+    if date_s in comments_special_dict.keys():
+        comments_special = comments_special_dict[date_s]
+    else:
+        comments_special = ''
 
     if comments_special != '':
         Nspecial = len(comments_special.split('\n'))
@@ -1665,16 +1662,14 @@ def cdata_arcsix_ssfr_archive(
 
     # special comments
     #/----------------------------------------------------------------------------\#
-    comments_special = {
-            '20240528': '',
+    comments_special_dict = {
             '20240530': 'Noticed icing on zenith light collector dome after flight',
             '20240531': 'Encountered temperature control issue (after around 1:30 UTC)',
-            '20240603': '',
-            '20240605': '',
-            '20240606': '',
-            '20240607': '',
             }
-    comments_special = comments_special[date_s]
+    if date_s in comments_special_dict.keys():
+        comments_special = comments_special_dict[date_s]
+    else:
+        comments_special = ''
 
     if comments_special != '':
         Nspecial = len(comments_special.split('\n'))
@@ -2373,8 +2368,8 @@ if __name__ == '__main__':
 
     for date in dates[::-1]:
 
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
+        main_process_data_v0(date, run=True)
+        # main_process_data_v0(date, run=False)
 
         # for iChan in range(256):
         #     dark_corr_temp(date, iChan=iChan, idset=0)
