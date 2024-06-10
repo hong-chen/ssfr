@@ -1988,10 +1988,10 @@ def plot_video_frame_arcsix(statements, test=False):
 
         img = ndimage.rotate(img, ang_cam_offset, reshape=False)
         img_plot = img.copy()
-        img_plot[:, :, 0] = np.int_(img[:, :, 0]/img[:, :, 0].max()*255)
-        img_plot[:, :, 1] = np.int_(img[:, :, 1]/img[:, :, 1].max()*255)
-        img_plot[:, :, 2] = np.int_(img[:, :, 2]/img[:, :, 2].max()*255)
-        img_plot[img_plot>=255] = 255
+        # img_plot[:, :, 0] = np.int_(img[:, :, 0]/img[:, :, 0].max()*255)
+        # img_plot[:, :, 1] = np.int_(img[:, :, 1]/img[:, :, 1].max()*255)
+        # img_plot[:, :, 2] = np.int_(img[:, :, 2]/img[:, :, 2].max()*255)
+        img_plot[img_plot>255] = 255
         img_plot = np.int_(img_plot)
         ax_img.imshow(img_plot, origin='upper', aspect='auto', zorder=0, extent=[cam_x_s, cam_x_e, cam_y_s, cam_y_e])
 
