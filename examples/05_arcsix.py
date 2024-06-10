@@ -546,7 +546,7 @@ def cdata_arcsix_hsk_v0(
             #         'ang_hed': 'true_heading',
             #         }
 
-            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[0]
+            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
             data_hsk = ssfr.util.read_ict(fname)
             var_dict = {
                     'lon': 'longitude',
@@ -2357,12 +2357,12 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
              # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
-             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
+             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
+             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
              # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
              # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
-             datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
-             datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
+             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
+             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
              # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7, cloud wall
             ]
 
