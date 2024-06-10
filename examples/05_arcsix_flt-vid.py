@@ -1890,9 +1890,9 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     lon_half = 15.0
     lat_half = 2.0
-    lat_low  = max([lat_current-lat_half, 76.0])
+    lat_low  = max([lat_current-lat_half, 72.0])
     lat_high = min([lat_low+lat_half*2.0, 87.0])
-    lat_low  = max([lat_high-lat_half*2.0, 76.0])
+    lat_low  = max([lat_high-lat_half*2.0, 72.0])
     extent_img0 = [lon_current-lon_half, lon_current+lon_half, lat_low, lat_high]
     ax_map.set_extent(extent_img0, crs=ccrs.PlateCarree())
 
@@ -2302,7 +2302,7 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_spectra:
         ax_wvl.set_xlim((200, 2200))
-        ax_wvl.set_ylim(ax_tms.get_ylim().copy())
+        ax_wvl.set_ylim(copy.deepcopy(ax_tms.get_ylim()))
         ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
         ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
         ax_wvl.set_xlabel('Wavelength [nm]')
@@ -2319,7 +2319,7 @@ def plot_video_frame_arcsix(statements, test=False):
     ax_alt_prof.grid()
 
     if has_spectra:
-        ax_alt_prof.set_xlim(ax_tms.get_ylim().copy())
+        ax_alt_prof.set_xlim(copy.deepcopy(ax_tms.get_ylim()))
         ax_alt_prof.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
         ax_alt_prof.xaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
         ax_alt_prof.set_ylim(
@@ -2344,7 +2344,7 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # histogram plot
     #/----------------------------------------------------------------------------\#
-    ax_alt_hist.set_xlim(ax_tms.get_ylim().copy())
+    ax_alt_hist.set_xlim(copy.deepcopy(ax_tms.get_ylim()))
     ax_alt_hist.set_ylim((0, 5000))
     ax_alt_hist.axis('off')
     #\----------------------------------------------------------------------------/#
@@ -2447,10 +2447,12 @@ def main_pre_arcsix(
     sza    = f_hsk['sza'][...]
     lon    = f_hsk['lon'][...]
     lat    = f_hsk['lat'][...]
+    alt    = f_hsk['alt'][...]
 
     hsk_keys = [key for key in f_hsk.keys()]
 
     logic0 = (~np.isnan(jday) & ~np.isnan(sza) & ~np.isinf(sza))  & \
+             (alt>=0.0) & (alt<=12000.0) & \
              check_continuity(lon, threshold=1.0) & \
              check_continuity(lat, threshold=1.0) & \
              (tmhr>=_date_specs_[date_s]['tmhr_range'][0]) & (tmhr<=_date_specs_[date_s]['tmhr_range'][1])
@@ -2461,8 +2463,7 @@ def main_pre_arcsix(
     sza  = sza[logic0][::time_step]
     lon  = lon[logic0][::time_step]
     lat  = lat[logic0][::time_step]
-
-    alt    = f_hsk['alt'][...][logic0][::time_step]
+    alt    = alt[logic0][::time_step]
 
     ang_pit = f_hsk['ang_pit'][...][logic0][::time_step]
     ang_rol = f_hsk['ang_rol'][...][logic0][::time_step]
@@ -2654,7 +2655,10 @@ def main_pre_arcsix(
 
     # process satellite imagery
     #/----------------------------------------------------------------------------\#
-    logic_target = flt_trk['lat']>=82.5
+    if date_s != '20240610':
+        logic_target = flt_trk['lat']>=82.5
+    else:
+        logic_target = np.repeat(True, flt_trk['lon'].size)
     extent_target = get_extent_minmax(flt_trk['lon'][logic_target], flt_trk['lat'][logic_target], margin=0.1)
 
     date_sat_s  = date.strftime('%Y-%m-%d')
