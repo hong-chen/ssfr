@@ -1719,7 +1719,7 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     _aspect_ = 'auto'
     _alt_cmap_ = 'gist_ncar'
-    _temp_cmap_ = 'coolwarm'
+    _temp_cmap_ = 'seismic'
     _dpi_      = 150
 
     _alt_base_ = 0.0
@@ -2789,7 +2789,7 @@ if __name__ == '__main__':
             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
             datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
-            datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall, (No MARLi)
+            # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall, (No MARLi)
             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF (MARLi NaN)
             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
             # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7; cloud wall (No MARLi)
