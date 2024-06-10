@@ -75,6 +75,7 @@ _alp_time_offset_ = {
         '20240605': -17.58,
         '20240606': -18.08,
         '20240607': -17.45,
+        '20240610': -17.45,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -87,6 +88,7 @@ _spns_time_offset_ = {
         '20240605': 0.0,
         '20240606': 0.0,
         '20240607': 0.0,
+        '20240610': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240517': 185.0,
@@ -99,6 +101,7 @@ _ssfr1_time_offset_ = {
         '20240605': -176.88,
         '20240606': -180.41,
         '20240607': -181.44,
+        '20240610': -188.70,
         }
 _ssfr2_time_offset_ = {
         '20240517': 115.0,
@@ -111,6 +114,7 @@ _ssfr2_time_offset_ = {
         '20240605': -250.48,
         '20240606': -256.90,
         '20240607': -255.45,
+        '20240610': -261.64,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -2343,7 +2347,7 @@ if __name__ == '__main__':
 
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
 
-    main_calibration_rad()
+    # main_calibration_rad()
 
     # data procesing
     #/----------------------------------------------------------------------------\#
@@ -2361,19 +2365,20 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 at NASA WFF
              # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 at NASA WFF
              # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
-             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
+             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
+             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
              # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
              # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
              # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
              # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
              # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7, cloud wall
+             datetime.datetime(2024, 6, 10), # ARCSIX science flight #8
             ]
 
     for date in dates[::-1]:
 
-        main_process_data_v0(date, run=True)
-        # main_process_data_v0(date, run=False)
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
 
         # for iChan in range(256):
         #     dark_corr_temp(date, iChan=iChan, idset=0)
