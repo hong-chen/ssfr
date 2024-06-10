@@ -1254,7 +1254,6 @@ def plot_video_frame_wff(statements, test=False):
     ax_wvl.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
     #\----------------------------------------------------------------------------/#
 
-
     # acknowledgements
     #/----------------------------------------------------------------------------\#
     text1 = '\
@@ -2296,7 +2295,7 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_spectra:
         ax_wvl.set_xlim((200, 2200))
-        ax_wvl.set_ylim(ax_tms.get_ylim())
+        ax_wvl.set_ylim(ax_tms.get_ylim().copy())
         ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(0, 2401, 400)))
         ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
         ax_wvl.set_xlabel('Wavelength [nm]')
@@ -2313,7 +2312,7 @@ def plot_video_frame_arcsix(statements, test=False):
     ax_alt_prof.grid()
 
     if has_spectra:
-        ax_alt_prof.set_xlim(ax_tms.get_ylim())
+        ax_alt_prof.set_xlim(ax_tms.get_ylim().copy())
         ax_alt_prof.xaxis.set_major_locator(FixedLocator(np.arange(0.5, 10.1, 0.5)))
         ax_alt_prof.xaxis.set_minor_locator(FixedLocator(np.arange(0.0, 10.1, 0.1)))
         ax_alt_prof.set_ylim(
@@ -2338,7 +2337,7 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # histogram plot
     #/----------------------------------------------------------------------------\#
-    ax_alt_hist.set_xlim(ax_tms.get_ylim())
+    ax_alt_hist.set_xlim(ax_tms.get_ylim().copy())
     ax_alt_hist.set_ylim((0, 5000))
     ax_alt_hist.axis('off')
     #\----------------------------------------------------------------------------/#
@@ -2359,6 +2358,7 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_kt19:
         ax_tms_alt.set_ylim(bottom=-(ax_alt_prof.get_ylim()[-1])*0.05, top=ax_alt_prof.get_ylim()[-1])
+        ax_tms.set_ylim(bottom=-(ax_tms.get_ylim()[-1]-_flux_base_) * 0.05)
     else:
         ax_tms_alt.set_ylim(bottom=0.0, top=ax_alt_prof.get_ylim()[-1])
 
