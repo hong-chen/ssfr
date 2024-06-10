@@ -107,14 +107,14 @@ _date_specs_ = {
             },
 
         '20240528': {
-            'tmhr_range': [11.90, 18.60],
+            'tmhr_range': [11.80, 18.70],
            'description': 'ARCSIX Science Flight #1',
       'preferred_region': 'lincoln_sea',
        'cam_time_offset': 2.0,
             },
 
         '20240530': {
-            'tmhr_range': [10.90, 18.30],
+            'tmhr_range': [10.80, 18.40],
            'description': 'ARCSIX Science Flight #2',
       'preferred_region': 'ca_archipelago',
        'cam_time_offset': 2.0,
@@ -2788,11 +2788,11 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
             datetime.datetime(2024, 5, 28), # ARCSIX science flight #1; clear-sky spiral
             datetime.datetime(2024, 5, 30), # ARCSIX science flight #2; cloud wall
-            datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
-            datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall, (No MARLi)
-            datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF (MARLi NaN)
-            datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
-            datetime.datetime(2024, 6, 7), # ARCSIX science flight #7; cloud wall (No MARLi)
+            # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3; bowling alley, surface BRDF
+            # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4; cloud wall, (No MARLi)
+            # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF (MARLi NaN)
+            # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
+            # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7; cloud wall (No MARLi)
         ]
 
     for date in dates[::-1]:
