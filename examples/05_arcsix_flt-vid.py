@@ -2362,7 +2362,10 @@ def plot_video_frame_arcsix(statements, test=False):
     else:
         ax_tms_alt.set_ylim(bottom=0.0, top=ax_alt_prof.get_ylim()[-1])
 
-    ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 2.0)))
+    if ax_alt_prof.get_ylim()[-1] > 2.0:
+        ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 2.0)))
+    else:
+        ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 1.0)))
     ax_tms_alt.yaxis.set_minor_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 0.5)))
     ax_tms_alt.yaxis.tick_right()
     ax_tms_alt.yaxis.set_label_position('right')
