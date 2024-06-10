@@ -1719,7 +1719,7 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     _aspect_ = 'auto'
     _alt_cmap_ = 'gist_ncar'
-    _temp_cmap_ = 'bwr'
+    _temp_cmap_ = 'coolwarm'
     _dpi_      = 150
 
     _alt_base_ = 0.0
@@ -2362,7 +2362,7 @@ def plot_video_frame_arcsix(statements, test=False):
     else:
         ax_tms_alt.set_ylim(bottom=0.0, top=ax_alt_prof.get_ylim()[-1])
 
-    ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 1.0)))
+    ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 2.0)))
     ax_tms_alt.yaxis.set_minor_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 0.5)))
     ax_tms_alt.yaxis.tick_right()
     ax_tms_alt.yaxis.set_label_position('right')
