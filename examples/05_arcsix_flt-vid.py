@@ -161,6 +161,13 @@ _date_specs_ = {
       'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
+
+        '20240611': {
+            'tmhr_range': [10.90, 18.90],
+           'description': 'ARCSIX Science Flight #9',
+      'preferred_region': 'lincoln_sea',
+       'cam_time_offset': 0.0,
+            },
         }
 
 
@@ -1657,53 +1664,53 @@ def plot_video_frame_arcsix(statements, test=False):
             'vname':'f-up_ssfr',
             'color':'red',
             'vname_wvl':'wvl_ssfr1_nad',
-            'zorder': 7,
+            'zorder': 17,
             }
     vars_plot['SSFR-A↓']   = {
             'vname':'f-down_ssfr',
             'color':'blue',
             'vname_wvl':'wvl_ssfr1_zen',
-            'zorder': 6,
+            'zorder': 16,
             }
-    vars_plot['SSFR-B↑']   = {
-            'vname':'r-up_ssfr',
-            'color':'deeppink',
-            'vname_wvl':'wvl_ssfr2_nad',
-            'zorder': 2,
-            }
-    vars_plot['SSFR-B↓']   = {
-            'vname':'r-down_ssfr',
-            'color':'dodgerblue',
-            'vname_wvl':'wvl_ssfr2_zen',
-            'zorder': 3,
-            }
+    # vars_plot['SSFR-B↑']   = {
+    #         'vname':'r-up_ssfr',
+    #         'color':'deeppink',
+    #         'vname_wvl':'wvl_ssfr2_nad',
+    #         'zorder': 12,
+    #         }
+    # vars_plot['SSFR-B↓']   = {
+    #         'vname':'r-down_ssfr',
+    #         'color':'dodgerblue',
+    #         'vname_wvl':'wvl_ssfr2_zen',
+    #         'zorder': 13,
+    #         }
     vars_plot['SPNS Total↓']   = {
             'vname':'f-down-total_spns',
             'color':'green',
             'vname_wvl':'wvl_spns',
-            'zorder': 5,
+            'zorder': 15,
             }
     vars_plot['SPNS Diffuse↓']   = {
             'vname':'f-down-diffuse_spns',
             'color':'springgreen',
             'vname_wvl':'wvl_spns',
-            'zorder': 4,
+            'zorder': 14,
             }
     vars_plot['TOA↓']   = {
             'vname':'f-down_toa',
             'color':'dimgray',
             'vname_wvl':'wvl_ssfr1_zen',
-            'zorder': 1,
-            }
-    vars_plot['Altitude']   = {
-            'vname':'alt',
-            'color':'orange',
-            'zorder': 0,
+            'zorder': 12,
             }
     vars_plot['KT19 T↑']   = {
             'vname':'t-up_kt19',
             'color':'none',
-            'zorder': 1,
+            'zorder': 11,
+            }
+    vars_plot['Altitude']   = {
+            'vname':'alt',
+            'color':'orange',
+            'zorder': 10,
             }
 
     for vname in vars_plot.keys():
@@ -1723,10 +1730,10 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # plot settings
     #/----------------------------------------------------------------------------\#
-    _aspect_ = 'auto'
-    _alt_cmap_ = 'gist_ncar'
+    _aspect_    = 'auto'
+    _alt_cmap_  = 'gist_ncar'
     _temp_cmap_ = 'seismic'
-    _dpi_      = 150
+    _dpi_       = 150
 
     _alt_base_ = 0.0
     _alt_ceil_ = 8.0
@@ -1836,6 +1843,8 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # time series
     ax_tms = fig.add_subplot(gs[9:, :])
+    if has_att:
+        ax_tms_ = ax_tms.twinx()
     ax_tms_alt  = ax_tms.twinx()
 
     fig.subplots_adjust(hspace=10.0, wspace=10.0)
@@ -1888,12 +1897,12 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # base plot
     #/----------------------------------------------------------------------------\#
-    lon_half = 15.0
-    lat_half = 2.0
-    lat_low  = max([lat_current-lat_half, 72.0])
-    lat_high = min([lat_low+lat_half*2.0, 87.0])
-    lat_low  = max([lat_high-lat_half*2.0, 72.0])
-    extent_img0 = [lon_current-lon_half, lon_current+lon_half, lat_low, lat_high]
+    _lon_half_ = 15.0
+    _lat_half_ = 2.0
+    _lat_base_  = max([lat_current-_lat_half_, 72.0])
+    _lat_ceil_  = min([_lat_base_+_lat_half_*2.0, 87.0])
+    _lat_base_  = max([_lat_ceil_-_lat_half_*2.0, 72.0])
+    extent_img0 = [lon_current-_lon_half_, lon_current+_lon_half_, _lat_base_, _lat_ceil_]
     ax_map.set_extent(extent_img0, crs=ccrs.PlateCarree())
 
     if has_sat0:
@@ -1931,7 +1940,7 @@ def plot_video_frame_arcsix(statements, test=False):
 
 
     lat_half0 = 0.25
-    lon_half0 = lat_half0*(lon_half/lat_half)*2.0
+    lon_half0 = lat_half0*(_lon_half_/_lat_half_)*2.0
     lon_s = lon_current-lon_half0
     lon_e = lon_current+lon_half0
     lat_s = lat_current-lat_half0
@@ -2027,7 +2036,6 @@ def plot_video_frame_arcsix(statements, test=False):
         ax_nav.scatter(x[50], y0[50], lw=0.0, s=40, c='red', zorder=1, alpha=0.6)
         ax_nav.text(-5.0, 7.5, 'P:%4.1f$^\\circ$' % ang_pit0, ha='center', va='center', color='red', zorder=2, fontsize=8)
         ax_nav.text( 5.0, 7.5, 'R:%4.1f$^\\circ$' % ang_rol0, ha='center', va='center', color='red', zorder=2, fontsize=8)
-
 
         if has_att_corr:
 
@@ -2162,7 +2170,7 @@ def plot_video_frame_arcsix(statements, test=False):
                                 ax_alt_hist.bar(hist_x, hist_y, width=hist_bin_w, bottom=hist_bottoms[vname], color=var_plot['color'], alpha=0.5, lw=0.0, zorder=var_plot['zorder']-1)
                                 hist_bottoms[vname] += hist_y
 
-                                ax_tms.scatter(flt_trk['tmhr'][logic_solid][~logic_stable], tms_y[logic_solid][~logic_stable], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.4)
+                                ax_tms_.scatter(flt_trk['tmhr'][logic_solid][~logic_stable], tms_y[logic_solid][~logic_stable], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'], alpha=0.4)
                                 ax_tms.scatter(flt_trk['tmhr'][logic_solid][logic_stable], tms_y[logic_solid][logic_stable], c=var_plot['color'], s=2, lw=0.0, zorder=var_plot['zorder']*2)
                             else:
                                 ax_alt_prof.scatter(tms_y[logic_solid], flt_trk['alt'][logic_solid], c=var_plot['color'], s=1, lw=0.0, zorder=var_plot['zorder'])
@@ -2254,8 +2262,6 @@ def plot_video_frame_arcsix(statements, test=False):
     ax_img.axis('off')
     ax_img_hist.axis('off')
     #\----------------------------------------------------------------------------/#
-
-
 
 
     # time series plot settings
@@ -2368,6 +2374,8 @@ def plot_video_frame_arcsix(statements, test=False):
         ax_tms.set_ylim(bottom=-(ax_tms.get_ylim()[-1]-_flux_base_) * 0.05)
     else:
         ax_tms_alt.set_ylim(bottom=0.0, top=ax_alt_prof.get_ylim()[-1])
+    ax_tms_.axis('off')
+    ax_tms_.set_ylim(ax_tms.get_ylim())
 
     if ax_alt_prof.get_ylim()[-1] > 2.0:
         ax_tms_alt.yaxis.set_major_locator(FixedLocator(np.arange(_alt_base_, _alt_ceil_+0.1, 2.0)))
@@ -2807,7 +2815,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5; bowling alley, surface BRDF (MARLi NaN)
             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6; cloud wall
             # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7; cloud wall (No MARLi)
-            datetime.datetime(2024, 6, 10), # ARCSIX science flight #8; cloud wall (No MARLi)
+            # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8; cloud wall (No MARLi)
+            datetime.datetime(2024, 6, 11), # ARCSIX science flight #9; cloud wall (No MARLi, No MetNav)
         ]
 
     for date in dates[::-1]:

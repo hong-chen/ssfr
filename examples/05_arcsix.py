@@ -76,6 +76,7 @@ _alp_time_offset_ = {
         '20240606': -18.08,
         '20240607': -17.45,
         '20240610': -17.45,
+        '20240611': -17.52,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -89,6 +90,7 @@ _spns_time_offset_ = {
         '20240606': 0.0,
         '20240607': 0.0,
         '20240610': 0.0,
+        '20240611': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240517': 185.0,
@@ -102,6 +104,7 @@ _ssfr1_time_offset_ = {
         '20240606': -180.41,
         '20240607': -181.44,
         '20240610': -188.70,
+        '20240611': -190.69,
         }
 _ssfr2_time_offset_ = {
         '20240517': 115.0,
@@ -115,6 +118,7 @@ _ssfr2_time_offset_ = {
         '20240606': -256.90,
         '20240607': -255.45,
         '20240610': -261.64,
+        '20240611': -271.93,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -2372,13 +2376,14 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
              # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
              # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7, cloud wall
-             datetime.datetime(2024, 6, 10), # ARCSIX science flight #8
+             # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8
+             datetime.datetime(2024, 6, 11), # ARCSIX science flight #9
             ]
 
     for date in dates[::-1]:
 
-        main_process_data_v0(date, run=True)
-        # main_process_data_v0(date, run=False)
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
 
         # for iChan in range(256):
         #     dark_corr_temp(date, iChan=iChan, idset=0)
