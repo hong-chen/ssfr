@@ -168,6 +168,13 @@ _date_specs_ = {
       'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
+
+        '20240613': {
+            'tmhr_range': [10.90, 19.90],
+           'description': 'ARCSIX Science Flight #10',
+      'preferred_region': 'lincoln_sea',
+       'cam_time_offset': 0.0,
+            },
         }
 
 
@@ -2293,7 +2300,7 @@ def plot_video_frame_arcsix(statements, test=False):
         ax_tms.yaxis.set_ticks([])
 
     if alt_current < 1.0:
-        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %5d m, Solar Zenith %5.1f$^\\circ$' % (lon_current, lat_current, alt_current*1000.0, sza_current)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %4d m, Solar Zenith %5.1f$^\\circ$' % (lon_current, lat_current, alt_current*1000.0, sza_current)
     else:
         title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.3f km, Solar Zenith %5.1f$^\\circ$' % (lon_current, lat_current, alt_current, sza_current)
     ax_tms.set_title(title_all)
@@ -2815,15 +2822,16 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 17), # ARCSIX test flight #1 near NASA WFF
             # datetime.datetime(2024, 5, 21), # ARCSIX test flight #2 near NASA WFF
             # datetime.datetime(2024, 5, 24), # ARCSIX transit flight #1 from NASA WFF to Pituffik Space Base
-            datetime.datetime(2024, 5, 28), # [✓] ARCSIX science flight #1; clear-sky spiral
-            datetime.datetime(2024, 5, 30), # [✓] ARCSIX science flight #2; cloud wall
-            datetime.datetime(2024, 5, 31), # [✓] ARCSIX science flight #3; bowling alley, surface BRDF
+            # datetime.datetime(2024, 5, 28), # [✓] ARCSIX science flight #1; clear-sky spiral
+            # datetime.datetime(2024, 5, 30), # [✓] ARCSIX science flight #2; cloud wall
+            # datetime.datetime(2024, 5, 31), # [✓] ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6,  3), # ARCSIX science flight #4; cloud wall, (no MARLi)
             # datetime.datetime(2024, 6,  5), # ARCSIX science flight #5; bowling alley, surface BRDF (MARLi NaN, no camera)
             # datetime.datetime(2024, 6,  6), # ARCSIX science flight #6; cloud wall (no camera)
             # datetime.datetime(2024, 6,  7), # ARCSIX science flight #7; cloud wall (no camera)
             # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8; cloud wall (no camera)
-            datetime.datetime(2024, 6, 11), #  [✓] ARCSIX science flight #9; cloud wall
+            # datetime.datetime(2024, 6, 11), #  [✓] ARCSIX science flight #9; cloud wall
+            datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
         ]
 
     for date in dates[::-1]:
@@ -2839,9 +2847,9 @@ if __name__ == '__main__':
 
             #/----------------------------------------------------------------------------\#
             main_pre_arcsix(date)
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
+            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
