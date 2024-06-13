@@ -2293,9 +2293,9 @@ def plot_video_frame_arcsix(statements, test=False):
         ax_tms.yaxis.set_ticks([])
 
     if alt_current < 1.0:
-        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.1f  m, Solar Zenith %4.1f$^\\circ$' % (lon_current, lat_current, alt_current*1000.0, sza_current)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %5d m, Solar Zenith %5.1f$^\\circ$' % (lon_current, lat_current, alt_current*1000.0, sza_current)
     else:
-        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.4f km, Solar Zenith %4.1f$^\\circ$' % (lon_current, lat_current, alt_current, sza_current)
+        title_all = 'Longitude %9.4f$^\\circ$, Latitude %8.4f$^\\circ$, Altitude %6.3f km, Solar Zenith %5.1f$^\\circ$' % (lon_current, lat_current, alt_current, sza_current)
     ax_tms.set_title(title_all)
 
     ax_tms.spines['right'].set_visible(False)
