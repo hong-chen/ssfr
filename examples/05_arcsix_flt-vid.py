@@ -472,7 +472,7 @@ def process_marli(date, run=True):
 
     try:
     # if True:
-        fname = er3t.util.get_all_files('data/arcsix/2024-Spring/p3/aux/marli', pattern='*%s*.cdf' % (date_s))[0]
+        fname = sorted(er3t.util.get_all_files('data/arcsix/2024-Spring/p3/aux/marli', pattern='*%s*.cdf' % (date_s)))[-1]
 
         fname_hsk = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
         f_hsk = h5py.File(fname_hsk, 'r')
@@ -2826,12 +2826,12 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 5, 30), # [✓] ARCSIX science flight #2; cloud wall
             # datetime.datetime(2024, 5, 31), # [✓] ARCSIX science flight #3; bowling alley, surface BRDF
             # datetime.datetime(2024, 6,  3), # ARCSIX science flight #4; cloud wall, (no MARLi)
-            # datetime.datetime(2024, 6,  5), # ARCSIX science flight #5; bowling alley, surface BRDF (MARLi NaN, no camera)
+            # datetime.datetime(2024, 6,  5), # ARCSIX science flight #5; bowling alley, surface BRDF (no camera)
             # datetime.datetime(2024, 6,  6), # ARCSIX science flight #6; cloud wall (no camera)
             # datetime.datetime(2024, 6,  7), # ARCSIX science flight #7; cloud wall (no camera)
             # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8; cloud wall (no camera)
             # datetime.datetime(2024, 6, 11), #  [✓] ARCSIX science flight #9; cloud wall
-            datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
+            datetime.datetime(2024, 6, 13), # ARCSIX science flight #10 (no camera)
         ]
 
     for date in dates[::-1]:
@@ -2849,7 +2849,7 @@ if __name__ == '__main__':
             main_pre_arcsix(date)
             main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
             main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-            # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+            main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
             #\----------------------------------------------------------------------------/#
             pass
 
