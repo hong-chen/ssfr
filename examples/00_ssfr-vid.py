@@ -54,8 +54,8 @@ import er3t
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-# _ssfr_         = 'ssfr-a'
-_ssfr_         = 'ssfr-b'
+_ssfr_         = 'ssfr-a'
+# _ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -879,7 +879,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6
             # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7
             # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8
-            datetime.datetime(2024, 6, 11), # ARCSIX science flight #9
+            # datetime.datetime(2024, 6, 11), # ARCSIX science flight #9
+            datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
         ]
 
     for date in dates[::-1]:
