@@ -2387,8 +2387,8 @@ if __name__ == '__main__':
 
     for date in dates[::-1]:
 
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
+        main_process_data_v0(date, run=True)
+        # main_process_data_v0(date, run=False)
 
         # for iChan in range(256):
         #     dark_corr_temp(date, iChan=iChan, idset=0)
