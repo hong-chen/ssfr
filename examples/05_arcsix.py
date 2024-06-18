@@ -2376,13 +2376,13 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
              # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
              # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
-             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
+             datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
              # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
              # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
              # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7, cloud wall
              # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8
              # datetime.datetime(2024, 6, 11), # ARCSIX science flight #9
-             datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
+             # datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
             ]
 
     for date in dates[::-1]:
