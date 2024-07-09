@@ -66,66 +66,22 @@ _fnames_ = {}
 
 _alp_time_offset_ = {
         '20240708':   -17.85,
-        # '20240517':   5.55,
-        # '20240521': -17.94,
-        # '20240524': -18.39,
-        # '20240528': -17.19,
-        # '20240530': -17.41,
-        # '20240531': -17.41,
-        # '20240603': -17.41,
-        # '20240605': -17.58,
-        # '20240606': -18.08,
-        # '20240607': -17.45,
-        # '20240610': -17.45,
-        # '20240611': -17.52,
+        '20240709':   -17.85,
         # '20240613': -17.85,
         }
 _spns_time_offset_ = {
         '20240708': 0.0,
-        # '20240517': 0.0,
-        # '20240521': 0.0,
-        # '20240524': 86400.0,
-        # '20240528': 0.0,
-        # '20240530': 0.0,
-        # '20240531': 0.0,
-        # '20240603': 0.0,
-        # '20240605': 0.0,
-        # '20240606': 0.0,
-        # '20240607': 0.0,
-        # '20240610': 0.0,
-        # '20240611': 0.0,
+        '20240709': 0.0,
         # '20240613': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240708': -196.06,
-        # '20240517': 185.0,
-        # '20240521': 182.0,
-        # '20240524': -145.75,
-        # '20240528': -156.26,
-        # '20240530': -158.04,
-        # '20240531': -161.38,
-        # '20240603': -170.42,
-        # '20240605': -176.88,
-        # '20240606': -180.41,
-        # '20240607': -181.44,
-        # '20240610': -188.70,
-        # '20240611': -190.69,
+        '20240709': -196.06,
         # '20240613': -196.06,
         }
 _ssfr2_time_offset_ = {
         '20240708': -273.59,
-        # '20240517': 115.0,
-        # '20240521': -6.0,
-        # '20240524': -208.22,
-        # '20240528': -222.66,
-        # '20240530': -229.45,
-        # '20240531': -227.00,
-        # '20240603': -241.66,
-        # '20240605': -250.48,
-        # '20240606': -256.90,
-        # '20240607': -255.45,
-        # '20240610': -261.64,
-        # '20240611': -271.93,
+        '20240709': -273.59,
         # '20240613': -273.59,
         }
 #\----------------------------------------------------------------------------/#
@@ -1911,30 +1867,30 @@ def main_process_data_v0(date, run=True):
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
-    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=run)
+    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+    #         fdir_out=fdir_out, run=run)
 
-    _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
+    # _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
     #\----------------------------------------------------------------------------/#
 
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
-    # fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
-    #         fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
+    fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
+    _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
     #\----------------------------------------------------------------------------/#
 
     # SPNS v0: raw data
     #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
-    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
-            fdir_out=fdir_out, run=run)
+    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
+    # fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
+    # fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
+    #         fdir_out=fdir_out, run=run)
 
-    _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
+    # _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
     #\----------------------------------------------------------------------------/#
 
     # SSFR-A v0: raw data
@@ -1949,12 +1905,12 @@ def main_process_data_v0(date, run=True):
 
     # SSFR-B v0: raw data
     #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr2_))
-    fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
-            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr2_))
+    # fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
+    # fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
+    #         which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
 
-    _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
+    # _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
     #\----------------------------------------------------------------------------/#
 
 def main_process_data_v1(date, run=True):
@@ -2397,13 +2353,15 @@ if __name__ == '__main__':
     # data procesing
     #/----------------------------------------------------------------------------\#
     dates = [
-             datetime.datetime(2024, 7, 8), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
+             # datetime.datetime(2024, 7, 8), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
+             datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
             ]
 
     for date in dates[::-1]:
 
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
+        main_process_data_v0(date, run=True)
+        # main_process_data_v0(date, run=False)
+        sys.exit()
 
         # for iChan in range(256):
         #     dark_corr_temp(date, iChan=iChan, idset=0)
