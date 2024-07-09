@@ -187,7 +187,9 @@ class read_alp:
             self.jday = ssfr.util.dtime_to_jday(date) + self.tmhr/24.0
 
         if self.verbose:
-            msg = '\nMessage [read_alp]: Data processing complete.'
+            dtime_s0 = ssfr.util.jday_to_dtime(self.jday[0]).strftime('%Y-%m-%d %H:%M:%S')
+            dtime_e0 = ssfr.util.jday_to_dtime(self.jday[-1]).strftime('%Y-%m-%d %H:%M:%S')
+            msg = '\nMessage [read_alp]: Data processing complete (%s to %s).' % (dtime_s0, dtime_e0)
             print(msg)
 
 

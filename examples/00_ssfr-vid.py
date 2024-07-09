@@ -881,7 +881,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8
             # datetime.datetime(2024, 6, 11), # ARCSIX science flight #9
             # datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
-            datetime.datetime(2024, 7, 8), # test data at NASA WFF
+            # datetime.datetime(2024, 7, 8), # test data at NASA WFF
+            datetime.datetime(2024, 7, 9), # test data at NASA WFF
         ]
 
     for date in dates[::-1]:

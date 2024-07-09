@@ -337,9 +337,9 @@ class read_ssfr:
         #\----------------------------------------------------------------------------/#
 
         if self.verbose:
-            dtime_s0 = ssfr.util.jday_to_dtime(self.data_raw['jday'][0].strftime('%Y-%m-%d %H:%M:%S'))
-            dtime_e0 = ssfr.util.jday_to_dtime(self.data_raw['jday'][-1].strftime('%Y-%m-%d %H:%M:%S'))
-            msg = '\nMessage [read_ssfr]: Data processing complete (%s to %s).' % (dtime_s0, dtime_e0))
+            dtime_s0 = ssfr.util.jday_to_dtime(self.data_raw['jday'][0]).strftime('%Y-%m-%d %H:%M:%S')
+            dtime_e0 = ssfr.util.jday_to_dtime(self.data_raw['jday'][-1]).strftime('%Y-%m-%d %H:%M:%S')
+            msg = '\nMessage [read_ssfr]: Data processing complete (%s to %s).' % (dtime_s0, dtime_e0)
             print(msg)
 
     def dset_check(

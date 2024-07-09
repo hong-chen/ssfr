@@ -575,8 +575,12 @@ def cdata_arcsix_hsk_v0(
 
         # fake hsk for NASA WFF
         #/----------------------------------------------------------------------------\#
-        dtime_s = datetime.datetime(2024, 7, 8, 18, 24)
-        dtime_e = datetime.datetime(2024, 7, 8, 19, 1)
+        if date == datetime.datetime(2024, 7, 8):
+            dtime_s = datetime.datetime(2024, 7, 8, 18, 24)
+            dtime_e = datetime.datetime(2024, 7, 8, 19, 1)
+        elif date == datetime.datetime(2024, 7, 9):
+            dtime_s = datetime.datetime(2024, 7, 9, 15, 15)
+            dtime_e = datetime.datetime(2024, 7, 9, 16, 5)
         sec_s = (dtime_s - date).total_seconds()
         sec_e = (dtime_e - date).total_seconds()
         tmhr = np.arange(sec_s, sec_e, 1.0)/3600.0
@@ -1867,10 +1871,10 @@ def main_process_data_v0(date, run=True):
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-    #         fdir_out=fdir_out, run=run)
+    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
+    _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
     #\----------------------------------------------------------------------------/#
 
     # ALP v0: raw data
@@ -1923,18 +1927,18 @@ def main_process_data_v1(date, run=True):
 
     # ALP v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
-    # fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-    #         fdir_out=fdir_out, run=run)
+    fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
+    _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
     #\----------------------------------------------------------------------------/#
 
     # SPNS v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
-    fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
+    # fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+    #         fdir_out=fdir_out, run=run)
 
-    _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
+    # _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
     #\----------------------------------------------------------------------------/#
 
     # SSFR-A v1: time synced with hsk time with time offset applied
@@ -1947,10 +1951,10 @@ def main_process_data_v1(date, run=True):
 
     # SSFR-B v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
-    fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr2_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+    # fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr2_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+    #         which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
 
-    _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
+    # _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
     #\----------------------------------------------------------------------------/#
 
 
@@ -2359,9 +2363,8 @@ if __name__ == '__main__':
 
     for date in dates[::-1]:
 
-        main_process_data_v0(date, run=True)
-        # main_process_data_v0(date, run=False)
-        sys.exit()
+        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=False)
 
         # for iChan in range(256):
         #     dark_corr_temp(date, iChan=iChan, idset=0)
