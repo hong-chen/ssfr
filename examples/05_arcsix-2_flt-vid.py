@@ -480,7 +480,34 @@ def process_sat_img_vn_to_hc(fnames_sat_):
     fnames_sat = []
     jday_sat = []
 
-    for jday_sat0 in tqdm(jday_sat_unique):
+    # plot settings
+    #/----------------------------------------------------------------------------\#
+    extent_plot = [-80.00, -30.00, 71.00, 88.00]
+    proj_plot = ccrs.Orthographic(
+            central_longitude=((extent_plot[0]+extent_plot[1])/2.0),
+            central_latitude=((extent_plot[2]+extent_plot[3])/2.0),
+            )
+    plt.close('all')
+    fig = plt.figure(figsize=(18, 12))
+    ax1 = fig.add_subplot(111, projection=proj_plot)
+
+    ax1.coastlines(resolution='10m', color='gray', lw=0.5, zorder=500)
+    # text_prop = {'color':'gray', 'fontsize':10, 'clip_on': False, 'zorder':510, 'bbox': {'facecolor':'white', 'linewidth':0.0, 'alpha':0.5}, 'transform': ccrs.PlateCarree()}
+    # g1 = ax1.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-', zorder=500, x_inline=True, y_inline=True, xlabel_style=text_prop, ylabel_style=text_prop, auto_inline=False)
+    # g1.xlocator = FixedLocator(np.arange(-180, 181, 10.0))
+    # g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
+    # g1.top_labels = False
+    # g1.right_labels = False
+    # g1.bottom_labels = False
+    # g1.left_labels = False
+
+    ax1.set_extent(extent_plot, crs=ccrs.PlateCarree())
+    ax1.axis('off')
+    #\----------------------------------------------------------------------------/#
+
+
+    pcolors = []
+    for i, jday_sat0 in enumerate(jday_sat_unique):
 
         indices = np.where(jday_sat_==jday_sat0)[0]
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1]
@@ -513,35 +540,29 @@ def process_sat_img_vn_to_hc(fnames_sat_):
             lon_2d = data[..., 0]
             lat_2d = data[..., 1]
 
-            if True:
-                plt.close('all')
-                fig = plt.figure(figsize=(18, 12))
-                ax1 = fig.add_subplot(111, projection=proj0)
+            logic_tran = (img[:, :, 0]==1.0) & (img[:, :, 1]==1.0) & (img[:, :, 2]==1.0)
 
-                colors = mpl.colormaps['jet'](np.linspace(0.0, 1.0, len(dates)))
+            img_bkg = np.ones_like(img[:, :, 0], dtype=np.float32)
+            img[logic_tran, 3] = 0.0
+            img_bkg[logic_tran] = np.nan
 
-                ax1.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree(), zorder=0)
+            cs = ax1.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree(), zorder=i)
+            pcolor0 = ax1.pcolormesh(lon_2d, lat_2d, img_bkg, cmap='gray', vmin=0.0, vmax=0.5, zorder=i+1, transform=ccrs.PlateCarree(), alpha=0.0)
 
-                ax1.coastlines(resolution='10m', color='k', lw=0.8)
-                g1 = ax1.gridlines(lw=0.5, color='gray', draw_labels=True, ls='--')
-                g1.xlocator = FixedLocator(np.arange(-180, 181, 10.0))
-                g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
-                g1.top_labels = False
-                g1.right_labels = False
-                g1.bottom_labels = False
-                g1.left_labels = False
-                ax1.set_extent(extent, crs=ccrs.PlateCarree())
-                ax1.axis('off')
+            pcolors.append(pcolor0)
+            if len(pcolors) > 1:
+                pcolors[-2].set_alpha(0.5)
 
-                # fig.suptitle('2024 ARCSIX-1 (Spring Deployment)', fontsize=24, y=0.95)
-                # save figure
-                #/--------------------------------------------------------------\#
-                fig.subplots_adjust(hspace=0.3, wspace=0.3)
-                _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-                # fig.savefig(fname_png, bbox_inches='tight', metadata=_metadata, pad_inches=0)
-                #\--------------------------------------------------------------/#
-                plt.show()
-            sys.exit()
+            # save figure
+            #/--------------------------------------------------------------\#
+            fig.subplots_adjust(hspace=0.3, wspace=0.3)
+            _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+            fname0_out = fname0.replace(_fdir_sat_img_vn_, _fdir_sat_img_hc_)
+            fig.savefig(fname0_out, bbox_inches='tight', metadata=_metadata, pad_inches=0)
+            print(fname0_out)
+            fnames_sat.append(fname0_out)
+            #\--------------------------------------------------------------/#
 
         except Exception as error:
             print(fname0)
@@ -2925,6 +2946,7 @@ def test_sat_img(
     # fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
     fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor367*%s*Z*.png' % date_sat_s)
     jday_sat00 , fnames_sat00  = process_sat_img_vn_to_hc(fnames_sat00)
+    sys.exit()
     fnames_sat0['jday']    = jday_sat00
     fnames_sat0['fnames']  = fnames_sat00
     print(jday_sat00)
