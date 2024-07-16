@@ -54,7 +54,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import cartopy
 import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 
 import er3t
@@ -468,7 +468,7 @@ def process_sat_img_vn(fnames_sat_, extent_target, threshold=95.0):
 
     return np.array(jday_sat), fnames_sat
 
-def process_sat_img_vn_to_hc(fnames_sat_):
+def process_sat_img_vn_to_hc_old(fnames_sat_):
 
     """
     lincoln_sea/VIIRS-NOAA-21_TrueColor_2024-05-31-094200Z_(-120.00,36.69,77.94,88.88).png
@@ -548,6 +548,109 @@ def process_sat_img_vn_to_hc(fnames_sat_):
             pcolors.append(pcolor0)
             if len(pcolors) > 1:
                 pcolors[-2].set_alpha(0.5)
+
+            # save figure
+            #/--------------------------------------------------------------\#
+            fig.subplots_adjust(hspace=0.3, wspace=0.3)
+            _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+            fname0_out = '%s_(%.2f,%.2f,%.2f,%.2f)_(%.4f,%.4f,%.4f,%.4f).png' % (fname0_out, *ax1.get_xlim(), *ax1.get_ylim(), *extent_plot)
+            fig.savefig(fname0_out, bbox_inches='tight', metadata=_metadata, pad_inches=0)
+            fnames_sat.append(fname0_out)
+
+            print(fname0_out)
+            #\--------------------------------------------------------------/#
+
+        except Exception as error:
+            print(fname0)
+            warnings.warn(error)
+
+    return np.array(jday_sat), fnames_sat
+
+def process_sat_img_vn_to_hc(fnames_sat_):
+
+    """
+    lincoln_sea/VIIRS-NOAA-21_TrueColor_2024-05-31-094200Z_(-120.00,36.69,77.94,88.88).png
+    """
+
+    jday_sat_ = get_jday_sat_img_vn(fnames_sat_)
+    jday_sat_unique = np.sort(np.unique(jday_sat_))
+
+    fnames_sat = []
+    jday_sat = []
+
+    # plot settings
+    #/----------------------------------------------------------------------------\#
+    extent_plot = [-80.00, -30.00, 71.00, 88.00]
+    extent_plot_xy = [-877574.55, 877574.55, -751452.90, 963254.75]
+    proj_plot = ccrs.Orthographic(
+            central_longitude=((extent_plot[0]+extent_plot[1])/2.0),
+            central_latitude=((extent_plot[2]+extent_plot[3])/2.0),
+            )
+    plt.close('all')
+    fig = plt.figure(figsize=(18, 12))
+    ax1 = fig.add_subplot(111, projection=proj_plot)
+
+    ax1.coastlines(resolution='10m', color='gray', lw=0.5, zorder=500)
+    ax1.set_extent(extent_plot, crs=ccrs.PlateCarree())
+    ax1.axis('off')
+    #\----------------------------------------------------------------------------/#
+
+
+    imshows = []
+    for i, jday_sat0 in enumerate(tqdm(jday_sat_unique)):
+
+        indices = np.where(jday_sat_==jday_sat0)[0]
+        fname0 = sorted([fnames_sat_[index] for index in indices])[-1]
+
+        filename = os.path.basename(fname0)
+        info = filename.replace('.png', '').split('_')
+        extent = [float(item) for item in info[-1].replace('(', '').replace(')', '').split(',')]
+        extent_xy = [float(item) for item in info[-2].replace('(', '').replace(')', '').split(',')]
+
+        dtime_s = er3t.util.jday_to_dtime(jday_sat0).strftime('%Y-%m-%d_%H:%M:%S')
+        sat_tag = info[0].replace('TERRA', 'Terra').replace('AQUA', 'Aqua').replace('SUOMI', 'Suomi').replace('MODIS-', 'MODIS_').replace('VIIRS-', 'VIIRS_')
+        img_tag = info[1]
+        # fname0_out = '%s/%s_%s_%s' % (_fdir_sat_img_hc_, img_tag, dtime_s, sat_tag)
+        fname0_out = '%s/%s_%s_%s' % ('.', img_tag, dtime_s, sat_tag)
+
+        try:
+            img = mpl_img.imread(fname0)
+            Ny, Nx, Nc = img.shape
+
+            x1d = np.linspace(extent_xy[0], extent_xy[1], Nx)
+            y1d = np.linspace(extent_xy[3], extent_xy[2], Ny)
+
+            x, y = np.meshgrid(x1d, y1d)
+
+            lon_c = (extent[0]+extent[1])/2.0
+            lat_c = (extent[2]+extent[3])/2.0
+
+            proj0 = ccrs.Orthographic(
+                    central_longitude=lon_c,
+                    central_latitude=lat_c,
+                    )
+
+            proj = ccrs.PlateCarree()
+            data = proj.transform_points(proj0, x, y)[..., [0, 1]]
+
+            lon_2d = data[..., 0]
+            lat_2d = data[..., 1]
+
+            logic_tran = (img[:, :, 0]==1.0) & (img[:, :, 1]==1.0) & (img[:, :, 2]==1.0)
+
+            img_bkg = np.ones_like(img[:, :, 0], dtype=np.float32)
+            img[logic_tran, 3] = 0.0
+            img_bkg[logic_tran] = np.nan
+
+            # cs = ax1.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree(), zorder=i)
+            # pcolor0 = ax1.pcolormesh(lon_2d, lat_2d, img_bkg, cmap='gray', vmin=0.0, vmax=0.5, zorder=i+1, transform=ccrs.PlateCarree(), alpha=0.0)
+            cs = ax1.imshow(img, extent=extent_plot_xy, interpolation='nearest', zorder=i)
+            imshow0 = ax1.imshow(img_bkg, cmap='gray', vmin=0.0, vmax=0.5, extent=extent_plot_xy, interpolation='nearest', zorder=i+1, alpha=0.0)
+
+            imshows.append(imshow0)
+            if len(imshows) > 1:
+                imshows[-2].set_alpha(0.5)
 
             # save figure
             #/--------------------------------------------------------------\#
