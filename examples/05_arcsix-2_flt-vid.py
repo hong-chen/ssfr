@@ -584,9 +584,11 @@ def process_sat_img_vn_to_hc(fnames_sat_):
     extent_plot = [-80.00, -30.00, 71.00, 88.00]
     extent_plot_xy = [-877574.55, 877574.55, -751452.90, 963254.75]
 
+    lon_c = (extent_plot[0]+extent_plot[1])/2.0
+    lat_c = (extent_plot[2]+extent_plot[3])/2.0
     proj_plot = ccrs.Orthographic(
-            central_longitude=((extent_plot[0]+extent_plot[1])/2.0),
-            central_latitude=((extent_plot[2]+extent_plot[3])/2.0),
+            central_longitude=lon_c,
+            central_latitude=lat_c,
             )
     plt.close('all')
     fig = plt.figure(figsize=(18, 12))
@@ -595,15 +597,17 @@ def process_sat_img_vn_to_hc(fnames_sat_):
     ax1.coastlines(resolution='10m', color='gray', lw=0.5, zorder=500)
     ax1.set_extent(extent_plot, crs=ccrs.PlateCarree())
 
-    g1 = ax1.gridlines(lw=0.5, color='k', draw_labels=False, ls=':', zorder=500)
+    g1 = ax1.gridlines(lw=0.5, color='gray', draw_labels=False, ls='--', zorder=500)
     xlocators = np.arange(extent_plot[0], extent_plot[1]+1, 10.0)
-    ylocators = np.arange(78.0, 86.9, 2.0)
+    ylocators = np.arange(76.0, 86.9, 2.0)
     g1.xlocator = FixedLocator(np.arange(-180, 181, 10.0))
     g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
     for xlocator in xlocators:
         ax1.text(xlocator,  74.0, '$%d ^\\circ E$' % xlocator, ha='center', va='center', fontsize=10, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
-    for ylocator in ylocators:
-        ax1.text(-90.0, ylocator, '$%d ^\\circ N$' % ylocator, ha='center', va='center', fontsize=10, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
+    for jj, ylocator in enumerate(ylocators):
+        ax1.text(-80.0, ylocator, '$%d ^\\circ N$' % ylocator, ha='center', va='center', fontsize=10, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
+
+    text = ax1.text(-130,  82.0, '', ha='left', va='center', fontsize=16, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
 
     ax1.axis('off')
     #\----------------------------------------------------------------------------/#
@@ -659,6 +663,7 @@ def process_sat_img_vn_to_hc(fnames_sat_):
             # pcolor0 = ax1.pcolormesh(lon_2d, lat_2d, img_bkg, cmap='gray', vmin=0.0, vmax=0.5, zorder=i+1, transform=ccrs.PlateCarree(), alpha=0.0)
             cs = ax1.imshow(img, extent=extent_xy, interpolation='nearest', zorder=i)
             imshow0 = ax1.imshow(img_bkg, cmap='gray', vmin=0.0, vmax=0.5, extent=extent_xy, interpolation='nearest', zorder=i+1, alpha=0.0)
+            text.set_text('%s (%s %s)' % (er3t.util.jday_to_dtime(jday_sat0).strftime('%Y-%m-%d %H:%M'), *sat_tag.split('_')[::-1]))
 
             imshows.append(imshow0)
             if len(imshows) > 1:
@@ -3056,18 +3061,17 @@ def test_sat_img(
     fnames_sat1 = {}
 
     # fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
+
     fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor367*%s*Z*.png' % date_sat_s)
     jday_sat00 , fnames_sat00  = process_sat_img_vn_to_hc(fnames_sat00)
     fnames_sat0['jday']    = jday_sat00
     fnames_sat0['fnames']  = fnames_sat00
-    sys.exit()
 
     fnames_sat11 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
     jday_sat11, fnames_sat11 = process_sat_img_vn_to_hc(fnames_sat11)
     fnames_sat1['jday']   = jday_sat11
     fnames_sat1['fnames'] = fnames_sat11
     #\----------------------------------------------------------------------------/#
-    sys.exit()
 
 
 
