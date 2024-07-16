@@ -492,23 +492,13 @@ def process_sat_img_vn_to_hc(fnames_sat_):
     ax1 = fig.add_subplot(111, projection=proj_plot)
 
     ax1.coastlines(resolution='10m', color='gray', lw=0.5, zorder=500)
-    # text_prop = {'color':'gray', 'fontsize':10, 'clip_on': False, 'zorder':510, 'bbox': {'facecolor':'white', 'linewidth':0.0, 'alpha':0.5}, 'transform': ccrs.PlateCarree()}
-    # g1 = ax1.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-', zorder=500, x_inline=True, y_inline=True, xlabel_style=text_prop, ylabel_style=text_prop, auto_inline=False)
-    # g1.xlocator = FixedLocator(np.arange(-180, 181, 10.0))
-    # g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
-    # g1.top_labels = False
-    # g1.right_labels = False
-    # g1.bottom_labels = False
-    # g1.left_labels = False
-
     ax1.set_extent(extent_plot, crs=ccrs.PlateCarree())
     ax1.axis('off')
     #\----------------------------------------------------------------------------/#
 
 
     pcolors = []
-    for i, jday_sat0 in enumerate(jday_sat_unique):
-        print('%d/%d' % (i+1, jday_sat_unique.size))
+    for i, jday_sat0 in enumerate(tqdm(jday_sat_unique)):
 
         indices = np.where(jday_sat_==jday_sat0)[0]
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1]
@@ -517,6 +507,11 @@ def process_sat_img_vn_to_hc(fnames_sat_):
         info = filename.replace('.png', '').split('_')
         extent = [float(item) for item in info[-1].replace('(', '').replace(')', '').split(',')]
         extent_xy = [float(item) for item in info[-2].replace('(', '').replace(')', '').split(',')]
+
+        dtime_s = er3t.util.jday_to_dtime(jday_sat0).strftime('%Y-%m-%d_%H:%M:%S')
+        sat_tag = info[0].replace('TERRA', 'Terra').replace('AQUA', 'Aqua').replace('SUOMI', 'Suomi')
+        img_tag = info[1]
+        fname0_out = '%s/%s_%s_%s' % (_fdir_sat_img_hc_, img_tag, dtime_s, sat_tag)
 
         try:
             img = mpl_img.imread(fname0)
@@ -559,10 +554,11 @@ def process_sat_img_vn_to_hc(fnames_sat_):
             fig.subplots_adjust(hspace=0.3, wspace=0.3)
             _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-            fname0_out = fname0.replace(_fdir_sat_img_vn_, _fdir_sat_img_hc_)
+            fname0_out = '%s_(%.2f,%.2f,%.2f,%.2f)_(%.4f,%.4f,%.4f,%.4f).png' % (fname0_out, *ax1.get_xlim(), *ax1.get_ylim(), *extent_plot)
             fig.savefig(fname0_out, bbox_inches='tight', metadata=_metadata, pad_inches=0)
-            print(fname0_out)
             fnames_sat.append(fname0_out)
+
+            print(fname0_out)
             #\--------------------------------------------------------------/#
 
         except Exception as error:
@@ -2947,17 +2943,13 @@ def test_sat_img(
     # fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
     fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor367*%s*Z*.png' % date_sat_s)
     jday_sat00 , fnames_sat00  = process_sat_img_vn_to_hc(fnames_sat00)
-    sys.exit()
     fnames_sat0['jday']    = jday_sat00
     fnames_sat0['fnames']  = fnames_sat00
-    print(jday_sat00)
 
     fnames_sat11 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
-    print(fnames_sat11)
     jday_sat11, fnames_sat11 = process_sat_img_vn_to_hc(fnames_sat11)
     fnames_sat1['jday']   = jday_sat11
     fnames_sat1['fnames'] = fnames_sat11
-    print(jday_sat11)
     #\----------------------------------------------------------------------------/#
     sys.exit()
 
