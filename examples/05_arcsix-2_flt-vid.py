@@ -509,7 +509,7 @@ def process_sat_img_vn_to_hc(fnames_sat_):
         extent_xy = [float(item) for item in info[-2].replace('(', '').replace(')', '').split(',')]
 
         dtime_s = er3t.util.jday_to_dtime(jday_sat0).strftime('%Y-%m-%d_%H:%M:%S')
-        sat_tag = info[0].replace('TERRA', 'Terra').replace('AQUA', 'Aqua').replace('SUOMI', 'Suomi')
+        sat_tag = info[0].replace('TERRA', 'Terra').replace('AQUA', 'Aqua').replace('SUOMI', 'Suomi').replace('MODIS-', 'MODIS_').replace('VIIRS-', 'VIIRS_')
         img_tag = info[1]
         fname0_out = '%s/%s_%s_%s' % (_fdir_sat_img_hc_, img_tag, dtime_s, sat_tag)
 
