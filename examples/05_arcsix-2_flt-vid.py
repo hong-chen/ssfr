@@ -508,6 +508,7 @@ def process_sat_img_vn_to_hc(fnames_sat_):
 
     pcolors = []
     for i, jday_sat0 in enumerate(jday_sat_unique):
+        print('%d/%d' % (i+1, jday_sat_unique.size))
 
         indices = np.where(jday_sat_==jday_sat0)[0]
         fname0 = sorted([fnames_sat_[index] for index in indices])[-1]
