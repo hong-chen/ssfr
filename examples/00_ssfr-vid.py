@@ -686,7 +686,7 @@ def plot_video_frame(statements, test=False):
         plt.show()
         sys.exit()
     else:
-        plt.savefig('%s/%5.5d.png' % (_fdir_tmp_graph_, n), bbox_inches='tight', dpi=120)
+        plt.savefig('%s/%5.5d.jpg' % (_fdir_tmp_graph_, n), bbox_inches='tight', dpi=120)
         plt.close(fig)
 
 
