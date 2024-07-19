@@ -2535,12 +2535,12 @@ def plot_video_frame_arcsix(statements, test=False):
     # acknowledgements
     #/----------------------------------------------------------------------------\#
     text1 = '\
-presented by ARCSIX SSFR Team - H. Chen, V. Nataraja, A. Chamberlain, J. Drouet, Y.-W. Chen, K. Hirata, K. Dong, and S. Schmidt\
+presented by ARCSIX SSFR Team\
 '
     if has_kt19:
-        text1 = '%s | MetNav - R. Bennett' % text1
+        text1 = '%s | MetNav Team' % text1
     if has_lid0:
-        text1 = '%s | MARLi - Z. Wang' % text1
+        text1 = '%s | MARLi Team' % text1
 
     text1 = '%s\n' % text1
 
