@@ -435,7 +435,7 @@ def get_jday_sat_img_vn(fnames):
 
     return np.array(jday)
 
-def process_sat_img_vn(fnames_sat_, max_overlay=12):
+def process_sat_img_overlay(fnames_sat_, max_overlay=12):
 
     """
     lincoln_sea/VIIRS-NOAA-21_TrueColor_2024-05-31-094200Z_(-120.00,36.69,77.94,88.88).png
@@ -1379,7 +1379,7 @@ def post_process_sat_img_vn(
     #/----------------------------------------------------------------------------\#
     for layername in ['TrueColor', 'FalseColor721', 'FalseColor367']:
         fnames_sat = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*%s*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % (layername, date_sat_s))
-        jday_sat, fnames_sat = process_sat_img_vn(fnames_sat)
+        jday_sat, fnames_sat = process_sat_img_overlay(fnames_sat)
     #\----------------------------------------------------------------------------/#
 
 def main_pre_arcsix(
