@@ -180,40 +180,140 @@ _date_specs_ = {
         }
 
 
-def download_geo_sat_img(
-        dtime_s,
-        dtime_e=None,
-        extent=[-60.5, -58.5, 12, 14],
-        satellite='GOES-East',
-        instrument='ABI',
-        # layer_name='Band2_Red_Visible_1km',
-        layer_name=None,
-        fdir_out='%s/sat_img' % _fdir_main_,
-        dpi=200,
-        ):
+def cal_proj_xy_extent(extent, closed=True):
 
-    if dtime_e is None:
-        dtime_e = datetime.datetime(date_s.year, date_s.month, date_s.day, 23, 59, date_s.second)
+    """
+    Calculate globe map projection <ccrs.Orthographic> centered at the center of the granule defined by corner points
 
-    while dtime_s <= dtime_e:
-        fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=False, layer_name0=layer_name)
-        if not os.path.exists(fname_img):
-            fname_img = er3t.util.download_worldview_image(dtime_s, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=True, layer_name0=layer_name)
-        dtime_s += datetime.timedelta(minutes=10.0)
+    Input:
+        line_data: Python dictionary (details see <read_geo_meta>) that contains basic information of a satellite granule
+        closed=True: if True, return five corner points with the last point repeating the first point;
+                     if False, return four corner points
 
-def download_polar_sat_img(
-        date,
-        extent=[-60.5, -58.5, 12, 14],
-        imagers=['MODIS|Aqua', 'MODIS|Terra', 'VIIRS|NOAA20', 'VIIRS|SNPP'],
-        fdir_out='%s/sat_img' % _fdir_main_,
-        dpi=300,
-        ):
+    Output:
+        proj_xy: globe map projection <ccrs.Orthographic> centered at the center of the granule defined by corner points
+        xy: dimension of (5, 2) if <closed=True> and (4, 2) if <closed=False>
+    """
 
-    for imager in imagers:
-        instrument, satellite = imager.split('|')
-        fname_img = er3t.util.download_worldview_image(date, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=False)
-        if not os.path.exists(fname_img):
-            fname_img = er3t.util.download_worldview_image(date, extent, satellite=satellite, instrument=instrument, fdir_out=fdir_out, dpi=dpi, run=True)
+    import cartopy.crs as ccrs
+
+    line_data = {
+            'GRingLongitude1': extent[0],
+            'GRingLongitude2': extent[1],
+            'GRingLongitude3': extent[1],
+            'GRingLongitude4': extent[0],
+             'GRingLatitude1': extent[2],
+             'GRingLatitude2': extent[2],
+             'GRingLatitude3': extent[3],
+             'GRingLatitude4': extent[3],
+            }
+
+    # get corner points
+    #/----------------------------------------------------------------------------\#
+    lon_  = np.array([
+        float(line_data['GRingLongitude1']),
+        float(line_data['GRingLongitude2']),
+        float(line_data['GRingLongitude3']),
+        float(line_data['GRingLongitude4']),
+        float(line_data['GRingLongitude1'])
+        ])
+
+    lat_  = np.array([
+        float(line_data['GRingLatitude1']),
+        float(line_data['GRingLatitude2']),
+        float(line_data['GRingLatitude3']),
+        float(line_data['GRingLatitude4']),
+        float(line_data['GRingLatitude1'])
+        ])
+
+    if (abs(lon_[0]-lon_[1])>180.0) | (abs(lon_[0]-lon_[2])>180.0) | \
+       (abs(lon_[0]-lon_[3])>180.0) | (abs(lon_[1]-lon_[2])>180.0) | \
+       (abs(lon_[1]-lon_[3])>180.0) | (abs(lon_[2]-lon_[3])>180.0):
+
+        lon_[lon_<0.0] += 360.0
+    #\----------------------------------------------------------------------------/#
+
+
+    # roughly determine the center of granule
+    #/----------------------------------------------------------------------------\#
+    lon = lon_[:-1]
+    lat = lat_[:-1]
+    center_lon_ = lon.mean()
+    center_lat_ = lat.mean()
+    #\----------------------------------------------------------------------------/#
+
+
+    # find the true center
+    #/----------------------------------------------------------------------------\#
+    proj_lonlat = ccrs.PlateCarree()
+
+    proj_xy_ = ccrs.Orthographic(central_longitude=center_lon_, central_latitude=center_lat_)
+    xy_ = proj_xy_.transform_points(proj_lonlat, lon, lat)[:, [0, 1]]
+
+    center_x  = xy_[:, 0].mean()
+    center_y  = xy_[:, 1].mean()
+    center_lon, center_lat = proj_lonlat.transform_point(center_x, center_y, proj_xy_)
+    #\----------------------------------------------------------------------------/#
+
+
+    # convert lon/lat corner points into xy
+    #/----------------------------------------------------------------------------\#
+    proj_xy = ccrs.Orthographic(central_longitude=center_lon, central_latitude=center_lat)
+    xy_  = proj_xy.transform_points(proj_lonlat, lon_, lat_)[:, [0, 1]]
+    #\----------------------------------------------------------------------------/#
+
+
+    if closed:
+        return proj_xy, xy_
+    else:
+        return proj_xy, xy_[:-1, :]
+
+def contain_lonlat_check(
+             lon,
+             lat,
+             extent,
+             ):
+
+    # check cartopy and matplotlib
+    #/----------------------------------------------------------------------------\#
+    import cartopy.crs as ccrs
+    import matplotlib.path as mpl_path
+    #\----------------------------------------------------------------------------/#
+
+
+    # convert longitude in [-180, 180] range
+    # since the longitude in GeoMeta dataset is in the range of [-180, 180]
+    # or check overlap within region of interest
+    #/----------------------------------------------------------------------------\#
+    lon[lon>180.0] -= 360.0
+    logic = (lon>=-180.0)&(lon<=180.0) & (lat>=-90.0)&(lat<=90.0)
+    lon   = lon[logic]
+    lat   = lat[logic]
+    #\----------------------------------------------------------------------------/#
+
+
+    # loop through all the satellite "granules" constructed through four corner points
+    # and find which granules contain the input data
+    #/----------------------------------------------------------------------------\#
+    proj_lonlat = ccrs.PlateCarree()
+
+    # get bounds of the satellite overpass/granule
+    proj_xy, xy_granule = cal_proj_xy_extent(extent, closed=True)
+    sat_granule  = mpl_path.Path(xy_granule, closed=True)
+
+    # check if the overpass/granule overlaps with region of interest
+    xy_in      = proj_xy.transform_points(proj_lonlat, lon, lat)[:, [0, 1]]
+    points_in  = sat_granule.contains_points(xy_in)
+
+    Npoint_in  = points_in.sum()
+
+    if (Npoint_in>0):
+        contain = True
+    else:
+        contain = False
+    #\----------------------------------------------------------------------------/#
+
+    return contain
 
 def check_continuity(data, threshold=0.1):
 
@@ -286,79 +386,6 @@ def partition_flight_track(flt_trk, jday_edges, margin_x=0.2, margin_y=0.2):
 
     return flt_trk_segments
 
-def get_jday_sat_img(fnames):
-
-    """
-    Get UTC time in hour from the satellite file name
-
-    Input:
-        fnames: Python list, file paths of all the satellite data
-
-    Output:
-        jday: numpy array, julian day
-    """
-
-    jday = []
-    for fname in fnames:
-        filename = os.path.basename(fname)
-        strings  = filename.split('_')
-        dtime_s  = strings[2]
-
-        dtime0 = datetime.datetime.strptime(dtime_s, '%Y-%m-%dT%H:%M:%SZ')
-        jday0 = er3t.util.dtime_to_jday(dtime0)
-        jday.append(jday0)
-
-    return np.array(jday)
-
-def get_extent(lon, lat, margin=0.2):
-
-    logic = check_continuity(lon, threshold=1.0) & check_continuity(lat, threshold=1.0)
-    lon = lon[logic]
-    lat = lat[logic]
-
-    lon_min = np.nanmin(lon)
-    lon_max = np.nanmax(lon)
-    lat_min = np.nanmin(lat)
-    lat_max = np.nanmax(lat)
-
-    lon_c = (lon_min+lon_max)/2.0
-    lat_c = (lat_min+lat_max)/2.0
-
-    deg_x = (lon_max-lon_min)*np.cos(np.deg2rad(lat_c))
-    deg_y = (lat_max-lat_min)
-
-    deg_half = (max([deg_x, deg_y])/2.0 * (1.0+margin/2.0))/np.cos(np.deg2rad(lat_c))
-
-    lon0 = lon_c-deg_half
-    lon1 = lon_c+deg_half
-    lat0 = lat_c-deg_half
-    lat1 = lat_c+deg_half
-
-    extent = [lon0, lon1, max([lat0, 35.0]), min([lat1, 89.9])]
-
-    return extent
-
-def get_extent_minmax(lon, lat, margin=0.1):
-
-    logic = check_continuity(lon, threshold=1.0) & check_continuity(lat, threshold=1.0)
-    lon = lon[logic]
-    lat = lat[logic]
-
-    lon_min = np.nanmin(lon)
-    lon_max = np.nanmax(lon)
-    lat_min = np.nanmin(lat)
-    lat_max = np.nanmax(lat)
-
-    lon0 = lon_min-margin
-    lon1 = lon_max+margin
-    lat0 = lat_min-margin
-    lat1 = lat_max+margin
-
-    extent = [lon0, lon1, lat0, lat1]
-
-    return extent
-
-
 def get_jday_cam_img(date, fnames):
 
     """
@@ -381,8 +408,6 @@ def get_jday_cam_img(date, fnames):
         jday.append(jday0)
 
     return np.array(jday)
-
-
 
 def get_jday_sat_img_vn(fnames):
 
@@ -409,66 +434,7 @@ def get_jday_sat_img_vn(fnames):
 
     return np.array(jday)
 
-def process_sat_img_vn(fnames_sat_, extent_target, threshold=95.0):
-
-    """
-    lincoln_sea/VIIRS-NOAA-21_TrueColor_2024-05-31-094200Z_(-120.00,36.69,77.94,88.88).png
-    """
-
-    jday_sat_ = get_jday_sat_img_vn(fnames_sat_)
-    jday_sat_unique = np.sort(np.unique(jday_sat_))
-
-    fnames_sat = []
-    jday_sat = []
-
-    for jday_sat0 in tqdm(jday_sat_unique):
-
-        indices = np.where(jday_sat_==jday_sat0)[0]
-        fname0 = sorted([fnames_sat_[index] for index in indices])[-1]
-
-        extent_ori = [float(x) for x in os.path.basename(fname0).replace('.png', '').split('_')[-1].replace('(', '').replace(')', '').split(',')]
-
-        try:
-            if 'SUOMI' not in fname0:
-                img = mpl_img.imread(fname0)
-
-                lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
-                lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
-
-                indices_x = np.where((lon_1d>=(extent_target[0]))&(lon_1d<=(extent_target[1])))[0]
-                indices_y = np.where((lat_1d>=(extent_target[2]))&(lat_1d<=(extent_target[3])))[0]
-
-                if indices_x.size>2 and indices_y.size>2:
-
-                    index_xs = indices_x[0]
-                    index_xe = indices_x[-1]
-                    index_ys = indices_y[0]
-                    index_ye = indices_y[-1]
-                    lon_1d = lon_1d[index_xs:index_xe+1]
-                    lat_1d = lat_1d[index_ys:index_ye+1][::-1]
-
-                    lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
-                    img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
-
-                    logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
-
-                    p_coverage = (1.0-(logic_black.sum()/logic_black.size))*100.0
-
-                    if p_coverage > threshold:
-                        fnames_sat.append(fname0)
-                        jday_sat.append(jday_sat0)
-                        # print(jday_sat0)
-                        # print(er3t.util.jday_to_dtime(jday_sat0))
-                        # print(fname0)
-                        # print(p_coverage)
-
-        except Exception as error:
-            print(fname0)
-            warnings.warn(error)
-
-    return np.array(jday_sat), fnames_sat
-
-def process_sat_img_vn_to_hc(fnames_sat_, max_overlay=12):
+def process_sat_img_vn(fnames_sat_, max_overlay=12):
 
     """
     lincoln_sea/VIIRS-NOAA-21_TrueColor_2024-05-31-094200Z_(-120.00,36.69,77.94,88.88).png
@@ -636,144 +602,6 @@ def process_marli(date, run=True):
         fname_png = None
 
     return fname_png
-
-
-
-
-def cal_proj_xy_extent(extent, closed=True):
-
-    """
-    Calculate globe map projection <ccrs.Orthographic> centered at the center of the granule defined by corner points
-
-    Input:
-        line_data: Python dictionary (details see <read_geo_meta>) that contains basic information of a satellite granule
-        closed=True: if True, return five corner points with the last point repeating the first point;
-                     if False, return four corner points
-
-    Output:
-        proj_xy: globe map projection <ccrs.Orthographic> centered at the center of the granule defined by corner points
-        xy: dimension of (5, 2) if <closed=True> and (4, 2) if <closed=False>
-    """
-
-    import cartopy.crs as ccrs
-
-    line_data = {
-            'GRingLongitude1': extent[0],
-            'GRingLongitude2': extent[1],
-            'GRingLongitude3': extent[1],
-            'GRingLongitude4': extent[0],
-             'GRingLatitude1': extent[2],
-             'GRingLatitude2': extent[2],
-             'GRingLatitude3': extent[3],
-             'GRingLatitude4': extent[3],
-            }
-
-    # get corner points
-    #/----------------------------------------------------------------------------\#
-    lon_  = np.array([
-        float(line_data['GRingLongitude1']),
-        float(line_data['GRingLongitude2']),
-        float(line_data['GRingLongitude3']),
-        float(line_data['GRingLongitude4']),
-        float(line_data['GRingLongitude1'])
-        ])
-
-    lat_  = np.array([
-        float(line_data['GRingLatitude1']),
-        float(line_data['GRingLatitude2']),
-        float(line_data['GRingLatitude3']),
-        float(line_data['GRingLatitude4']),
-        float(line_data['GRingLatitude1'])
-        ])
-
-    if (abs(lon_[0]-lon_[1])>180.0) | (abs(lon_[0]-lon_[2])>180.0) | \
-       (abs(lon_[0]-lon_[3])>180.0) | (abs(lon_[1]-lon_[2])>180.0) | \
-       (abs(lon_[1]-lon_[3])>180.0) | (abs(lon_[2]-lon_[3])>180.0):
-
-        lon_[lon_<0.0] += 360.0
-    #\----------------------------------------------------------------------------/#
-
-
-    # roughly determine the center of granule
-    #/----------------------------------------------------------------------------\#
-    lon = lon_[:-1]
-    lat = lat_[:-1]
-    center_lon_ = lon.mean()
-    center_lat_ = lat.mean()
-    #\----------------------------------------------------------------------------/#
-
-
-    # find the true center
-    #/----------------------------------------------------------------------------\#
-    proj_lonlat = ccrs.PlateCarree()
-
-    proj_xy_ = ccrs.Orthographic(central_longitude=center_lon_, central_latitude=center_lat_)
-    xy_ = proj_xy_.transform_points(proj_lonlat, lon, lat)[:, [0, 1]]
-
-    center_x  = xy_[:, 0].mean()
-    center_y  = xy_[:, 1].mean()
-    center_lon, center_lat = proj_lonlat.transform_point(center_x, center_y, proj_xy_)
-    #\----------------------------------------------------------------------------/#
-
-
-    # convert lon/lat corner points into xy
-    #/----------------------------------------------------------------------------\#
-    proj_xy = ccrs.Orthographic(central_longitude=center_lon, central_latitude=center_lat)
-    xy_  = proj_xy.transform_points(proj_lonlat, lon_, lat_)[:, [0, 1]]
-    #\----------------------------------------------------------------------------/#
-
-
-    if closed:
-        return proj_xy, xy_
-    else:
-        return proj_xy, xy_[:-1, :]
-
-def contain_lonlat_check(
-             lon,
-             lat,
-             extent,
-             ):
-
-    # check cartopy and matplotlib
-    #/----------------------------------------------------------------------------\#
-    import cartopy.crs as ccrs
-    import matplotlib.path as mpl_path
-    #\----------------------------------------------------------------------------/#
-
-
-    # convert longitude in [-180, 180] range
-    # since the longitude in GeoMeta dataset is in the range of [-180, 180]
-    # or check overlap within region of interest
-    #/----------------------------------------------------------------------------\#
-    lon[lon>180.0] -= 360.0
-    logic = (lon>=-180.0)&(lon<=180.0) & (lat>=-90.0)&(lat<=90.0)
-    lon   = lon[logic]
-    lat   = lat[logic]
-    #\----------------------------------------------------------------------------/#
-
-
-    # loop through all the satellite "granules" constructed through four corner points
-    # and find which granules contain the input data
-    #/----------------------------------------------------------------------------\#
-    proj_lonlat = ccrs.PlateCarree()
-
-    # get bounds of the satellite overpass/granule
-    proj_xy, xy_granule = cal_proj_xy_extent(extent, closed=True)
-    sat_granule  = mpl_path.Path(xy_granule, closed=True)
-
-    # check if the overpass/granule overlaps with region of interest
-    xy_in      = proj_xy.transform_points(proj_lonlat, lon, lat)[:, [0, 1]]
-    points_in  = sat_granule.contains_points(xy_in)
-
-    Npoint_in  = points_in.sum()
-
-    if (Npoint_in>0):
-        contain = True
-    else:
-        contain = False
-    #\----------------------------------------------------------------------------/#
-
-    return contain
 
 
 
@@ -952,7 +780,6 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # plot settings
     #/----------------------------------------------------------------------------\#
-    plot_arrow  = False
     _aspect_    = 'auto'
     _alt_cmap_  = 'gist_ncar'
     _temp_cmap_ = 'seismic'
@@ -1088,31 +915,30 @@ def plot_video_frame_arcsix(statements, test=False):
     if has_sat1:
 
         fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
-        img = mpl_img.imread(fname_sat1)/255.0
+        img = mpl_img.imread(fname_sat1)
         Ny, Nx, Nc = img.shape
         x_current, y_current = proj0.transform_point(lon_current, lat_current, ccrs.PlateCarree())
         x_1d = np.linspace(flt_img0['extent_sat1'][0], flt_img0['extent_sat1'][1], Nx)
-        y_1d = np.linspace(flt_img0['extent_sat1'][2], flt_img0['extent_sat1'][3], Ny)
+        y_1d = np.linspace(flt_img0['extent_sat1'][3], flt_img0['extent_sat1'][2], Ny)
 
-        extend_x = 100000.0
-        extend_y = 80000.0
+        extend_x = 200
+        extend_y = 150
 
-        extent_sat1 = [x_current-extend_x, x_current+extend_x, y_current-extend_y, y_current+extend_y]
-        indices_x = np.where((x_1d>=(x_current-extend_x))&(x_1d<=(x_current+extend_x)))[0]
-        indices_y = np.where((y_1d>=(y_current-extend_y))&(y_1d<=(y_current+extend_y)))[0]
+        index_x = int((x_current-x_1d[0])//(x_1d[1]-x_1d[0]))
+        index_y = int((y_current-y_1d[0])//(y_1d[1]-y_1d[0]))
 
-        if indices_x.size>2 and indices_y.size>2:
+        index_xs = max(index_x-extend_x, 0)
+        index_xe = min(index_x+extend_x, Nx)
+        index_ys = max(index_y-extend_y, 0)
+        index_ye = min(index_y+extend_y, Ny)
 
-            index_xs = indices_x[0]
-            index_xe = indices_x[-1]
-            index_ys = indices_y[0]
-            index_ye = indices_y[-1]
+        extent_sat1 = [x_1d[index_xs], x_1d[index_xe], y_1d[index_ye], y_1d[index_ys]]
 
-            img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
-            ax_map.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
-            ax_map0.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
-            ax_map0.set_xlim(extent_sat1[:2])
-            ax_map0.set_ylim(extent_sat1[2:])
+        img = img[index_ys:index_ye, index_xs:index_xe, :]
+        ax_map.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
+        ax_map0.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
+        ax_map0.set_xlim(extent_sat1[:2])
+        ax_map0.set_ylim(extent_sat1[2:])
 
     if has_cam0:
         ang_cam_offset = -53.0 # for ARCSIX
@@ -1539,6 +1365,22 @@ IN-FIELD USE ONLY\n\
         plt.savefig('%s/%5.5d.jpg' % (_fdir_tmp_graph_, n), bbox_inches='tight', dpi=_dpi_)
         plt.close(fig)
 
+def post_process_sat_img_vn(
+        date,
+        ):
+
+    # date time stamp
+    #/----------------------------------------------------------------------------\#
+    date_sat_s = date.strftime('%Y-%m-%d')
+    #\----------------------------------------------------------------------------/#
+
+    # process satellite imagery
+    #/----------------------------------------------------------------------------\#
+    for layername in ['TrueColor', 'FalseColor721', 'FalseColor367']:
+        fnames_sat = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*%s*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % (layername, date_sat_s))
+        jday_sat, fnames_sat = process_sat_img_vn(fnames_sat)
+    #\----------------------------------------------------------------------------/#
+
 def main_pre_arcsix(
         date,
         wvl0=_wavelength_,
@@ -1916,37 +1758,6 @@ def main_vid_arcsix(
 
 
 
-def test_sat_img(
-        date,
-        wvl0=_wavelength_,
-        run_rtm=False,
-        time_step=1,
-        wvl_step_spns=1,
-        wvl_step_ssfr=1,
-        ):
-
-    # date time stamp
-    #/----------------------------------------------------------------------------\#
-    date_sat_s = date.strftime('%Y-%m-%d')
-    #\----------------------------------------------------------------------------/#
-
-
-    # process satellite imagery
-    #/----------------------------------------------------------------------------\#
-    fnames_sat0 = {}
-    fnames_sat1 = {}
-
-    fnames_sat11 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*TrueColor*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % date_sat_s)
-    jday_sat11, fnames_sat11 = process_sat_img_vn_to_hc(fnames_sat11)
-
-    fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor721*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % date_sat_s)
-    jday_sat00 , fnames_sat00  = process_sat_img_vn_to_hc(fnames_sat00)
-
-    fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor367*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % date_sat_s)
-    jday_sat00 , fnames_sat00  = process_sat_img_vn_to_hc(fnames_sat00)
-    #\----------------------------------------------------------------------------/#
-
-
 
 
 if __name__ == '__main__':
@@ -1966,11 +1777,11 @@ if __name__ == '__main__':
 
     for date in dates[::-1]:
 
-        test_sat_img(date)
 
         #/----------------------------------------------------------------------------\#
+        post_process_sat_img_vn(date)
         main_pre_arcsix(date)
-        # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+        main_vid_arcsix(date, wvl0=_wavelength_, interval=60) make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
         #\----------------------------------------------------------------------------/#
