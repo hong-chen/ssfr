@@ -61,6 +61,7 @@ import er3t
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+_Ncpu_ = 8
 
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
@@ -1625,7 +1626,7 @@ def main_pre_arcsix(
         dtime00 = datetime.datetime.strptime(dtime00_s, '%Y-%m-%d_%H:%M:%S')
         jday_sat00[i] = er3t.util.dtime_to_jday(dtime00)
 
-    # fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor721*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
+    # fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor367*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
     fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor721*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
     jday_sat11 = np.zeros(len(fnames_sat11), dtype=np.float64)
     for i, fname_sat11 in enumerate(fnames_sat11):
@@ -1675,7 +1676,6 @@ def main_pre_arcsix(
             jday_sat0_   = fnames_sat0['jday']
             fnames_sat0_ = fnames_sat0['fnames']
             index_sat0   = np.argmin(np.abs(jday_sat0_-flt_trk0['jday'][j]))
-            # flt_img['id_sat0'].append(os.path.basename(fnames_sat0_[index_sat0]).split('_')[0].replace('-', ' '))
             flt_img['id_sat0'].append(' '.join(os.path.basename(fnames_sat0_[index_sat0]).split('_')[3:5][::-1]))
             flt_img['fnames_sat0'].append(fnames_sat0_[index_sat0])
             flt_img['jday_sat0'] = np.append(flt_img['jday_sat0'], jday_sat0_[index_sat0])
@@ -1744,7 +1744,7 @@ def main_vid_arcsix(
 
     statements = zip([flt_sim0]*indices_trk.size, indices_trk, indices_pnt, indices)
 
-    with mp.Pool(processes=8) as pool:
+    with mp.Pool(processes=_Ncpu_) as pool:
         r = list(tqdm(pool.imap(plot_video_frame_arcsix, statements), total=indices_trk.size))
 
     # make video
