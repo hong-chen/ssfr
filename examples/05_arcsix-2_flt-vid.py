@@ -498,18 +498,6 @@ def process_sat_img_vn_to_hc(fnames_sat_, max_overlay=12):
     ax1.coastlines(resolution='10m', color='gray', lw=0.5, zorder=500)
     ax1.set_extent(extent_plot, crs=ccrs.PlateCarree())
 
-    # g1 = ax1.gridlines(lw=0.5, color='gray', draw_labels=False, ls='--', zorder=500)
-    # xlocators = np.arange(extent_plot[0], extent_plot[1]+1, 10.0)
-    # ylocators = np.arange(76.0, 86.9, 2.0)
-    # g1.xlocator = FixedLocator(np.arange(-180, 181, 10.0))
-    # g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
-    # for xlocator in xlocators:
-    #     ax1.text(xlocator,  74.0, '$%d ^\\circ E$' % xlocator, ha='center', va='center', fontsize=10, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
-    # for jj, ylocator in enumerate(ylocators):
-    #     ax1.text(-80.0, ylocator, '$%d ^\\circ N$' % ylocator, ha='center', va='center', fontsize=10, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
-
-    # text = ax1.text(-130,  82.0, '', ha='left', va='center', fontsize=16, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
-
     ax1.axis('off')
     #\----------------------------------------------------------------------------/#
 
@@ -535,36 +523,14 @@ def process_sat_img_vn_to_hc(fnames_sat_, max_overlay=12):
         try:
             img = mpl_img.imread(fname0)
 
-            # Ny, Nx, Nc = img.shape
-
-            # x1d = np.linspace(extent_xy[0], extent_xy[1], Nx)
-            # y1d = np.linspace(extent_xy[3], extent_xy[2], Ny)
-
-            # x, y = np.meshgrid(x1d, y1d)
-
-            # lon_c = (extent[0]+extent[1])/2.0
-            # lat_c = (extent[2]+extent[3])/2.0
-
-            # proj0 = ccrs.Orthographic(
-            #         central_longitude=lon_c,
-            #         central_latitude=lat_c,
-            #         )
-
-            # proj = ccrs.PlateCarree()
-            # data = proj.transform_points(proj0, x, y)[..., [0, 1]]
-
-            # lon_2d = data[..., 0]
-            # lat_2d = data[..., 1]
-
             logic_tran = (img[:, :, 0]==1.0) & (img[:, :, 1]==1.0) & (img[:, :, 2]==1.0)
 
             img_bkg = np.ones_like(img[:, :, 0], dtype=np.float32)
             img[logic_tran, 3] = 0.0
             img_bkg[logic_tran] = np.nan
 
-            imshow0 = ax1.imshow(img_bkg, cmap='gray', vmin=0.0, vmax=0.5, extent=extent_xy, interpolation='nearest', zorder=i+1, alpha=0.0)
+            imshow0 = ax1.imshow(img_bkg, cmap='Greys_r', vmin=0.0, vmax=1.5, extent=extent_xy, interpolation='nearest', zorder=i+1, alpha=0.0)
             imshow1 = ax1.imshow(img, extent=extent_xy, interpolation='nearest', zorder=i)
-            # text.set_text('%s (%s %s)' % (er3t.util.jday_to_dtime(jday_sat0).strftime('%Y-%m-%d %H:%M'), *sat_tag.split('_')[::-1]))
 
             imshows0.append(imshow0)
             imshows1.append(imshow1)
@@ -2000,10 +1966,10 @@ if __name__ == '__main__':
 
     for date in dates[::-1]:
 
-        # test_sat_img(date)
+        test_sat_img(date)
 
         #/----------------------------------------------------------------------------\#
-        # main_pre_arcsix(date)
+        main_pre_arcsix(date)
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
