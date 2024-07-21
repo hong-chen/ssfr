@@ -498,17 +498,17 @@ def process_sat_img_vn_to_hc(fnames_sat_, max_overlay=12):
     ax1.coastlines(resolution='10m', color='gray', lw=0.5, zorder=500)
     ax1.set_extent(extent_plot, crs=ccrs.PlateCarree())
 
-    g1 = ax1.gridlines(lw=0.5, color='gray', draw_labels=False, ls='--', zorder=500)
-    xlocators = np.arange(extent_plot[0], extent_plot[1]+1, 10.0)
-    ylocators = np.arange(76.0, 86.9, 2.0)
-    g1.xlocator = FixedLocator(np.arange(-180, 181, 10.0))
-    g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
-    for xlocator in xlocators:
-        ax1.text(xlocator,  74.0, '$%d ^\\circ E$' % xlocator, ha='center', va='center', fontsize=10, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
-    for jj, ylocator in enumerate(ylocators):
-        ax1.text(-80.0, ylocator, '$%d ^\\circ N$' % ylocator, ha='center', va='center', fontsize=10, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
+    # g1 = ax1.gridlines(lw=0.5, color='gray', draw_labels=False, ls='--', zorder=500)
+    # xlocators = np.arange(extent_plot[0], extent_plot[1]+1, 10.0)
+    # ylocators = np.arange(76.0, 86.9, 2.0)
+    # g1.xlocator = FixedLocator(np.arange(-180, 181, 10.0))
+    # g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
+    # for xlocator in xlocators:
+    #     ax1.text(xlocator,  74.0, '$%d ^\\circ E$' % xlocator, ha='center', va='center', fontsize=10, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
+    # for jj, ylocator in enumerate(ylocators):
+    #     ax1.text(-80.0, ylocator, '$%d ^\\circ N$' % ylocator, ha='center', va='center', fontsize=10, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
 
-    text = ax1.text(-130,  82.0, '', ha='left', va='center', fontsize=16, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
+    # text = ax1.text(-130,  82.0, '', ha='left', va='center', fontsize=16, color='k', transform=ccrs.PlateCarree(), bbox={'alpha':0.5, 'facecolor':'white', 'boxstyle':'round, pad=0.1'}, zorder=1000)
 
     ax1.axis('off')
     #\----------------------------------------------------------------------------/#
@@ -564,7 +564,7 @@ def process_sat_img_vn_to_hc(fnames_sat_, max_overlay=12):
 
             imshow0 = ax1.imshow(img_bkg, cmap='gray', vmin=0.0, vmax=0.5, extent=extent_xy, interpolation='nearest', zorder=i+1, alpha=0.0)
             imshow1 = ax1.imshow(img, extent=extent_xy, interpolation='nearest', zorder=i)
-            text.set_text('%s (%s %s)' % (er3t.util.jday_to_dtime(jday_sat0).strftime('%Y-%m-%d %H:%M'), *sat_tag.split('_')[::-1]))
+            # text.set_text('%s (%s %s)' % (er3t.util.jday_to_dtime(jday_sat0).strftime('%Y-%m-%d %H:%M'), *sat_tag.split('_')[::-1]))
 
             imshows0.append(imshow0)
             imshows1.append(imshow1)
@@ -665,7 +665,8 @@ def process_marli(date, run=True):
             #\--------------------------------------------------------------/#
         #\----------------------------------------------------------------------------/#
     except Exception as error:
-        warnings.warn(error)
+        # warnings.warn(error)
+        print(error)
         fname_png = None
 
     return fname_png
@@ -1867,6 +1868,7 @@ def plot_video_frame_arcsix(statements, test=False):
 
     # plot settings
     #/----------------------------------------------------------------------------\#
+    plot_arrow  = False
     _aspect_    = 'auto'
     _alt_cmap_  = 'gist_ncar'
     _temp_cmap_ = 'seismic'
@@ -1885,6 +1887,12 @@ def plot_video_frame_arcsix(statements, test=False):
     hist_x = (hist_bins[1:]+hist_bins[:-1])/2.0
     hist_bin_w = hist_bins[1]-hist_bins[0]
     hist_bottoms = {key:0.0 for key in vars_plot.keys()}
+
+    alt_cmap = mpl.colormaps[_alt_cmap_]
+    alt_norm = mpl.colors.Normalize(vmin=_alt_base_, vmax=_alt_ceil_)
+
+    temp_cmap = mpl.colormaps[_temp_cmap_]
+    temp_norm = mpl.colors.Normalize(vmin=_temp_base_, vmax=_temp_ceil_)
     #\----------------------------------------------------------------------------/#
 
 
@@ -1941,15 +1949,11 @@ def plot_video_frame_arcsix(statements, test=False):
     ax = fig.add_subplot(gs[:, :])
 
     # map of flight track overlay satellite imagery
-    # proj0 = ccrs.Orthographic(
-    #         central_longitude=(flt_sim0.extent[0]+flt_sim0.extent[1])/2.0,
-    #         central_latitude=(flt_sim0.extent[2]+flt_sim0.extent[3])/2.0,
-    #         )
+    extent_fix = [-80.0000, -30.0000, 71.0000, 88.00]
     proj0 = ccrs.Orthographic(
-            central_longitude=lon_current,
-            central_latitude=lat_current,
+            central_longitude=(extent_fix[0]+extent_fix[1])/2.0,
+            central_latitude=(extent_fix[2]+extent_fix[3])/2.0,
             )
-    # proj0 = ccrs.PlateCarree()
     ax_map = fig.add_subplot(gs[:8, :9], projection=proj0, aspect=_aspect_)
 
     # altitude colorbar next to the map
@@ -1966,7 +1970,8 @@ def plot_video_frame_arcsix(statements, test=False):
     ax_alt_hist = ax_alt_prof.twinx()
 
     # a secondary map
-    ax_map0 = fig.add_subplot(gs[:5, 10:15], projection=ccrs.PlateCarree(), aspect=_aspect_)
+    # ax_map0 = fig.add_subplot(gs[:5, 10:15], projection=ccrs.PlateCarree(), aspect=_aspect_)
+    ax_map0 = fig.add_subplot(gs[:5, 10:15], projection=proj0, aspect=_aspect_)
 
     # camera imagery
     ax_img  = fig.add_subplot(gs[:5, 15:])
@@ -1988,119 +1993,32 @@ def plot_video_frame_arcsix(statements, test=False):
     #\----------------------------------------------------------------------------/#
 
 
-    # flight direction
-    #/----------------------------------------------------------------------------\#
-    alt_cmap = mpl.colormaps[_alt_cmap_]
-    alt_norm = mpl.colors.Normalize(vmin=_alt_base_, vmax=_alt_ceil_)
-
-    temp_cmap = mpl.colormaps[_temp_cmap_]
-    temp_norm = mpl.colors.Normalize(vmin=_temp_base_, vmax=_temp_ceil_)
-
-    dlon = flt_sim0.flt_imgs[index_trk]['extent_sat0'][1] - flt_sim0.flt_imgs[index_trk]['extent_sat0'][0]
-    Nscale = int(dlon/1.3155229999999989 * 15)
-
-    arrow_prop = dict(
-            arrowstyle='fancy,head_width=0.6,head_length=0.8',
-            shrinkA=0,
-            shrinkB=0,
-            facecolor='red',
-            edgecolor='white',
-            linewidth=1.0,
-            alpha=0.6,
-            relpos=(0.0, 0.0),
-            )
-    if index_trk == 0 and index_pnt == 0:
-        plot_arrow = False
-    else:
-        if index_pnt == 0:
-            lon_before = flt_sim0.flt_trks[index_trk-1]['lon'][-1]
-            lat_before = flt_sim0.flt_trks[index_trk-1]['lat'][-1]
-        else:
-            lon_before = flt_sim0.flt_trks[index_trk]['lon'][index_pnt-1]
-            lat_before = flt_sim0.flt_trks[index_trk]['lat'][index_pnt-1]
-        dx = lon_current - lon_before
-        dy = lat_current - lat_before
-
-        if np.sqrt(dx**2+dy**2)*111000.0 > 20.0:
-            plot_arrow = True
-            lon_point_to = lon_current + Nscale*dx
-            lat_point_to = lat_current + Nscale*dy
-        else:
-            plot_arrow = False
-
-    plot_arrow=False
-    #\----------------------------------------------------------------------------/#
-
-
     # base plot
     #/----------------------------------------------------------------------------\#
-    _lon_half_ = 15.0
-    _lat_half_ = 2.0
-    _lat_base_  = max([lat_current-_lat_half_, 72.0])
-    _lat_ceil_  = min([_lat_base_+_lat_half_*2.0, 87.0])
-    _lat_base_  = max([_lat_ceil_-_lat_half_*2.0, 72.0])
-    extent_img0 = [lon_current-_lon_half_, lon_current+_lon_half_, _lat_base_, _lat_ceil_]
-    ax_map.set_extent(extent_img0, crs=ccrs.PlateCarree())
-
+    ax_map.set_extent(extent_fix, crs=ccrs.PlateCarree())
     if has_sat0:
 
         fname_sat0 = flt_img0['fnames_sat0'][index_pnt]
-
         img = mpl_img.imread(fname_sat0)
-
-        extent_ori = [float(x) for x in os.path.basename(fname_sat0).replace('.png', '').split('_')[-1].replace('(', '').replace(')', '').split(',')]
-        lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
-        lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
-
-        extend_x = 10.0
-        extend_y = 0.05
-        lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
-        lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
-        indices_x = np.where((lon_1d_>=(extent_img0[0]-extend_x))&(lon_1d_<=(extent_img0[1]+extend_x)))[0]
-        indices_y = np.where((lat_1d_>=(extent_img0[2]-extend_y))&(lat_1d_<=(extent_img0[3]+extend_y)))[0]
-
-        if indices_x.size>2 and indices_y.size>2:
-
-            index_xs = indices_x[0]
-            index_xe = indices_x[-1]
-            index_ys = indices_y[0]
-            index_ye = indices_y[-1]
-            lon_1d = lon_1d[index_xs:index_xe+1]
-            lat_1d = lat_1d[index_ys:index_ye+1][::-1]
-
-            lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
-            img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
-
-            logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
-            img[logic_black, -1] = 0.0
-            ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree(), zorder=0)
-
-
-    lat_half0 = 0.25
-    lon_half0 = lat_half0*(_lon_half_/_lat_half_)*2.0
-    lon_s = lon_current-lon_half0
-    lon_e = lon_current+lon_half0
-    lat_s = lat_current-lat_half0
-    lat_e = lat_current+lat_half0
-    extent_img1 = [lon_s, lon_e, lat_s, lat_e]
-    ax_map0.set_extent(extent_img1, crs=ccrs.PlateCarree())
+        ax_map.imshow(img, extent=flt_img0['extent_sat0'], aspect='auto', zorder=0)
 
     if has_sat1:
 
         fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
+        img = mpl_img.imread(fname_sat1)/255.0
+        Ny, Nx, Nc = img.shape
+        x_current, y_current = proj0.transform_point(lon_current, lat_current, ccrs.PlateCarree())
+        x_1d = np.linspace(flt_img0['extent_sat1'][0], flt_img0['extent_sat1'][1], Nx)
+        y_1d = np.linspace(flt_img0['extent_sat1'][2], flt_img0['extent_sat1'][3], Ny)
 
-        img = mpl_img.imread(fname_sat1)
+        extend_x = 100000.0
+        extend_y = 80000.0
+        # extend_x = 500000.0
+        # extend_y = 400000.0
 
-        extent_ori = [float(x) for x in os.path.basename(fname_sat1).replace('.png', '').split('_')[-1].replace('(', '').replace(')', '').split(',')]
-        lon_1d = np.linspace(extent_ori[0], extent_ori[1], img.shape[1]+1)
-        lat_1d = np.linspace(extent_ori[2], extent_ori[3], img.shape[0]+1)
-
-        extend_x = 0.05
-        extend_y = 0.05
-        lon_1d_ = np.linspace(extent_ori[0], extent_ori[1], img.shape[1])
-        lat_1d_ = np.linspace(extent_ori[2], extent_ori[3], img.shape[0])
-        indices_x = np.where((lon_1d_>=(extent_img1[0]-extend_x))&(lon_1d_<=(extent_img1[1]+extend_x)))[0]
-        indices_y = np.where((lat_1d_>=(extent_img1[2]-extend_y))&(lat_1d_<=(extent_img1[3]+extend_y)))[0]
+        extent_sat1 = [x_current-extend_x, x_current+extend_x, y_current-extend_y, y_current+extend_y]
+        indices_x = np.where((x_1d>=(x_current-extend_x))&(x_1d<=(x_current+extend_x)))[0]
+        indices_y = np.where((y_1d>=(y_current-extend_y))&(y_1d<=(y_current+extend_y)))[0]
 
         if indices_x.size>2 and indices_y.size>2:
 
@@ -2108,16 +2026,12 @@ def plot_video_frame_arcsix(statements, test=False):
             index_xe = indices_x[-1]
             index_ys = indices_y[0]
             index_ye = indices_y[-1]
-            lon_1d = lon_1d[index_xs:index_xe+1]
-            lat_1d = lat_1d[index_ys:index_ye+1][::-1]
 
-            lon_2d, lat_2d = np.meshgrid(lon_1d, lat_1d)
             img = img[img.shape[0]-index_ye:img.shape[0]-index_ys, index_xs:index_xe, :]
-
-            logic_black = ~(np.sum(img[:, :, :-1], axis=-1)>0.0)
-            img[logic_black, -1] = 0.0
-            ax_map.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree(), zorder=1)
-            ax_map0.pcolormesh(lon_2d, lat_2d, img, transform=ccrs.PlateCarree(), zorder=1)
+            ax_map.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
+            ax_map0.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
+            ax_map0.set_xlim(extent_sat1[:2])
+            ax_map0.set_ylim(extent_sat1[2:])
 
     if has_cam0:
         ang_cam_offset = -53.0 # for ARCSIX
@@ -2229,44 +2143,44 @@ def plot_video_frame_arcsix(statements, test=False):
         flt_trk = flt_sim0.flt_trks[itrk]
         flt_img = flt_sim0.flt_imgs[itrk]
 
-        logic_in_img0 = (flt_trk['lon']>=extent_img0[0]) & (flt_trk['lon']<=extent_img0[1]) &\
-                        (flt_trk['lat']>=extent_img0[2]) & (flt_trk['lat']<=extent_img0[3])
+        # logic_in_img0 = (flt_trk['lon']>=extent_img0[0]) & (flt_trk['lon']<=extent_img0[1]) &\
+        #                 (flt_trk['lat']>=extent_img0[2]) & (flt_trk['lat']<=extent_img0[3])
 
-        logic_in_img1 = (flt_trk['lon']>=extent_img1[0]) & (flt_trk['lon']<=extent_img1[1]) &\
-                        (flt_trk['lat']>=extent_img1[2]) & (flt_trk['lat']<=extent_img1[3])
+        # logic_in_img1 = (flt_trk['lon']>=extent_img1[0]) & (flt_trk['lon']<=extent_img1[1]) &\
+        #                 (flt_trk['lat']>=extent_img1[2]) & (flt_trk['lat']<=extent_img1[3])
 
         logic_solid = (flt_trk['tmhr']>=tmhr_past) & (flt_trk['tmhr']<=tmhr_current)
         logic_trans = np.logical_not(logic_solid)
 
-        if logic_in_img0.sum() > 0:
+        # if logic_in_img0.sum() > 0:
 
-            if itrk == index_trk:
-                alpha_trans = 0.0
-            else:
-                alpha_trans = 0.30
+        if itrk == index_trk:
+            alpha_trans = 0.0
+        else:
+            alpha_trans = 0.30
 
-            ax_map.scatter(         flt_trk['lon'][logic_trans][::step_trans], flt_trk['lat'][logic_trans][::step_trans], c=flt_trk['alt'][logic_trans][::step_trans], s=0.5, lw=0.05, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans*3.0, transform=ccrs.PlateCarree(), ec='black')
-            cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid][::step_solid], flt_trk['lat'][logic_solid][::step_solid], c=flt_trk['alt'][logic_solid][::step_solid], s=1  , lw=0.0, zorder=3, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
+        ax_map.scatter(         flt_trk['lon'][logic_trans][::step_trans], flt_trk['lat'][logic_trans][::step_trans], c=flt_trk['alt'][logic_trans][::step_trans], s=0.5, lw=0.05, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans*3.0, transform=ccrs.PlateCarree(), ec='black')
+        cs_alt = ax_map.scatter(flt_trk['lon'][logic_solid][::step_solid], flt_trk['lat'][logic_solid][::step_solid], c=flt_trk['alt'][logic_solid][::step_solid], s=1  , lw=0.0, zorder=3, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
 
-            if not plot_arrow:
-                ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
-                ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
-                # ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
-                # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_)
-            else:
-                color0 = alt_cmap(alt_norm(alt_current))
-                arrow_prop['facecolor'] = color0
-                arrow_prop['relpos'] = (lon_current, lat_current)
-                ax_map.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3, transform=ccrs.PlateCarree())
-                # ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
+        if not plot_arrow:
+            ax_map.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
+            ax_map.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
+            # ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6)
+            # ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_)
+        else:
+            color0 = alt_cmap(alt_norm(alt_current))
+            arrow_prop['facecolor'] = color0
+            arrow_prop['relpos'] = (lon_current, lat_current)
+            ax_map.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3, transform=ccrs.PlateCarree())
+            # ax_map0.annotate('', xy=(lon_point_to, lat_point_to), xytext=(lon_current, lat_current), arrowprops=arrow_prop, zorder=3)
 
-        if logic_in_img1.sum() > 0:
+        # if logic_in_img1.sum() > 0:
 
-            ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans/3.0, transform=ccrs.PlateCarree())
-            ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=3, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
+        ax_map0.scatter(flt_trk['lon'][logic_trans], flt_trk['lat'][logic_trans], c=flt_trk['alt'][logic_trans], s=2.5, lw=0.0, zorder=2, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, alpha=alpha_trans/3.0, transform=ccrs.PlateCarree())
+        ax_map0.scatter(flt_trk['lon'][logic_solid], flt_trk['lat'][logic_solid], c=flt_trk['alt'][logic_solid], s=4  , lw=0.0, zorder=3, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
 
-            ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
-            ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
+        ax_map0.scatter(lon_current, lat_current, facecolor='none', edgecolor='white', s=60, lw=1.0, zorder=3, alpha=0.6, transform=ccrs.PlateCarree())
+        ax_map0.scatter(lon_current, lat_current, c=alt_current, s=60, lw=0.0, zorder=3, alpha=0.6, vmin=_alt_base_, vmax=_alt_ceil_, cmap=_alt_cmap_, transform=ccrs.PlateCarree())
 
         if logic_solid.sum() > 0:
 
@@ -2344,10 +2258,9 @@ def plot_video_frame_arcsix(statements, test=False):
         else:
             ax_map.set_title(title_map)
 
-        ax_map.coastlines(resolution='10m', color='black', lw=0.5)
         g1 = ax_map.gridlines(lw=0.5, color='gray', draw_labels=True, ls='-')
         g1.xlocator = FixedLocator(np.arange(-180, 181, 10.0))
-        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 1.0))
+        g1.ylocator = FixedLocator(np.arange(-90.0, 89.9, 2.0))
         g1.top_labels = False
         g1.right_labels = False
     #\----------------------------------------------------------------------------/#
@@ -2364,19 +2277,18 @@ def plot_video_frame_arcsix(statements, test=False):
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
     if has_sat1:
-        # title_map0 = 'False Color 367'
-        title_map0 = 'True Color'
+        title_map0 = 'False Color 721'
         time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map0.set_title(title_map0, color='gray')
         else:
             ax_map0.set_title(title_map0)
 
-        ax_map0.coastlines(resolution='10m', color='black', lw=0.5)
+        # ax_map0.coastlines(resolution='10m', color='black', lw=0.5)
         g2 = ax_map0.gridlines(lw=0.5, color='gray', ls='-')
-        g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 1.0))
+        g2.xlocator = FixedLocator(np.arange(-180.0, 180.1, 5.0))
         g2.ylocator = FixedLocator(np.arange(-89.0, 89.1, 0.5))
-    # ax_map0.axis('off')
+    ax_map0.axis('off')
     #\----------------------------------------------------------------------------/#
 
 
@@ -2807,25 +2719,29 @@ def main_pre_arcsix(
 
     # process satellite imagery
     #/----------------------------------------------------------------------------\#
-    if date_s != '20240610':
-        logic_target = flt_trk['lat']>=82.5
-    else:
-        logic_target = np.repeat(True, flt_trk['lon'].size)
-    extent_target = get_extent_minmax(flt_trk['lon'][logic_target], flt_trk['lat'][logic_target], margin=0.1)
-
     date_sat_s  = date.strftime('%Y-%m-%d')
 
     fnames_sat0 = {}
     fnames_sat1 = {}
 
-    # fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
-    fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor367*%s*Z*.png' % date_sat_s)
-    jday_sat00 , fnames_sat00  = process_sat_img_vn(fnames_sat00, extent_target)
+    fnames_sat00 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='TrueColor*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
+    jday_sat00 = np.zeros(len(fnames_sat00), dtype=np.float64)
+    for i, fname_sat00 in enumerate(fnames_sat00):
+        dtime00_s = '_'.join(os.path.basename(fname_sat00).split('_')[1:3])
+        dtime00 = datetime.datetime.strptime(dtime00_s, '%Y-%m-%d_%H:%M:%S')
+        jday_sat00[i] = er3t.util.dtime_to_jday(dtime00)
+
+    # fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor721*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
+    fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor721*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
+    jday_sat11 = np.zeros(len(fnames_sat11), dtype=np.float64)
+    for i, fname_sat11 in enumerate(fnames_sat11):
+        dtime11_s = '_'.join(os.path.basename(fname_sat11).split('_')[1:3])
+        dtime11 = datetime.datetime.strptime(dtime11_s, '%Y-%m-%d_%H:%M:%S')
+        jday_sat11[i] = er3t.util.dtime_to_jday(dtime11)
+
     fnames_sat0['jday']    = jday_sat00
     fnames_sat0['fnames']  = fnames_sat00
 
-    fnames_sat11 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
-    jday_sat11, fnames_sat11 = process_sat_img_vn(fnames_sat11, extent_target)
     fnames_sat1['jday']   = jday_sat11
     fnames_sat1['fnames'] = fnames_sat11
     #\----------------------------------------------------------------------------/#
@@ -2835,7 +2751,7 @@ def main_pre_arcsix(
     #/----------------------------------------------------------------------------\#
     # create python dictionary to store corresponding satellite imagery data info
     #/--------------------------------------------------------------\#
-    extent = get_extent(flt_trk['lon'], flt_trk['lat'], margin=0.1)
+    extent = [-877574.55,877574.55,-751452.90,963254.75]
 
     flt_imgs = []
     for i in range(len(flt_trks)):
@@ -2865,7 +2781,8 @@ def main_pre_arcsix(
             jday_sat0_   = fnames_sat0['jday']
             fnames_sat0_ = fnames_sat0['fnames']
             index_sat0   = np.argmin(np.abs(jday_sat0_-flt_trk0['jday'][j]))
-            flt_img['id_sat0'].append(os.path.basename(fnames_sat0_[index_sat0]).split('_')[0].replace('-', ' '))
+            # flt_img['id_sat0'].append(os.path.basename(fnames_sat0_[index_sat0]).split('_')[0].replace('-', ' '))
+            flt_img['id_sat0'].append(' '.join(os.path.basename(fnames_sat0_[index_sat0]).split('_')[3:5][::-1]))
             flt_img['fnames_sat0'].append(fnames_sat0_[index_sat0])
             flt_img['jday_sat0'] = np.append(flt_img['jday_sat0'], jday_sat0_[index_sat0])
 
@@ -2941,7 +2858,7 @@ def main_vid_arcsix(
         fname_mp4 = '%s-FLT-VID_%s_%s_%2.2d.mp4' % (_mission_.upper(), _platform_.upper(), date_s, interval)
     else:
         fname_mp4 = '%s_SSFR_Flight-Video.mp4' % (date_s)
-    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 18 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
+    os.system('ffmpeg -y -framerate 30 -pattern_type glob -i "%s/*.jpg" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 18 -pix_fmt yuvj420p %s' % (fdir, fname_mp4))
 #\----------------------------------------------------------------------------/#
 
 
@@ -2958,29 +2875,23 @@ def test_sat_img(
 
     # date time stamp
     #/----------------------------------------------------------------------------\#
-    date_s = date.strftime('%Y%m%d')
+    date_sat_s = date.strftime('%Y-%m-%d')
     #\----------------------------------------------------------------------------/#
 
 
     # process satellite imagery
     #/----------------------------------------------------------------------------\#
-    date_sat_s = '2024-07-16'
-
     fnames_sat0 = {}
     fnames_sat1 = {}
 
-    # fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor721*%s*Z*.png' % date_sat_s)
-    # # fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor367*%s*Z*.png' % date_sat_s)
-    # jday_sat00 , fnames_sat00  = process_sat_img_vn_to_hc(fnames_sat00)
-    # fnames_sat0['jday']    = jday_sat00
-    # fnames_sat0['fnames']  = fnames_sat00
-
-    # sys.exit()
-
-    fnames_sat11 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*TrueColor*%s*Z*.png' % date_sat_s)
+    fnames_sat11 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*TrueColor*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % date_sat_s)
     jday_sat11, fnames_sat11 = process_sat_img_vn_to_hc(fnames_sat11)
-    fnames_sat1['jday']   = jday_sat11
-    fnames_sat1['fnames'] = fnames_sat11
+
+    fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor721*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % date_sat_s)
+    jday_sat00 , fnames_sat00  = process_sat_img_vn_to_hc(fnames_sat00)
+
+    fnames_sat00 = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*FalseColor367*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % date_sat_s)
+    jday_sat00 , fnames_sat00  = process_sat_img_vn_to_hc(fnames_sat00)
     #\----------------------------------------------------------------------------/#
 
 
@@ -2989,16 +2900,25 @@ def test_sat_img(
 if __name__ == '__main__':
 
     dates = [
-            datetime.datetime(2024, 6, 11), # testing
+            datetime.datetime(2024, 5, 28), # [✓] ARCSIX science flight #1; clear-sky spiral
+            datetime.datetime(2024, 5, 30), # [✓] ARCSIX science flight #2; cloud wall
+            datetime.datetime(2024, 5, 31), # [✓] ARCSIX science flight #3; bowling alley, surface BRDF
+            datetime.datetime(2024, 6,  3), # ARCSIX science flight #4; cloud wall, (no MARLi)
+            # datetime.datetime(2024, 6,  5), # [✓] ARCSIX science flight #5; bowling alley, surface BRDF
+            # datetime.datetime(2024, 6,  6), # [✓] ARCSIX science flight #6; cloud wall
+            # datetime.datetime(2024, 6,  7), # [✓] ARCSIX science flight #7; cloud wall
+            # datetime.datetime(2024, 6, 10), # [✓] ARCSIX science flight #8; cloud wall
+            # datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
+            # datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
         ]
 
     for date in dates[::-1]:
 
-        test_sat_img(date)
+        # test_sat_img(date)
 
         #/----------------------------------------------------------------------------\#
-        # main_pre_arcsix(date)
-        # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+        main_pre_arcsix(date)
+        main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
         #\----------------------------------------------------------------------------/#

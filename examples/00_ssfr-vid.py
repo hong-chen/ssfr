@@ -861,7 +861,7 @@ def main_vid(
 
     # make video
     fname_mp4 = '%s-%s-VID_%s_%s.mp4' % (_mission_.upper(), _ssfr_.upper(), _platform_.upper(), date_s)
-    os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.png" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 18 -pix_fmt yuv420p %s' % (fdir, fname_mp4))
+    os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.jpg" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 18 -pix_fmt yuvj420p %s' % (fdir, fname_mp4))
 
 
 if __name__ == '__main__':
