@@ -919,27 +919,32 @@ def plot_video_frame_arcsix(statements, test=False):
         img = mpl_img.imread(fname_sat1)
         Ny, Nx, Nc = img.shape
         x_current, y_current = proj0.transform_point(lon_current, lat_current, ccrs.PlateCarree())
-        x_1d = np.linspace(flt_img0['extent_sat1'][0], flt_img0['extent_sat1'][1], Nx)
-        y_1d = np.linspace(flt_img0['extent_sat1'][3], flt_img0['extent_sat1'][2], Ny)
+        x_1d_ = np.linspace(flt_img0['extent_sat1'][0], flt_img0['extent_sat1'][1], Nx+1)
+        y_1d_ = np.linspace(flt_img0['extent_sat1'][3], flt_img0['extent_sat1'][2], Ny+1)
+        x_1d = (x_1d_[1:]+x_1d_[:-1])/2.0
+        y_1d = (y_1d_[1:]+y_1d_[:-1])/2.0
 
-        extend_x = 200
-        extend_y = 150
+        dx = x_1d[1]-x_1d[0]
+        dy = y_1d[1]-y_1d[0]
 
-        index_x = int((x_current-x_1d[0])//(x_1d[1]-x_1d[0]))
-        index_y = int((y_current-y_1d[0])//(y_1d[1]-y_1d[0]))
+        extend_Nx = 200
+        extend_Ny = 150
 
-        index_xs = max(index_x-extend_x, 0)
-        index_xe = min(index_x+extend_x, Nx)
-        index_ys = max(index_y-extend_y, 0)
-        index_ye = min(index_y+extend_y, Ny)
+        index_x = int((x_current-x_1d[0])//dx)
+        index_y = int((y_current-y_1d[0])//dy)
+
+        index_xs = max(index_x-extend_Nx, 0)
+        index_xe = min(index_x+extend_Nx, Nx-1)
+        index_ys = max(index_y-extend_Ny, 0)
+        index_ye = min(index_y+extend_Ny, Ny-1)
 
         extent_sat1 = [x_1d[index_xs], x_1d[index_xe], y_1d[index_ye], y_1d[index_ys]]
 
         img = img[index_ys:index_ye, index_xs:index_xe, :]
         ax_map.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
         ax_map0.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
-        ax_map0.set_xlim(extent_sat1[:2])
-        ax_map0.set_ylim(extent_sat1[2:])
+        ax_map0.set_xlim([x_current-dx*extend_Nx, x_current+dx*extend_Nx])
+        ax_map0.set_ylim([y_current-dy*extend_Ny, y_current+dy*extend_Ny])
 
     if has_cam0:
         ang_cam_offset = -53.0 # for ARCSIX
@@ -1771,8 +1776,8 @@ if __name__ == '__main__':
             datetime.datetime(2024, 6,  6), # [✓] ARCSIX science flight #6; cloud wall
             datetime.datetime(2024, 6,  7), # [✓] ARCSIX science flight #7; cloud wall
             datetime.datetime(2024, 6, 10), # [✓] ARCSIX science flight #8; cloud wall
-            datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
-            datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
+            # datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
+            # datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
         ]
 
     for date in dates[::-1]:
@@ -1783,7 +1788,7 @@ if __name__ == '__main__':
         main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-        main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+        # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
         #\----------------------------------------------------------------------------/#
         pass
 
