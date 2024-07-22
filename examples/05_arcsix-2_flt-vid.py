@@ -61,7 +61,7 @@ import er3t
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-_Ncpu_ = 8
+_Ncpu_ = 12
 
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
