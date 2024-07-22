@@ -910,41 +910,42 @@ def plot_video_frame_arcsix(statements, test=False):
     if has_sat0:
 
         fname_sat0 = flt_img0['fnames_sat0'][index_pnt]
-        img = mpl_img.imread(fname_sat0)
-        ax_map.imshow(img, extent=flt_img0['extent_sat0'], aspect='auto', interpolation='nearest', zorder=0)
+        img_sat0 = mpl_img.imread(fname_sat0).copy()
 
-    if has_sat1:
+        if has_sat1:
 
-        fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
-        img = mpl_img.imread(fname_sat1)
-        Ny, Nx, Nc = img.shape
-        x_current, y_current = proj0.transform_point(lon_current, lat_current, ccrs.PlateCarree())
-        x_1d_ = np.linspace(flt_img0['extent_sat1'][0], flt_img0['extent_sat1'][1], Nx+1)
-        y_1d_ = np.linspace(flt_img0['extent_sat1'][3], flt_img0['extent_sat1'][2], Ny+1)
-        x_1d = (x_1d_[1:]+x_1d_[:-1])/2.0
-        y_1d = (y_1d_[1:]+y_1d_[:-1])/2.0
+            fname_sat1 = flt_img0['fnames_sat1'][index_pnt]
+            img_sat1 = mpl_img.imread(fname_sat1)
+            Ny, Nx, Nc = img_sat1.shape
+            x_current, y_current = proj0.transform_point(lon_current, lat_current, ccrs.PlateCarree())
+            x_1d_ = np.linspace(flt_img0['extent_sat1'][0], flt_img0['extent_sat1'][1], Nx+1)
+            y_1d_ = np.linspace(flt_img0['extent_sat1'][3], flt_img0['extent_sat1'][2], Ny+1)
+            x_1d = (x_1d_[1:]+x_1d_[:-1])/2.0
+            y_1d = (y_1d_[1:]+y_1d_[:-1])/2.0
 
-        dx = x_1d[1]-x_1d[0]
-        dy = y_1d[1]-y_1d[0]
+            dx = x_1d[1]-x_1d[0]
+            dy = y_1d[1]-y_1d[0]
 
-        extend_Nx = 200
-        extend_Ny = 150
+            extend_Nx = 200
+            extend_Ny = 150
 
-        index_x = int((x_current-(x_1d[0]-dx/2.0))//dx)
-        index_y = int((y_current-(y_1d[0]+dy/2.0))//dy)
+            index_x = int((x_current-(x_1d[0]-dx/2.0))//dx)
+            index_y = int((y_current-(y_1d[0]+dy/2.0))//dy)
 
-        index_xs = max(index_x-extend_Nx, 0)
-        index_xe = min(index_x+extend_Nx, Nx-1)
-        index_ys = max(index_y-extend_Ny, 0)
-        index_ye = min(index_y+extend_Ny, Ny-1)
+            index_xs = max(index_x-extend_Nx, 0)
+            index_xe = min(index_x+extend_Nx, Nx-1)
+            index_ys = max(index_y-extend_Ny, 0)
+            index_ye = min(index_y+extend_Ny, Ny-1)
 
-        extent_sat1 = [x_1d[index_xs]-dx/2.0, x_1d[index_xe]+dx/2.0, y_1d[index_ye]+dy/2.0, y_1d[index_ys]-dy/2.0]
+            extent_sat1 = [x_1d[index_xs]-dx/2.0, x_1d[index_xe]+dx/2.0, y_1d[index_ye]+dy/2.0, y_1d[index_ys]-dy/2.0]
 
-        img = img[index_ys:index_ye, index_xs:index_xe, :]
-        ax_map.imshow( img, extent=extent_sat1, aspect='auto', interpolation='nearest', zorder=1)
-        ax_map0.imshow(img, extent=extent_sat1, aspect='auto', interpolation='nearest', zorder=1)
-        ax_map0.set_xlim([x_current-dx*extend_Nx, x_current+dx*extend_Nx])
-        ax_map0.set_ylim([y_current-dy*extend_Ny, y_current+dy*extend_Ny])
+            img_sat1 = img_sat1[index_ys:index_ye, index_xs:index_xe, :]
+            img_sat0[index_ys:index_ye, index_xs:index_xe, :] = img_sat1
+            ax_map0.imshow(img_sat1, extent=extent_sat1, aspect='auto', interpolation='nearest', zorder=1)
+            ax_map0.set_xlim([x_current-dx*extend_Nx, x_current+dx*extend_Nx])
+            ax_map0.set_ylim([y_current+dy*extend_Ny, y_current-dy*extend_Ny])
+
+        ax_map.imshow(img_sat0, extent=flt_img0['extent_sat0'], aspect='auto', interpolation='nearest', zorder=0)
 
     if has_cam0:
         ang_cam_offset = -53.0 # for ARCSIX
