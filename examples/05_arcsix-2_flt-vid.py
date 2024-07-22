@@ -940,12 +940,13 @@ def plot_video_frame_arcsix(statements, test=False):
             extent_sat1 = [x_1d[index_xs]-dx/2.0, x_1d[index_xe]+dx/2.0, y_1d[index_ye]+dy/2.0, y_1d[index_ys]-dy/2.0]
 
             img_sat1 = img_sat1[index_ys:index_ye, index_xs:index_xe, :]
-            img_sat0[index_ys:index_ye, index_xs:index_xe, :] = img_sat1
-            ax_map0.imshow(img_sat1, extent=extent_sat1, aspect='auto', interpolation='nearest', zorder=1)
+            ax_map0.imshow(img_sat1, extent=extent_sat1, aspect='auto', zorder=1)
             ax_map0.set_xlim([x_current-dx*extend_Nx, x_current+dx*extend_Nx])
             ax_map0.set_ylim([y_current+dy*extend_Ny, y_current-dy*extend_Ny])
 
-        ax_map.imshow(img_sat0, extent=flt_img0['extent_sat0'], aspect='auto', interpolation='nearest', zorder=0)
+            img_sat0[index_ys:index_ye, index_xs:index_xe, :] = img_sat1
+
+        ax_map.imshow(img_sat0, extent=flt_img0['extent_sat0'], aspect='auto', zorder=0)
 
     if has_cam0:
         ang_cam_offset = -53.0 # for ARCSIX
