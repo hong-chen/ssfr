@@ -1164,7 +1164,7 @@ def plot_video_frame_arcsix(statements, test=False):
     # map0 plot settings
     #/----------------------------------------------------------------------------\#
     if has_sat1:
-        title_map0 = 'False Color 721'
+        title_map0 = 'False Color 367'
         time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map0.set_title(title_map0, color='gray')
@@ -1633,8 +1633,8 @@ def main_pre_arcsix(
         dtime00 = datetime.datetime.strptime(dtime00_s, '%Y-%m-%d_%H:%M:%S')
         jday_sat00[i] = er3t.util.dtime_to_jday(dtime00)
 
-    # fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor367*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
-    fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor721*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
+    fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor367*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
+    # fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor721*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
     jday_sat11 = np.zeros(len(fnames_sat11), dtype=np.float64)
     for i, fname_sat11 in enumerate(fnames_sat11):
         dtime11_s = '_'.join(os.path.basename(fname_sat11).split('_')[1:3])
@@ -1787,10 +1787,10 @@ if __name__ == '__main__':
 
         #/----------------------------------------------------------------------------\#
         # post_process_sat_img_vn(date)
-        # main_pre_arcsix(date)
-        main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+        main_pre_arcsix(date)
+        # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-        # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+        main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
         #\----------------------------------------------------------------------------/#
         pass
 
