@@ -911,7 +911,7 @@ def plot_video_frame_arcsix(statements, test=False):
 
         fname_sat0 = flt_img0['fnames_sat0'][index_pnt]
         img = mpl_img.imread(fname_sat0)
-        ax_map.imshow(img, extent=flt_img0['extent_sat0'], aspect='auto', zorder=0)
+        ax_map.imshow(img, extent=flt_img0['extent_sat0'], aspect='auto', interpolation='nearest', zorder=0)
 
     if has_sat1:
 
@@ -941,8 +941,8 @@ def plot_video_frame_arcsix(statements, test=False):
         extent_sat1 = [x_1d[index_xs]-dx/2.0, x_1d[index_xe]+dx/2.0, y_1d[index_ye]+dy/2.0, y_1d[index_ys]-dy/2.0]
 
         img = img[index_ys:index_ye, index_xs:index_xe, :]
-        ax_map.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
-        ax_map0.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
+        ax_map.imshow( img, extent=extent_sat1, aspect='auto', interpolation='nearest', zorder=1)
+        ax_map0.imshow(img, extent=extent_sat1, aspect='auto', interpolation='nearest', zorder=1)
         ax_map0.set_xlim([x_current-dx*extend_Nx, x_current+dx*extend_Nx])
         ax_map0.set_ylim([y_current-dy*extend_Ny, y_current+dy*extend_Ny])
 
@@ -1776,16 +1776,16 @@ if __name__ == '__main__':
             datetime.datetime(2024, 6,  6), # [✓] ARCSIX science flight #6; cloud wall
             datetime.datetime(2024, 6,  7), # [✓] ARCSIX science flight #7; cloud wall
             datetime.datetime(2024, 6, 10), # [✓] ARCSIX science flight #8; cloud wall
-            # datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
-            # datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
+            datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
+            datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
         ]
 
     for date in dates[::-1]:
 
 
         #/----------------------------------------------------------------------------\#
-        post_process_sat_img_vn(date)
-        main_pre_arcsix(date)
+        # post_process_sat_img_vn(date)
+        # main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
