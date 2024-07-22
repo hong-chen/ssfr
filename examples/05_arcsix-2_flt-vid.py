@@ -930,15 +930,15 @@ def plot_video_frame_arcsix(statements, test=False):
         extend_Nx = 200
         extend_Ny = 150
 
-        index_x = int((x_current-x_1d[0])//dx)
-        index_y = int((y_current-y_1d[0])//dy)
+        index_x = int((x_current-(x_1d[0]-dx/2.0))//dx)
+        index_y = int((y_current-(y_1d[0]+dy/2.0))//dy)
 
         index_xs = max(index_x-extend_Nx, 0)
         index_xe = min(index_x+extend_Nx, Nx-1)
         index_ys = max(index_y-extend_Ny, 0)
         index_ye = min(index_y+extend_Ny, Ny-1)
 
-        extent_sat1 = [x_1d[index_xs], x_1d[index_xe], y_1d[index_ye], y_1d[index_ys]]
+        extent_sat1 = [x_1d[index_xs]-dx/2.0, x_1d[index_xe]+dx/2.0, y_1d[index_ye]+dy/2.0, y_1d[index_ys]-dy/2.0]
 
         img = img[index_ys:index_ye, index_xs:index_xe, :]
         ax_map.imshow(img, extent=extent_sat1, aspect='auto', zorder=1)
