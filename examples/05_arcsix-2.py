@@ -735,9 +735,6 @@ def cdata_arcsix_spns_v0(
 
         fname_tot = ssfr.util.get_all_files(fdir_data, pattern='*Total*.txt')[-1]
         data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
-
-        msg = 'Processing %s data:\n%s\n%s\n' % (_spns_.upper(), fname_dif, fname_tot)
-        print(msg)
         #/----------------------------------------------------------------------------\#
 
         # read wavelengths and calculate toa downwelling solar flux
@@ -1867,7 +1864,6 @@ def main_process_data_v0(date, run=True):
         os.makedirs(fdir_out)
 
     date_s = date.strftime('%Y%m%d')
-    print(date_s)
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
@@ -1877,16 +1873,17 @@ def main_process_data_v0(date, run=True):
     # _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
     #\----------------------------------------------------------------------------/#
 
+
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
-    print(fdirs)
     fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
             fdir_out=fdir_out, run=run)
 
     _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
     #\----------------------------------------------------------------------------/#
+
 
     # SPNS v0: raw data
     #/----------------------------------------------------------------------------\#
@@ -1898,6 +1895,7 @@ def main_process_data_v0(date, run=True):
     _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
     #\----------------------------------------------------------------------------/#
 
+
     # SSFR-A v0: raw data
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr1_))
@@ -1907,6 +1905,7 @@ def main_process_data_v0(date, run=True):
 
     _fnames_['%s_ssfr1_v0' % date_s] = fname_ssfr1_v0
     #\----------------------------------------------------------------------------/#
+
 
     # SSFR-B v0: raw data
     #/----------------------------------------------------------------------------\#
@@ -1957,7 +1956,6 @@ def main_process_data_v1(date, run=True):
 
     # _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
     #\----------------------------------------------------------------------------/#
-
 
 def main_process_data_v2(date, run=True):
 

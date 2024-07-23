@@ -3,6 +3,8 @@ import warnings
 import datetime
 import numpy as np
 
+import ssfr.util
+
 
 
 __all__ = ['read_spns']
@@ -36,6 +38,8 @@ class read_spns:
         # read data
         #/----------------------------------------------------------------------------\#
         with open(fname, 'r') as f:
+            msg = '\nMessage [read_spns]: Processing CU-LASP SPN-S file:\n    reading <%s> ...' % (fname)
+            print(msg)
             lines = f.readlines()
 
         Nline = len(lines)
@@ -99,6 +103,11 @@ class read_spns:
 
         self.data['tmhr'] = tmhr
         #\----------------------------------------------------------------------------/#
+
+        dtime_s0 = ssfr.util.jday_to_dtime(self.data['jday'][0]).strftime('%Y-%m-%d %H:%M:%S')
+        dtime_e0 = ssfr.util.jday_to_dtime(self.data['jday'][-1]).strftime('%Y-%m-%d %H:%M:%S')
+        msg = '\nMessage [read_spns]: Data processing complete (%s to %s).' % (dtime_s0, dtime_e0)
+        print(msg)
 
 
 
