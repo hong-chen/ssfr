@@ -57,7 +57,7 @@ import cartopy.crs as ccrs
 mpl.use('Agg')
 
 
-import er3t
+import ssfr
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -91,98 +91,84 @@ _date_specs_ = {
         '20240517': {
             'tmhr_range': [19.20, 23.00],
            'description': 'ARCSIX Test Flight #1',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240521': {
             'tmhr_range': [14.80, 17.50],
            'description': 'ARCSIX Test Flight #2',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240524': {
             'tmhr_range': [ 9.90, 17.90],
            'description': 'ARCSIX Transit Flight #1',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240528': {
             'tmhr_range': [11.80, 18.70],
            'description': 'ARCSIX Science Flight #1',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 2.0,
             },
 
         '20240530': {
             'tmhr_range': [10.80, 18.40],
            'description': 'ARCSIX Science Flight #2',
-      'preferred_region': 'ca_archipelago',
        'cam_time_offset': 2.0,
             },
 
         '20240531': {
             'tmhr_range': [12.40, 19.50],
            'description': 'ARCSIX Science Flight #3',
-      'preferred_region': 'ca_archipelago',
        'cam_time_offset': 6.0,
             },
 
         '20240603': {
             'tmhr_range': [10.90, 18.10],
            'description': 'ARCSIX Science Flight #4',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240605': {
             'tmhr_range': [11.00, 18.90],
            'description': 'ARCSIX Science Flight #5',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240606': {
             'tmhr_range': [10.90, 19.90],
            'description': 'ARCSIX Science Flight #6',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240607': {
             'tmhr_range': [13.20, 19.00],
            'description': 'ARCSIX Science Flight #7',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240610': {
             'tmhr_range': [10.90, 19.00],
            'description': 'ARCSIX Science Flight #8',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240611': {
             'tmhr_range': [10.90, 18.90],
            'description': 'ARCSIX Science Flight #9',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240613': {
             'tmhr_range': [10.90, 19.90],
            'description': 'ARCSIX Science Flight #10',
-      'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
 
         '20240722': {
             'tmhr_range': [10.00, 19.00],
-           'description': 'ARCSIX-2 Transit Flight #1',
-      'preferred_region': 'lincoln_sea',
+           'description': 'ARCSIX Transit Flight #3',
        'cam_time_offset': 0.0,
             },
         }
@@ -412,7 +398,7 @@ def get_jday_cam_img(date, fnames):
         dtime_s_ = filename[:23].split(' ')[-1]
         dtime_s = '%s_%s' % (date.strftime('%Y_%m_%d'), dtime_s_)
         dtime0 = datetime.datetime.strptime(dtime_s, '%Y_%m_%d_%H_%M_%SZ')
-        jday0 = er3t.util.dtime_to_jday(dtime0)
+        jday0 = ssfr.util.dtime_to_jday(dtime0)
         jday.append(jday0)
 
     return np.array(jday)
@@ -437,7 +423,7 @@ def get_jday_sat_img_vn(fnames):
 
         # dtime0 = datetime.datetime.strptime(dtime_s, '%Y-%m-%dT%H:%M:%SZ')
         dtime0 = datetime.datetime.strptime(dtime_s, '%Y-%m-%d-%H%M%SZ')
-        jday0 = er3t.util.dtime_to_jday(dtime0)
+        jday0 = ssfr.util.dtime_to_jday(dtime0)
         jday.append(jday0)
 
     return np.array(jday)
@@ -488,7 +474,7 @@ def process_sat_img_overlay(fnames_sat_, max_overlay=12):
         extent = [float(item) for item in info[-1].replace('(', '').replace(')', '').split(',')]
         extent_xy = [float(item) for item in info[-2].replace('(', '').replace(')', '').split(',')]
 
-        dtime_s = er3t.util.jday_to_dtime(jday_sat0).strftime('%Y-%m-%d_%H:%M:%S')
+        dtime_s = ssfr.util.jday_to_dtime(jday_sat0).strftime('%Y-%m-%d_%H:%M:%S')
         sat_tag = info[0].replace('TERRA', 'Terra').replace('AQUA', 'Aqua').replace('SUOMI', 'Suomi').replace('MODIS-', 'MODIS_').replace('VIIRS-', 'VIIRS_')
         img_tag = info[1]
         fname0_out = '%s/%s_%s_%s' % (_fdir_sat_img_hc_, img_tag, dtime_s, sat_tag)
@@ -542,7 +528,7 @@ def process_marli(date, run=True):
 
     try:
     # if True:
-        fname = sorted(er3t.util.get_all_files('data/arcsix/2024/p3/aux/marli', pattern='*%s*.cdf' % (date_s)))[-1]
+        fname = sorted(ssfr.util.get_all_files('data/arcsix/2024/p3/aux/marli', pattern='*%s*.cdf' % (date_s)))[-1]
 
         fname_hsk = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
         f_hsk = h5py.File(fname_hsk, 'r')
@@ -719,7 +705,7 @@ def plot_video_frame_arcsix(statements, test=False):
     lat_current  = flt_trk0['lat'][index_pnt]
     alt_current  = flt_trk0['alt'][index_pnt]
     sza_current  = flt_trk0['sza'][index_pnt]
-    dtime_current = er3t.util.jday_to_dtime(jday_current)
+    dtime_current = ssfr.util.jday_to_dtime(jday_current)
 
     tmhr_length  = 0.5 # half an hour
     tmhr_past    = tmhr_current-tmhr_length
@@ -1145,7 +1131,7 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_sat0:
 
-        title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], er3t.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
+        title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], ssfr.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
         time_diff = np.abs(flt_img0['jday_sat0'][index_pnt]-jday_current)*86400.0
         if time_diff > 301.0:
             ax_map.set_title(title_map, color='gray')
@@ -1189,7 +1175,7 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     if has_cam0:
         jday_cam  = flt_img0['jday_cam0'][index_pnt]
-        dtime_cam = er3t.util.jday_to_dtime(jday_cam)
+        dtime_cam = ssfr.util.jday_to_dtime(jday_cam)
 
         title_img = 'Camera at %s UTC' % (dtime_cam.strftime('%H:%M:%S'))
         time_diff = np.abs(jday_current-jday_cam)*86400.0
@@ -1392,7 +1378,7 @@ def post_process_sat_img_vn(
     # process satellite imagery
     #/----------------------------------------------------------------------------\#
     for layername in ['TrueColor', 'FalseColor721', 'FalseColor367']:
-        fnames_sat = er3t.util.get_all_files(_fdir_sat_img_vn_, pattern='*%s*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % (layername, date_sat_s))
+        fnames_sat = ssfr.util.get_all_files(_fdir_sat_img_vn_, pattern='*%s*%s*Z*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).png' % (layername, date_sat_s))
         jday_sat, fnames_sat = process_sat_img_overlay(fnames_sat)
     #\----------------------------------------------------------------------------/#
 
@@ -1616,7 +1602,7 @@ def main_pre_arcsix(
 
     # process camera imagery
     #/----------------------------------------------------------------------------\#
-    fdirs = er3t.util.get_all_folders(_fdir_cam_img_, pattern='*%4.4d*%2.2d*%2.2d*nac*jpg*' % (date.year, date.month, date.day))
+    fdirs = ssfr.util.get_all_folders(_fdir_cam_img_, pattern='*%4.4d*%2.2d*%2.2d*nac*jpg*' % (date.year, date.month, date.day))
     if len(fdirs) > 0:
         has_cam = True
         fdir_cam0 = sorted(fdirs, key=os.path.getmtime)[-1]
@@ -1634,20 +1620,20 @@ def main_pre_arcsix(
     fnames_sat0 = {}
     fnames_sat1 = {}
 
-    fnames_sat00 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='TrueColor*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
+    fnames_sat00 = sorted(ssfr.util.get_all_files(_fdir_sat_img_hc_, pattern='TrueColor*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
     jday_sat00 = np.zeros(len(fnames_sat00), dtype=np.float64)
     for i, fname_sat00 in enumerate(fnames_sat00):
         dtime00_s = '_'.join(os.path.basename(fname_sat00).split('_')[1:3])
         dtime00 = datetime.datetime.strptime(dtime00_s, '%Y-%m-%d_%H:%M:%S')
-        jday_sat00[i] = er3t.util.dtime_to_jday(dtime00)
+        jday_sat00[i] = ssfr.util.dtime_to_jday(dtime00)
 
-    fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor367*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
-    # fnames_sat11 = sorted(er3t.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor721*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
+    fnames_sat11 = sorted(ssfr.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor367*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
+    # fnames_sat11 = sorted(ssfr.util.get_all_files(_fdir_sat_img_hc_, pattern='FalseColor721*%s*(-877574.55,877574.55,-751452.90,963254.75)_(-80.0000,-30.0000,71.0000,88.0000).jpg' % date_sat_s))
     jday_sat11 = np.zeros(len(fnames_sat11), dtype=np.float64)
     for i, fname_sat11 in enumerate(fnames_sat11):
         dtime11_s = '_'.join(os.path.basename(fname_sat11).split('_')[1:3])
         dtime11 = datetime.datetime.strptime(dtime11_s, '%Y-%m-%d_%H:%M:%S')
-        jday_sat11[i] = er3t.util.dtime_to_jday(dtime11)
+        jday_sat11[i] = ssfr.util.dtime_to_jday(dtime11)
 
     fnames_sat0['jday']    = jday_sat00
     fnames_sat0['fnames']  = fnames_sat00
@@ -1778,17 +1764,17 @@ def main_vid_arcsix(
 if __name__ == '__main__':
 
     dates = [
-            # datetime.datetime(2024, 5, 28), # [✓] ARCSIX science flight #1; clear-sky spiral
-            # datetime.datetime(2024, 5, 30), # [✓] ARCSIX science flight #2; cloud wall
-            # datetime.datetime(2024, 5, 31), # [✓] ARCSIX science flight #3; bowling alley, surface BRDF
-            # datetime.datetime(2024, 6,  3), # ARCSIX science flight #4; cloud wall, (no MARLi)
-            # datetime.datetime(2024, 6,  5), # [✓] ARCSIX science flight #5; bowling alley, surface BRDF
-            # datetime.datetime(2024, 6,  6), # [✓] ARCSIX science flight #6; cloud wall
-            # datetime.datetime(2024, 6,  7), # [✓] ARCSIX science flight #7; cloud wall
-            # datetime.datetime(2024, 6, 10), # [✓] ARCSIX science flight #8; cloud wall
-            # datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
-            # datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
-            datetime.datetime(2024, 7, 22), # [✓] ARCSIX transit flight #1
+            datetime.datetime(2024, 5, 28), # [✓] ARCSIX science flight #1; clear-sky spiral
+            datetime.datetime(2024, 5, 30), # [✓] ARCSIX science flight #2; cloud wall
+            datetime.datetime(2024, 5, 31), # [✓] ARCSIX science flight #3; bowling alley, surface BRDF
+            datetime.datetime(2024, 6,  3), # ARCSIX science flight #4; cloud wall, (no MARLi)
+            datetime.datetime(2024, 6,  5), # [✓] ARCSIX science flight #5; bowling alley, surface BRDF
+            datetime.datetime(2024, 6,  6), # [✓] ARCSIX science flight #6; cloud wall
+            datetime.datetime(2024, 6,  7), # [✓] ARCSIX science flight #7; cloud wall
+            datetime.datetime(2024, 6, 10), # [✓] ARCSIX science flight #8; cloud wall
+            datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
+            datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
+            datetime.datetime(2024, 7, 22), # [✓] ARCSIX transit flight #3
         ]
 
     for date in dates[::-1]:
@@ -1796,10 +1782,10 @@ if __name__ == '__main__':
 
         #/----------------------------------------------------------------------------\#
         # post_process_sat_img_vn(date)
-        # main_pre_arcsix(date)
+        main_pre_arcsix(date)
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-        main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+        # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
         #\----------------------------------------------------------------------------/#
         pass
 
