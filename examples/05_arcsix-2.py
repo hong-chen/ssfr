@@ -1,14 +1,13 @@
 """
 Code for processing data collected by "radiation instruments" during NASA ARCSIX 2024.
 
-
 Acknowledgements:
     Instrument engineering:
         Jeffery Drouet, Sebastian Schmidt
     Pre-mission calibration and analysis:
         Hong Chen, Yu-Wen Chen, Ken Hirata, Sebastian Schmidt, Bruce Kindel
     In-field calibration and on-flight operation:
-        Vikas Nataraja, Jeffery Drouet, Arabella Chamberlain, Ken Hirata, Sebastian Schmidt
+        Arabella Chamberlain, Ken Hirata, Vikas Nataraja, Sebastian Becker, Sebastian Schmidt
 """
 
 import os
@@ -57,7 +56,7 @@ _fdir_hsk_   = 'data/arcsix/2024-Summer/p3/aux/hsk'
 _fdir_cal_   = 'data/%s/cal' % _mission_
 
 _fdir_data_  = 'data/%s' % _mission_
-_fdir_out_   = '%s/processed_arcsix-2' % _fdir_data_
+_fdir_out_   = '%s/processed' % _fdir_data_
 
 
 _verbose_   = True
@@ -67,22 +66,22 @@ _fnames_ = {}
 _alp_time_offset_ = {
         '20240708':   -17.85,
         '20240709':   -17.85,
-        # '20240613': -17.85,
+        '20240722':   -17.85,
         }
 _spns_time_offset_ = {
         '20240708': 0.0,
         '20240709': 0.0,
-        # '20240613': 0.0,
+        '20240722': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240708': -196.06,
         '20240709': -196.06,
-        # '20240613': -196.06,
+        '20240722': -196.06,
         }
 _ssfr2_time_offset_ = {
         '20240708': -273.59,
         '20240709': -273.59,
-        # '20240613': -273.59,
+        '20240722': -273.59,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -1868,18 +1867,20 @@ def main_process_data_v0(date, run=True):
         os.makedirs(fdir_out)
 
     date_s = date.strftime('%Y%m%d')
+    print(date_s)
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
-    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=run)
+    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+    #         fdir_out=fdir_out, run=run)
 
-    _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
+    # _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
     #\----------------------------------------------------------------------------/#
 
     # ALP v0: raw data
     #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _alp_))
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
+    print(fdirs)
     fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
             fdir_out=fdir_out, run=run)
@@ -1889,17 +1890,17 @@ def main_process_data_v0(date, run=True):
 
     # SPNS v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _spns_))
-    # fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
-    #         fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _spns_))
+    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
+    _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
     #\----------------------------------------------------------------------------/#
 
     # SSFR-A v0: raw data
     #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr1_))
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr1_))
     fdir_data_ssfr1 = sorted(fdirs, key=os.path.getmtime)[-1]
     fname_ssfr1_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr1,
             which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
@@ -1909,12 +1910,12 @@ def main_process_data_v0(date, run=True):
 
     # SSFR-B v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*%s' % (date.year, date.month, date.day, _ssfr2_))
-    # fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
-    #         which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr2_))
+    fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
+            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
+    _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
     #\----------------------------------------------------------------------------/#
 
 def main_process_data_v1(date, run=True):
@@ -2352,35 +2353,58 @@ if __name__ == '__main__':
 
     warnings.warn('!!!!!!!! Under development !!!!!!!!')
 
+    # process field calibration
+    #/----------------------------------------------------------------------------\#
     # main_calibration_rad()
+    # sys.exit()
+    #\----------------------------------------------------------------------------/#
 
-    # data procesing
+    # process field data
     #/----------------------------------------------------------------------------\#
     dates = [
              # datetime.datetime(2024, 7, 8), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
-             datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
+             # datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
+             datetime.datetime(2024, 7, 22), # ARCSIX-2 transit from WFF to Pituffik, noticed TEC2 (SSFR-A nadir) issue, operator - Ken Hirata
             ]
 
     for date in dates[::-1]:
 
-        # main_process_data_v0(date, run=True)
-        main_process_data_v0(date, run=False)
-
-        # for iChan in range(256):
-        #     dark_corr_temp(date, iChan=iChan, idset=0)
-
-        # run_time_offset_check(date)
-
-        main_process_data_v1(date, run=True)
-        # main_process_data_v1(date, run=False)
+        # step 1
+        #/--------------------------------------------------------------\#
+        main_process_data_v0(date, run=True)
         sys.exit()
+        #\--------------------------------------------------------------/#
 
-        main_process_data_v2(date, run=True)
+        # step 2
+        #/--------------------------------------------------------------\#
+        # main_process_data_v0(date, run=False)
+        # run_time_offset_check(date)
+        # sys.exit()
+        #\--------------------------------------------------------------/#
+
+        # step 3
+        #/--------------------------------------------------------------\#
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=True)
+        # sys.exit()
+        #\--------------------------------------------------------------/#
+
+        # step 4
+        #/--------------------------------------------------------------\#
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=True)
+        # sys.exit()
+        #\--------------------------------------------------------------/#
+
+        # step 5
+        #/--------------------------------------------------------------\#
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
         # main_process_data_v2(date, run=False)
-
-        # run_angle_offset_check(date, ang_pit_offset=4.0, ang_rol_offset=+0.5)
-
-        main_process_data_archive(date, run=True)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
+        #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
     pass
