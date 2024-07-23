@@ -75,7 +75,7 @@ _cam_          = 'nac'
 
 _fdir_main_       = 'data/%s/flt-vid' % _mission_
 _fdir_sat_img_    = 'data/%s/sat-img' % _mission_
-_fdir_cam_img_    = 'data/%s/2024-Spring/p3' % _mission_
+_fdir_cam_img_    = 'data/%s/2024-Summer/p3' % _mission_
 _fdir_lid_img_    = 'data/%s/lid-img' % _mission_
 _wavelength_      = 555.0
 
@@ -175,6 +175,13 @@ _date_specs_ = {
         '20240613': {
             'tmhr_range': [10.90, 19.90],
            'description': 'ARCSIX Science Flight #10',
+      'preferred_region': 'lincoln_sea',
+       'cam_time_offset': 0.0,
+            },
+
+        '20240722': {
+            'tmhr_range': [10.00, 19.00],
+           'description': 'ARCSIX-2 Transit Flight #1',
       'preferred_region': 'lincoln_sea',
        'cam_time_offset': 0.0,
             },
@@ -1419,6 +1426,7 @@ def main_pre_arcsix(
 
     logic0 = (~np.isnan(jday) & ~np.isnan(sza) & ~np.isinf(sza))  & \
              (alt>=0.0) & (alt<=12000.0) & \
+             (lat>=71.5) &\
              check_continuity(lon, threshold=1.0) & \
              check_continuity(lat, threshold=1.0) & \
              (tmhr>=_date_specs_[date_s]['tmhr_range'][0]) & (tmhr<=_date_specs_[date_s]['tmhr_range'][1])
@@ -1770,16 +1778,17 @@ def main_vid_arcsix(
 if __name__ == '__main__':
 
     dates = [
-            datetime.datetime(2024, 5, 28), # [✓] ARCSIX science flight #1; clear-sky spiral
-            datetime.datetime(2024, 5, 30), # [✓] ARCSIX science flight #2; cloud wall
-            datetime.datetime(2024, 5, 31), # [✓] ARCSIX science flight #3; bowling alley, surface BRDF
-            datetime.datetime(2024, 6,  3), # ARCSIX science flight #4; cloud wall, (no MARLi)
-            datetime.datetime(2024, 6,  5), # [✓] ARCSIX science flight #5; bowling alley, surface BRDF
-            datetime.datetime(2024, 6,  6), # [✓] ARCSIX science flight #6; cloud wall
-            datetime.datetime(2024, 6,  7), # [✓] ARCSIX science flight #7; cloud wall
-            datetime.datetime(2024, 6, 10), # [✓] ARCSIX science flight #8; cloud wall
-            datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
-            datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
+            # datetime.datetime(2024, 5, 28), # [✓] ARCSIX science flight #1; clear-sky spiral
+            # datetime.datetime(2024, 5, 30), # [✓] ARCSIX science flight #2; cloud wall
+            # datetime.datetime(2024, 5, 31), # [✓] ARCSIX science flight #3; bowling alley, surface BRDF
+            # datetime.datetime(2024, 6,  3), # ARCSIX science flight #4; cloud wall, (no MARLi)
+            # datetime.datetime(2024, 6,  5), # [✓] ARCSIX science flight #5; bowling alley, surface BRDF
+            # datetime.datetime(2024, 6,  6), # [✓] ARCSIX science flight #6; cloud wall
+            # datetime.datetime(2024, 6,  7), # [✓] ARCSIX science flight #7; cloud wall
+            # datetime.datetime(2024, 6, 10), # [✓] ARCSIX science flight #8; cloud wall
+            # datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
+            # datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
+            datetime.datetime(2024, 7, 22), # [✓] ARCSIX transit flight #1
         ]
 
     for date in dates[::-1]:
@@ -1787,7 +1796,7 @@ if __name__ == '__main__':
 
         #/----------------------------------------------------------------------------\#
         # post_process_sat_img_vn(date)
-        main_pre_arcsix(date)
+        # main_pre_arcsix(date)
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
