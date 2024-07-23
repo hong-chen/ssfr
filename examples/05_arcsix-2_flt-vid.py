@@ -75,7 +75,7 @@ _cam_          = 'nac'
 
 _fdir_main_       = 'data/%s/flt-vid' % _mission_
 _fdir_sat_img_    = 'data/%s/sat-img' % _mission_
-_fdir_cam_img_    = 'data/%s/2024-Summer/p3' % _mission_
+_fdir_cam_img_    = 'data/%s/2024/p3' % _mission_
 _fdir_lid_img_    = 'data/%s/lid-img' % _mission_
 _wavelength_      = 555.0
 
@@ -542,7 +542,7 @@ def process_marli(date, run=True):
 
     try:
     # if True:
-        fname = sorted(er3t.util.get_all_files('data/arcsix/2024-Spring/p3/aux/marli', pattern='*%s*.cdf' % (date_s)))[-1]
+        fname = sorted(er3t.util.get_all_files('data/arcsix/2024/p3/aux/marli', pattern='*%s*.cdf' % (date_s)))[-1]
 
         fname_hsk = '%s/%s-%s_%s_%s_v0.h5' % (_fdir_data_, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
         f_hsk = h5py.File(fname_hsk, 'r')
