@@ -52,6 +52,8 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
 
+_which_ssfr_for_flux_ = 'ssfr-a'
+
 _fdir_hsk_   = 'data/arcsix/2024/p3/aux/hsk'
 _fdir_cal_   = 'data/%s/cal' % _mission_
 
@@ -60,7 +62,6 @@ _fdir_out_   = '%s/processed' % _fdir_data_
 
 
 _verbose_   = True
-_which_ssfr_for_flux_ = 'ssfr-a'
 
 _fnames_ = {}
 
@@ -1495,7 +1496,7 @@ def cdata_arcsix_ssfr_v2(
 
     date_s = date.strftime('%Y%m%d')
 
-    which_ssfr = os.path.basename(fname_ssfr_v0).split('_')[0].replace('%s-' % _mission_.upper(), '').lower()
+    which_ssfr = os.path.basename(fname_ssfr_v1).split('_')[0].replace('%s-' % _mission_.upper(), '').lower()
 
     fname_h5 = '%s/%s-%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), _platform_.upper(), date_s)
 
@@ -2335,18 +2336,18 @@ def main_process_data_v1(date, run=True):
 
     # ALP v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
-    # fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-    #         fdir_out=fdir_out, run=run)
+    fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
+    _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
     #\----------------------------------------------------------------------------/#
 
     # SPNS v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
-    # fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-    #         fdir_out=fdir_out, run=run)
+    fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
+    _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
     #\----------------------------------------------------------------------------/#
 
     # SSFR-A v1: time synced with hsk time with time offset applied
@@ -2381,13 +2382,13 @@ def main_process_data_v2(date, run=True):
 
     # SPNS v2
     #/----------------------------------------------------------------------------\#
-    # based on ALP v1
+    # * based on ALP v1
     # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=run)
     # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=True)
 
-    # based on HSK v0
+    # * based on HSK v0
     fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
@@ -2396,10 +2397,17 @@ def main_process_data_v2(date, run=True):
 
     # SSFR v2
     #/----------------------------------------------------------------------------\#
-    fname_ssfr1_v2 = cdata_arcsix_ssfr_v2(date, _fnames_['%s_ssfr1_v1' % date_s], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=True)
+    if _which_ssfr_for_flux_ == _ssfr1_:
+        _vname_ssfr_v1_ = '%s_ssfr1_v1' % date_s
+        _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
+    else:
+        _vname_ssfr_v1_ = '%s_ssfr2_v1' % date_s
+        _vname_ssfr_v2_ = '%s_ssfr2_v2' % date_s
+
+    fname_ssfr1_v2 = cdata_arcsix_ssfr_v2(date, _fnames_[_vname_ssfr_v1_], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
+            fdir_out=fdir_out, run=run, run_aux=True)
     #\----------------------------------------------------------------------------/#
-    _fnames_['%s_ssfr1_v2' % date_s] = fname_ssfr1_v2
+    _fnames_[_vname_ssfr_v2_] = fname_ssfr1_v2
 
 def main_process_data_archive(date, run=True):
 
@@ -2465,26 +2473,26 @@ if __name__ == '__main__':
 
         # step 3
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 4
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=False)
-        # main_process_data_v2(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        main_process_data_v1(date, run=False)
+        main_process_data_v2(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 5
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=False)
-        main_process_data_archive(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
