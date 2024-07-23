@@ -60,7 +60,7 @@ _fdir_out_   = '%s/processed' % _fdir_data_
 
 
 _verbose_   = True
-_which4flux_ = 'ssfr-a'
+_which_ssfr_for_flux_ = 'ssfr-a'
 
 _fnames_ = {}
 
@@ -1263,7 +1263,7 @@ def cdata_arcsix_ssfr_v1(
         fname_hsk,
         fdir_out=_fdir_out_,
         time_offset=0.0,
-        which_ssfr='ssfr-a',
+        which_ssfr_for_flux=_which_ssfr_for_flux_,
         run=True,
         ):
 
@@ -1274,6 +1274,8 @@ def cdata_arcsix_ssfr_v1(
     """
 
     date_s = date.strftime('%Y%m%d')
+
+    which_ssfr = os.path.basename(fname_ssfr_v0).split('_')[0].replace('%s-' % _mission_.upper(), '').lower()
 
     fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), _platform_.upper(), date_s)
 
@@ -1319,7 +1321,7 @@ def cdata_arcsix_ssfr_v1(
 
         for idset in np.unique(dset_num):
 
-            if which_ssfr == 'ssfr-a':
+            if which_ssfr_for_flux == which_ssfr:
                 # select calibration file (can later be adjusted for different integration time sets)
                 #/----------------------------------------------------------------------------\#
                 fdir_cal = '%s/rad-cal' % _fdir_cal_
@@ -1329,7 +1331,7 @@ def cdata_arcsix_ssfr_v1(
                 int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
                 int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
 
-                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
+                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
                 jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
                 for i in range(jday_cal_zen.size):
                     dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
@@ -1338,10 +1340,10 @@ def cdata_arcsix_ssfr_v1(
                 fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
                 data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
-                msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using <%s> for SSFR-A zenith ...' % (os.path.basename(fname_cal_zen))
+                msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using <%s> for %s zenith irradiance ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
                 print(msg)
 
-                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
+                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
                 jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
                 for i in range(jday_cal_nad.size):
                     dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
@@ -1350,18 +1352,28 @@ def cdata_arcsix_ssfr_v1(
                 fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
 
-                msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using <%s> for SSFR-A nadir ...' % (os.path.basename(fname_cal_nad))
+                msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using <%s> for %s nadir irradiance ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
                 print(msg)
                 #\----------------------------------------------------------------------------/#
-            elif which_ssfr == 'ssfr-b':
+            else:
+                # radiance (scale the data to 0 - 2.0 for now,
+                # later we will apply radiometric response after mission to retrieve spectral RADIANCE)
+
                 factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.0
                 data_cal_zen = {
                         'sec_resp': np.repeat(factor_zen, wvl_zen.size)
                         }
+
+                msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using [0, 2.0] scaling for %s zenith radiance ...' % (which_ssfr.upper())
+                print(msg)
+
                 factor_nad = (np.nanmax(cnt_nad)-np.nanmin(cnt_nad)) / 2.0
                 data_cal_nad = {
                         'sec_resp': np.repeat(factor_nad, wvl_nad.size)
                         }
+
+                msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using [0, 2.0] scaling for %s nadir radiance ...' % (which_ssfr.upper())
+                print(msg)
 
             logic_dset = (dset_num == idset)
 
@@ -1421,18 +1433,18 @@ def cdata_arcsix_ssfr_v1(
         g1 = f.create_group('zen')
         g1.create_dataset('wvl' , data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
         g1.create_dataset('cnt' , data=cnt_zen_hsk , compression='gzip', compression_opts=9, chunks=True)
-        if which_ssfr == 'ssfr-a':
+        if which_ssfr_for_flux == which_ssfr:
             g1.create_dataset('flux', data=spec_zen_hsk, compression='gzip', compression_opts=9, chunks=True)
             g1.create_dataset('toa0', data=f_dn_sol_zen, compression='gzip', compression_opts=9, chunks=True)
-        elif which_ssfr == 'ssfr-b':
+        else:
             g1.create_dataset('rad', data=spec_zen_hsk, compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('nad')
         g2.create_dataset('wvl' , data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
         g2.create_dataset('cnt' , data=cnt_nad_hsk , compression='gzip', compression_opts=9, chunks=True)
-        if which_ssfr == 'ssfr-a':
+        if which_ssfr_for_flux == which_ssfr:
             g2.create_dataset('flux', data=spec_nad_hsk, compression='gzip', compression_opts=9, chunks=True)
-        elif which_ssfr == 'ssfr-b':
+        else:
             g2.create_dataset('rad', data=spec_nad_hsk, compression='gzip', compression_opts=9, chunks=True)
         #\----------------------------------------------------------------------------/#
 
@@ -1456,7 +1468,6 @@ def cdata_arcsix_ssfr_v2(
         fname_ssfr_v1,
         fname_alp_v1,
         fname_spns_v2,
-        which_ssfr='ssfr-a',
         fdir_out=_fdir_out_,
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
@@ -1483,6 +1494,8 @@ def cdata_arcsix_ssfr_v2(
         return popt, pcov
 
     date_s = date.strftime('%Y%m%d')
+
+    which_ssfr = os.path.basename(fname_ssfr_v0).split('_')[0].replace('%s-' % _mission_.upper(), '').lower()
 
     fname_h5 = '%s/%s-%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), _platform_.upper(), date_s)
 
@@ -2322,24 +2335,24 @@ def main_process_data_v1(date, run=True):
 
     # ALP v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
-    fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
+    # fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+    #         fdir_out=fdir_out, run=run)
 
-    _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
+    # _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
     #\----------------------------------------------------------------------------/#
 
     # SPNS v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
-    fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
+    # fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+    #         fdir_out=fdir_out, run=run)
 
-    _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
+    # _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
     #\----------------------------------------------------------------------------/#
 
     # SSFR-A v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
     fname_ssfr1_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr1_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+            which_ssfr_for_flux=_which_ssfr_for_flux_, fdir_out=fdir_out, run=run)
 
     _fnames_['%s_ssfr1_v1' % date_s] = fname_ssfr1_v1
     #\----------------------------------------------------------------------------/#
@@ -2347,7 +2360,7 @@ def main_process_data_v1(date, run=True):
     # SSFR-B v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
     fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr2_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+            which_ssfr_for_flux=_which_ssfr_for_flux_, fdir_out=fdir_out, run=run)
 
     _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
     #\----------------------------------------------------------------------------/#
@@ -2452,9 +2465,9 @@ if __name__ == '__main__':
 
         # step 3
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        main_process_data_v1(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 4
