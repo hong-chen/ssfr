@@ -60,7 +60,7 @@ _ssfr_         = 'ssfr-a'
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
 
-_fdir_data_      = 'data/%s/processed_arcsix-2' % _mission_
+_fdir_data_      = 'data/%s/processed' % _mission_
 _fdir_tmp_graph_ = 'tmp-graph_%s-vid' % _ssfr_
 
 
@@ -826,7 +826,7 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=1,
+        interval=19,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -882,7 +882,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 6, 11), # ARCSIX science flight #9
             # datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
             # datetime.datetime(2024, 7, 8), # test data at NASA WFF
-            datetime.datetime(2024, 7, 9), # test data at NASA WFF
+            # datetime.datetime(2024, 7, 9), # test data at NASA WFF
+            datetime.datetime(2024, 7, 22), # transit flight from WFF to Pituffik
         ]
 
     for date in dates[::-1]:
