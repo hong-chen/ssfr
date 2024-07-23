@@ -1781,9 +1781,9 @@ if __name__ == '__main__':
 
 
         #/----------------------------------------------------------------------------\#
-        # post_process_sat_img_vn(date)
-        # main_pre_arcsix(date)
-        main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+        post_process_sat_img_vn(date)
+        main_pre_arcsix(date)
+        main_vid_arcsix(date, wvl0=_wavelength_, interval=60) make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
         #\----------------------------------------------------------------------------/#
