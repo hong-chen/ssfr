@@ -1264,7 +1264,6 @@ def cdata_arcsix_ssfr_v1(
         fdir_out=_fdir_out_,
         time_offset=0.0,
         which_ssfr='ssfr-a',
-        swap=_swap_,
         run=True,
         ):
 
@@ -2303,12 +2302,12 @@ def main_process_data_v0(date, run=True):
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
-    fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_spns_v0' % date_s], fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=run)
+    # fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_spns_v0' % date_s], fdir_data=_fdir_hsk_,
+    #         fdir_out=fdir_out, run=run)
 
     # * preferred, use P3 housekeeping file, ict > iwg > mts
-    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-    #         fdir_out=fdir_out, run=run)
+    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+            fdir_out=fdir_out, run=run)
 
     _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
     #\----------------------------------------------------------------------------/#
@@ -2420,7 +2419,7 @@ def main_process_data_archive(date, run=True):
 
 if __name__ == '__main__':
 
-    warnings.warn('!!!!!!!! Under development !!!!!!!!')
+    warnings.warn('\n!!!!!!!! Under development !!!!!!!!')
 
     # process field calibration
     #/----------------------------------------------------------------------------\#
@@ -2440,8 +2439,8 @@ if __name__ == '__main__':
 
         # step 1
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 2
@@ -2468,11 +2467,11 @@ if __name__ == '__main__':
 
         # step 5
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=False)
-        main_process_data_archive(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
