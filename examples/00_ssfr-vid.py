@@ -49,7 +49,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 mpl.use('Agg')
 
 
-import er3t
+import ssfr
 
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
@@ -155,7 +155,7 @@ def get_jday_sat_img(fnames):
         dtime_s  = strings[2]
 
         dtime0 = datetime.datetime.strptime(dtime_s, '%Y-%m-%dT%H:%M:%SZ')
-        jday0 = er3t.util.dtime_to_jday(dtime0)
+        jday0 = ssfr.util.dtime_to_jday(dtime0)
         jday.append(jday0)
 
     return np.array(jday)
@@ -206,7 +206,7 @@ def get_jday_cam_img(date, fnames):
         dtime_s_ = filename.split('.')[0].split(' ')[-1]
         dtime_s = '%s_%s' % (date.strftime('%Y_%m_%d'), dtime_s_)
         dtime0 = datetime.datetime.strptime(dtime_s, '%Y_%m_%d_%H_%M_%SZ')
-        jday0 = er3t.util.dtime_to_jday(dtime0)
+        jday0 = ssfr.util.dtime_to_jday(dtime0)
         jday.append(jday0)
 
     return np.array(jday)
@@ -401,7 +401,7 @@ def plot_video_frame(statements, test=False):
     tmhr_current = flt_trk0['tmhr'][index_pnt]
     jday_current = flt_trk0['jday'][index_pnt]
     int_time_zen_si_current, int_time_zen_in_current, int_time_nad_si_current, int_time_nad_in_current = flt_trk0['int_time'][index_pnt, :]
-    dtime_current = er3t.util.jday_to_dtime(jday_current)
+    dtime_current = ssfr.util.jday_to_dtime(jday_current)
 
     tmhr_length  = 0.1 # half an hour
     tmhr_past    = tmhr_current-tmhr_length
@@ -716,13 +716,13 @@ def main_pre(
     # read data
     #/----------------------------------------------------------------------------\#
     try:
-        data_ssfr_v1 = er3t.util.load_h5(fname_ssfr1_v1)
+        data_ssfr_v1 = ssfr.util.load_h5(fname_ssfr1_v1)
         has_v1 = True
     except Exception as error:
         print(error)
         has_v1 = False
 
-    data_ssfr_v0 = er3t.util.load_h5(fname_ssfr1_v0)
+    data_ssfr_v0 = ssfr.util.load_h5(fname_ssfr1_v0)
 
     if has_v1:
         jday = data_ssfr_v1['v0/jday'][::time_step]
