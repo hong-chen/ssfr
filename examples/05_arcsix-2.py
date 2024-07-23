@@ -60,6 +60,7 @@ _fdir_out_   = '%s/processed' % _fdir_data_
 
 
 _verbose_   = True
+_which4flux_ = 'ssfr-a'
 
 _fnames_ = {}
 
@@ -270,7 +271,6 @@ def main_calibration_old():
 #\----------------------------------------------------------------------------/#
 
 
-
 # instrument calibrations
 #/----------------------------------------------------------------------------\#
 def rad_cal(
@@ -479,7 +479,6 @@ def main_calibration_rad():
     #\----------------------------------------------------------------------------/#
     sys.exit()
 #\----------------------------------------------------------------------------/#
-
 
 
 # functions for processing HSK and ALP
@@ -773,6 +772,7 @@ def cdata_arcsix_alp_v1(
 
     return fname_h5
 #\----------------------------------------------------------------------------/#
+
 
 # functions for processing SPNS
 #/----------------------------------------------------------------------------\#
@@ -1208,6 +1208,7 @@ def cdata_arcsix_spns_archive(
     return fname_h5
 #\----------------------------------------------------------------------------/#
 
+
 # functions for processing SSFR
 #/----------------------------------------------------------------------------\#
 def cdata_arcsix_ssfr_v0(
@@ -1263,6 +1264,7 @@ def cdata_arcsix_ssfr_v1(
         fdir_out=_fdir_out_,
         time_offset=0.0,
         which_ssfr='ssfr-a',
+        swap=_swap_,
         run=True,
         ):
 
@@ -1887,211 +1889,8 @@ def cdata_arcsix_ssfr_archive(
 #\----------------------------------------------------------------------------/#
 
 
-
-# main program
+# additional functions under development
 #/----------------------------------------------------------------------------\#
-def main_process_data_instrument(date, run=True):
-
-    date_s = date.strftime('%Y%m%d')
-
-    # 1&2. aircraft housekeeping file (need to request data from the P-3 data system)
-    #      active leveling platform
-    #    - longitude
-    #    - latitude
-    #    - altitude
-    #    - UTC time
-    #    - pitch angle
-    #    - roll angle
-    #    - heading angle
-    #    - motor pitch angle
-    #    - motor roll angle
-    process_alp_data(date, run=False)
-
-    # 3. SPNS - irradiance (400nm - 900nm)
-    #    - spectral downwelling diffuse
-    #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=False)
-
-    # 4. SSFR-A - irradiance (350nm - 2200nm)
-    #    - spectral downwelling global
-    #    - spectral upwelling global
-    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
-
-    # 5. SSFR-B - radiance (350nm - 2200nm)
-    #    - spectral downwelling global
-    #    - spectral upwelling global
-    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
-
-def main_process_data_v0(date, run=True):
-
-    fdir_out = _fdir_out_
-    if not os.path.exists(fdir_out):
-        os.makedirs(fdir_out)
-
-    date_s = date.strftime('%Y%m%d')
-
-    # SSFR-A v0: raw data
-    #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr1_))
-    fdir_data_ssfr1 = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_ssfr1_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr1,
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_ssfr1_v0' % date_s] = fname_ssfr1_v0
-    #\----------------------------------------------------------------------------/#
-
-
-    # SSFR-B v0: raw data
-    #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr2_))
-    fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
-            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
-    #\----------------------------------------------------------------------------/#
-
-
-    # ALP v0: raw data
-    #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
-    fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
-            fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
-    #\----------------------------------------------------------------------------/#
-
-
-    # SPNS v0: raw data
-    #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _spns_))
-    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
-            fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
-    #\----------------------------------------------------------------------------/#
-
-
-    # 2024-07-22 10:14:08 to 2024-07-22 18:38:31
-    # HSK v0: raw data
-    #/----------------------------------------------------------------------------\#
-    fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_spns_v0' % date_s], fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=run)
-
-    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-    #         fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
-    #\----------------------------------------------------------------------------/#
-
-def main_process_data_v1(date, run=True):
-
-    fdir_out = _fdir_out_
-    if not os.path.exists(fdir_out):
-        os.makedirs(fdir_out)
-
-    date_s = date.strftime('%Y%m%d')
-
-    # ALP v1: time synced with hsk time with time offset applied
-    #/----------------------------------------------------------------------------\#
-    fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
-    #\----------------------------------------------------------------------------/#
-
-    # SPNS v1: time synced with hsk time with time offset applied
-    #/----------------------------------------------------------------------------\#
-    fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
-    #\----------------------------------------------------------------------------/#
-
-    # SSFR-A v1: time synced with hsk time with time offset applied
-    #/----------------------------------------------------------------------------\#
-    fname_ssfr1_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr1_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_ssfr1_v1' % date_s] = fname_ssfr1_v1
-    #\----------------------------------------------------------------------------/#
-
-    # SSFR-B v1: time synced with hsk time with time offset applied
-    #/----------------------------------------------------------------------------\#
-    fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr2_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
-    #\----------------------------------------------------------------------------/#
-
-def main_process_data_v2(date, run=True):
-
-    """
-    v0: raw data directly read out from the data files
-    v1: data collocated/synced to aircraft nav
-    v2: attitude corrected data
-    """
-
-    date_s = date.strftime('%Y%m%d')
-
-    fdir_out = _fdir_out_
-    if not os.path.exists(fdir_out):
-        os.makedirs(fdir_out)
-
-    # SPNS v2
-    #/----------------------------------------------------------------------------\#
-    # based on ALP v1
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
-    #         fdir_out=fdir_out, run=run)
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
-    #         fdir_out=fdir_out, run=True)
-
-    # based on HSK v0
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
-    #\----------------------------------------------------------------------------/#
-    _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
-
-
-    # SSFR v2
-    #/----------------------------------------------------------------------------\#
-    fname_ssfr1_v2 = cdata_arcsix_ssfr_v2(date, _fnames_['%s_ssfr1_v1' % date_s], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=True)
-    #\----------------------------------------------------------------------------/#
-    _fnames_['%s_ssfr1_v2' % date_s] = fname_ssfr1_v2
-
-def main_process_data_archive(date, run=True):
-
-    """
-    ra: in-field data to be uploaded to https://www-air.larc.nasa.gov/cgi-bin/ArcView/arcsix
-    """
-
-    date_s = date.strftime('%Y%m%d')
-
-    fdir_out = _fdir_out_
-    if not os.path.exists(fdir_out):
-        os.makedirs(fdir_out)
-
-    # SPNS RA
-    #/----------------------------------------------------------------------------\#
-    fname_spns_ra = cdata_arcsix_spns_archive(date, _fnames_['%s_spns_v2' % date_s],
-            fdir_out=fdir_out, run=run)
-    #\----------------------------------------------------------------------------/#
-    _fnames_['%s_spns_ra' % date_s] = fname_spns_ra
-
-
-    # SSFR RA
-    #/----------------------------------------------------------------------------\#
-    fname_ssfr1_ra = cdata_arcsix_ssfr_archive(date, _fnames_['%s_ssfr1_v2' % date_s],
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
-    #\----------------------------------------------------------------------------/#
-    _fnames_['%s_ssfr1_ra' % date_s] = fname_ssfr1_ra
-#\----------------------------------------------------------------------------/#
-
-
-
 def run_time_offset_check(date):
 
     date_s = date.strftime('%Y%m%d')
@@ -2412,8 +2211,211 @@ def dark_corr_temp(date, iChan=100, idset=0):
         plt.show()
         sys.exit()
     #\----------------------------------------------------------------------------/#
+#\----------------------------------------------------------------------------/#
 
 
+# main program
+#/----------------------------------------------------------------------------\#
+def main_process_data_instrument(date, run=True):
+
+    date_s = date.strftime('%Y%m%d')
+
+    # 1&2. aircraft housekeeping file (need to request data from the P-3 data system)
+    #      active leveling platform
+    #    - longitude
+    #    - latitude
+    #    - altitude
+    #    - UTC time
+    #    - pitch angle
+    #    - roll angle
+    #    - heading angle
+    #    - motor pitch angle
+    #    - motor roll angle
+    process_alp_data(date, run=False)
+
+    # 3. SPNS - irradiance (400nm - 900nm)
+    #    - spectral downwelling diffuse
+    #    - spectral downwelling global/direct (direct=global-diffuse)
+    process_spns_data(date, run=False)
+
+    # 4. SSFR-A - irradiance (350nm - 2200nm)
+    #    - spectral downwelling global
+    #    - spectral upwelling global
+    # process_ssfr_data(date, which_ssfr='ssfr-a', run=True)
+
+    # 5. SSFR-B - radiance (350nm - 2200nm)
+    #    - spectral downwelling global
+    #    - spectral upwelling global
+    process_ssfr_data(date, which_ssfr='ssfr-b', run=True)
+
+def main_process_data_v0(date, run=True):
+
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    date_s = date.strftime('%Y%m%d')
+
+    # SSFR-A v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr1_))
+    fdir_data_ssfr1 = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_ssfr1_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr1,
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_ssfr1_v0' % date_s] = fname_ssfr1_v0
+    #\----------------------------------------------------------------------------/#
+
+
+    # SSFR-B v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr2_))
+    fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
+            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
+    #\----------------------------------------------------------------------------/#
+
+
+    # ALP v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
+    fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
+            fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
+    #\----------------------------------------------------------------------------/#
+
+
+    # SPNS v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _spns_))
+    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
+            fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
+    #\----------------------------------------------------------------------------/#
+
+
+    # HSK v0: raw data
+    #/----------------------------------------------------------------------------\#
+    # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
+    fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_spns_v0' % date_s], fdir_data=_fdir_hsk_,
+            fdir_out=fdir_out, run=run)
+
+    # * preferred, use P3 housekeeping file, ict > iwg > mts
+    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+    #         fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
+    #\----------------------------------------------------------------------------/#
+
+def main_process_data_v1(date, run=True):
+
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    date_s = date.strftime('%Y%m%d')
+
+    # ALP v1: time synced with hsk time with time offset applied
+    #/----------------------------------------------------------------------------\#
+    fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
+    #\----------------------------------------------------------------------------/#
+
+    # SPNS v1: time synced with hsk time with time offset applied
+    #/----------------------------------------------------------------------------\#
+    fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
+    #\----------------------------------------------------------------------------/#
+
+    # SSFR-A v1: time synced with hsk time with time offset applied
+    #/----------------------------------------------------------------------------\#
+    fname_ssfr1_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr1_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_ssfr1_v1' % date_s] = fname_ssfr1_v1
+    #\----------------------------------------------------------------------------/#
+
+    # SSFR-B v1: time synced with hsk time with time offset applied
+    #/----------------------------------------------------------------------------\#
+    fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr2_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+
+    _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
+    #\----------------------------------------------------------------------------/#
+
+def main_process_data_v2(date, run=True):
+
+    """
+    v0: raw data directly read out from the data files
+    v1: data collocated/synced to aircraft nav
+    v2: attitude corrected data
+    """
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    # SPNS v2
+    #/----------------------------------------------------------------------------\#
+    # based on ALP v1
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
+    #         fdir_out=fdir_out, run=run)
+    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
+    #         fdir_out=fdir_out, run=True)
+
+    # based on HSK v0
+    fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+    _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
+
+
+    # SSFR v2
+    #/----------------------------------------------------------------------------\#
+    fname_ssfr1_v2 = cdata_arcsix_ssfr_v2(date, _fnames_['%s_ssfr1_v1' % date_s], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run, run_aux=True)
+    #\----------------------------------------------------------------------------/#
+    _fnames_['%s_ssfr1_v2' % date_s] = fname_ssfr1_v2
+
+def main_process_data_archive(date, run=True):
+
+    """
+    ra: in-field data to be uploaded to https://www-air.larc.nasa.gov/cgi-bin/ArcView/arcsix
+    """
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    # SPNS RA
+    #/----------------------------------------------------------------------------\#
+    fname_spns_ra = cdata_arcsix_spns_archive(date, _fnames_['%s_spns_v2' % date_s],
+            fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+    _fnames_['%s_spns_ra' % date_s] = fname_spns_ra
+
+
+    # SSFR RA
+    #/----------------------------------------------------------------------------\#
+    fname_ssfr1_ra = cdata_arcsix_ssfr_archive(date, _fnames_['%s_ssfr1_v2' % date_s],
+            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+    #\----------------------------------------------------------------------------/#
+    _fnames_['%s_ssfr1_ra' % date_s] = fname_ssfr1_ra
+#\----------------------------------------------------------------------------/#
 
 
 if __name__ == '__main__':
