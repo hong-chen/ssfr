@@ -1658,14 +1658,12 @@ def cdata_arcsix_ssfr_v2(
 def cdata_arcsix_ssfr_archive(
         date,
         fname_ssfr_v2,
-        which_ssfr='ssfr-a',
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         wvl_range=[350.0, 2000.0],
         platform_info = 'P3',
         principal_investigator_info = 'Chen, Hong',
         affiliation_info = 'University of Colorado Boulder',
-        instrument_info = 'SSFR-A (Solar Spectral Flux Radiometer - Alvin)',
         mission_info = 'ARCSIX 2024',
         project_info = '',
         file_format_index = '1001',
@@ -1704,6 +1702,12 @@ def cdata_arcsix_ssfr_archive(
     date_s = date.strftime('%Y%m%d')
     date_today = datetime.date.today()
     date_info  = '%4.4d, %2.2d, %2.2d, %4.4d, %2.2d, %2.2d' % (date.year, date.month, date.day, date_today.year, date_today.month, date_today.day)
+
+    which_ssfr = os.path.basename(fname_ssfr_v2).split('_')[0].replace('%s-' % _mission_.upper(), '').lower()
+    if which_ssfr == _ssfr1_:
+        instrument_info = 'SSFR-A (Solar Spectral Flux Radiometer - Alvin)'
+    else:
+        instrument_info = 'SSFR-B (Solar Spectral Flux Radiometer - Belana)'
     #\----------------------------------------------------------------------------/#
 
 
@@ -2404,10 +2408,10 @@ def main_process_data_v2(date, run=True):
         _vname_ssfr_v1_ = '%s_ssfr2_v1' % date_s
         _vname_ssfr_v2_ = '%s_ssfr2_v2' % date_s
 
-    fname_ssfr1_v2 = cdata_arcsix_ssfr_v2(date, _fnames_[_vname_ssfr_v1_], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
+    fname_ssfr_v2 = cdata_arcsix_ssfr_v2(date, _fnames_[_vname_ssfr_v1_], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
             fdir_out=fdir_out, run=run, run_aux=True)
     #\----------------------------------------------------------------------------/#
-    _fnames_[_vname_ssfr_v2_] = fname_ssfr1_v2
+    _fnames_[_vname_ssfr_v2_] = fname_ssfr_v2
 
 def main_process_data_archive(date, run=True):
 
@@ -2431,10 +2435,17 @@ def main_process_data_archive(date, run=True):
 
     # SSFR RA
     #/----------------------------------------------------------------------------\#
-    fname_ssfr1_ra = cdata_arcsix_ssfr_archive(date, _fnames_['%s_ssfr1_v2' % date_s],
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+    if _which_ssfr_for_flux_ == _ssfr1_:
+        _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
+        _vname_ssfr_ra_ = '%s_ssfr1_ra' % date_s
+    else:
+        _vname_ssfr_v2_ = '%s_ssfr2_v2' % date_s
+        _vname_ssfr_ra_ = '%s_ssfr2_ra' % date_s
+
+    fname_ssfr_ra = cdata_arcsix_ssfr_archive(date, _fnames_[_vname_ssfr_v2_],
+            fdir_out=fdir_out, run=run)
     #\----------------------------------------------------------------------------/#
-    _fnames_['%s_ssfr1_ra' % date_s] = fname_ssfr1_ra
+    _fnames_[_vname_ssfr_ra_] = fname_ssfr_ra
 #\----------------------------------------------------------------------------/#
 
 
