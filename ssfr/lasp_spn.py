@@ -181,7 +181,7 @@ def plot(spn1):
     ax2.scatter(spn1.tmhr, spn1.sun, color='r', label='Sun?')
 
     ax1.set_title('SPN1 %s' % os.path.basename(spn1.fname))
-    ax1.set_ylabel('Flux [$\mathrm{W m^{-2}}$]')
+    ax1.set_ylabel('Flux [$\\mathrm{W m^{-2}}$]')
     ax1.set_xlabel('Time [Hour]')
 
     ax2.set_ylim((-1, 2))

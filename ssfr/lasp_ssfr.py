@@ -81,16 +81,16 @@ def read_ssfr_raw(
     int_time (numpy array)[ms]     : integration time of Silicon and InGaAs for both zenith and nadir
     temp (numpy array)    [Celsius]: temperature variables
                                      temp = {
-                                            0: {'name': 'Ambient T' , 'units':'$^\circ C$'},
-                                            1: {'name': 'Zen In T'  , 'units':'$^\circ C$'},
-                                            2: {'name': 'Nad In T'  , 'units':'$^\circ C$'},
-                                            3: {'name': 'Plate T'   , 'units':'$^\circ C$'},
+                                            0: {'name': 'Ambient T' , 'units':'$^\\circ C$'},
+                                            1: {'name': 'Zen In T'  , 'units':'$^\\circ C$'},
+                                            2: {'name': 'Nad In T'  , 'units':'$^\\circ C$'},
+                                            3: {'name': 'Plate T'   , 'units':'$^\\circ C$'},
                                             4: {'name': 'RH'        , 'units':'%'},
-                                            5: {'name': 'Zen In TEC', 'units':'$^\circ C$'},
-                                            6: {'name': 'Nad In TEC', 'units':'$^\circ C$'},
-                                            7: {'name': 'Wvl Con T' , 'units':'$^\circ C$'},
+                                            5: {'name': 'Zen In TEC', 'units':'$^\\circ C$'},
+                                            6: {'name': 'Nad In TEC', 'units':'$^\\circ C$'},
+                                            7: {'name': 'Wvl Con T' , 'units':'$^\\circ C$'},
                                             8: {'name': 'N/A'       , 'units':''},
-                                            9: {'name': 'cRIO T'    , 'units':'$^\circ C$'},
+                                            9: {'name': 'cRIO T'    , 'units':'$^\\circ C$'},
                                            10: {'name': 'N/A'       , 'units':''},
                                             }
     jday_ARINC (numpy array)[day]  : julian days (w.r.t 0001-01-01) of aircraft nagivation system
@@ -131,10 +131,10 @@ def read_ssfr_raw(
         comment = head[1]
 
     if verbose:
-        print('#/--------------------------------------------------------------\#')
+        print('#//--------------------------------------------------------------\\#')
         print('Comments in <%s>...' % os.path.basename(fname))
         print(comment)
-        print('#\--------------------------------------------------------------/#')
+        print('#\\--------------------------------------------------------------//#')
 
     # read data record
     for i in range(iterN):

@@ -78,7 +78,7 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
     f = open(fname, 'rb')
     if verbose:
-        print('#/----------------------------------------------------------------------------\#')
+        print('#//----------------------------------------------------------------------------\\#')
         print('Reading <%s> ...' % fname.split('/')[-1])
 
     # read data record
@@ -92,7 +92,7 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
     if verbose:
         print(dataAll[:, 3].min()/3600.0, dataAll[:, 3].max()/3600.0)
-        print('#\----------------------------------------------------------------------------/#')
+        print('#\\----------------------------------------------------------------------------//#')
 
     return dataAll
 
