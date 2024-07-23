@@ -52,7 +52,7 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
 
-_fdir_hsk_   = 'data/arcsix/2024-Summer/p3/aux/hsk'
+_fdir_hsk_   = 'data/arcsix/2024/p3/aux/hsk'
 _fdir_cal_   = 'data/%s/cal' % _mission_
 
 _fdir_data_  = 'data/%s' % _mission_
@@ -989,7 +989,7 @@ def cdata_arcsix_spns_archive(
         principal_investigator_info = 'Chen, Hong',
         affiliation_info = 'University of Colorado Boulder',
         instrument_info = 'SPN-S (Sunshine Pyranometer - Spectral)',
-        mission_info = 'ARCSIX 2024 (Spring)',
+        mission_info = 'ARCSIX 2024',
         project_info = '',
         file_format_index = '1001',
         file_volume_number = '1, 1',
@@ -1046,7 +1046,7 @@ def cdata_arcsix_spns_archive(
             'LLOD_FLAG': '-8888',
             'LLOD_VALUE': 'N/A',
             'DM_CONTACT_INFO': 'N/A',
-            'PROJECT_INFO': 'ARCSIX field experiment (Spring deployment) out of Pituffik, Greenland, May - June 2024',
+            'PROJECT_INFO': 'ARCSIX field experiment out of Pituffik, Greenland, May - August 2024',
             'STIPULATIONS_ON_USE': 'This is initial in-field release of the ARCSIX-2024 data set. Please consult the PI, both for updates to the data set, and for the proper and most recent interpretation of the data for specific science use.',
             'OTHER_COMMENTS': 'Minimal corrections were applied.\n',
             'REVISION': version,
@@ -1653,7 +1653,7 @@ def cdata_arcsix_ssfr_archive(
         principal_investigator_info = 'Chen, Hong',
         affiliation_info = 'University of Colorado Boulder',
         instrument_info = 'SSFR-A (Solar Spectral Flux Radiometer - Alvin)',
-        mission_info = 'ARCSIX 2024 (Spring)',
+        mission_info = 'ARCSIX 2024',
         project_info = '',
         file_format_index = '1001',
         file_volume_number = '1, 1',
@@ -1725,7 +1725,7 @@ def cdata_arcsix_ssfr_archive(
             'LLOD_FLAG': '-8888',
             'LLOD_VALUE': 'N/A',
             'DM_CONTACT_INFO': 'N/A',
-            'PROJECT_INFO': 'ARCSIX field experiment (Spring deployment) out of Pituffik, Greenland, May - June 2024',
+            'PROJECT_INFO': 'ARCSIX field experiment out of Pituffik, Greenland, May - August 2024',
             'STIPULATIONS_ON_USE': 'This is initial in-field release of the ARCSIX-2024 data set. Please consult the PI, both for updates to the data set, and for the proper and most recent interpretation of the data for specific science use.',
             'OTHER_COMMENTS': 'Minimal corrections were applied.\n',
             'REVISION': version,
