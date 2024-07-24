@@ -15,7 +15,7 @@ from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 # import cartopy.crs as ccrs
-# mpl.use('Agg')
+mpl.use('Agg')
 
 import ssfr
 
@@ -325,14 +325,15 @@ def field_lamp_150e_consis_check_20240329(int_si=120):
 
 
 def field_calibration_check(
-        ssfr_tag='ssfr-a',
+        ssfr_tag='ssfr-b',
         lc_tag='zen',
         int_time={'si':80.0, 'in':250.0},
         ):
 
 
     tag = '%s|%s|si-%3.3d|in-%3.3d' % (ssfr_tag, lc_tag, int_time['si'], int_time['in'])
-    fnames = sorted(glob.glob('../examples/data/arcsix/cal/rad-cal/*pituffik*%s*.h5' % tag))
+    # fnames = sorted(glob.glob('../examples/data/arcsix/cal/rad-cal/*pituffik*%s*.h5' % tag))
+    fnames = sorted(glob.glob('../examples/*pituffik*%s*.h5' % tag))
 
     # colors = plt.cm.jet(np.linspace(0.0, 1.0, len(fnames)))
 
@@ -365,14 +366,15 @@ def field_calibration_check(
         else:
             ax1.set_ylim((0, 600))
         plt.legend(fontsize=12)
-        fig.suptitle('Field Calibration (%s|%s|%s|%s)' % (ssfr_tag.upper(), lc_tag.upper(), tags[-2].upper(), tags[-1].upper()), fontsize=24)
+        # fig.suptitle('Field Calibration (%s|%s|%s|%s)' % (ssfr_tag.upper(), lc_tag.upper(), tags[-2].upper(), tags[-1].upper()), fontsize=24)
 
 
         # save figure
         #/--------------------------------------------------------------\#
         fig.subplots_adjust(hspace=0.3, wspace=0.3)
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag, lc_tag, tags[-2], tags[-1]), bbox_inches='tight', metadata=_metadata)
+        # fig.savefig('%s_%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag, lc_tag, tags[-2], tags[-1]), bbox_inches='tight', metadata=_metadata)
+        fig.savefig('%s_%s_%s.png' % (_metadata['Function'], ssfr_tag, lc_tag), bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 

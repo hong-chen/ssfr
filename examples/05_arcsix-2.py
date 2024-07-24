@@ -326,7 +326,7 @@ def rad_cal(
 
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
 
-    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames_pri)
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames_pri, verbose=False)
 
     for i in range(ssfr_.Ndset):
         dset_tag = 'dset%d' % i
@@ -2540,6 +2540,6 @@ if __name__ == '__main__':
         # main_process_data_archive(date, run=True)
         # sys.exit()
         #\--------------------------------------------------------------/#
-    #\----------------------------------------------------------------------------/#
 
-    pass
+        pass
+    #\----------------------------------------------------------------------------/#

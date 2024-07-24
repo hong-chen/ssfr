@@ -169,7 +169,32 @@ def cal_rad_resp(
     # read raw data
     #/----------------------------------------------------------------------------\#
     try:
-        ssfr0 = ssfr_toolbox.read_ssfr(fnames)
+        ssfr0 = ssfr_toolbox.read_ssfr(fnames, verbose=False)
+
+        # integration time fallback
+        # in case the data does not contain measurement with given integration time
+        # /------------------------------------------------------------\ #
+        int_time_si_diff = np.zeros(ssfr0.Ndset, dtype=np.float64)
+        int_time_in_diff = np.zeros(ssfr0.Ndset, dtype=np.float64)
+        for idset, dset_tag in enumerate(ssfr0.dset_info.keys()):
+            int_time_si_diff[idset] = (ssfr0.dset_info[dset_tag][si_tag]-int_time[si_tag])
+            int_time_in_diff[idset] = (ssfr0.dset_info[dset_tag][in_tag]-int_time[in_tag])
+
+        idset_si = np.argmin(np.abs(int_time_si_diff))
+        idset_in = np.argmin(np.abs(int_time_in_diff))
+
+        if int_time_si_diff[idset_si] != 0.0:
+            int_time_si_new = int_time_si_diff[idset_si]+int_time[si_tag]
+            msg = '\nWarnings [cal_rad_resp]: Cannot find given integration time for <%s=%dms>, fallback to <%s=%dms>' % (si_tag, int_time[si_tag], si_tag, int_time_si_new)
+            warnings.warn(msg)
+            int_time[si_tag] = int_time_si_new
+
+        if int_time_in_diff[idset_in] != 0.0:
+            int_time_in_new = int_time_in_diff[idset_in]+int_time[in_tag]
+            msg = '\nWarnings [cal_rad_resp]: Cannot find given integration time for <%s=%dms>, fallback to <%s=%dms>' % (in_tag, int_time[in_tag], in_tag, int_time_in_new)
+            warnings.warn(msg)
+            int_time[in_tag] = int_time_in_new
+        # \------------------------------------------------------------/ #
 
         logic_si = (np.abs(ssfr0.data_raw['int_time'][:, index_si]-int_time[si_tag])<0.00001)
         logic_in = (np.abs(ssfr0.data_raw['int_time'][:, index_in]-int_time[in_tag])<0.00001)
