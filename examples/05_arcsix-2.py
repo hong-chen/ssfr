@@ -52,7 +52,7 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
 
-_which_ssfr_for_flux_ = 'ssfr-a'
+_which_ssfr_for_flux_ = 'ssfr-b'
 
 _fdir_hsk_   = 'data/arcsix/2024/p3/aux/hsk'
 _fdir_cal_   = 'data/%s/cal' % _mission_
@@ -2355,12 +2355,12 @@ def main_process_data_v0(date, run=True):
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
-    # fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_spns_v0' % date_s], fdir_data=_fdir_hsk_,
-    #         fdir_out=fdir_out, run=run)
+    fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_spns_v0' % date_s], fdir_data=_fdir_hsk_,
+            fdir_out=fdir_out, run=run)
 
     # * preferred, use P3 housekeeping file, ict > iwg > mts
-    fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=run)
+    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+    #         fdir_out=fdir_out, run=run)
 
     _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
     #\----------------------------------------------------------------------------/#
@@ -2490,8 +2490,8 @@ if __name__ == '__main__':
 
     # process field calibration
     #/----------------------------------------------------------------------------\#
-    main_calibration_rad()
-    sys.exit()
+    # main_calibration_rad()
+    # sys.exit()
     #\----------------------------------------------------------------------------/#
 
     # process field data
@@ -2499,15 +2499,16 @@ if __name__ == '__main__':
     dates = [
              # datetime.datetime(2024, 7, 8), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
              # datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
-             datetime.datetime(2024, 7, 22), # ARCSIX-2 transit from WFF to Pituffik, noticed TEC2 (SSFR-A nadir) issue, operator - Ken Hirata
+             # datetime.datetime(2024, 7, 22), # ARCSIX-2 transit from WFF to Pituffik, noticed TEC2 (SSFR-A nadir) issue, operator - Ken Hirata, Vikas Nataraja
+             datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11, cancelled due to weather conditions, data from ground, operator - Arabella Chamberlain, Ken Hirata
             ]
 
     for date in dates[::-1]:
 
         # step 1
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 2
@@ -2519,9 +2520,9 @@ if __name__ == '__main__':
 
         # step 3
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 4
