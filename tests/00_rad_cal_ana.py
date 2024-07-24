@@ -362,9 +362,9 @@ def field_calibration_check(
         ax1.set_ylabel('Irradiance [$W m^{-2} nm^{-1}$]')
         ax1.set_xlim((200, 2400))
         if lc_tag == 'zen':
-            ax1.set_ylim((0, 300))
-        else:
             ax1.set_ylim((0, 600))
+        else:
+            ax1.set_ylim((0, 800))
         plt.legend(fontsize=12)
         # fig.suptitle('Field Calibration (%s|%s|%s|%s)' % (ssfr_tag.upper(), lc_tag.upper(), tags[-2].upper(), tags[-1].upper()), fontsize=24)
 
