@@ -391,7 +391,7 @@ def main_calibration_rad():
         data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri
         data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri
 
-        data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350
+        data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350
         data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350
 
         data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350
@@ -416,6 +416,7 @@ def main_calibration_rad():
 
         data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
         data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
+        data/arcsix/cal/rad-cal/2024-07-23_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
 
     fdirs = [
             {'zen': '',
@@ -484,7 +485,7 @@ def main_calibration_rad():
 
     fdirs_tra = [
             {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
-             'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350'},
+             'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350'},
             ]
 
     fdirs_sec = [
@@ -1641,11 +1642,14 @@ def cdata_arcsix_ssfr_v2(
 
 
         # select calibration file for attitude correction
+        # angular response is relative change, thus irrelavant to integration time (ideally)
+        # and is intrinsic property of light collector, thus fixed to use SSFR-A with larger
+        # integration time for consistency and simplicity, will revisit this after mission
         #/----------------------------------------------------------------------------\#
         dset_s = 'dset1'
         fdir_cal = '%s/ang-cal' % _fdir_cal_
-        fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*zen*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
-        fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*nad*' % (dset_s, which_ssfr.lower())), key=os.path.getmtime)[-1]
+        fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*zen*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
+        fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*nad*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
         #\----------------------------------------------------------------------------/#
 
 
