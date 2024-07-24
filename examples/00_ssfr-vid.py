@@ -826,8 +826,8 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        interval=19,
-        # interval=5,
+        # interval=19,
+        interval=5,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -884,7 +884,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
             # datetime.datetime(2024, 7, 8), # test data at NASA WFF
             # datetime.datetime(2024, 7, 9), # test data at NASA WFF
-            datetime.datetime(2024, 7, 22), # transit flight from WFF to Pituffik
+            # datetime.datetime(2024, 7, 22), # transit flight from WFF to Pituffik
+            datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11 (cancelled)
         ]
 
     for date in dates[::-1]:
