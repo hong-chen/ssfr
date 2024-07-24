@@ -2360,12 +2360,12 @@ def main_process_data_v0(date, run=True):
 
     # SPNS v0: raw data
     #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _spns_))
-    # fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
-    #         fdir_out=fdir_out, run=run)
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _spns_))
+    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
+    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
+    _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
     #\----------------------------------------------------------------------------/#
 
 
@@ -2400,10 +2400,10 @@ def main_process_data_v1(date, run=True):
 
     # SPNS v1: time synced with hsk time with time offset applied
     #/----------------------------------------------------------------------------\#
-    # fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
-    #         fdir_out=fdir_out, run=run)
+    fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
 
-    # _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
+    _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
     #\----------------------------------------------------------------------------/#
 
     # SSFR-A v1: time synced with hsk time with time offset applied
