@@ -416,6 +416,11 @@ def main_calibration_rad():
 
         data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
         data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
+
+    fdirs = [
+            {'zen': '',
+             'nad': ''},
+            ]
     """
 
     # radiometric calibration
@@ -446,6 +451,9 @@ def main_calibration_rad():
     #     print(fdir_sec_cal)
     #\----------------------------------------------------------------------------/#
 
+
+    # SSFR-A (regular setup for measuring irradiance)
+    # /--------------------------------------------------------------------------\ #
     fdirs_pri = [
             {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
              'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
@@ -455,6 +463,7 @@ def main_calibration_rad():
             {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
              'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
             ]
+
     fdirs_sec = [
             # {'zen': 'data/arcsix/cal/rad-cal/2024-05-27_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
             #  'nad': 'data/arcsix/cal/rad-cal/2024-05-26_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
@@ -463,6 +472,28 @@ def main_calibration_rad():
             {'zen': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
              'nad': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
             ]
+    # \--------------------------------------------------------------------------/ #
+
+
+    # SSFR-B (backup setup for measuring irradiance)
+    # /--------------------------------------------------------------------------\ #
+    fdirs_pri = [
+            {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+             'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+            ]
+
+    fdirs_tra = [
+            {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
+             'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350'},
+            ]
+
+    fdirs_sec = [
+            {'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+             'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+            {'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+             'nad': 'data/arcsix/cal/rad-cal/2024-07-23_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+            ]
+    # \--------------------------------------------------------------------------/ #
 
     for fdir_pri in fdirs_pri:
         for fdir_tra in fdirs_tra:
@@ -2455,8 +2486,8 @@ if __name__ == '__main__':
 
     # process field calibration
     #/----------------------------------------------------------------------------\#
-    # main_calibration_rad()
-    # sys.exit()
+    main_calibration_rad()
+    sys.exit()
     #\----------------------------------------------------------------------------/#
 
     # process field data
@@ -2484,9 +2515,9 @@ if __name__ == '__main__':
 
         # step 3
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        main_process_data_v1(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 4
@@ -2499,11 +2530,11 @@ if __name__ == '__main__':
 
         # step 5
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=False)
-        main_process_data_archive(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
