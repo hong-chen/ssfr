@@ -549,78 +549,80 @@ def cdata_arcsix_hsk_v0(
 
         # this would change if we are processing IWG file
         #/--------------------------------------------------------------\#
-        # try:
-        #     # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
-        #     # data_hsk = ssfr.util.read_iwg_nsrc(fname)
-        #     # var_dict = {
-        #     #         'tmhr': 'tmhr',
-        #     #         'lon': 'longitude',
-        #     #         'lat': 'latitude',
-        #     #         'alt': 'gps_alt_msl',
-        #     #         'ang_pit': 'pitch_angle',
-        #     #         'ang_rol': 'roll_angle',
-        #     #         'ang_hed': 'true_heading',
-        #     #         }
+        try:
+            # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
+            # data_hsk = ssfr.util.read_iwg_nsrc(fname)
+            # var_dict = {
+            #         'tmhr': 'tmhr',
+            #         'lon': 'longitude',
+            #         'lat': 'latitude',
+            #         'alt': 'gps_alt_msl',
+            #         'ang_pit': 'pitch_angle',
+            #         'ang_rol': 'roll_angle',
+            #         'ang_hed': 'true_heading',
+            #         }
 
-        #     fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
-        #     data_hsk = ssfr.util.read_ict(fname)
-        #     var_dict = {
-        #             'lon': 'longitude',
-        #             'lat': 'latitude',
-        #             'alt': 'gps_altitude',
-        #             'tmhr': 'tmhr',
-        #             'ang_pit': 'pitch_angle',
-        #             'ang_rol': 'roll_angle',
-        #             'ang_hed': 'true_heading',
-        #             'ir_surf_temp': 'ir_surf_temp',
-        #             }
-        # except Exception as error:
-        #     print(error)
-        #     fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.mts' % (date.year, date.month, date.day))[0]
-        #     data_hsk = ssfr.util.read_iwg_mts(fname)
-        #     var_dict = {
-        #             'tmhr': 'tmhr',
-        #             'lon': 'longitude',
-        #             'lat': 'latitude',
-        #             'alt': 'gps_msl_altitude',
-        #             'ang_pit': 'pitch',
-        #             'ang_rol': 'roll',
-        #             'ang_hed': 'true_heading',
-        #             }
+            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
+            data_hsk = ssfr.util.read_ict(fname)
+            var_dict = {
+                    'lon': 'longitude',
+                    'lat': 'latitude',
+                    'alt': 'gps_altitude',
+                    'tmhr': 'tmhr',
+                    'ang_pit': 'pitch_angle',
+                    'ang_rol': 'roll_angle',
+                    'ang_hed': 'true_heading',
+                    'ir_surf_temp': 'ir_surf_temp',
+                    }
 
-        # print()
-        # print('Processing HSK file:', fname)
-        # print()
+        except Exception as error:
+            print(error)
+            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.mts' % (date.year, date.month, date.day))[0]
+            data_hsk = ssfr.util.read_iwg_mts(fname)
+            var_dict = {
+                    'tmhr': 'tmhr',
+                    'lon': 'longitude',
+                    'lat': 'latitude',
+                    'alt': 'gps_msl_altitude',
+                    'ang_pit': 'pitch',
+                    'ang_rol': 'roll',
+                    'ang_hed': 'true_heading',
+                    }
+
+        print()
+        print('Processing HSK file:', fname)
+        print()
         #\--------------------------------------------------------------/#
+
 
         # fake hsk for PSB (Pituffik Space Base)
         #/----------------------------------------------------------------------------\#
-        tmhr_range = [10.0, 13.5]
-        tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
-        lon0 = -68.6471 # PSB longitude
-        lat0 = 76.5324  # PSB latitude
-        alt0 =  4.0     # airplane altitude
-        pit0 = 0.0
-        rol0 = 0.0
-        hed0 = 0.0
-        data_hsk = {
-                'tmhr': {'data': tmhr, 'units': 'hour'},
-                'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
-                'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
-                'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
-                'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
-                'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
-                'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
-                }
-        var_dict = {
-                'lon': 'long',
-                'lat': 'lat',
-                'alt': 'palt',
-                'tmhr': 'tmhr',
-                'ang_pit': 'pitch',
-                'ang_rol': 'roll',
-                'ang_hed': 'heading',
-                }
+        # tmhr_range = [10.0, 13.5]
+        # tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
+        # lon0 = -68.6471 # PSB longitude
+        # lat0 = 76.5324  # PSB latitude
+        # alt0 =  4.0     # airplane altitude
+        # pit0 = 0.0
+        # rol0 = 0.0
+        # hed0 = 0.0
+        # data_hsk = {
+        #         'tmhr': {'data': tmhr, 'units': 'hour'},
+        #         'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
+        #         'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
+        #         'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
+        #         'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
+        #         'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
+        #         'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
+        #         }
+        # var_dict = {
+        #         'lon': 'long',
+        #         'lat': 'lat',
+        #         'alt': 'palt',
+        #         'tmhr': 'tmhr',
+        #         'ang_pit': 'pitch',
+        #         'ang_rol': 'roll',
+        #         'ang_hed': 'heading',
+        #         }
         #\----------------------------------------------------------------------------/#
 
 
@@ -2345,10 +2347,13 @@ def main_process_data_v0(date, run=True):
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr1_))
     fdir_data_ssfr1 = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_ssfr1_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr1,
-            which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_ssfr1_v0' % date_s] = fname_ssfr1_v0
+    fnames_ssfr1 = ssfr.util.get_all_files(fdir_data_ssfr1, pattern='*.SKS')
+    if run and len(fnames_ssfr1) == 0:
+        pass
+    else:
+        fname_ssfr1_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr1,
+                which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
+        _fnames_['%s_ssfr1_v0' % date_s] = fname_ssfr1_v0
     #\----------------------------------------------------------------------------/#
 
 
@@ -2356,10 +2361,13 @@ def main_process_data_v0(date, run=True):
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr2_))
     fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
-            which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
+    fnames_ssfr2 = ssfr.util.get_all_files(fdir_data_ssfr2, pattern='*.SKS')
+    if run and len(fnames_ssfr2) == 0:
+        pass
+    else:
+        fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
+                which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
+        _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
     #\----------------------------------------------------------------------------/#
 
 
@@ -2367,10 +2375,13 @@ def main_process_data_v0(date, run=True):
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
     fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
-            fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
+    fnames_alp = ssfr.util.get_all_files(fdir_data_alp, pattern='*.plt3')
+    if run and len(fnames_alp) == 0:
+        pass
+    else:
+        fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
+                fdir_out=fdir_out, run=run)
+        _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
     #\----------------------------------------------------------------------------/#
 
 
@@ -2378,24 +2389,28 @@ def main_process_data_v0(date, run=True):
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _spns_))
     fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
-    fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
-            fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
+    fnames_spns = ssfr.util.get_all_files(fdir_data_spns, pattern='*.txt')
+    if run and len(fnames_spns) == 0:
+        pass
+    else:
+        fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
+                fdir_out=fdir_out, run=run)
+        _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
     #\----------------------------------------------------------------------------/#
 
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
-    # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
-    fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_spns_v0' % date_s], fdir_data=_fdir_hsk_,
-            fdir_out=fdir_out, run=run)
-
-    # * preferred, use P3 housekeeping file, ict > iwg > mts
-    # fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-    #         fdir_out=fdir_out, run=run)
-
-    _fnames_['%s_hsk_v0' % date_s]   = fname_hsk_v0
+    fnames_hsk = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))
+    if run and len(fnames_hsk) == 0:
+        # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
+        fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], fdir_data=_fdir_hsk_,
+                fdir_out=fdir_out, run=run)
+    else:
+        # * preferred, use P3 housekeeping file, ict > iwg > mts
+        fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+                fdir_out=fdir_out, run=run)
+    _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     #\----------------------------------------------------------------------------/#
 
 def main_process_data_v1(date, run=True):
@@ -2523,8 +2538,8 @@ if __name__ == '__main__':
 
     # process field calibration
     #/----------------------------------------------------------------------------\#
-    main_calibration_rad()
-    sys.exit()
+    # main_calibration_rad()
+    # sys.exit()
     #\----------------------------------------------------------------------------/#
 
     # process field data
@@ -2533,16 +2548,17 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 8), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
              # datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
              # datetime.datetime(2024, 7, 22), # ARCSIX-2 transit from WFF to Pituffik, noticed TEC2 (SSFR-A nadir) issue, operator - Ken Hirata, Vikas Nataraja
-             # datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11, cancelled due to weather conditions, data from ground, operator - Arabella Chamberlain, Ken Hirata
-             datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11, cancelled due to weather condition, data from ground, operator - Arabella Chamberlain, Ken Hirata
+             # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
             ]
 
     for date in dates[::-1]:
 
         # step 1
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 2
