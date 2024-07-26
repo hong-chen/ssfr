@@ -941,6 +941,7 @@ def plot_video_frame_arcsix(statements, test=False):
             img_sat1 = img_sat1[index_ys:index_ye, index_xs:index_xe, :]
             ax_map0.imshow(img_sat1, extent=extent_sat1, aspect='auto', zorder=1)
 
+            # plus minus one to avoid white padding from imshow
             ax_map0.set_xlim([x_current-dx*(extend_Nx-1), x_current+dx*(extend_Nx-1)])
             ax_map0.set_ylim([y_current+dy*(extend_Ny-1), y_current-dy*(extend_Ny-1)])
 
