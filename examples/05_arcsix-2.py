@@ -1557,6 +1557,17 @@ def cdata_arcsix_ssfr_v2(
 
         data_ssfr_v1 = ssfr.util.load_h5(fname_ssfr_v1)
 
+        # temporary fix to bypass the attitude correction for SSFR-B
+        # /--------------------------------------------------------------------------\ #
+        if data_ssfr_v1['zen/wvl'].size > 424:
+            data_ssfr_v1['zen/toa0'] = data_ssfr_v1['zen/toa0'][:424]
+            data_ssfr_v1['zen/wvl'] = data_ssfr_v1['zen/wvl'][:424]
+            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][:, :424]
+            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][:, :424]
+            data_ssfr_v1['v0/spec_zen'] = data_ssfr_v1['v0/spec_zen'][:, :424]
+            data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:424]
+        # \--------------------------------------------------------------------------/ #
+
         fname_aux = '%s/%s-%s_%s_%s_v2-aux.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), _platform_.upper(), date_s)
 
         if run_aux:
