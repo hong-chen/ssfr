@@ -162,7 +162,7 @@ class read_alp:
             tmhrRef -= 24.0
 
         index_lon = 5
-        lon = dataAll[:, index_lon]; lon[lon<0.0] += 360.0
+        lon = dataAll[:, index_lon]
         index_lat = 6
         lat = dataAll[:, index_lat]
         # logic = (lon>0.0) & (lon<360.0) & (lat>-90.0) & (lat<90.0) & (tmhr>0.0)
