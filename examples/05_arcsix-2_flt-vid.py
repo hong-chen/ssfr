@@ -173,7 +173,7 @@ _date_specs_ = {
             },
 
         '20240725': {
-            'tmhr_range': [10.00, 19.00],
+            'tmhr_range': [11.40, 19.00],
            'description': 'ARCSIX Science Flight #11',
        'cam_time_offset': 0.0,
             },
@@ -722,13 +722,13 @@ def plot_video_frame_arcsix(statements, test=False):
     #/----------------------------------------------------------------------------\#
     vars_plot = OrderedDict()
 
-    vars_plot['SSFR-A↑']   = {
+    vars_plot['SSFR↑']   = {
             'vname':'f-up_ssfr',
             'color':'red',
             'vname_wvl':'wvl_ssfr1_nad',
             'zorder': 17,
             }
-    vars_plot['SSFR-A↓']   = {
+    vars_plot['SSFR↓']   = {
             'vname':'f-down_ssfr',
             'color':'blue',
             'vname_wvl':'wvl_ssfr1_zen',
@@ -1413,6 +1413,7 @@ def main_pre_arcsix(
     lon    = f_hsk['lon'][...]
     lat    = f_hsk['lat'][...]
     alt    = f_hsk['alt'][...]
+    lon[lon>=180.0] -= 360.0
 
     hsk_keys = [key for key in f_hsk.keys()]
 
@@ -1789,7 +1790,7 @@ if __name__ == '__main__':
 
         #/----------------------------------------------------------------------------\#
         # post_process_sat_img_vn(date)
-        # main_pre_arcsix(date)
+        main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
