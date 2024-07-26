@@ -1140,7 +1140,7 @@ def plot_video_frame_arcsix(statements, test=False):
 
         title_map = '%s at %s UTC' % (flt_img0['id_sat0'][index_pnt], ssfr.util.jday_to_dtime(flt_img0['jday_sat0'][index_pnt]).strftime('%H:%M'))
         time_diff = np.abs(flt_img0['jday_sat0'][index_pnt]-jday_current)*86400.0
-        if time_diff > 301.0:
+        if time_diff > 300.0:
             ax_map.set_title(title_map, color='gray')
         else:
             ax_map.set_title(title_map)
@@ -1166,7 +1166,7 @@ def plot_video_frame_arcsix(statements, test=False):
     if has_sat1:
         title_map0 = 'False Color 367'
         time_diff = np.abs(flt_img0['jday_sat1'][index_pnt]-jday_current)*86400.0
-        if time_diff > 301.0:
+        if time_diff > 300.0:
             ax_map0.set_title(title_map0, color='gray')
         else:
             ax_map0.set_title(title_map0)
@@ -1186,7 +1186,7 @@ def plot_video_frame_arcsix(statements, test=False):
 
         title_img = 'Camera at %s UTC' % (dtime_cam.strftime('%H:%M:%S'))
         time_diff = np.abs(jday_current-jday_cam)*86400.0
-        if time_diff > 301.0:
+        if time_diff > 300.0:
             ax_img.set_title(title_img, color='gray')
         else:
             ax_img.set_title(title_img)
