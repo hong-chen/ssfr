@@ -332,8 +332,7 @@ def field_calibration_check(
 
 
     tag = '%s|%s|si-%3.3d|in-%3.3d' % (ssfr_tag, lc_tag, int_time['si'], int_time['in'])
-    # fnames = sorted(glob.glob('../examples/data/arcsix/cal/rad-cal/*pituffik*%s*.h5' % tag))
-    fnames = sorted(glob.glob('../examples/*pituffik*%s*.h5' % tag))
+    fnames = sorted(glob.glob('../examples/data/arcsix/cal/rad-cal/*pituffik*%s*.h5' % tag))
 
     # colors = plt.cm.jet(np.linspace(0.0, 1.0, len(fnames)))
 
