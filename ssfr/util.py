@@ -54,13 +54,7 @@ def get_all_files(fdir, pattern='*'):
 
 def get_all_folders(fdir, pattern='*'):
 
-    fnames = get_all_files(fdir)
-
-    folders = []
-    for fname in fnames:
-        folder_tmp = os.path.abspath(os.path.dirname(os.path.relpath(fname)))
-        if (folder_tmp not in folders) and fnmatch.fnmatch(folder_tmp, pattern):
-                folders.append(folder_tmp)
+    folders = [os.path.abspath(fdir0[0]) for fdir0 in os.walk(fdir) if fnmatch.fnmatch(fdir0[0], pattern)]
 
     return folders
 

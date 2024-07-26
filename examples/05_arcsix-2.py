@@ -2387,7 +2387,7 @@ def main_process_data_v0(date, run=True):
 
     # SPNS v0: raw data
     #/----------------------------------------------------------------------------\#
-    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _spns_))
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s*' % (date.year, date.month, date.day, _spns_))
     fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
     fnames_spns = ssfr.util.get_all_files(fdir_data_spns, pattern='*.txt')
     if run and len(fnames_spns) == 0:
@@ -2401,7 +2401,7 @@ def main_process_data_v0(date, run=True):
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
-    fnames_hsk = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))
+    fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))
     if run and len(fnames_hsk) == 0:
         # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
         fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], fdir_data=_fdir_hsk_,
