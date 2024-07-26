@@ -944,7 +944,7 @@ def plot_video_frame_arcsix(statements, test=False):
             ax_map0.set_xlim([x_current-dx*(extend_Nx-1), x_current+dx*(extend_Nx-1)])
             ax_map0.set_ylim([y_current+dy*(extend_Ny-1), y_current-dy*(extend_Ny-1)])
 
-            img_sat0[index_ys+1:index_ye-1, index_xs+1:index_xe-1, :] = img_sat1[index_ys+1:index_ye-1, index_xs+1:index_xe-1, :]
+            img_sat0[index_ys+1:index_ye-1, index_xs+1:index_xe-1, :] = img_sat1[1:-1, 1:-1, :]
 
         ax_map.imshow(img_sat0, extent=flt_img0['extent_sat0'], aspect='auto', zorder=0)
 
