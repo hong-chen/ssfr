@@ -71,6 +71,7 @@ _alp_time_offset_ = {
         '20240722':   -17.85,
         '20240724':   -17.85,
         '20240725':   -17.89,
+        '20240726':   -17.89,
         }
 _spns_time_offset_ = {
         '20240708': 0.0,
@@ -78,6 +79,7 @@ _spns_time_offset_ = {
         '20240722': 0.0,
         '20240724': 0.0,
         '20240725': 0.0,
+        '20240726': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240708': -196.06,
@@ -85,6 +87,7 @@ _ssfr1_time_offset_ = {
         '20240722': -196.06,
         '20240724': -196.06,
         '20240725': -299.86,
+        '20240726': -299.86,
         }
 _ssfr2_time_offset_ = {
         '20240708': -273.59,
@@ -92,6 +95,7 @@ _ssfr2_time_offset_ = {
         '20240722': -273.59,
         '20240724': -273.59, #? inaccurate
         '20240725': -397.91,
+        '20240726': -397.91,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -687,7 +691,6 @@ def cdata_arcsix_hsk_v0(
 def cdata_arcsix_hsk_from_alp_v0(
         date,
         fname_alp_v0,
-        fname_spns_v0,
         fdir_data=_fdir_data_,
         fdir_out=_fdir_out_,
         run=True,
@@ -708,10 +711,15 @@ def cdata_arcsix_hsk_from_alp_v0(
     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
     if run:
         data_alp = ssfr.util.load_h5(fname_alp_v0)
-        data_spns = ssfr.util.load_h5(fname_spns_v0)
+        seconds_s = np.round(np.quantile(data_alp['tmhr'], 0.1)*3600.0, decimals=0)
+        seconds_e = np.round(np.quantile(data_alp['tmhr'], 0.99)*3600.0, decimals=0)
+        tmhr = (np.arange(seconds_s, seconds_e+1.0, 1.0) + _alp_time_offset_[date_s]) / 3600.0
 
         data_hsk = {}
-        data_hsk['tmhr'] = {'data': data_spns['tot/tmhr']}
+        data_hsk['tmhr'] = {'data': tmhr}
+
+        jday0 = ssfr.util.dtime_to_jday(date)
+        jday  = jday0 + data_hsk['tmhr']['data']/24.0
 
         var_dict = {
                 'lon': 'lon',
@@ -722,13 +730,10 @@ def cdata_arcsix_hsk_from_alp_v0(
                 'ang_hed': 'ang_hed',
                 }
 
-        jday0 = ssfr.util.dtime_to_jday(date)
-        jday  = jday0 + data_hsk['tmhr']['data']/24.0
-
         for vname in var_dict.keys():
 
             data_hsk[vname] = {
-                    'data': ssfr.util.interp(jday, data_alp['jday'], data_alp[var_dict[vname]], mode='linear')
+                    'data': ssfr.util.interp(jday, data_alp['jday']+_alp_time_offset_[date_s]/86400.0, data_alp[var_dict[vname]], mode='linear')
                     }
 
         # solar geometries
@@ -2347,36 +2352,6 @@ def main_process_data_v0(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-
-    # # ALP v0: raw data
-    # #/----------------------------------------------------------------------------\#
-    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
-    # fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
-    # fnames_alp = ssfr.util.get_all_files(fdir_data_alp, pattern='*.plt3')
-    # if run and len(fnames_alp) == 0:
-    #     pass
-    # else:
-    #     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
-    #             fdir_out=fdir_out, run=run)
-    #     _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
-    # #\----------------------------------------------------------------------------/#
-
-
-    # # HSK v0: raw data
-    # #/----------------------------------------------------------------------------\#
-    # fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))
-    # if run and len(fnames_hsk) == 0:
-    #     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
-    #     fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], fdir_data=_fdir_hsk_,
-    #             fdir_out=fdir_out, run=run)
-    # else:
-    #     # * preferred, use P3 housekeeping file, ict > iwg > mts
-    #     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-    #             fdir_out=fdir_out, run=run)
-    # _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    # #\----------------------------------------------------------------------------/#
-    # sys.exit()
-
     # SSFR-A v0: raw data
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr1_))
@@ -2583,16 +2558,16 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
              # datetime.datetime(2024, 7, 22), # ARCSIX-2 transit from WFF to Pituffik, noticed TEC2 (SSFR-A nadir) issue, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11, cancelled due to weather condition, data from ground, operator - Arabella Chamberlain, Ken Hirata
-             datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
+             # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
             ]
 
     for date in dates[::-1]:
 
         # step 1
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 2
