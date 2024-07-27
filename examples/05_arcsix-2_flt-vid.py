@@ -1781,10 +1781,10 @@ if __name__ == '__main__':
             datetime.datetime(2024, 6,  6), # [✓] ARCSIX science flight #6; cloud wall
             datetime.datetime(2024, 6,  7), # [✓] ARCSIX science flight #7; cloud wall
             datetime.datetime(2024, 6, 10), # [✓] ARCSIX science flight #8; cloud wall
-            datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
-            datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
+            # datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
+            # datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
             # datetime.datetime(2024, 7, 22), # [✓] ARCSIX transit flight #3
-            # datetime.datetime(2024, 7, 25), # [✓] ARCSIX science flight # 11; cloud wall
+            datetime.datetime(2024, 7, 25), # [✓] ARCSIX science flight # 11; cloud wall
         ]
 
     for date in dates[::-1]:
@@ -1792,7 +1792,7 @@ if __name__ == '__main__':
 
         #/----------------------------------------------------------------------------\#
         # post_process_sat_img_vn(date)
-        # main_pre_arcsix(date)
+        main_pre_arcsix(date)
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
