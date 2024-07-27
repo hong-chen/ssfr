@@ -711,8 +711,10 @@ def cdata_arcsix_hsk_from_alp_v0(
     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
     if run:
         data_alp = ssfr.util.load_h5(fname_alp_v0)
-        seconds_s = np.round(np.quantile(data_alp['tmhr'], 0.1)*3600.0, decimals=0)
-        seconds_e = np.round(np.quantile(data_alp['tmhr'], 0.99)*3600.0, decimals=0)
+
+        tmhr_ = data_alp['tmhr'][(data_alp['tmhr']>=0.0) & (data_alp['tmhr']<=48.0)]
+        seconds_s = np.round(np.quantile(tmhr_, 0.02)*3600.0, decimals=0)
+        seconds_e = np.round(np.quantile(tmhr_, 0.98)*3600.0, decimals=0)
         tmhr = (np.arange(seconds_s, seconds_e+1.0, 1.0) + _alp_time_offset_[date_s]) / 3600.0
 
         data_hsk = {}
