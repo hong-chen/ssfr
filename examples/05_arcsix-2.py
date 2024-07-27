@@ -550,30 +550,30 @@ def cdata_arcsix_hsk_v0(
         # this would change if we are processing IWG file
         #/--------------------------------------------------------------\#
         try:
-            # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
-            # data_hsk = ssfr.util.read_iwg_nsrc(fname)
-            # var_dict = {
-            #         'tmhr': 'tmhr',
-            #         'lon': 'longitude',
-            #         'lat': 'latitude',
-            #         'alt': 'gps_alt_msl',
-            #         'ang_pit': 'pitch_angle',
-            #         'ang_rol': 'roll_angle',
-            #         'ang_hed': 'true_heading',
-            #         }
-
-            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
-            data_hsk = ssfr.util.read_ict(fname)
+            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
+            data_hsk = ssfr.util.read_iwg_nsrc(fname)
             var_dict = {
+                    'tmhr': 'tmhr',
                     'lon': 'longitude',
                     'lat': 'latitude',
-                    'alt': 'gps_altitude',
-                    'tmhr': 'tmhr',
+                    'alt': 'gps_alt_msl',
                     'ang_pit': 'pitch_angle',
                     'ang_rol': 'roll_angle',
                     'ang_hed': 'true_heading',
-                    'ir_surf_temp': 'ir_surf_temp',
                     }
+
+            # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
+            # data_hsk = ssfr.util.read_ict(fname)
+            # var_dict = {
+            #         'lon': 'longitude',
+            #         'lat': 'latitude',
+            #         'alt': 'gps_altitude',
+            #         'tmhr': 'tmhr',
+            #         'ang_pit': 'pitch_angle',
+            #         'ang_rol': 'roll_angle',
+            #         'ang_hed': 'true_heading',
+            #         'ir_surf_temp': 'ir_surf_temp',
+            #         }
 
         except Exception as error:
             print(error)
@@ -2343,6 +2343,36 @@ def main_process_data_v0(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
+
+    # # ALP v0: raw data
+    # #/----------------------------------------------------------------------------\#
+    # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
+    # fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
+    # fnames_alp = ssfr.util.get_all_files(fdir_data_alp, pattern='*.plt3')
+    # if run and len(fnames_alp) == 0:
+    #     pass
+    # else:
+    #     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
+    #             fdir_out=fdir_out, run=run)
+    #     _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
+    # #\----------------------------------------------------------------------------/#
+
+
+    # # HSK v0: raw data
+    # #/----------------------------------------------------------------------------\#
+    # fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))
+    # if run and len(fnames_hsk) == 0:
+    #     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
+    #     fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], fdir_data=_fdir_hsk_,
+    #             fdir_out=fdir_out, run=run)
+    # else:
+    #     # * preferred, use P3 housekeeping file, ict > iwg > mts
+    #     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+    #             fdir_out=fdir_out, run=run)
+    # _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    # #\----------------------------------------------------------------------------/#
+    # sys.exit()
+
     # SSFR-A v0: raw data
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr1_))
@@ -2401,7 +2431,8 @@ def main_process_data_v0(date, run=True):
 
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
-    fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))
+    fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
+    print(fnames_hsk)
     if run and len(fnames_hsk) == 0:
         # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
         fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], fdir_data=_fdir_hsk_,
@@ -2549,23 +2580,23 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
              # datetime.datetime(2024, 7, 22), # ARCSIX-2 transit from WFF to Pituffik, noticed TEC2 (SSFR-A nadir) issue, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11, cancelled due to weather condition, data from ground, operator - Arabella Chamberlain, Ken Hirata
-             # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
+             datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
             ]
 
     for date in dates[::-1]:
 
         # step 1
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 2
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=False)
-        # run_time_offset_check(date)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        run_time_offset_check(date)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 3
