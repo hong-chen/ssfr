@@ -70,7 +70,7 @@ _alp_time_offset_ = {
         '20240709':   -17.85,
         '20240722':   -17.85,
         '20240724':   -17.85,
-        '20240725':   -17.85,
+        '20240725':   -17.89,
         }
 _spns_time_offset_ = {
         '20240708': 0.0,
@@ -84,14 +84,14 @@ _ssfr1_time_offset_ = {
         '20240709': -196.06,
         '20240722': -196.06,
         '20240724': -196.06,
-        '20240725': -196.06,
+        '20240725': -299.86,
         }
 _ssfr2_time_offset_ = {
         '20240708': -273.59,
         '20240709': -273.59,
         '20240722': -273.59,
-        '20240724': -273.59,
-        '20240725': -273.59,
+        '20240724': -273.59, #? inaccurate
+        '20240725': -397.91,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -1984,14 +1984,18 @@ def run_time_offset_check(date):
     data_hsk = ssfr.util.load_h5(_fnames_['%s_hsk_v0' % date_s])
     data_alp = ssfr.util.load_h5(_fnames_['%s_alp_v0' % date_s])
     data_spns_v0 = ssfr.util.load_h5(_fnames_['%s_spns_v0' % date_s])
-    data_ssfr1_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v0' % date_s])
-    data_ssfr2_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr2_v0' % date_s])
+    if _which_ssfr_for_flux_ == _ssfr1_:
+        data_ssfr1_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v0' % date_s])
+        data_ssfr2_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr2_v0' % date_s])
+    else:
+        data_ssfr1_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr2_v0' % date_s])
+        data_ssfr2_v0 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v0' % date_s])
 
     # data_spns_v0['tot/jday'] += 1.0
     # data_spns_v0['dif/jday'] += 1.0
 
     # _offset_x_range_ = [-6000.0, 6000.0]
-    _offset_x_range_ = [-300.0, 300.0]
+    _offset_x_range_ = [-600.0, 600.0]
 
     # ALP pitch vs HSK pitch
     #/----------------------------------------------------------------------------\#
@@ -2432,7 +2436,6 @@ def main_process_data_v0(date, run=True):
     # HSK v0: raw data
     #/----------------------------------------------------------------------------\#
     fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
-    print(fnames_hsk)
     if run and len(fnames_hsk) == 0:
         # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
         fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], fdir_data=_fdir_hsk_,
@@ -2594,16 +2597,16 @@ if __name__ == '__main__':
 
         # step 2
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        run_time_offset_check(date)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # run_time_offset_check(date)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 3
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        main_process_data_v1(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 4
