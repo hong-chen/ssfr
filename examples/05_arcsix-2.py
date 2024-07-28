@@ -554,6 +554,23 @@ def cdata_arcsix_hsk_v0(
         # this would change if we are processing IWG file
         #/--------------------------------------------------------------\#
         try:
+
+            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
+            data_hsk = ssfr.util.read_ict(fname)
+            var_dict = {
+                    'lon': 'longitude',
+                    'lat': 'latitude',
+                    'alt': 'gps_altitude',
+                    'tmhr': 'tmhr',
+                    'ang_pit': 'pitch_angle',
+                    'ang_rol': 'roll_angle',
+                    'ang_hed': 'true_heading',
+                    'ir_surf_temp': 'ir_surf_temp',
+                    }
+
+        except Exception as error:
+            print(error)
+
             fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
             data_hsk = ssfr.util.read_iwg_nsrc(fname)
             var_dict = {
@@ -566,32 +583,17 @@ def cdata_arcsix_hsk_v0(
                     'ang_hed': 'true_heading',
                     }
 
-            # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
-            # data_hsk = ssfr.util.read_ict(fname)
+            # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.mts' % (date.year, date.month, date.day))[0]
+            # data_hsk = ssfr.util.read_iwg_mts(fname)
             # var_dict = {
+            #         'tmhr': 'tmhr',
             #         'lon': 'longitude',
             #         'lat': 'latitude',
-            #         'alt': 'gps_altitude',
-            #         'tmhr': 'tmhr',
-            #         'ang_pit': 'pitch_angle',
-            #         'ang_rol': 'roll_angle',
+            #         'alt': 'gps_msl_altitude',
+            #         'ang_pit': 'pitch',
+            #         'ang_rol': 'roll',
             #         'ang_hed': 'true_heading',
-            #         'ir_surf_temp': 'ir_surf_temp',
             #         }
-
-        except Exception as error:
-            print(error)
-            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.mts' % (date.year, date.month, date.day))[0]
-            data_hsk = ssfr.util.read_iwg_mts(fname)
-            var_dict = {
-                    'tmhr': 'tmhr',
-                    'lon': 'longitude',
-                    'lat': 'latitude',
-                    'alt': 'gps_msl_altitude',
-                    'ang_pit': 'pitch',
-                    'ang_rol': 'roll',
-                    'ang_hed': 'true_heading',
-                    }
 
         print()
         print('Processing HSK file:', fname)
@@ -2353,6 +2355,22 @@ def main_process_data_v0(date, run=True):
         os.makedirs(fdir_out)
 
     date_s = date.strftime('%Y%m%d')
+
+
+    # # HSK v0: raw data
+    # #/----------------------------------------------------------------------------\#
+    # fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
+    # if run and len(fnames_hsk) == 0:
+    #     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
+    #     fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], fdir_data=_fdir_hsk_,
+    #             fdir_out=fdir_out, run=run)
+    # else:
+    #     # * preferred, use P3 housekeeping file, ict > iwg > mts
+    #     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+    #             fdir_out=fdir_out, run=run)
+    # _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    # #\----------------------------------------------------------------------------/#
+    # sys.exit()
 
 
     # SSFR-A v0: raw data
