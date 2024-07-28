@@ -2354,6 +2354,7 @@ def main_process_data_v0(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
+
     # SSFR-A v0: raw data
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr1_))
@@ -2596,11 +2597,11 @@ if __name__ == '__main__':
 
         # step 5
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=False)
-        main_process_data_archive(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         pass

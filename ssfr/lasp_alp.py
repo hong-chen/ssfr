@@ -78,8 +78,8 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
     f = open(fname, 'rb')
     if verbose:
-        print('#//----------------------------------------------------------------------------\\#')
-        print('Reading <%s> ...' % fname.split('/')[-1])
+        print('# /----------------------------------------------------------------------------\ #')
+        print('    Reading <%s> ...' % fname.split('/')[-1])
 
     # read data record
     for i in range(iterN):
@@ -92,7 +92,7 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
     if verbose:
         print(dataAll[:, 3].min()/3600.0, dataAll[:, 3].max()/3600.0)
-        print('#\\----------------------------------------------------------------------------//#')
+        print('# \----------------------------------------------------------------------------/ #')
 
     return dataAll
 
@@ -152,24 +152,23 @@ class read_alp:
 
         dataAll   = dataAll[:Nend, ...]
 
-        index_tmhr= 0
-        tmhr = (dataAll[:, index_tmhr] + time_offset) / 3600.0
-        tmhr_int = np.int_(tmhr)
-        tmhr_unique, counts = np.unique(tmhr_int[tmhr_int>0], return_counts=True)
-        tmhrRef = tmhr_unique[np.argmax(counts)]
-        while tmhrRef > 24.0:
-            tmhr    -= 24.0
-            tmhrRef -= 24.0
+        # retrieve time
+        # /--------------------------------------------------------------------------\ #
+        index_tmhr = 0
+
+        day = (dataAll[:, index_tmhr] + time_offset) / 86400.0
+        day_int = np.int_(day)
+        day_unique, counts = np.unique(day_int[day_int>0], return_counts=True)
+        dayRef = day_unique[np.argmax(counts)]
+        tmhr = (day-dayRef) * 24.0
+        # \--------------------------------------------------------------------------/ #
 
         index_lon = 5
         lon = dataAll[:, index_lon]
         index_lat = 6
         lat = dataAll[:, index_lat]
-        # logic = (lon>0.0) & (lon<360.0) & (lat>-90.0) & (lat<90.0) & (tmhr>0.0)
-        logic = np.repeat(True, tmhr.size)
-        dataAll   = dataAll[logic, :]
 
-        self.tmhr        = tmhr[logic]    # time in hour
+        self.tmhr        = tmhr[:]        # time in hour
         self.lon         = dataAll[:, 5]  # longitude
         self.lat         = dataAll[:, 6]  # latitude
         self.alt         = dataAll[:, 7]  # altitude
