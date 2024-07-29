@@ -978,7 +978,7 @@ def plot_video_frame_arcsix(statements, test=False):
         ax_nav.axhspan(-10.0, 0.0, lw=0.0, color='orange', zorder=0, alpha=0.3)
         ax_nav.axhspan(0.0,  10.0, lw=0.0, color='deepskyblue', zorder=0, alpha=0.3)
 
-        ax_nav.axvline(0.0, lw=0.5, color='gray', zorder=1)
+        ax_nav.plot([0.0, 0.0], [-6.5, 10.0], lw=0.5, color='gray', zorder=1)
         ax_nav.axhline(0.0, lw=0.5, color='gray', zorder=1)
 
         ang_pit0 = flt_trk0['ang_pit'][index_pnt]
