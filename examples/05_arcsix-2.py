@@ -2356,21 +2356,33 @@ def main_process_data_v0(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
+    # ALP v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
+    fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
+    fnames_alp = ssfr.util.get_all_files(fdir_data_alp, pattern='*.plt3')
+    if run and len(fnames_alp) == 0:
+        pass
+    else:
+        fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
+                fdir_out=fdir_out, run=run)
+        _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
+    #\----------------------------------------------------------------------------/#
 
-    # # HSK v0: raw data
-    # #/----------------------------------------------------------------------------\#
-    # fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
-    # if run and len(fnames_hsk) == 0:
-    #     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
-    #     fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], fdir_data=_fdir_hsk_,
-    #             fdir_out=fdir_out, run=run)
-    # else:
-    #     # * preferred, use P3 housekeeping file, ict > iwg > mts
-    #     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
-    #             fdir_out=fdir_out, run=run)
-    # _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    # #\----------------------------------------------------------------------------/#
-    # sys.exit()
+    # HSK v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
+    if run and len(fnames_hsk) == 0:
+        # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
+        fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _fnames_['%s_alp_v0' % date_s], fdir_data=_fdir_hsk_,
+                fdir_out=fdir_out, run=run)
+    else:
+        # * preferred, use P3 housekeeping file, ict > iwg > mts
+        fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+                fdir_out=fdir_out, run=run)
+    _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    #\----------------------------------------------------------------------------/#
+    sys.exit()
 
 
     # SSFR-A v0: raw data

@@ -78,7 +78,7 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
     f = open(fname, 'rb')
     if verbose:
-        print('# /----------------------------------------------------------------------------\ #')
+        print('# //--------------------------------------------------------------------------\\ #')
         print('    Reading <%s> ...' % fname.split('/')[-1])
 
     # read data record
@@ -92,7 +92,7 @@ def read_alp_raw(fname, vnames=None, dataLen=248, verbose=False):
 
     if verbose:
         print(dataAll[:, 3].min()/3600.0, dataAll[:, 3].max()/3600.0)
-        print('# \----------------------------------------------------------------------------/ #')
+        print('# \\--------------------------------------------------------------------------// #')
 
     return dataAll
 
@@ -117,26 +117,38 @@ class read_alp:
 
         self.verbose = verbose
 
-        vnames = ['GPS_Time',
-                  'Span_CPT_Pitch',
-                  'Span_CPT_Roll',
-                  'Motor_Pitch',
-                  'Motor_Roll',
-                  'Longitude',
-                  'Latitude',
-                  'Height',
-                  'ARINC_Pitch',
-                  'ARINC_Roll',
-                  'Inclinometer_Pitch',
-                  'Inclinometer_Roll']
-
-        Nx         = Ndata * len(fnames)
-        dataAll    = np.zeros((Nx, len(vnames)), dtype=np.float64)
-
         Nfile = len(fnames)
         if self.verbose:
-            msg = '\nMessage [read_alp]: Processing CU-LASP ALP files (Total of %d):' % (Nfile)
+            msg = '\nMessage [read_alp]: Processing %s files (Total of %d):' % (self.ID, Nfile)
             print(msg)
+
+
+        # variable names
+        # /--------------------------------------------------------------------------\ #
+        self.vnames_dict = {
+                  'GPS_Time': 'gps_time',  \
+            'Span_CPT_Pitch': 'ang_pit_s', \
+             'Span_CPT_Roll': 'ang_rol_s', \
+               'Motor_Pitch': 'ang_pit_m', \
+                'Motor_Roll': 'ang_rol_m', \
+                 'Longitude': 'lon', \
+                  'Latitude': 'lat', \
+                    'Height': 'alt', \
+               'ARINC_Pitch': 'ang_pit_a', \
+                'ARINC_Roll': 'ang_rol_a', \
+        'Inclinometer_Pitch': 'ang_pit_i', \
+         'Inclinometer_Roll': 'ang_rol_i', \
+         'Relative_Humidity': 'rh', \
+         }
+
+        self.vnames = list(self.vnames_dict.keys())
+        # \--------------------------------------------------------------------------/ #
+
+
+        # read raw data
+        # /--------------------------------------------------------------------------\ #
+        Nx         = Ndata * len(fnames)
+        dataAll    = np.zeros((Nx, len(self.vnames)), dtype=np.float64)
 
         Nstart = 0
         for i, fname in enumerate(fnames):
@@ -145,49 +157,44 @@ class read_alp:
                 msg = '    reading %3d/%3d <%s> ...' % (i+1, Nfile, fname)
                 print(msg)
 
-            dataAll0 = read_alp_raw(fname, vnames=vnames, dataLen=248, verbose=False)
+            dataAll0 = read_alp_raw(fname, vnames=self.vnames, dataLen=248, verbose=False)
             Nend = Nstart + dataAll0.shape[0]
             dataAll[Nstart:Nend, ...]  = dataAll0
             Nstart = Nend
 
         dataAll   = dataAll[:Nend, ...]
+        # \--------------------------------------------------------------------------/ #
 
-        # retrieve time
+
+        self.data_raw = {}
+        self.data_raw['info'] = {}
+        self.data_raw['info']['alp_tag'] = '%s' % (self.ID)
+        self.data_raw['info']['fnames']  = fnames
+
+        # retrieve time in hour (tmhr)
+        # notes: after starting the ALP system, the GPS will need to go through initialization,
+        #    during the initialization, the data of time, longitude, latitude etc. are bad values,
+        #    the following code is to retrieve correct time from data that contains bad values
         # /--------------------------------------------------------------------------\ #
-        index_tmhr = 0
-
-        day = (dataAll[:, index_tmhr] + time_offset) / 86400.0
+        day = (dataAll[:, self.vnames.index('GPS_Time')] + time_offset) / 86400.0
         day_int = np.int_(day)
         day_unique, counts = np.unique(day_int[day_int>0], return_counts=True)
         dayRef = day_unique[np.argmax(counts)]
         tmhr = (day-dayRef) * 24.0
         # \--------------------------------------------------------------------------/ #
+        self.data_raw['tmhr'] = tmhr # time in hour
 
-        index_lon = 5
-        lon = dataAll[:, index_lon]
-        index_lat = 6
-        lat = dataAll[:, index_lat]
+        for vname in self.vnames:
+            self.data_raw[self.vnames_dict[vname]] = dataAll[:, self.vnames.index(vname)]
 
-        self.tmhr        = tmhr[:]        # time in hour
-        self.lon         = dataAll[:, 5]  # longitude
-        self.lat         = dataAll[:, 6]  # latitude
-        self.alt         = dataAll[:, 7]  # altitude
-        self.ang_pit_a   = dataAll[:, 8]  # ARINC pitch angle
-        self.ang_rol_a   = dataAll[:, 9]  # ARINC roll angle
-        self.ang_pit_s   = dataAll[:, 1]  # SPAN CPT pitch angle
-        self.ang_rol_s   = dataAll[:, 2]  # SPAN CPT roll angle
-        self.ang_pit_m   = dataAll[:, 3]  # motor pitch angle
-        self.ang_rol_m   = dataAll[:, 4]  # motor roll angle
-        self.ang_pit_i   = dataAll[:, 10] # inclinometer pitch angle
-        self.ang_rol_i   = dataAll[:, 11] # inclinometer roll angle
+        self.data_raw['ang_hed'] = ssfr.util.cal_heading(self.data_raw['lon'], self.data_raw['lat'])
 
-        self.ang_hed     = ssfr.util.cal_heading(self.lon, self.lat)
         if date is not None:
-            self.jday = ssfr.util.dtime_to_jday(date) + self.tmhr/24.0
+            self.data_raw['jday'] = ssfr.util.dtime_to_jday(date) + self.data_raw['tmhr']/24.0
 
-        if self.verbose:
-            dtime_s0 = ssfr.util.jday_to_dtime(self.jday[0]).strftime('%Y-%m-%d %H:%M:%S')
-            dtime_e0 = ssfr.util.jday_to_dtime(self.jday[-1]).strftime('%Y-%m-%d %H:%M:%S')
+        if self.verbose and ('jday' in self.data_raw.keys()):
+            dtime_s0 = ssfr.util.jday_to_dtime(self.data_raw['jday'][0]).strftime('%Y-%m-%d %H:%M:%S')
+            dtime_e0 = ssfr.util.jday_to_dtime(self.data_raw['jday'][-1]).strftime('%Y-%m-%d %H:%M:%S')
             msg = '\nMessage [read_alp]: Data processing complete (%s to %s).' % (dtime_s0, dtime_e0)
             print(msg)
 
@@ -196,22 +203,9 @@ class read_alp:
 
         f = h5py.File(fname, 'w')
 
-        f['tmhr']      = self.tmhr
-        f['ang_hed']   = self.ang_hed
-        f['ang_pit_s'] = self.ang_pit_s
-        f['ang_rol_s'] = self.ang_rol_s
-        f['ang_pit_m'] = self.ang_pit_m
-        f['ang_rol_m'] = self.ang_rol_m
-        f['ang_pit_a'] = self.ang_pit_a
-        f['ang_rol_a'] = self.ang_rol_a
-        f['ang_pit_i'] = self.ang_pit_i
-        f['ang_rol_i'] = self.ang_rol_i
-        f['lon']       = self.lon
-        f['lat']       = self.lat
-        f['alt']       = self.alt
-
-        if hasattr(self, 'jday'):
-            f['jday'] = self.jday
+        for vname in self.data_raw.keys():
+            if vname not in ['info']:
+                f.create_dataset(vname, data=self.data_raw[vname], compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
 
