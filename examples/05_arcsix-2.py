@@ -47,7 +47,7 @@ _platform_    = 'p3b'
 
 _hsk_         = 'hsk'
 _alp_         = 'alp'
-_spns_        = 'spns-a'
+_spns_        = 'spns-b'
 _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
