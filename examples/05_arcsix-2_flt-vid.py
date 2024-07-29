@@ -992,8 +992,8 @@ def plot_video_frame_arcsix(statements, test=False):
 
         ax_nav.plot(x[15:-15], y0[15:-15], lw=1.0, color='red', zorder=1, alpha=0.6)
         ax_nav.scatter(x[50], y0[50], lw=0.0, s=40, c='red', zorder=1, alpha=0.6)
-        ax_nav.text(-5.0, 7.5, 'P:%4.1f$^\\circ$' % ang_pit0, ha='center', va='center', color='red', zorder=2, fontsize=8)
-        ax_nav.text( 5.0, 7.5, 'R:%4.1f$^\\circ$' % ang_rol0, ha='center', va='center', color='red', zorder=2, fontsize=8)
+        ax_nav.text(-8.0, 7.5, 'P:%4.1f$^\\circ$' % ang_pit0,  ha='left', va='center', color='red', zorder=2, fontsize=6)
+        ax_nav.text( 8.0, 7.5, 'R:%4.1f$^\\circ$' % ang_rol0, ha='right', va='center', color='red', zorder=2, fontsize=6)
 
         if has_att_corr:
 
@@ -1014,10 +1014,10 @@ def plot_video_frame_arcsix(statements, test=False):
 
             ax_nav.plot(x[25:-25], y1[25:-25], lw=2.0, color='green', zorder=2, alpha=0.7)
             if ~np.isnan(ang_pit_stage0) and ~np.isnan(ang_rol_stage0):
-                ax_nav.text(-5.0, -8.5, 'P:%4.1f$^\\circ$' % ang_pit_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
-                ax_nav.text( 5.0, -8.5, 'R:%4.1f$^\\circ$' % ang_rol_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
+                ax_nav.text(-8.0, -8.5, 'P:%4.1f$^\\circ$' % ang_pit_stage0,  ha='left', va='center', color='green', zorder=2, fontsize=6)
+                ax_nav.text( 8.0, -8.5, 'R:%4.1f$^\\circ$' % ang_rol_stage0, ha='right', va='center', color='green', zorder=2, fontsize=6)
 
-            ax_nav.text(0.0, -6.5, 'RH:%4.1f%%' % rel_hum0, ha='center', va='center', color='black', zorder=2, fontsize=6)
+            ax_nav.text(-8.0, -6.5, 'RH:%4.1f%%' % rel_hum0, ha='left', va='center', color='black', zorder=2, fontsize=6)
 
     for vname in vars_plot.keys():
 
@@ -1796,7 +1796,7 @@ if __name__ == '__main__':
 
         #/----------------------------------------------------------------------------\#
         # post_process_sat_img_vn(date)
-        main_pre_arcsix(date)
+        # main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
