@@ -5,6 +5,7 @@ import h5py
 import struct
 import fnmatch
 import pysolar
+from tqdm import tqdm
 from scipy import interpolate
 from collections import OrderedDict
 import xml.etree.ElementTree as ET
@@ -85,7 +86,7 @@ def cal_heading(lon, lat):
 
     return heading
 
-def cal_solar_angles(julian_day, longitude, latitude, altitude):
+def cal_solar_angles(julian_day, longitude, latitude, altitude, verbose=ssfr.common.karg['verbose']):
 
     dateRef = datetime.datetime(1, 1, 1)
     jdayRef = 1.0
@@ -93,7 +94,10 @@ def cal_solar_angles(julian_day, longitude, latitude, altitude):
     sza = np.zeros_like(julian_day)
     saa = np.zeros_like(julian_day)
 
-    for i in range(julian_day.size):
+    if verbose:
+        print('Message [cal_solar_angles]: Calculating solar zenith and azimuth angles (total of %d) ...' % sza.size)
+
+    for i in tqdm(range(julian_day.size)):
 
         jday = julian_day[i]
 
