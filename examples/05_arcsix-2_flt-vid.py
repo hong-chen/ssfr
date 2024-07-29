@@ -1004,6 +1004,7 @@ def plot_video_frame_arcsix(statements, test=False):
             ang_rol0 = flt_trk0['ang_rol_s'][index_pnt]
             ang_pit_m0 = flt_trk0['ang_pit_m'][index_pnt]
             ang_rol_m0 = flt_trk0['ang_rol_m'][index_pnt]
+            rel_hum0   = flt_trk0['rel_hum'][index_pnt]
 
             ang_pit_stage0 = ang_pit0-ang_pit_m0+ang_pit_offset
             ang_rol_stage0 = ang_rol0-ang_rol_m0+ang_rol_offset
@@ -1015,6 +1016,8 @@ def plot_video_frame_arcsix(statements, test=False):
             if ~np.isnan(ang_pit_stage0) and ~np.isnan(ang_rol_stage0):
                 ax_nav.text(-5.0, -8.5, 'P:%4.1f$^\\circ$' % ang_pit_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
                 ax_nav.text( 5.0, -8.5, 'R:%4.1f$^\\circ$' % ang_rol_stage0, ha='center', va='center', color='green', zorder=2, fontsize=8)
+
+            ax_nav.text(0.0, -8.5, 'RH:%4.1f%%' % rel_hum0, ha='center', va='center', color='black', zorder=2, fontsize=8)
 
     for vname in vars_plot.keys():
 
@@ -1479,6 +1482,7 @@ def main_pre_arcsix(
         ang_rol_s = f_alp['ang_rol_s'][...][logic0][::time_step]
         ang_pit_m = f_alp['ang_pit_m'][...][logic0][::time_step]
         ang_rol_m = f_alp['ang_rol_m'][...][logic0][::time_step]
+        rel_hum   = f_alp['rh'][...][logic0][::time_step]
         f_alp.close()
     #\--------------------------------------------------------------/#
 
@@ -1584,6 +1588,7 @@ def main_pre_arcsix(
         flt_trk['ang_rol_s'] = ang_rol_s[logic]
         flt_trk['ang_pit_m'] = ang_pit_m[logic]
         flt_trk['ang_rol_m'] = ang_rol_m[logic]
+        flt_trk['rel_hum']   = rel_hum[logic]
 
     if has_spns:
         flt_trk['f-down-total_spns']   = spns_tot_flux[logic, :]
@@ -1794,7 +1799,7 @@ if __name__ == '__main__':
         main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-        main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+        # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
         #\----------------------------------------------------------------------------/#
         pass
 
