@@ -1017,7 +1017,10 @@ def plot_video_frame_arcsix(statements, test=False):
                 ax_nav.text(-7.0, -8.5, 'P:%+4.1f$^\\circ$' % ang_pit_stage0, ha='center', va='center', color='green', zorder=2, fontsize=6)
                 ax_nav.text( 6.5, -8.5, 'R:%+4.1f$^\\circ$' % ang_rol_stage0, ha='center', va='center', color='green', zorder=2, fontsize=6)
 
-            ax_nav.text(0.0, -8.5, '%4.1f%%' % rel_hum0, ha='center', va='center', color='black', zorder=2, fontsize=6)
+            if rel_hum0 < 60.0:
+                ax_nav.text(0.0, -8.5, '%4.1f%%' % rel_hum0, ha='center', va='center', color='black', zorder=2, fontsize=6)
+            else:
+                ax_nav.text(0.0, -8.5, '%4.1f%%' % rel_hum0, ha='center', va='center', color='red', zorder=2, fontsize=6)
 
     for vname in vars_plot.keys():
 
