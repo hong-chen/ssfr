@@ -1434,8 +1434,6 @@ def main_pre_arcsix(
     lat    = f_hsk['lat'][...]
     alt    = f_hsk['alt'][...]
     lon[lon>=180.0] -= 360.0
-    print(jday)
-    print(tmhr)
 
     hsk_keys = [key for key in f_hsk.keys()]
 
