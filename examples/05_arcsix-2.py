@@ -73,6 +73,7 @@ _alp_time_offset_ = {
         '20240725':   -17.89,
         '20240726':   -17.89,
         '20240729':   -17.89,
+        '20240730':   -17.89,
         }
 _spns_time_offset_ = {
         '20240708': 0.0,
@@ -82,6 +83,7 @@ _spns_time_offset_ = {
         '20240725': 0.0,
         '20240726': 0.0,
         '20240729': 9.69,
+        '20240730': 9.69,
         }
 _ssfr1_time_offset_ = {
         '20240708': -196.06,
@@ -91,6 +93,7 @@ _ssfr1_time_offset_ = {
         '20240725': -299.86,
         '20240726': -299.86,
         '20240729': -299.86,
+        '20240730': -299.86,
         }
 _ssfr2_time_offset_ = {
         '20240708': -273.59,
@@ -100,6 +103,7 @@ _ssfr2_time_offset_ = {
         '20240725': -397.91,
         '20240726': -397.91,
         '20240729': -397.91,
+        '20240730': -397.91,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -2597,15 +2601,16 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11, cancelled due to weather condition, data from ground, operator - Arabella Chamberlain, Ken Hirata
              # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
              # datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
-             datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
+             # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
+             datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
             ]
 
     for date in dates[::-1]:
 
         # step 1
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 2
@@ -2632,11 +2637,11 @@ if __name__ == '__main__':
 
         # step 5
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=False)
-        main_process_data_archive(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         pass
