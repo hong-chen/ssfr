@@ -183,6 +183,12 @@ _date_specs_ = {
            'description': 'ARCSIX Science Flight #12',
        'cam_time_offset': 0.0,
             },
+
+        '20240730': {
+            'tmhr_range': [11.00, 20.00],
+           'description': 'ARCSIX Science Flight #13',
+       'cam_time_offset': 0.0,
+            },
         }
 
 
@@ -1804,14 +1810,15 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
             # datetime.datetime(2024, 7, 22), # [✓] ARCSIX transit flight #3
             # datetime.datetime(2024, 7, 25), # [✓] ARCSIX science flight # 11; cloud wall
-            datetime.datetime(2024, 7, 29), # [✓] ARCSIX science flight # 12; clear-sky BRDF
+            # datetime.datetime(2024, 7, 29), # [✓] ARCSIX science flight # 12; clear-sky BRDF
+            datetime.datetime(2024, 7, 30), # [✓] ARCSIX science flight # 13; clear-sky BRDF
         ]
 
     for date in dates[::-1]:
 
         #/----------------------------------------------------------------------------\#
-        # post_process_sat_img_vn(date)
-        # main_pre_arcsix(date)
+        post_process_sat_img_vn(date)
+        main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video

@@ -2622,9 +2622,9 @@ if __name__ == '__main__':
 
         # step 3
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 4
@@ -2637,11 +2637,11 @@ if __name__ == '__main__':
 
         # step 5
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=False)
-        # main_process_data_v2(date, run=False)
-        # main_process_data_archive(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        main_process_data_v1(date, run=False)
+        main_process_data_v2(date, run=False)
+        main_process_data_archive(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         pass
