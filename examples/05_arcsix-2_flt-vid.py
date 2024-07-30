@@ -998,8 +998,8 @@ def plot_video_frame_arcsix(statements, test=False):
 
         ax_nav.plot(x[15:-15], y0[15:-15], lw=1.0, color='red', zorder=1, alpha=0.6)
         ax_nav.scatter(x[50], y0[50], lw=0.0, s=40, c='red', zorder=1, alpha=0.6)
-        ax_nav.text(-9.5, 6.5, 'P:$%+4.1f^\\circ$' % ang_pit0, ha='left', va='bottom', color='red', zorder=2, fontsize=6)
-        ax_nav.text( 3.5, 6.5, 'R:$%+4.1f^\\circ$' % ang_rol0, ha='left', va='bottom', color='red', zorder=2, fontsize=6)
+        ax_nav.text(-9.5, 9.2, 'P:%+4.1f$^\\circ$' % ang_pit0, ha='left', va='top', color='red', zorder=2, fontsize=6)
+        ax_nav.text( 3.7, 9.2, 'R:%+4.1f$^\\circ$' % ang_rol0, ha='left', va='top', color='red', zorder=2, fontsize=6)
 
         if has_att_corr:
 
@@ -1020,8 +1020,8 @@ def plot_video_frame_arcsix(statements, test=False):
 
             ax_nav.plot(x[25:-25], y1[25:-25], lw=2.0, color='green', zorder=2, alpha=0.7)
             if ~np.isnan(ang_pit_stage0) and ~np.isnan(ang_rol_stage0):
-                ax_nav.text(-9.5, -9.8, 'P:$%+4.1f^\\circ$' % ang_pit_stage0, ha='left', va='bottom', color='green', zorder=2, fontsize=6)
-                ax_nav.text( 3.5, -9.8, 'R:$%+4.1f^\\circ$' % ang_rol_stage0, ha='left', va='bottom', color='green', zorder=2, fontsize=6)
+                ax_nav.text(-9.5, -9.8, 'P:%+4.1f$^\\circ$' % ang_pit_stage0, ha='left', va='bottom', color='green', zorder=2, fontsize=6)
+                ax_nav.text( 3.7, -9.8, 'R:%+4.1f$^\\circ$' % ang_rol_stage0, ha='left', va='bottom', color='green', zorder=2, fontsize=6)
 
             if rel_hum0 < 60.0:
                 ax_nav.text(0.0, -9.8, '%4.1f%%' % rel_hum0, ha='center', va='bottom', color='black', zorder=2, fontsize=6)
