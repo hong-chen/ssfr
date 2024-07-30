@@ -68,7 +68,7 @@ _platform_     = 'p3b'
 
 _hsk_          = 'hsk'
 _alp_          = 'alp'
-_spns_         = 'spns-a'
+_spns_         = 'spns-b'
 _ssfr1_        = 'ssfr-a'
 _ssfr2_        = 'ssfr-b'
 _cam_          = 'nac'
@@ -175,6 +175,12 @@ _date_specs_ = {
         '20240725': {
             'tmhr_range': [11.40, 19.00],
            'description': 'ARCSIX Science Flight #11',
+       'cam_time_offset': 0.0,
+            },
+
+        '20240729': {
+            'tmhr_range': [11.00, 20.00],
+           'description': 'ARCSIX Science Flight #12',
        'cam_time_offset': 0.0,
             },
         }
@@ -1422,6 +1428,8 @@ def main_pre_arcsix(
     lat    = f_hsk['lat'][...]
     alt    = f_hsk['alt'][...]
     lon[lon>=180.0] -= 360.0
+    print(jday)
+    print(tmhr)
 
     hsk_keys = [key for key in f_hsk.keys()]
 
@@ -1621,10 +1629,13 @@ def main_pre_arcsix(
     #/----------------------------------------------------------------------------\#
     fdirs = ssfr.util.get_all_folders(_fdir_cam_img_, pattern='*%4.4d*%2.2d*%2.2d*nac*jpg*' % (date.year, date.month, date.day))
     if len(fdirs) > 0:
-        has_cam = True
         fdir_cam0 = sorted(fdirs, key=os.path.getmtime)[-1]
         fnames_cam0 = sorted(glob.glob('%s/*.jpg' % (fdir_cam0)))
-        jday_cam0 = get_jday_cam_img(date, fnames_cam0) + _date_specs_[date_s]['cam_time_offset']/86400.0
+        if len(fnames_cam0) > 0:
+            has_cam = True
+            jday_cam0 = get_jday_cam_img(date, fnames_cam0) + _date_specs_[date_s]['cam_time_offset']/86400.0
+        else:
+            has_cam = False
     else:
         has_cam = False
     #\----------------------------------------------------------------------------/#
@@ -1792,14 +1803,15 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 6, 11), # [✓] ARCSIX science flight #9; cloud wall
             # datetime.datetime(2024, 6, 13), # [✓] ARCSIX science flight #10
             # datetime.datetime(2024, 7, 22), # [✓] ARCSIX transit flight #3
-            datetime.datetime(2024, 7, 25), # [✓] ARCSIX science flight # 11; cloud wall
+            # datetime.datetime(2024, 7, 25), # [✓] ARCSIX science flight # 11; cloud wall
+            datetime.datetime(2024, 7, 29), # [✓] ARCSIX science flight # 12; clear-sky BRDF
         ]
 
     for date in dates[::-1]:
 
         #/----------------------------------------------------------------------------\#
         # post_process_sat_img_vn(date)
-        # main_pre_arcsix(date)
+        main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video

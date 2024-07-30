@@ -72,6 +72,7 @@ _alp_time_offset_ = {
         '20240724':   -17.85,
         '20240725':   -17.89,
         '20240726':   -17.89,
+        '20240729':   -17.89,
         }
 _spns_time_offset_ = {
         '20240708': 0.0,
@@ -80,6 +81,7 @@ _spns_time_offset_ = {
         '20240724': 0.0,
         '20240725': 0.0,
         '20240726': 0.0,
+        '20240729': 9.69,
         }
 _ssfr1_time_offset_ = {
         '20240708': -196.06,
@@ -88,6 +90,7 @@ _ssfr1_time_offset_ = {
         '20240724': -196.06,
         '20240725': -299.86,
         '20240726': -299.86,
+        '20240729': -299.86,
         }
 _ssfr2_time_offset_ = {
         '20240708': -273.59,
@@ -96,6 +99,7 @@ _ssfr2_time_offset_ = {
         '20240724': -273.59, #? inaccurate
         '20240725': -397.91,
         '20240726': -397.91,
+        '20240729': -397.91,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -2600,8 +2604,8 @@ if __name__ == '__main__':
 
         # step 1
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 2
@@ -2628,11 +2632,11 @@ if __name__ == '__main__':
 
         # step 5
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=False)
-        # main_process_data_v2(date, run=False)
-        # main_process_data_archive(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        main_process_data_v1(date, run=False)
+        main_process_data_v2(date, run=False)
+        main_process_data_archive(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         pass
