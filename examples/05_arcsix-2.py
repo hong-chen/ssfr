@@ -73,7 +73,7 @@ _alp_time_offset_ = {
         '20240725':   -17.89,
         '20240726':   -17.89,
         '20240729':   -18.22,
-        '20240730':   -17.89,
+        '20240730':   -17.43,
         }
 _spns_time_offset_ = {
         '20240708': 0.0,
@@ -83,7 +83,7 @@ _spns_time_offset_ = {
         '20240725': 0.0,
         '20240726': 0.0,
         '20240729': 0.0,
-        '20240730': 9.69,
+        '20240730': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240708': -196.06,
@@ -93,7 +93,7 @@ _ssfr1_time_offset_ = {
         '20240725': -299.86,
         '20240726': -299.86,
         '20240729': -307.87,
-        '20240730': -299.86,
+        '20240730': -307.64,
         }
 _ssfr2_time_offset_ = {
         '20240708': -273.59,
@@ -103,7 +103,7 @@ _ssfr2_time_offset_ = {
         '20240725': -397.91,
         '20240726': -397.91,
         '20240729': -408.39,
-        '20240730': -397.91,
+        '20240730': -408.13,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -1845,6 +1845,7 @@ def cdata_arcsix_ssfr_archive(
     comments_special_dict = {
             '20240530': 'Noticed icing on zenith light collector dome after flight',
             '20240531': 'Encountered temperature control issue (after around 1:30 UTC)',
+            '20240730': 'Noticed icing inside zenith light collector dome after flight',
             }
     if date_s in comments_special_dict.keys():
         comments_special = comments_special_dict[date_s]
@@ -2463,6 +2464,26 @@ def main_process_data_v0(date, run=True):
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
     #\----------------------------------------------------------------------------/#
 
+def main_process_data_v0_metnav(date, run=True):
+
+    fdir_out = _fdir_out_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    date_s = date.strftime('%Y%m%d')
+
+    # HSK v0: raw data
+    #/----------------------------------------------------------------------------\#
+    fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
+    if run and len(fnames_hsk) == 0:
+        return
+    else:
+        # * preferred, use P3 housekeeping file, ict > iwg > mts
+        fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
+                fdir_out=fdir_out, run=run)
+    _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    #\----------------------------------------------------------------------------/#
+
 def main_process_data_v1(date, run=True):
 
     fdir_out = _fdir_out_
@@ -2601,8 +2622,8 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11, cancelled due to weather condition, data from ground, operator - Arabella Chamberlain, Ken Hirata
              # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
              # datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
-             datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
-             # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
+             # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
+             datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
             ]
 
     for date in dates[::-1]:
@@ -2610,6 +2631,7 @@ if __name__ == '__main__':
         # step 1
         #/--------------------------------------------------------------\#
         # main_process_data_v0(date, run=True)
+        # main_process_data_v0_metnav(date, run=True)
         # sys.exit()
         #\--------------------------------------------------------------/#
 
@@ -2633,7 +2655,7 @@ if __name__ == '__main__':
         # main_process_data_v1(date, run=False)
         # main_process_data_v2(date, run=True)
         # sys.exit()
-        #\--------------------------------------------------------------/#
+        # #\--------------------------------------------------------------/#
 
         # step 5
         #/--------------------------------------------------------------\#
