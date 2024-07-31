@@ -72,7 +72,7 @@ _alp_time_offset_ = {
         '20240724':   -17.85,
         '20240725':   -17.89,
         '20240726':   -17.89,
-        '20240729':   -17.89,
+        '20240729':   -18.22,
         '20240730':   -17.89,
         }
 _spns_time_offset_ = {
@@ -82,7 +82,7 @@ _spns_time_offset_ = {
         '20240724': 0.0,
         '20240725': 0.0,
         '20240726': 0.0,
-        '20240729': 9.69,
+        '20240729': 0.0,
         '20240730': 9.69,
         }
 _ssfr1_time_offset_ = {
@@ -92,7 +92,7 @@ _ssfr1_time_offset_ = {
         '20240724': -196.06,
         '20240725': -299.86,
         '20240726': -299.86,
-        '20240729': -299.86,
+        '20240729': -307.87,
         '20240730': -299.86,
         }
 _ssfr2_time_offset_ = {
@@ -102,7 +102,7 @@ _ssfr2_time_offset_ = {
         '20240724': -273.59, #? inaccurate
         '20240725': -397.91,
         '20240726': -397.91,
-        '20240729': -397.91,
+        '20240729': -408.39,
         '20240730': -397.91,
         }
 #\----------------------------------------------------------------------------/#
@@ -2601,8 +2601,8 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11, cancelled due to weather condition, data from ground, operator - Arabella Chamberlain, Ken Hirata
              # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
              # datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
-             # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
-             datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
+             datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
+             # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
             ]
 
     for date in dates[::-1]:
