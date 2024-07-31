@@ -857,7 +857,7 @@ def main_vid(
     statements = zip([flt_sim0]*indices_trk.size, indices_trk, indices_pnt, indices)
 
     fname_mp4 = '%s-%s-VID_%s_%s.mp4' % (_mission_.upper(), _ssfr_.upper(), _platform_.upper(), date_s)
-    with mp.Pool(processes=15) as pool:
+    with mp.Pool(processes=8) as pool:
         r = list(tqdm(pool.imap(plot_video_frame, statements), total=indices_trk.size))
 
     # make video

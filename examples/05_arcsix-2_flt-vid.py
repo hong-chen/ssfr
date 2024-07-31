@@ -61,7 +61,7 @@ import ssfr
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-_Ncpu_ = 12
+_Ncpu_ = 6
 
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
@@ -1815,8 +1815,8 @@ if __name__ == '__main__':
     for date in dates[::-1]:
 
         #/----------------------------------------------------------------------------\#
-        post_process_sat_img_vn(date)
-        main_pre_arcsix(date)
+        # post_process_sat_img_vn(date)
+        # main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
