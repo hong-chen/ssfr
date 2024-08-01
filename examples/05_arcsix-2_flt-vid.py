@@ -1029,10 +1029,11 @@ def plot_video_frame_arcsix(statements, test=False):
                 ax_nav.text(-9.5, -9.8, 'P:%+4.1f$^\\circ$' % ang_pit_stage0, ha='left', va='bottom', color='green', zorder=2, fontsize=6)
                 ax_nav.text( 3.7, -9.8, 'R:%+4.1f$^\\circ$' % ang_rol_stage0, ha='left', va='bottom', color='green', zorder=2, fontsize=6)
 
-            if rel_hum0 < 60.0:
-                ax_nav.text(0.0, -9.8, '%4.1f%%' % rel_hum0, ha='center', va='bottom', color='black', zorder=2, fontsize=6)
-            else:
-                ax_nav.text(0.0, -9.8, '%4.1f%%' % rel_hum0, ha='center', va='bottom', color='red', zorder=2, fontsize=6)
+            if ~np.isnan(rel_hum0):
+                if rel_hum0 < 60.0:
+                    ax_nav.text(0.0, -9.8, '%4.1f%%' % rel_hum0, ha='center', va='bottom', color='black', zorder=2, fontsize=6)
+                else:
+                    ax_nav.text(0.0, -9.8, '%4.1f%%' % rel_hum0, ha='center', va='bottom', color='red', zorder=2, fontsize=6)
 
     for vname in vars_plot.keys():
 
