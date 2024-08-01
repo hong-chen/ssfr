@@ -84,7 +84,7 @@ _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_sat_img_vn_ = 'data/%s/sat-img-vn' % _mission_
 _fdir_sat_img_hc_ = 'data/%s/sat-img-hc' % _mission_
 
-_fdir_tmp_graph_ = 'tmp-graph_flt-vid'
+_fdir_tmp_graph_ = 'tmp-graph_flt-vid_extra'
 
 
 _date_specs_ = {
