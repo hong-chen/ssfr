@@ -84,7 +84,7 @@ _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_sat_img_vn_ = 'data/%s/sat-img-vn' % _mission_
 _fdir_sat_img_hc_ = 'data/%s/sat-img-hc' % _mission_
 
-_fdir_tmp_graph_ = 'tmp-graph_flt-vid'
+_fdir_tmp_graph_ = 'tmp-graph_flt-vid_extra'
 
 
 _date_specs_ = {
@@ -1815,11 +1815,11 @@ if __name__ == '__main__':
     for date in dates[::-1]:
 
         #/----------------------------------------------------------------------------\#
-        post_process_sat_img_vn(date)
-        # main_pre_arcsix(date)
-        # main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
+        # post_process_sat_img_vn(date)
+        main_pre_arcsix(date)
+        main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-        # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+        main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
         #\----------------------------------------------------------------------------/#
         pass
 
