@@ -189,6 +189,12 @@ _date_specs_ = {
            'description': 'ARCSIX Science Flight #13',
        'cam_time_offset': 0.0,
             },
+
+        '20240801': {
+            'tmhr_range': [11.00, 20.00],
+           'description': 'ARCSIX Science Flight #14',
+       'cam_time_offset': 0.0,
+            },
         }
 
 
@@ -1818,7 +1824,7 @@ if __name__ == '__main__':
     for date in dates[::-1]:
 
         #/----------------------------------------------------------------------------\#
-        post_process_sat_img_vn(date)
+        # post_process_sat_img_vn(date)
         main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
