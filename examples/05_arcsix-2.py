@@ -75,6 +75,7 @@ _alp_time_offset_ = {
         '20240729':   -18.22,
         '20240730':   -17.43,
         '20240801':   -17.43,
+        '20240802':   -17.43,
         }
 _spns_time_offset_ = {
         '20240708': 0.0,
@@ -86,6 +87,7 @@ _spns_time_offset_ = {
         '20240729': 0.0,
         '20240730': 0.0,
         '20240801': 0.0,
+        '20240802': 0.0,
         }
 _ssfr1_time_offset_ = {
         '20240708': -196.06,
@@ -97,6 +99,7 @@ _ssfr1_time_offset_ = {
         '20240729': -307.87,
         '20240730': -307.64,
         '20240801': -307.64,
+        '20240802': -307.64,
         }
 _ssfr2_time_offset_ = {
         '20240708': -273.59,
@@ -108,6 +111,7 @@ _ssfr2_time_offset_ = {
         '20240729': -408.39,
         '20240730': -408.13,
         '20240801': -408.13,
+        '20240802': -408.13,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -2632,16 +2636,17 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
-             datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
+             # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
+             datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
             ]
 
     for date in dates[::-1]:
 
         # step 1
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=True)
-        # main_process_data_v0_metnav(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=True)
+        main_process_data_v0_metnav(date, run=True)
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 2
@@ -2668,11 +2673,11 @@ if __name__ == '__main__':
 
         # step 5
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=False)
-        main_process_data_archive(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         pass
