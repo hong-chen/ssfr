@@ -195,6 +195,12 @@ _date_specs_ = {
            'description': 'ARCSIX Science Flight #14',
        'cam_time_offset': 0.0,
             },
+
+        '20240802': {
+            'tmhr_range': [11.00, 20.00],
+           'description': 'ARCSIX Science Flight #15',
+       'cam_time_offset': 0.0,
+            },
         }
 
 
@@ -502,7 +508,6 @@ def process_sat_img_overlay(fnames_sat_, max_overlay=12):
         sat_tag = info[0].replace('TERRA', 'Terra').replace('AQUA', 'Aqua').replace('SUOMI', 'Suomi').replace('MODIS-', 'MODIS_').replace('VIIRS-', 'VIIRS_')
         img_tag = info[1]
         fname0_out = '%s/%s_%s_%s' % (_fdir_sat_img_hc_, img_tag, dtime_s, sat_tag)
-        # fname0_out = '%s/%s_%s_%s' % ('.', img_tag, dtime_s, sat_tag)
 
         try:
             img = mpl_img.imread(fname0)
@@ -1818,7 +1823,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 7, 25), # [✓] ARCSIX science flight # 11; cloud wall
             # datetime.datetime(2024, 7, 29), # [✓] ARCSIX science flight # 12; clear-sky BRDF
             # datetime.datetime(2024, 7, 30), # [✓] ARCSIX science flight # 13; clear-sky BRDF
-            datetime.datetime(2024, 8, 1), # [✓] ARCSIX science flight # 14; cloud walls
+            # datetime.datetime(2024, 8, 1), # [✓] ARCSIX science flight # 14; cloud walls
+            datetime.datetime(2024, 8, 2), # [✓] ARCSIX science flight # 14; cloud walls
         ]
 
     for date in dates[::-1]:
