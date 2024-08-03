@@ -61,7 +61,7 @@ import ssfr
 
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-_Ncpu_ = 6
+_Ncpu_ = 12
 
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
@@ -84,7 +84,7 @@ _fdir_data_ = 'data/%s/processed' % _mission_
 _fdir_sat_img_vn_ = 'data/%s/sat-img-vn' % _mission_
 _fdir_sat_img_hc_ = 'data/%s/sat-img-hc' % _mission_
 
-_fdir_tmp_graph_ = 'tmp-graph_flt-vid_extra'
+_fdir_tmp_graph_ = 'tmp-graph_flt-vid'
 
 
 _date_specs_ = {
@@ -1823,7 +1823,7 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 7, 25), # [✓] ARCSIX science flight # 11; cloud wall
             # datetime.datetime(2024, 7, 29), # [✓] ARCSIX science flight # 12; clear-sky BRDF
             # datetime.datetime(2024, 7, 30), # [✓] ARCSIX science flight # 13; clear-sky BRDF
-            # datetime.datetime(2024, 8, 1), # [✓] ARCSIX science flight # 14; cloud walls
+            datetime.datetime(2024, 8, 1), # [✓] ARCSIX science flight # 14; cloud walls
             datetime.datetime(2024, 8, 2), # [✓] ARCSIX science flight # 14; cloud walls
         ]
 
@@ -1834,7 +1834,7 @@ if __name__ == '__main__':
         main_pre_arcsix(date)
         main_vid_arcsix(date, wvl0=_wavelength_, interval=60) # make quickview video
         # main_vid_arcsix(date, wvl0=_wavelength_, interval=20) # make sharable video
-        # main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
+        main_vid_arcsix(date, wvl0=_wavelength_, interval=5)  # make complete video
         #\----------------------------------------------------------------------------/#
         pass
 

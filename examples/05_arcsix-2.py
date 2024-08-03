@@ -74,8 +74,8 @@ _alp_time_offset_ = {
         '20240726':   -17.89,
         '20240729':   -18.22,
         '20240730':   -17.43,
-        '20240801':   -17.43,
-        '20240802':   -17.43,
+        '20240801':   -17.74,
+        '20240802':   -17.97,
         }
 _spns_time_offset_ = {
         '20240708': 0.0,
@@ -98,8 +98,8 @@ _ssfr1_time_offset_ = {
         '20240726': -299.86,
         '20240729': -307.87,
         '20240730': -307.64,
-        '20240801': -307.64,
-        '20240802': -307.64,
+        '20240801': -315.90,
+        '20240802': -317.40,
         }
 _ssfr2_time_offset_ = {
         '20240708': -273.59,
@@ -110,8 +110,8 @@ _ssfr2_time_offset_ = {
         '20240726': -397.91,
         '20240729': -408.39,
         '20240730': -408.13,
-        '20240801': -408.13,
-        '20240802': -408.13,
+        '20240801': -416.93,
+        '20240802': -419.59,
         }
 #\----------------------------------------------------------------------------/#
 
@@ -1858,6 +1858,7 @@ def cdata_arcsix_ssfr_archive(
             '20240530': 'Noticed icing on zenith light collector dome after flight',
             '20240531': 'Encountered temperature control issue (after around 1:30 UTC)',
             '20240730': 'Noticed icing inside zenith light collector dome after flight',
+            '20240801': 'Noticed condensation inside zenith light collector dome before flight',
             }
     if date_s in comments_special_dict.keys():
         comments_special = comments_special_dict[date_s]
