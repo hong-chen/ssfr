@@ -54,8 +54,8 @@ import ssfr
 _mission_      = 'arcsix'
 _platform_     = 'p3b'
 
-# _ssfr_         = 'ssfr-a'
-_ssfr_         = 'ssfr-b'
+_ssfr_         = 'ssfr-a'
+# _ssfr_         = 'ssfr-b'
 
 _fdir_main_    = 'data/%s/ssfr-vid' % _mission_
 _wavelength_   = 555.0
@@ -826,8 +826,8 @@ def main_pre(
 def main_vid(
         date,
         wvl0=_wavelength_,
-        # interval=19,
-        interval=5,
+        interval=19,
+        # interval=5,
         ):
 
     date_s = date.strftime('%Y%m%d')
@@ -890,7 +890,8 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12 (cancelled)
             # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12
             # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13
-            datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14
+            # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14
+            datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15
         ]
 
     for date in dates[::-1]:
