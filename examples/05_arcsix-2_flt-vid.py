@@ -1824,7 +1824,7 @@ if __name__ == '__main__':
             # datetime.datetime(2024, 7, 29), # [✓] ARCSIX science flight # 12; clear-sky BRDF
             # datetime.datetime(2024, 7, 30), # [✓] ARCSIX science flight # 13; clear-sky BRDF
             datetime.datetime(2024, 8, 1), # [✓] ARCSIX science flight # 14; cloud walls
-            datetime.datetime(2024, 8, 2), # [✓] ARCSIX science flight # 14; cloud walls
+            # datetime.datetime(2024, 8, 2), # [✓] ARCSIX science flight # 14; cloud walls
         ]
 
     for date in dates[::-1]:
