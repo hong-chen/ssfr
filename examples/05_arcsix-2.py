@@ -2638,16 +2638,17 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
              # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
-             datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+             # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+             datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
             ]
 
     for date in dates[::-1]:
 
         # step 1
         #/--------------------------------------------------------------\#
-        # main_process_data_v0(date, run=True)
+        main_process_data_v0(date, run=True)
         # main_process_data_v0_metnav(date, run=True)
-        # sys.exit()
+        sys.exit()
         #\--------------------------------------------------------------/#
 
         # step 2
