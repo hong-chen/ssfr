@@ -30,8 +30,8 @@ from matplotlib.ticker import FixedLocator
 mpl.use('Agg')
 
 
-
 import ssfr
+
 
 _default_ssfr_   = 'ssfr-a'
 _file_extension_ = 'SKS'
