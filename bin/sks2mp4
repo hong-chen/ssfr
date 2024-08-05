@@ -248,7 +248,7 @@ def plot_video_frame(statements, test=False):
 
         if key in ['zen|si', 'nad|si']:
             ax_spec.set_ylabel('Digital Counts')
-            ax_spec.axvline(Nchan[key], color=var_plot_dc['color'], ls='--', lw=0.5)
+            ax_spec.axvline(Nchan[key], color=var_plot_dc['color'], ls='--', lw=1.0)
 
         if key in ['nad|si', 'nad|in']:
             ax_spec.set_xlabel('Channel Number')
@@ -269,7 +269,7 @@ def plot_video_frame(statements, test=False):
 
         if key in ['zen|in', 'nad|in']:
             ax_spec0.set_ylabel('Digital Counts', color='green', rotation=270, labelpad=18)
-            ax_spec.axvline(Nchan[key], color=var_plot_dc['color'], ls='--', lw=0.5)
+            ax_spec.axvline(Nchan[key], color=var_plot_dc['color'], ls='--', lw=1.0)
 
     patches_legend = [
                       mpatches.Patch(color='black' , label='Raw Counts'), \
@@ -290,19 +290,15 @@ def plot_video_frame(statements, test=False):
             var_plot0 = vars_plot['%s|%s|dc' % (key, key0)]
             ax_wvl0.fill_between(flt_trk0[var_plot0['vname_wvl']], 0.0, flt_trk0[var_plot0['vname']][index_pnt, :],
                     color=var_plot0['color'], lw=0.0,  alpha=0.3, zorder=5)
-            ax_wvl0.axvline(flt_trk0[var_plot0['vname_wvl']][Nchan['%s|%s' % (key, key0)]], color=var_plot0['color'], ls='--', lw=0.5)
+            ax_wvl0.axvline(flt_trk0[var_plot0['vname_wvl']][Nchan['%s|%s' % (key, key0)]], color=var_plot0['color'], ls='--', lw=1.0)
 
     ax_wvl.axvline(950.0, color='black', lw=1.0, alpha=1.0, zorder=1, ls=':')
     ax_wvl.axhline(0.0  , color='black', lw=1.0, alpha=1.0, zorder=1)
     ax_wvl.set_xlim((200, 2400))
     ax_wvl.xaxis.set_major_locator(FixedLocator(np.arange(200, 2401, 200)))
     ax_wvl.xaxis.set_minor_locator(FixedLocator(np.arange(0, 2401, 100)))
-    ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
-    ax_wvl.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 2.1, 0.1)))
     ax_wvl.set_xlabel('Wavelength [nm]')
-    ax_wvl.set_ylabel('Radiation')
 
-    ax_wvl.set_ylim((0, 2))
 
     if vars_plot['zen|spec']['plot?'] and vars_plot['nad|spec']['plot?']:
         patches_legend = [
@@ -311,6 +307,14 @@ def plot_video_frame(statements, test=False):
                          ]
         ax_wvl.legend(handles=patches_legend, loc='lower right', fontsize=12)
 
+        ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
+        ax_wvl.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 2.1, 0.1)))
+        ax_wvl.set_ylabel('Radiation')
+        ax_wvl.set_ylim((0, 2))
+
+    else:
+        ax_wvl.set_ylabel('N/A')
+        ax_wvl.get_yaxis().set_ticks([])
 
     ax_wvl0.set_ylim((0, count_ceil*2.0))
     ax_wvl0.yaxis.set_major_locator(FixedLocator(np.arange(-40000, 80001, 20000)))
@@ -328,8 +332,8 @@ def plot_video_frame(statements, test=False):
             2: {'name': 'Nad In T'  , 'units':'$^\\circ C$'},
             3: {'name': 'Plate T'   , 'units':'$^\\circ C$'},
             4: {'name': 'RH'        , 'units':'%'},
-            5: {'name': 'Zen In TEC', 'units':'$^\\circ C$'},
-            6: {'name': 'Nad In TEC', 'units':'$^\\circ C$'},
+            5: {'name': 'Zen In TEC1', 'units':'$^\\circ C$'},
+            6: {'name': 'Nad In TEC2', 'units':'$^\\circ C$'},
             7: {'name': 'Wvl Con T' , 'units':'$^\\circ C$'},
             8: {'name': 'N/A'       , 'units':''},
             9: {'name': 'cRIO T'    , 'units':'$^\\circ C$'},
