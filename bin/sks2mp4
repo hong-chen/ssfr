@@ -513,11 +513,11 @@ def main_pre(
     # reserved for radiance/irradiance if radiometric calibration is available
     #/--------------------------------------------------------------\#
     has_v1 = False
-    if has_v1:
-        data['zen_spec'] = zen_spec
-        data['nad_spec'] = nad_spec
-        data['zen_wvl']  = zen_wvl
-        data['nad_wvl']  = nad_wvl
+    if not has_v1:
+        data['zen_spec'] = ssfr0.data_spec['cnt_zen']/(np.nanmax(ssfr0.data_spec['cnt_zen'])-np.nanmin(ssfr0.data_spec['cnt_zen']))*2.0
+        data['nad_spec'] = ssfr0.data_spec['cnt_nad']/(np.nanmax(ssfr0.data_spec['cnt_nad'])-np.nanmin(ssfr0.data_spec['cnt_nad']))*2.0
+        data['zen_wvl']  = ssfr0.data_spec['wvl_zen']
+        data['nad_wvl']  = ssfr0.data_spec['wvl_nad']
     #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
