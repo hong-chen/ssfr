@@ -38,7 +38,7 @@ _file_extension_ = 'SKS'
 _fdir_out_       = './'
 _time_step_      = 1
 _wvl_step_       = 1
-_time_interval_  = 59
+_time_interval_  = 9
 _fdir_tmp_graph_ = './tmp-data'
 _Ncpu_ = 8
 
