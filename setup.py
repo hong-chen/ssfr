@@ -32,7 +32,7 @@ setup(
          'pysolar',
          ],
      python_requires = '~=3.9',
-     scripts = ['bin/sks2h5', 'bin/sks2txt', 'bin/fits2jpg'],
+     scripts = ['bin/sks2mp4', 'bin/fits2jpg'],
      include_package_data = True,
      zip_safe = False
      )
