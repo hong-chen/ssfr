@@ -514,8 +514,12 @@ def main_pre(
     #/--------------------------------------------------------------\#
     has_v1 = False
     if not has_v1:
-        data['zen_spec'] = ssfr0.data_spec['cnt_zen']/(np.nanmax(ssfr0.data_spec['cnt_zen'])-np.nanmin(ssfr0.data_spec['cnt_zen']))*2.0
-        data['nad_spec'] = ssfr0.data_spec['cnt_nad']/(np.nanmax(ssfr0.data_spec['cnt_nad'])-np.nanmin(ssfr0.data_spec['cnt_nad']))*2.0
+        data_zen = ssfr0.data_spec['cnt_zen'][::time_step, ::wvl_step]
+        data['zen_spec'] = data_zen/(np.nanmax(data_zen)-np.nanmin(data_zen))*2.0
+
+        data_nad = ssfr0.data_spec['cnt_nad'][::time_step, ::wvl_step]
+        data['nad_spec'] = data_nad/(np.nanmax(data_nad)-np.nanmin(data_nad))*2.0
+
         data['zen_wvl']  = ssfr0.data_spec['wvl_zen']
         data['nad_wvl']  = ssfr0.data_spec['wvl_nad']
     #\--------------------------------------------------------------/#
