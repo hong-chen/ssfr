@@ -526,6 +526,14 @@ def main_pre(
     #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
+    # reduce memory size
+    #/----------------------------------------------------------------------------\#
+    for key in _data_.keys():
+        if key not in ['jday', 'date_s', 'which_ssfr']:
+            _data_[key].astype(np.float16)
+    #\----------------------------------------------------------------------------/#
+
+
 def main_vid(
         fdir_tmp=_fdir_tmp_graph_,
         Ncpu=_Ncpu_,
@@ -546,6 +554,7 @@ def main_vid(
     # prepare statements for parallel processing
     #/----------------------------------------------------------------------------\#
     Ndata = _data_['jday'].size // time_interval
+
     statements = zip([_data_]*Ndata, np.arange(Ndata)*time_interval)
     #\----------------------------------------------------------------------------/#
 
