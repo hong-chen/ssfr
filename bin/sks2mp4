@@ -59,7 +59,7 @@ _data_ = {}
 def plot_video_frame(statements, test=False):
 
     # extract arguments
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     shared_data, unshared_data, index_pnt = statements
 
     data_plt = {}
@@ -71,11 +71,11 @@ def plot_video_frame(statements, test=False):
         data_plt[key] = unshared_data[key]
 
     vnames_trk = data_plt.keys()
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # general plot settings
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     vars_plot = OrderedDict()
 
     vars_plot['zen|si|raw']   = {
@@ -161,19 +161,19 @@ def plot_video_frame(statements, test=False):
             vars_plot[vname]['spectra?'] = True
         else:
             vars_plot[vname]['spectra?'] = False
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # params
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     count_base = -2**15
     count_ceil = 2**15
     dynamic_range = count_ceil-count_base
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # param settings
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     tmhr_current = data_plt['tmhr'][index_pnt]
     jday_current = data_plt['jday'][index_pnt]
     dtime_current = ssfr.util.jday_to_dtime(jday_current)
@@ -182,11 +182,11 @@ def plot_video_frame(statements, test=False):
 
     tmhr_length  = 0.1 # 6 minutes
     tmhr_past    = tmhr_current-tmhr_length
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # figure setup
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     rcParams['font.size'] = 12
     fig = plt.figure(figsize=(12, 12))
 
@@ -215,7 +215,7 @@ def plot_video_frame(statements, test=False):
     ax_tms  = fig.add_subplot(gs[14:, :])
 
     fig.subplots_adjust(hspace=100.0, wspace=5.0)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     axes_spec = {
@@ -304,7 +304,7 @@ def plot_video_frame(statements, test=False):
 
 
     # spectra plot setting
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     for key in ['zen', 'nad']:
         var_plot = vars_plot['%s|spec' % key]
         if var_plot['plot?']:
@@ -348,11 +348,11 @@ def plot_video_frame(statements, test=False):
     ax_wvl0.yaxis.set_minor_locator(FixedLocator(np.arange(-40000, 80001,  5000)))
     ax_wvl0.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True, useOffset=True)
     ax_wvl0.set_ylabel('Digital Counts', labelpad=18, rotation=270)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # temperature plot
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     temperatures = {
             0: {'name': 'Ambient T' , 'units':'$^\\circ C$'},
             1: {'name': 'Zen In T'  , 'units':'$^\\circ C$'},
@@ -393,11 +393,11 @@ def plot_video_frame(statements, test=False):
     ax_temp0.axis('off')
     ax_temp0_.tick_params(top=False, labeltop=False, left=False, labelleft=False, right=False, labelright=False, bottom=False, labelbottom=False)
     ax_temp0_.axis('off')
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # time series
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     logic_solid = (data_plt['tmhr']>=tmhr_past) & (data_plt['tmhr']<=tmhr_current)
 
     if logic_solid.sum() > 0:
@@ -445,14 +445,14 @@ def plot_video_frame(statements, test=False):
     ax_tms.set_ylim((count_base-5000, count_ceil+5000))
     ax_tms.set_ylabel('Digital Counts')
     ax_tms.ticklabel_format(axis='y', style='sci', scilimits=(0, 4), useMathText=True)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # figure settings
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     title_fig = '%s UTC (%s)' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'), data_plt['which_ssfr'].upper())
     fig.suptitle(title_fig, y=0.96, fontsize=20)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     ax.axis('off')
@@ -472,24 +472,24 @@ def main_vid(
         ):
 
     # create temporary directory to store images
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     job_tag = '%s_%s_quicklook-by-sks2mp4' % (_data_['date_s'], which_ssfr.upper())
     fdir_tmp = os.path.join(fdir_tmp, job_tag)
     if os.path.exists(fdir_tmp):
         os.system('rm -rf %s' % fdir_tmp)
     os.makedirs(fdir_tmp)
     _data_['fdir_tmp'] = fdir_tmp
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # prepare statements for parallel processing
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     Ndata = _data_['jday'].size // time_interval
     indices = np.arange(Ndata)*time_interval
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # create images
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     with SharedMemoryManager() as smm:
 
         shared_data = {}
@@ -513,17 +513,17 @@ def main_vid(
         statements = zip([shared_data]*Ndata, [unshared_data]*Ndata, indices)
         with mp.Pool(processes=Ncpu) as pool:
             r = list(tqdm(pool.imap(plot_video_frame, statements), total=Ndata))
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # make video
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_mp4 = '%s.mp4' % (job_tag)
     os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.jpg" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 10 -pix_fmt yuvj420p %s' % (fdir_tmp, fname_mp4))
     if _delete_tmp_:
         print('\nMessage [sks2mp4]: Press <y/n> to delete/keep temporary files (total of %s):' % (subprocess.check_output('du -hs %s' % fdir_tmp, shell=True, text=True).split('\t')[0]))
         os.system('rm -rf -I %s' % fdir_tmp)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main_pre(
         ssfr0,
@@ -533,18 +533,18 @@ def main_pre(
         ):
 
     # retrieve date from ssfr data object
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     jday = ssfr0.data_raw['jday'][::time_step]
     jday_unique, counts = np.unique(np.int_(jday[jday>0]), return_counts=True)
     jday0 = jday_unique[np.argmax(counts)]
     date = ssfr.util.jday_to_dtime(jday0)
 
     date_s = date.strftime('%Y%m%d')
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # retrieve other data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     tmhr = (jday-jday0)*24.0
 
     zen_si_wvl = ssfr0.data_raw['wvl_zen_si'][::wvl_step]
@@ -566,11 +566,11 @@ def main_pre(
     shutter = ssfr0.data_raw['shutter'][::time_step]
     shutter_dc = ssfr0.data_raw['shutter_dark-corr'][::time_step]
     temperature = ssfr0.data_raw['temp'][::time_step, :]
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # recreate a dictionary to contain ssfr data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     _data_['which_ssfr'] = which_ssfr.lower()
     _data_['date_s'] = date_s
     _data_['jday'] = jday
@@ -595,9 +595,11 @@ def main_pre(
     _data_['shutter']  = shutter
     _data_['shutter_dc']  = shutter_dc
     _data_['temperature'] = temperature
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
 
     # reserved for radiance/irradiance if radiometric calibration is available
-    #/--------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     wvl_zen  = ssfr0.data_spec['wvl_zen']
     wvl_nad  = ssfr0.data_spec['wvl_nad']
 
@@ -618,7 +620,7 @@ def main_pre(
         for idset in np.unique(ssfr0.data_raw['dset_num']):
 
             # zenith
-            #/--------------------------------------------------------------\#
+            #╭──────────────────────────────────────────────────────────────╮#
             int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 0], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 1])
             fnames_cal_zen = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*zen*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
             jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
@@ -631,10 +633,10 @@ def main_pre(
 
             msg = '\nMessage [sks2mp4]: Using <%s> for %s zenith flux ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
             print(msg)
-            #\--------------------------------------------------------------/#
+            #╰──────────────────────────────────────────────────────────────╯#
 
             # nadir
-            #/--------------------------------------------------------------\#
+            #╭──────────────────────────────────────────────────────────────╮#
             int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 2], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 3])
             fnames_cal_nad = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*nad*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
             jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
@@ -647,10 +649,10 @@ def main_pre(
 
             msg = '\nMessage [sks2mp4]: Using <%s> for %s nadir flux ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
             print(msg)
-            #\--------------------------------------------------------------/#
+            #╰──────────────────────────────────────────────────────────────╯#
 
             # convert counts to flux
-            #/----------------------------------------------------------------------------\#
+            #╭──────────────────────────────────────────────────────────────╮#
             logic_dset = (ssfr0.data_raw['dset_num'] == idset)
 
             for i in range(wvl_zen.size):
@@ -658,29 +660,29 @@ def main_pre(
 
             for i in range(wvl_nad.size):
                 data_nad[logic_dset, i] = data_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
-            #\----------------------------------------------------------------------------/#
+            #╰──────────────────────────────────────────────────────────────╯#
 
             # set saturation to negative values
-            #/--------------------------------------------------------------\#
+            #╭──────────────────────────────────────────────────────────────╮#
             data_zen[ssfr0.data_spec['sat_zen']==1] = -0.05
             data_nad[ssfr0.data_spec['sat_nad']==1] = -0.05
-            #\--------------------------------------------------------------/#
+            #╰──────────────────────────────────────────────────────────────╯#
 
     _data_['zen_wvl']  = wvl_zen[::wvl_step]
     _data_['nad_wvl']  = wvl_nad[::wvl_step]
     _data_['zen_spec'] = data_zen[::time_step, ::wvl_step].astype(np.float16)
     _data_['nad_spec'] = data_nad[::time_step, ::wvl_step].astype(np.float16)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # reduce memory size
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     for key in _data_.keys():
         if key not in ['jday', 'date_s', 'which_ssfr', 'is_flux']:
             if _data_[key].dtype in ['float64']:
                 _data_[key] = _data_[key].astype(np.float32)
             elif _data_[key].dtype in ['int64','int32', 'int16']:
                 _data_[key] = _data_[key].astype(np.int8)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main(
         fnames,
@@ -689,19 +691,19 @@ def main(
         ):
 
     # read in ssfr data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames, dark_corr_mode='interp', which_ssfr='lasp|%s' % which_ssfr.lower())
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # pre-process data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     main_pre(ssfr0, which_ssfr=which_ssfr)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # generate video
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     main_vid(which_ssfr=which_ssfr)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return
 
