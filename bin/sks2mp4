@@ -49,8 +49,7 @@ def plot_video_frame(statements, test=False):
 
     # extract arguments
     #/----------------------------------------------------------------------------\#
-    index_pnt = statements
-    flt_trk0 = _data_
+    flt_trk0, index_pnt = statements
     vnames_trk = flt_trk0.keys()
     #\----------------------------------------------------------------------------/#
 
@@ -547,7 +546,7 @@ def main_vid(
     # prepare statements for parallel processing
     #/----------------------------------------------------------------------------\#
     Ndata = _data_['jday'].size // time_interval
-    statements = np.arange(Ndata)*time_interval
+    statements = zip([_data_]*Ndata, np.arange(Ndata)*time_interval)
     #\----------------------------------------------------------------------------/#
 
     # create images
