@@ -21,7 +21,6 @@ import datetime
 import multiprocessing as mp
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing.managers import SharedMemoryManager
-# from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm import tqdm
 import numpy as np
 import matplotlib as mpl
@@ -46,7 +45,7 @@ _time_step_      = 1
 _wvl_step_       = 1
 _time_interval_  = 9
 _fdir_tmp_graph_ = './tmp-data'
-_Ncpu_ = 8
+_Ncpu_ = max(1, mp.cpu_count()-2)
 
 _data_ = {}
 
