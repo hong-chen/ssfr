@@ -530,9 +530,11 @@ def main_pre(
     #/----------------------------------------------------------------------------\#
     for key in _data_.keys():
         if key not in ['jday', 'date_s', 'which_ssfr']:
-            _data_[key].astype(np.float16)
+            if _data_[key].dtype == 'float64':
+                _data_[key] = _data_[key].astype(np.float32)
+            elif _data_[key].dtype == 'int32':
+                _data_[key] = _data_[key].astype(np.int16)
     #\----------------------------------------------------------------------------/#
-
 
 def main_vid(
         fdir_tmp=_fdir_tmp_graph_,
@@ -554,7 +556,6 @@ def main_vid(
     # prepare statements for parallel processing
     #/----------------------------------------------------------------------------\#
     Ndata = _data_['jday'].size // time_interval
-
     statements = zip([_data_]*Ndata, np.arange(Ndata)*time_interval)
     #\----------------------------------------------------------------------------/#
 
