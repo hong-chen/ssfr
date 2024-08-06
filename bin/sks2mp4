@@ -328,7 +328,10 @@ def plot_video_frame(statements, test=False):
 
         ax_wvl.yaxis.set_major_locator(FixedLocator(np.arange(0.0, 2.1, 0.5)))
         ax_wvl.yaxis.set_minor_locator(FixedLocator(np.arange(0.0, 2.1, 0.1)))
-        ax_wvl.set_ylabel('Radiation')
+        if data_plt['is_flux']:
+            ax_wvl.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
+        else:
+            ax_wvl.set_ylabel('Scaled Radiation')
         ax_wvl.set_ylim((0, 2))
 
     else:
@@ -587,26 +590,28 @@ def main_pre(
 
     # reserved for radiance/irradiance if radiometric calibration is available
     #/--------------------------------------------------------------\#
+    wvl_zen  = ssfr0.data_spec['wvl_zen']
+    wvl_nad  = ssfr0.data_spec['wvl_nad']
+
+    data_zen = ssfr0.data_spec['cnt_zen']
+    data_nad = ssfr0.data_spec['cnt_nad']
+
     if (which_ssfr != _default_ssfr_):
 
-        data_zen = ssfr0.data_spec['cnt_zen'][::time_step, ::wvl_step]
-        _data_['zen_spec'] = (data_zen/(np.nanmax(data_zen)-np.nanmin(data_zen))*2.0).astype(np.float16)
-
-        data_nad = ssfr0.data_spec['cnt_nad'][::time_step, ::wvl_step]
-        _data_['nad_spec'] = (data_nad/(np.nanmax(data_nad)-np.nanmin(data_nad))*2.0).astype(np.float16)
-
-        _data_['zen_wvl']  = ssfr0.data_spec['wvl_zen']
-        _data_['nad_wvl']  = ssfr0.data_spec['wvl_nad']
+        _data_['is_flux'] = False
+        data_zen = data_zen/(np.nanmax(data_zen)-np.nanmin(data_zen))*2.0
+        data_nad = data_nad/(np.nanmax(data_nad)-np.nanmin(data_nad))*2.0
 
     else:
 
+        _data_['is_flux'] = True
+
         for idset in np.unique(ssfr0.data_raw['dset_num']):
 
-            int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
-            int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
-
-            # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-            fnames_cal_zen = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
+            # zenith
+            #/--------------------------------------------------------------\#
+            int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 0], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 1])
+            fnames_cal_zen = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*lamp-1324|*lamp-150c*|*%s*zen*%s*' % (which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
             jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
             for i in range(jday_cal_zen.size):
                 dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
@@ -615,27 +620,53 @@ def main_pre(
             fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday0))]
             data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
-            msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using <%s> for %s zenith irradiance ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
+            msg = '\nMessage [sks2mp4]: Using <%s> for %s zenith flux ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
             print(msg)
+            #\--------------------------------------------------------------/#
 
-            # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-            fnames_cal_nad = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
+            # nadir
+            #/--------------------------------------------------------------\#
+            int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 2], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 3])
+            fnames_cal_nad = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*lamp-1324|*lamp-150c*|*%s*nad*%s*' % (which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
             jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
             for i in range(jday_cal_nad.size):
                 dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
                 dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
                 jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0)
-            fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
+            fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday0))]
             data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
 
-            msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using <%s> for %s nadir irradiance ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
+            msg = '\nMessage [sks2mp4]: Using <%s> for %s nadir flux ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
             print(msg)
+            #\--------------------------------------------------------------/#
+
+            # convert counts to flux
+            #/----------------------------------------------------------------------------\#
+            logic_dset = (ssfr0.data_raw['dset_num'] == idset)
+
+            for i in range(wvl_zen.size):
+                data_zen[logic_dset, i] = data_zen[logic_dset, i] / data_cal_zen['sec_resp'][i]
+
+            for i in range(wvl_nad.size):
+                data_nad[logic_dset, i] = data_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
+            #\----------------------------------------------------------------------------/#
+
+            # set saturation to 0
+            #/--------------------------------------------------------------\#
+            # data_zen[ssfr0.data_spec['sat_zen']==1] = -0.05
+            # data_nad[ssfr0.data_spec['sat_nad']==1] = -0.05
+            #\--------------------------------------------------------------/#
+
+    _data_['zen_wvl']  = wvl_zen[::wvl_step]
+    _data_['nad_wvl']  = wvl_nad[::wvl_step]
+    _data_['zen_spec'] = data_zen[::time_step, ::wvl_step].astype(np.float16)
+    _data_['nad_spec'] = data_nad[::time_step, ::wvl_step].astype(np.float16)
     #\----------------------------------------------------------------------------/#
 
     # reduce memory size
     #/----------------------------------------------------------------------------\#
     for key in _data_.keys():
-        if key not in ['jday', 'date_s', 'which_ssfr']:
+        if key not in ['jday', 'date_s', 'which_ssfr', 'is_flux']:
             if _data_[key].dtype in ['float64']:
                 _data_[key] = _data_[key].astype(np.float32)
             elif _data_[key].dtype in ['int64','int32', 'int16']:
