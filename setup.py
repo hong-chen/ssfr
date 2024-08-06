@@ -15,7 +15,7 @@ setup(
      classifiers = [
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Scientific/Engineering :: Atmospheric Science',
         ],
      keywords = 'SSFR',
@@ -31,7 +31,7 @@ setup(
          'matplotlib',
          'pysolar',
          ],
-     python_requires = '~=3.9',
+     python_requires = '~=3.12',
      scripts = ['bin/sks2mp4', 'bin/fits2jpg'],
      include_package_data = True,
      zip_safe = False
