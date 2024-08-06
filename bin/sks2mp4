@@ -70,7 +70,7 @@ def plot_video_frame(statements, test=False):
     for key in unshared_data.keys():
         data_plt[key] = unshared_data[key]
 
-    vnames_trk = data_plt.keys()
+    vnames_plt = data_plt.keys()
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -152,7 +152,7 @@ def plot_video_frame(statements, test=False):
     for vname in vars_plot.keys():
 
         vname_ori = vars_plot[vname]['vname']
-        if vname_ori in vnames_trk:
+        if vname_ori in vnames_plt:
             vars_plot[vname]['plot?'] = True
         else:
             vars_plot[vname]['plot?'] = False
