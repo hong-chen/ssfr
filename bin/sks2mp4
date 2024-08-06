@@ -46,7 +46,7 @@ _time_step_      = 1
 _wvl_step_       = 1
 _time_interval_  = 9
 _fdir_tmp_graph_ = './tmp-data'
-_Ncpu_ = 4
+_Ncpu_ = 8
 
 _data_ = {}
 
