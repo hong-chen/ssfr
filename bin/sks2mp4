@@ -736,7 +736,7 @@ def plot_video_frame(shared_data, unshared_data, index_pnt, test=False):
         var_plot = vars_plot['%s|spec' % key]
         if var_plot['plot?']:
             ax_wvl.plot(flt_trk0[var_plot['vname_wvl']], flt_trk0[var_plot['vname']][index_pnt, :],
-                    color=var_plot['color'], marker='o', markersize=2, lw=0.5, markeredgewidth=0.0, alpha=1.0, zorder=10)
+                    color=var_plot['color'], marker='o', markersize=1.5, lw=0.5, markeredgewidth=0.0, alpha=1.0, zorder=10)
         for key0 in ['si', 'in']:
             var_plot0 = vars_plot['%s|%s|dc' % (key, key0)]
             ax_wvl0.fill_between(flt_trk0[var_plot0['vname_wvl']], 0.0, flt_trk0[var_plot0['vname']][index_pnt, :],
