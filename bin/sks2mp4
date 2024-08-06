@@ -444,6 +444,7 @@ def plot_video_frame_old(statements, test=False):
     else:
         plt.savefig('%s/%5.5d.jpg' % (flt_trk0['fdir_tmp'], index_pnt), bbox_inches='tight', dpi=120)
         plt.close(fig)
+        plt.clf()
 
 def main_vid_old(
         fdir_tmp=_fdir_tmp_graph_,
@@ -911,7 +912,7 @@ def main_vid(
     #\----------------------------------------------------------------------------/#
 
     # create images
-    # consider use shared memory to use _data_
+    # will need to consider add KeyboardInterrupt
     #/----------------------------------------------------------------------------\#
     with SharedMemoryManager() as smm:
         shared_data = {}
