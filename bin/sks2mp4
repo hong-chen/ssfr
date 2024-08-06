@@ -18,6 +18,7 @@ import sys
 import glob
 from collections import OrderedDict
 import datetime
+import subprocess
 import multiprocessing as mp
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing.managers import SharedMemoryManager
@@ -520,7 +521,7 @@ def main_vid(
     fname_mp4 = '%s.mp4' % (job_tag)
     os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.jpg" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 10 -pix_fmt yuvj420p %s' % (fdir_tmp, fname_mp4))
     if _delete_tmp_:
-        print('\nMessage [sks2mp4]: Press <y/n> to delete/keep temporary files (total of %.1f MB):' % (os.path.getsize(fdir_tmp)/2.0e6))
+        print('\nMessage [sks2mp4]: Press <y/n> to delete/keep temporary files (total of %s):' % (subprocess.check_output('du -hs %s' % fdir_tmp, shell=True, text=True).split('\t')[0]))
         os.system('rm -rf -I %s' % fdir_tmp)
     #\----------------------------------------------------------------------------/#
 
