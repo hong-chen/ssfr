@@ -40,14 +40,17 @@ _time_step_      = 1
 _wvl_step_       = 1
 _time_interval_  = 9
 _fdir_tmp_graph_ = './tmp-data'
-_Ncpu_ = 8
+_Ncpu_ = 4
+
+_data_ = {}
 
 
 def plot_video_frame(statements, test=False):
 
     # extract arguments
     #/----------------------------------------------------------------------------\#
-    flt_trk0, index_pnt = statements
+    index_pnt = statements
+    flt_trk0 = _data_
     vnames_trk = flt_trk0.keys()
     #\----------------------------------------------------------------------------/#
 
@@ -484,51 +487,47 @@ def main_pre(
 
     # recreate a dictionary to contain ssfr data
     #/----------------------------------------------------------------------------\#
-    data = {}
-    data['which_ssfr'] = which_ssfr.lower()
-    data['date_s'] = date_s
-    data['jday'] = jday
-    data['tmhr'] = tmhr
+    _data_['which_ssfr'] = which_ssfr.lower()
+    _data_['date_s'] = date_s
+    _data_['jday'] = jday
+    _data_['tmhr'] = tmhr
 
-    data['zen_si_cnt_raw'] = zen_si_cnt_raw
-    data['zen_in_cnt_raw'] = zen_in_cnt_raw
-    data['nad_si_cnt_raw'] = nad_si_cnt_raw
-    data['nad_in_cnt_raw'] = nad_in_cnt_raw
+    _data_['zen_si_cnt_raw'] = zen_si_cnt_raw
+    _data_['zen_in_cnt_raw'] = zen_in_cnt_raw
+    _data_['nad_si_cnt_raw'] = nad_si_cnt_raw
+    _data_['nad_in_cnt_raw'] = nad_in_cnt_raw
 
-    data['zen_si_cnt_dc']  = zen_si_cnt_dc
-    data['zen_in_cnt_dc']  = zen_in_cnt_dc
-    data['nad_si_cnt_dc']  = nad_si_cnt_dc
-    data['nad_in_cnt_dc']  = nad_in_cnt_dc
+    _data_['zen_si_cnt_dc']  = zen_si_cnt_dc
+    _data_['zen_in_cnt_dc']  = zen_in_cnt_dc
+    _data_['nad_si_cnt_dc']  = nad_si_cnt_dc
+    _data_['nad_in_cnt_dc']  = nad_in_cnt_dc
 
-    data['zen_si_wvl'] = zen_si_wvl
-    data['zen_in_wvl'] = zen_in_wvl
-    data['nad_si_wvl'] = nad_si_wvl
-    data['nad_in_wvl'] = nad_in_wvl
+    _data_['zen_si_wvl'] = zen_si_wvl
+    _data_['zen_in_wvl'] = zen_in_wvl
+    _data_['nad_si_wvl'] = nad_si_wvl
+    _data_['nad_in_wvl'] = nad_in_wvl
 
-    data['int_time'] = int_time
-    data['shutter']  = shutter
-    data['shutter_dc']  = shutter_dc
-    data['temperature'] = temperature
+    _data_['int_time'] = int_time
+    _data_['shutter']  = shutter
+    _data_['shutter_dc']  = shutter_dc
+    _data_['temperature'] = temperature
 
     # reserved for radiance/irradiance if radiometric calibration is available
     #/--------------------------------------------------------------\#
     has_v1 = False
     if not has_v1:
         data_zen = ssfr0.data_spec['cnt_zen'][::time_step, ::wvl_step]
-        data['zen_spec'] = data_zen/(np.nanmax(data_zen)-np.nanmin(data_zen))*2.0
+        _data_['zen_spec'] = data_zen/(np.nanmax(data_zen)-np.nanmin(data_zen))*2.0
 
         data_nad = ssfr0.data_spec['cnt_nad'][::time_step, ::wvl_step]
-        data['nad_spec'] = data_nad/(np.nanmax(data_nad)-np.nanmin(data_nad))*2.0
+        _data_['nad_spec'] = data_nad/(np.nanmax(data_nad)-np.nanmin(data_nad))*2.0
 
-        data['zen_wvl']  = ssfr0.data_spec['wvl_zen']
-        data['nad_wvl']  = ssfr0.data_spec['wvl_nad']
+        _data_['zen_wvl']  = ssfr0.data_spec['wvl_zen']
+        _data_['nad_wvl']  = ssfr0.data_spec['wvl_nad']
     #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
-    return data
-
 def main_vid(
-        data,
         fdir_tmp=_fdir_tmp_graph_,
         Ncpu=_Ncpu_,
         which_ssfr=_default_ssfr_,
@@ -537,20 +536,19 @@ def main_vid(
 
     # create temporary directory to store images
     #/----------------------------------------------------------------------------\#
-    fdir_tmp = os.path.join(fdir_tmp, data['date_s'])
+    fdir_tmp = os.path.join(fdir_tmp, _data_['date_s'])
     if os.path.exists(fdir_tmp):
         os.system('rm -rf %s' % fdir_tmp)
     os.makedirs(fdir_tmp)
-    data['fdir_tmp'] = fdir_tmp
+    _data_['fdir_tmp'] = fdir_tmp
     #\----------------------------------------------------------------------------/#
 
 
     # prepare statements for parallel processing
     #/----------------------------------------------------------------------------\#
-    Ndata = data['jday'].size // time_interval
-    statements = zip([data]*Ndata, np.arange(Ndata)*time_interval)
+    Ndata = _data_['jday'].size // time_interval
+    statements = np.arange(Ndata)*time_interval
     #\----------------------------------------------------------------------------/#
-
 
     # create images
     #/----------------------------------------------------------------------------\#
@@ -561,7 +559,7 @@ def main_vid(
 
     # make video
     #/----------------------------------------------------------------------------\#
-    fname_mp4 = '%s_%s_quicklook-by-sks2mp4.mp4' % (data['date_s'], which_ssfr.lower())
+    fname_mp4 = '%s_%s_quicklook-by-sks2mp4.mp4' % (_data_['date_s'], which_ssfr.lower())
     os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.jpg" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 18 -pix_fmt yuvj420p %s' % (fdir_tmp, fname_mp4))
     #\----------------------------------------------------------------------------/#
 
@@ -578,12 +576,12 @@ def main(
 
     # pre-process data
     #/----------------------------------------------------------------------------\#
-    data = main_pre(ssfr0)
+    main_pre(ssfr0)
     #\----------------------------------------------------------------------------/#
 
     # generate video
     #/----------------------------------------------------------------------------\#
-    main_vid(data, which_ssfr=which_ssfr)
+    main_vid(which_ssfr=which_ssfr)
     #\----------------------------------------------------------------------------/#
 
     return
