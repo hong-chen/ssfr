@@ -27,7 +27,10 @@ from matplotlib import rcParams, ticker
 import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import FixedLocator
+import matplotlib.style as mplstyle
+
 mpl.use('Agg')
+mplstyle.use('fast')
 
 
 import ssfr
@@ -516,10 +519,10 @@ def main_pre(
     has_v1 = False
     if not has_v1:
         data_zen = ssfr0.data_spec['cnt_zen'][::time_step, ::wvl_step]
-        _data_['zen_spec'] = data_zen/(np.nanmax(data_zen)-np.nanmin(data_zen))*2.0
+        _data_['zen_spec'] = (data_zen/(np.nanmax(data_zen)-np.nanmin(data_zen))*2.0).astype(np.float16)
 
         data_nad = ssfr0.data_spec['cnt_nad'][::time_step, ::wvl_step]
-        _data_['nad_spec'] = data_nad/(np.nanmax(data_nad)-np.nanmin(data_nad))*2.0
+        _data_['nad_spec'] = (data_nad/(np.nanmax(data_nad)-np.nanmin(data_nad))*2.0).astype(np.float16)
 
         _data_['zen_wvl']  = ssfr0.data_spec['wvl_zen']
         _data_['nad_wvl']  = ssfr0.data_spec['wvl_nad']
@@ -533,7 +536,7 @@ def main_pre(
             if _data_[key].dtype == 'float64':
                 _data_[key] = _data_[key].astype(np.float32)
             elif _data_[key].dtype == 'int32':
-                _data_[key] = _data_[key].astype(np.int16)
+                _data_[key] = _data_[key].astype(np.int8)
     #\----------------------------------------------------------------------------/#
 
 def main_vid(
