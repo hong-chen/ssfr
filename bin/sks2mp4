@@ -42,6 +42,8 @@ _default_ssfr_   = 'ssfr-b'
 _file_extension_ = 'SKS'
 _fdir_out_       = './'
 _fdir_cal_       = '%s/cal' % ssfr.common.fdir_data
+_lamp_pri_       = 'lamp-1324'
+_lamp_sec_       = 'lamp-150c'
 _time_step_      = 1
 _wvl_step_       = 1
 _time_interval_  = 9
@@ -611,7 +613,7 @@ def main_pre(
             # zenith
             #/--------------------------------------------------------------\#
             int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 0], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 1])
-            fnames_cal_zen = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*lamp-1324|*lamp-150c*|*%s*zen*%s*' % (which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
+            fnames_cal_zen = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*zen*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
             jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
             for i in range(jday_cal_zen.size):
                 dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
@@ -627,7 +629,7 @@ def main_pre(
             # nadir
             #/--------------------------------------------------------------\#
             int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 2], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 3])
-            fnames_cal_nad = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*lamp-1324|*lamp-150c*|*%s*nad*%s*' % (which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
+            fnames_cal_nad = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*nad*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
             jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
             for i in range(jday_cal_nad.size):
                 dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
