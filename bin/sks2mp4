@@ -550,6 +550,7 @@ def main_vid(
     #\----------------------------------------------------------------------------/#
 
     # create images
+    # consider use shared memory to use _data_
     #/----------------------------------------------------------------------------\#
     with mp.Pool(processes=Ncpu) as pool:
         r = list(tqdm(pool.imap(plot_video_frame, statements), total=Ndata))
