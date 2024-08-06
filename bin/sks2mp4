@@ -651,10 +651,10 @@ def main_pre(
                 data_nad[logic_dset, i] = data_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
             #\----------------------------------------------------------------------------/#
 
-            # set saturation to 0
+            # set saturation to negative values
             #/--------------------------------------------------------------\#
-            # data_zen[ssfr0.data_spec['sat_zen']==1] = -0.05
-            # data_nad[ssfr0.data_spec['sat_nad']==1] = -0.05
+            data_zen[ssfr0.data_spec['sat_zen']==1] = -0.05
+            data_nad[ssfr0.data_spec['sat_nad']==1] = -0.05
             #\--------------------------------------------------------------/#
 
     _data_['zen_wvl']  = wvl_zen[::wvl_step]
