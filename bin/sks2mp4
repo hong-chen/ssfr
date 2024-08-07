@@ -50,7 +50,7 @@ _wvl_step_       = 1
 _time_interval_  = 9
 _fdir_tmp_       = './tmp-data'
 _delete_tmp_     = True
-_delete_ask_     = True
+_delete_ask_     = False
 _flux_range_     = [0.0, 2.0]
 _Ncpu_ = max(1, mp.cpu_count()-2)
 
@@ -451,8 +451,8 @@ def plot_video_frame(statements, test=False):
 
     # figure settings
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    title_fig = '%s UTC (%s)' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'), data_plt['which_ssfr'].upper())
-    fig.suptitle(title_fig, y=0.96, fontsize=20)
+    title_fig = '%s UTC (%s)\n%d' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'), data_plt['which_ssfr'].upper(), index_pnt)
+    fig.suptitle(title_fig, y=0.99, fontsize=20)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -610,67 +610,108 @@ def main_pre(
     data_zen = ssfr0.data_spec['cnt_zen']
     data_nad = ssfr0.data_spec['cnt_nad']
 
-    if (which_ssfr.lower() != _default_ssfr_):
+    _data_['is_flux'] = False
+    for idset in np.unique(ssfr0.data_raw['dset_num']):
 
-        _data_['is_flux'] = False
-        scaler0 = (_flux_range_[-1]-_flux_range_[0])
-        data_zen = data_zen/(np.nanmax(data_zen)-np.nanmin(data_zen))*scaler0
-        data_nad = data_nad/(np.nanmax(data_nad)-np.nanmin(data_nad))*scaler0
+        logic_dset = (ssfr0.data_raw['dset_num'] == idset)
 
-    else:
+        # zenith
+        #╭──────────────────────────────────────────────────────────────╮#
+        int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 0], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 1])
+        fnames_cal_zen = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*zen*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
 
-        _data_['is_flux'] = True
-
-        for idset in np.unique(ssfr0.data_raw['dset_num']):
-
-            # zenith
-            #╭──────────────────────────────────────────────────────────────╮#
-            int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 0], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 1])
-            fnames_cal_zen = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*zen*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
+        if len(fnames_cal_zen) > 0:
+            # find most recent available calibration
+            #╭────────────────────────────────────────────────╮#
             jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
             for i in range(jday_cal_zen.size):
                 dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
                 dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
                 jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0)
             fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday0))]
-            data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+            #╰────────────────────────────────────────────────╯#
 
-            msg = '\nMessage [sks2mp4]: Using <%s> for %s zenith flux ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
+            # apply radiometric calibration
+            #╭────────────────────────────────────────────────╮#
+            if (which_ssfr.lower() == _default_ssfr_):
+                data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+                msg = '\nMessage [sks2mp4]: Using <%s> for %s zenith %s flux ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper(), int_time_tag_zen)
+                print(msg)
+                _data_['is_flux'] = True
+            else:
+                data_cal_zen = None
+            #╰────────────────────────────────────────────────╯#
+        else:
+            data_cal_zen = None
+        #╰──────────────────────────────────────────────────────────────╯#
+
+        # processing zenith
+        #╭──────────────────────────────────────────────────────────────╮#
+        if data_cal_zen is not None:
+            # convert counts to flux
+            #╭────────────────────────────────────────────────╮#
+            for i in range(wvl_zen.size):
+                data_zen[logic_dset, i] = data_zen[logic_dset, i] / data_cal_zen['sec_resp'][i]
+
+            data_zen[ssfr0.data_spec['sat_zen']==1] = -0.05
+            #╰────────────────────────────────────────────────╯#
+        else:
+            # apply scaling only
+            #╭────────────────────────────────────────────────╮#
+            msg = '\nMessage [sks2mp4]: Applying scaling [%.1f, %.1f] for %s zenith %s ...' % (*_flux_range_, which_ssfr.upper(), int_time_tag_zen)
             print(msg)
-            #╰──────────────────────────────────────────────────────────────╯#
+            scaler0 = (_flux_range_[-1]-_flux_range_[0])
+            data_zen[logic_dset, :] = data_zen[logic_dset, :]/(np.nanmax(data_zen[logic_dset, :])-np.nanmin(data_zen[logic_dset, :]))*scaler0
+            #╰────────────────────────────────────────────────╯#
+        #╰──────────────────────────────────────────────────────────────╯#
 
-            # nadir
-            #╭──────────────────────────────────────────────────────────────╮#
-            int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 2], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 3])
-            fnames_cal_nad = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*nad*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
+        # nadir
+        #╭──────────────────────────────────────────────────────────────╮#
+        int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 2], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 3])
+        fnames_cal_nad = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*nad*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
+
+        if len(fnames_cal_nad) > 0:
+            # find most recent available calibration
+            #╭────────────────────────────────────────────────╮#
             jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
             for i in range(jday_cal_nad.size):
                 dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
                 dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
                 jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0)
             fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday0))]
-            data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+            #╰────────────────────────────────────────────────╯#
 
-            msg = '\nMessage [sks2mp4]: Using <%s> for %s nadir flux ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
-            print(msg)
-            #╰──────────────────────────────────────────────────────────────╯#
+            # apply radiometric calibration
+            #╭────────────────────────────────────────────────╮#
+            if (which_ssfr.lower() == _default_ssfr_):
+                data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+                msg = '\nMessage [sks2mp4]: Using <%s> for %s nadir %s flux ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper(), int_time_tag_nad)
+                print(msg)
+                _data_['is_flux'] = True
+            #╰────────────────────────────────────────────────╯#
+        else:
+            data_cal_nad = None
+        #╰──────────────────────────────────────────────────────────────╯#
 
+        # processing nadir
+        #╭──────────────────────────────────────────────────────────────╮#
+        if data_cal_nad is not None:
             # convert counts to flux
-            #╭──────────────────────────────────────────────────────────────╮#
-            logic_dset = (ssfr0.data_raw['dset_num'] == idset)
-
-            for i in range(wvl_zen.size):
-                data_zen[logic_dset, i] = data_zen[logic_dset, i] / data_cal_zen['sec_resp'][i]
-
+            #╭────────────────────────────────────────────────╮#
             for i in range(wvl_nad.size):
                 data_nad[logic_dset, i] = data_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
-            #╰──────────────────────────────────────────────────────────────╯#
 
-            # set saturation to negative values
-            #╭──────────────────────────────────────────────────────────────╮#
-            data_zen[ssfr0.data_spec['sat_zen']==1] = -0.05
             data_nad[ssfr0.data_spec['sat_nad']==1] = -0.05
-            #╰──────────────────────────────────────────────────────────────╯#
+            #╰────────────────────────────────────────────────╯#
+        else:
+            # apply scaling only
+            #╭────────────────────────────────────────────────╮#
+            msg = '\nMessage [sks2mp4]: Applying scaling [%.1f, %.1f] for %s nadir %s ...' % (*_flux_range_, which_ssfr.upper(), int_time_tag_nad)
+            print(msg)
+            scaler0 = (_flux_range_[-1]-_flux_range_[0])
+            data_nad[logic_dset, :] = data_nad[logic_dset, :]/(np.nanmax(data_nad[logic_dset, :])-np.nanmin(data_nad[logic_dset, :]))*scaler0
+            #╰────────────────────────────────────────────────╯#
+        #╰──────────────────────────────────────────────────────────────╯#
 
     _data_['zen_wvl']  = wvl_zen[::wvl_step]
     _data_['nad_wvl']  = wvl_nad[::wvl_step]

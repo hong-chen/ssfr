@@ -35,7 +35,7 @@ def cal_rad_resp(
 
 
     # check SSFR spectrometer
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     which_ssfr = which_ssfr.lower()
     which_lab  = which_ssfr.split('|')[0]
     if which_lab == 'nasa':
@@ -45,11 +45,11 @@ def cal_rad_resp(
     else:
         msg = '\nError [cal_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa|ssfr-6\'> or <\'lasp|ssfr-a\'> or <\'lasp|ssfr-b\'>).' % which_ssfr
         raise ValueError(msg)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # check light collector
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     which_lc = which_lc.lower()
     if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
         which_lc = 'zen'
@@ -74,11 +74,11 @@ def cal_rad_resp(
     else:
         msg = '\nError [cal_rad_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
         raise ValueError(msg)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # si/in tag
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     si_tag = '%s|si' % which_spec
     in_tag = '%s|in' % which_spec
 
@@ -87,38 +87,38 @@ def cal_rad_resp(
 
     if in_tag not in int_time.keys():
         int_time[in_tag] = int_time.pop('in')
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # print message
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if verbose:
         if resp is None:
             msg = '\nMessage [cal_rad_resp]: processing primary response for <%s|%s|SI-%3.3d|IN-%3.3d> ...' % (which_ssfr.upper(), which_lc.upper(), int_time[si_tag], int_time[in_tag])
         else:
             msg = '\nMessage [cal_rad_resp]: processing transfer/secondary response for <%s|%s|SI-%3.3d|IN-%3.3d> ...' % (which_ssfr.upper(), which_lc.upper(), int_time[si_tag], int_time[in_tag])
         print(msg)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # get radiometric response
     # by default (resp=None), this function will perform primary radiometric calibration
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if resp is None:
 
         # check lamp
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         which_lamp = which_lamp.lower()
 
         if (which_lamp[:4] == 'f-50') or (which_lamp[-3:-1] == '50') or (('50' in which_lamp) and ('150' not in which_lamp)):
             which_lamp = 'f-506c'
         elif (which_lamp[-4:] == '1324') or ('1324' in which_lamp):
             which_lamp = 'f-1324'
-        #\--------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
 
 
         # read in calibrated lamp data and interpolated/integrated at SSFR wavelengths/slits
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         fname_lamp = '%s/lamp/%s.dat' % (ssfr.common.fdir_data, which_lamp)
         if not os.path.exists(fname_lamp):
             msg = '\nError [cal_rad_resp]: cannot locate calibration file for lamp <%s>.' % which_lamp
@@ -134,20 +134,20 @@ def cal_rad_resp(
             data_flux = data[:, 1]*0.01      # W m^-2 nm^-1
         else:
             data_flux = data[:, 1]*10000.0   # W m^-2 nm^-1
-        #\--------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
 
 
         # get ssfr wavelength for two spectrometers
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
         wvl_si = wvls[si_tag]
         wvl_in = wvls[in_tag]
-        #\--------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
 
 
         # use SSFR slit functions to get flux from lamp file
         # the other option is to interpolate the lamp file at SSFR wavelength, which is commented out
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         # lamp_nist_si = np.zeros_like(wvl_si)
         # for i in range(lamp_nist_si.size):
         #     lamp_nist_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
@@ -158,23 +158,23 @@ def cal_rad_resp(
 
         lamp_nist_si = np.interp(wvl_si, data_wvl, data_flux)
         lamp_nist_in = np.interp(wvl_in, data_wvl, data_flux)
-        #\--------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
 
         resp = {
                 si_tag: lamp_nist_si,
                 in_tag: lamp_nist_in
                }
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # read raw data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     try:
-        ssfr0 = ssfr_toolbox.read_ssfr(fnames, verbose=False)
+        ssfr0 = ssfr_toolbox.read_ssfr(fnames, dark_extend=dark_extend, light_extend=light_extend, verbose=False)
 
         # integration time fallback
         # in case the data does not contain measurement with given integration time
-        # /------------------------------------------------------------\ #
+        #╭──────────────────────────────────────────────────────────────╮#
         int_time_si_diff = np.zeros(ssfr0.Ndset, dtype=np.float64)
         int_time_in_diff = np.zeros(ssfr0.Ndset, dtype=np.float64)
         for idset, dset_tag in enumerate(ssfr0.dset_info.keys()):
@@ -196,15 +196,19 @@ def cal_rad_resp(
             msg = '\nWarning [cal_rad_resp]: Cannot find given integration time for <%s=%dms>, fallback to <%s=%dms>' % (in_tag, int_time[in_tag], in_tag, int_time_in_new)
             warnings.warn(msg)
             int_time_new[in_tag] = int_time_in_new
-        # \------------------------------------------------------------/ #
+        #╰──────────────────────────────────────────────────────────────╯#
 
         logic_si = (np.abs(ssfr0.data_raw['int_time'][:, index_si]-int_time_new[si_tag])<0.00001)
         logic_in = (np.abs(ssfr0.data_raw['int_time'][:, index_in]-int_time_new[in_tag])<0.00001)
 
         shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_si], ssfr0.data_raw['shutter'][logic_si], ssfr0.data_raw['count_raw'][logic_si, :, index_si], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
         logic  = (shutter==0)
+        logic_nan = (np.sum(np.isnan(counts), axis=-1)) > 0
+        print(logic_nan.sum())
         spectra_si     = np.nanmean(counts[logic, :], axis=0)
         spectra_si_std = np.nanstd(counts[logic, :], axis=0)
+        msg = '\nMessage [cal_rad_resp]: '
+        print(msg)
 
         shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_in], ssfr0.data_raw['shutter'][logic_in], ssfr0.data_raw['count_raw'][logic_in, :, index_in], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
         logic  = (shutter==0)
@@ -220,33 +224,14 @@ def cal_rad_resp(
         spectra_si_std = None
         spectra_in     = None
         spectra_in_std = None
-    #\----------------------------------------------------------------------------/#
-
-
-    # read raw data
-    #/----------------------------------------------------------------------------\#
-    # ssfr_obj = ssfr_toolbox.read_ssfr(fnames, dark_corr_mode='interp', dark_extend=5, light_extend=5)
-
-    # spectra_si = None
-    # spectra_in = None
-    # for i in range(ssfr_obj.Ndset):
-
-    #     dset_name = 'dset%d' % i
-    #     data = getattr(ssfr_obj, dset_name)
-
-    #     if abs(data['info']['int_time'][si_tag] - int_time_new[si_tag]) < 0.00001:
-    #         spectra_si = np.nanmean(data['spectra_dark-corr'][:, :, index_si], axis=0)
-
-    #     if abs(data['info']['int_time'][in_tag] - int_time_new[in_tag]) < 0.00001:
-    #         spectra_in = np.nanmean(data['spectra_dark-corr'][:, :, index_in], axis=0)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # Silicon
     # some placeholder ideas:
     # if nan is detected (e.g., spectra_si smaller than 0.0), one can use
     # interpolation to fill in the nan values
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if spectra_si is not None:
         spectra_si[spectra_si<=0.0] = np.nan
         rad_resp_si = spectra_si / int_time_new[si_tag] / resp[si_tag]
@@ -256,11 +241,11 @@ def cal_rad_resp(
     else:
         rad_resp_si     = None
         rad_resp_si_std = None
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # InGaAs
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if spectra_in is not None:
         spectra_in[spectra_in<=0.0] = np.nan
         rad_resp_in = spectra_in / int_time_new[in_tag] / resp[in_tag]
@@ -270,18 +255,18 @@ def cal_rad_resp(
     else:
         rad_resp_in     = None
         rad_resp_in_std = None
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # response output
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     rad_resp = {
                si_tag: rad_resp_si,
                in_tag: rad_resp_in
                }
 
     return rad_resp
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 
