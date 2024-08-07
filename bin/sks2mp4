@@ -50,6 +50,7 @@ _wvl_step_       = 1
 _time_interval_  = 9
 _fdir_tmp_       = './tmp-data'
 _delete_tmp_     = True
+_delete_ask_     = True
 _flux_range_     = [0.0, 2.0]
 _Ncpu_ = max(1, mp.cpu_count()-2)
 
@@ -521,8 +522,11 @@ def main_vid(
     fname_mp4 = '%s.mp4' % (job_tag)
     os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.jpg" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 10 -pix_fmt yuvj420p %s' % (fdir_tmp, fname_mp4))
     if _delete_tmp_:
-        print('\nMessage [sks2mp4]: Press <y/n> to delete/keep temporary files (total of %s):' % (subprocess.check_output('du -hs %s' % fdir_tmp, shell=True, text=True).split('\t')[0]))
-        os.system('rm -rf -I %s' % fdir_tmp)
+        if _delete_ask_:
+            print('\nMessage [sks2mp4]: Press <y/n> to delete/keep temporary files (total of %s):' % (subprocess.check_output('du -hs %s' % fdir_tmp, shell=True, text=True).split('\t')[0]))
+            os.system('rm -rf -I %s' % fdir_tmp)
+        else:
+            os.system('rm -rf %s' % fdir_tmp)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main_pre(
