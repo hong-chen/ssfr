@@ -181,7 +181,7 @@ def plot_video_frame(statements, test=False):
 
     int_time_zen_si_current, int_time_zen_in_current, int_time_nad_si_current, int_time_nad_in_current = data_plt['int_time'][index_pnt, :]
 
-    tmhr_length  = 0.1 # 6 minutes
+    tmhr_length  = 0.05 # 3 minutes or 180 seconds
     tmhr_past    = tmhr_current-tmhr_length
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -451,7 +451,7 @@ def plot_video_frame(statements, test=False):
 
     # figure settings
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    title_fig = '%s UTC (%s)\n%d' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'), data_plt['which_ssfr'].upper(), index_pnt)
+    title_fig = '%s UTC (%s)\nIndex: %d' % (dtime_current.strftime('%Y-%m-%d %H:%M:%S'), data_plt['which_ssfr'].upper(), index_pnt)
     fig.suptitle(title_fig, y=0.99, fontsize=20)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
