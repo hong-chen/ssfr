@@ -2629,8 +2629,8 @@ if __name__ == '__main__':
 
     # process field calibration
     #/----------------------------------------------------------------------------\#
-    main_calibration_rad()
-    sys.exit()
+    # main_calibration_rad()
+    # sys.exit()
     #\----------------------------------------------------------------------------/#
 
     # process field data
