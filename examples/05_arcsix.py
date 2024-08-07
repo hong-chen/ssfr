@@ -50,10 +50,10 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
 
-_spns_        = 'spns-a'
-_which_ssfr_for_flux_ = 'ssfr-a'
-# _spns_        = 'spns-b'
-# _which_ssfr_for_flux_ = 'ssfr-b'
+# _spns_        = 'spns-a'
+# _which_ssfr_for_flux_ = 'ssfr-a'
+_spns_        = 'spns-b'
+_which_ssfr_for_flux_ = 'ssfr-b'
 
 _fdir_hsk_   = 'data/arcsix/2024/p3/aux/hsk'
 _fdir_cal_   = 'data/%s/cal' % _mission_
@@ -831,6 +831,12 @@ def cdata_arcsix_hsk_from_alp_v0(
             data_hsk[vname] = {
                     'data': ssfr.util.interp(jday, data_alp['jday']+_alp_time_offset_[date_s]/86400.0, data_alp[var_dict[vname]], mode='linear')
                     }
+
+        # empirical offset angles between ALP and HSK
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        data_hsk['ang_pit'] += 3.85
+        data_hsk['ang_rol'] += 0.45
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # solar geometries
         #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -2720,9 +2726,9 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
              # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
-             # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+             datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
              # datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
-             datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -2730,16 +2736,16 @@ if __name__ == '__main__':
 
         # step 1
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(date, run=True)
-        main_process_data_v0_metnav(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=True)
+        # main_process_data_v0_metnav(date, run=True)
+        # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # run_time_offset_check(date)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        run_time_offset_check(date)
+        sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
