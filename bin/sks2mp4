@@ -605,7 +605,8 @@ def main_pre(
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    # radiance/irradiance if radiometric calibration is available
+    # retrieve radiance/irradiance if radiometric calibration is available
+    # if not, apply scaling
     #╭────────────────────────────────────────────────────────────────────────────╮#
     wvl_zen  = ssfr0.data_spec['wvl_zen']
     wvl_nad  = ssfr0.data_spec['wvl_nad']
@@ -636,10 +637,11 @@ def main_pre(
 
             # apply radiometric calibration
             #╭────────────────────────────────────────────────╮#
-            if (which_ssfr.lower() == _default_ssfr_):
-                data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
-            else:
-                data_cal_zen = None
+            data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+            # if (which_ssfr.lower() == _default_ssfr_):
+            #     data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+            # else:
+            #     data_cal_zen = None
             #╰────────────────────────────────────────────────╯#
         else:
             data_cal_zen = None
@@ -650,7 +652,7 @@ def main_pre(
         if data_cal_zen is not None:
             # convert counts to flux
             #╭────────────────────────────────────────────────╮#
-            msg = '\nMessage [sks2mp4]: Using <%s> for %s zenith %s flux ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper(), int_time_tag_zen)
+            msg = '\nMessage [sks2mp4]: Using <%s> for %s zenith %s ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper(), int_time_tag_zen)
             print(msg)
             for i in range(wvl_zen.size):
                 data_zen[logic_dset, i] = data_zen[logic_dset, i] / data_cal_zen['sec_resp'][i]
@@ -686,8 +688,11 @@ def main_pre(
 
             # apply radiometric calibration
             #╭────────────────────────────────────────────────╮#
-            if (which_ssfr.lower() == _default_ssfr_):
-                data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+            data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+            # if (which_ssfr.lower() == _default_ssfr_):
+            #     data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+            # else:
+            #     data_cal_nad = None
             #╰────────────────────────────────────────────────╯#
         else:
             data_cal_nad = None
@@ -698,7 +703,7 @@ def main_pre(
         if data_cal_nad is not None:
             # convert counts to flux
             #╭────────────────────────────────────────────────╮#
-            msg = '\nMessage [sks2mp4]: Using <%s> for %s nadir %s flux ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper(), int_time_tag_nad)
+            msg = '\nMessage [sks2mp4]: Using <%s> for %s nadir %s ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper(), int_time_tag_nad)
             print(msg)
             for i in range(wvl_nad.size):
                 data_nad[logic_dset, i] = data_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
