@@ -51,8 +51,10 @@ _ssfr1_       = 'ssfr-a'
 _ssfr2_       = 'ssfr-b'
 _cam_         = 'nac'
 
-_spns_        = 'spns-b'
-_which_ssfr_for_flux_ = 'ssfr-b'
+_spns_        = 'spns-a'
+_which_ssfr_for_flux_ = 'ssfr-a'
+# _spns_        = 'spns-b'
+# _which_ssfr_for_flux_ = 'ssfr-b'
 
 _fdir_hsk_   = 'data/arcsix/2024/p3/aux/hsk'
 _fdir_cal_   = 'data/%s/cal' % _mission_
@@ -66,6 +68,19 @@ _verbose_   = True
 _fnames_ = {}
 
 _alp_time_offset_ = {
+        '20240517':   5.55,
+        '20240521': -17.94,
+        '20240524': -18.39,
+        '20240528': -17.19,
+        '20240530': -17.41,
+        '20240531': -17.41,
+        '20240603': -17.41,
+        '20240605': -17.58,
+        '20240606': -18.08,
+        '20240607': -17.45,
+        '20240610': -17.45,
+        '20240611': -17.52,
+        '20240613': -17.85,
         '20240708':   -17.85,
         '20240709':   -17.85,
         '20240722':   -17.85,
@@ -78,6 +93,19 @@ _alp_time_offset_ = {
         '20240802':   -17.97,
         }
 _spns_time_offset_ = {
+        '20240517': 0.0,
+        '20240521': 0.0,
+        '20240524': 86400.0,
+        '20240528': 0.0,
+        '20240530': 0.0,
+        '20240531': 0.0,
+        '20240603': 0.0,
+        '20240605': 0.0,
+        '20240606': 0.0,
+        '20240607': 0.0,
+        '20240610': 0.0,
+        '20240611': 0.0,
+        '20240613': 0.0,
         '20240708': 0.0,
         '20240709': 0.0,
         '20240722': 0.0,
@@ -90,6 +118,19 @@ _spns_time_offset_ = {
         '20240802': 0.0,
         }
 _ssfr1_time_offset_ = {
+        '20240517': 185.0,
+        '20240521': 182.0,
+        '20240524': -145.75,
+        '20240528': -156.26,
+        '20240530': -158.04,
+        '20240531': -161.38,
+        '20240603': -170.42,
+        '20240605': -176.88,
+        '20240606': -180.41,
+        '20240607': -181.44,
+        '20240610': -188.70,
+        '20240611': -190.69,
+        '20240613': -196.06,
         '20240708': -196.06,
         '20240709': -196.06,
         '20240722': -196.06,
@@ -102,6 +143,19 @@ _ssfr1_time_offset_ = {
         '20240802': -317.40,
         }
 _ssfr2_time_offset_ = {
+        '20240517': 115.0,
+        '20240521': -6.0,
+        '20240524': -208.22,
+        '20240528': -222.66,
+        '20240530': -229.45,
+        '20240531': -227.00,
+        '20240603': -241.66,
+        '20240605': -250.48,
+        '20240606': -256.90,
+        '20240607': -255.45,
+        '20240610': -261.64,
+        '20240611': -271.93,
+        '20240613': -273.59,
         '20240708': -273.59,
         '20240709': -273.59,
         '20240722': -273.59,
@@ -113,7 +167,7 @@ _ssfr2_time_offset_ = {
         '20240801': -416.93,
         '20240802': -419.59,
         }
-#\----------------------------------------------------------------------------/#
+##\----------------------------------------------------------------------------/#
 
 
 
@@ -2636,6 +2690,16 @@ if __name__ == '__main__':
     # process field data
     #/----------------------------------------------------------------------------\#
     dates = [
+             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
+             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
+             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
+             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
+             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
+             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
+             # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7, cloud wall
+             # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8
+             # datetime.datetime(2024, 6, 11), # ARCSIX science flight #9
+             # datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
              # datetime.datetime(2024, 7, 8), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
              # datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
              # datetime.datetime(2024, 7, 22), # ARCSIX-2 transit from WFF to Pituffik, noticed TEC2 (SSFR-A nadir) issue, operator - Ken Hirata, Vikas Nataraja
@@ -2645,8 +2709,8 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
              # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
-             # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
-             datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
+             datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+             # datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
             ]
 
     for date in dates[::-1]:
@@ -2654,7 +2718,7 @@ if __name__ == '__main__':
         # step 1
         #/--------------------------------------------------------------\#
         main_process_data_v0(date, run=True)
-        # main_process_data_v0_metnav(date, run=True)
+        main_process_data_v0_metnav(date, run=True)
         sys.exit()
         #\--------------------------------------------------------------/#
 
@@ -2682,11 +2746,11 @@ if __name__ == '__main__':
 
         # step 5
         #/--------------------------------------------------------------\#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=False)
-        main_process_data_archive(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
         #\--------------------------------------------------------------/#
 
         pass
