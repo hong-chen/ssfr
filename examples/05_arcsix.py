@@ -1934,6 +1934,7 @@ def cdata_arcsix_ssfr_archive(
             '20240531': 'Encountered temperature control issue (after around 1:30 UTC)',
             '20240730': 'Noticed icing inside zenith light collector dome after flight',
             '20240801': 'Noticed condensation inside zenith light collector dome before flight',
+            '20240807': 'Noticed condensation inside zenith light collector dome after flight',
             }
     if date_s in comments_special_dict.keys():
         comments_special = comments_special_dict[date_s]
