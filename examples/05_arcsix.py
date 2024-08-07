@@ -80,17 +80,17 @@ _alp_time_offset_ = {
         '20240610': -17.45,
         '20240611': -17.52,
         '20240613': -17.85,
-        '20240708':   -17.85,
-        '20240709':   -17.85,
-        '20240722':   -17.85,
-        '20240724':   -17.85,
-        '20240725':   -17.89,
-        '20240726':   -17.89,
-        '20240729':   -18.22,
-        '20240730':   -17.43,
-        '20240801':   -17.74,
-        '20240802':   -17.97,
-        '20240807':   -17.97,
+        '20240708': -17.85,
+        '20240709': -17.85,
+        '20240722': -17.85,
+        '20240724': -17.85,
+        '20240725': -17.89,
+        '20240726': -17.89,
+        '20240729': -18.22,
+        '20240730': -17.43,
+        '20240801': -17.74,
+        '20240802': -17.97,
+        '20240807': -17.97,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -2726,7 +2726,7 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
              # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
-             datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+             # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
              # datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
              # datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
             ]
@@ -2736,16 +2736,16 @@ if __name__ == '__main__':
 
         # step 1
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=True)
-        # main_process_data_v0_metnav(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=True)
+        main_process_data_v0_metnav(date, run=True)
+        sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(date, run=False)
-        run_time_offset_check(date)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # run_time_offset_check(date)
+        # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
