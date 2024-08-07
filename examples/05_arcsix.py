@@ -39,9 +39,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import ssfr
 
 
-
 # parameters
-#/----------------------------------------------------------------------------\#
+#╭────────────────────────────────────────────────────────────────────────────╮#
 _mission_     = 'arcsix'
 _platform_    = 'p3b'
 
@@ -62,10 +61,10 @@ _fdir_cal_   = 'data/%s/cal' % _mission_
 _fdir_data_  = 'data/%s' % _mission_
 _fdir_out_   = '%s/processed' % _fdir_data_
 
-
 _verbose_   = True
-
 _fnames_ = {}
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
 
 _alp_time_offset_ = {
         '20240517':   5.55,
@@ -91,6 +90,7 @@ _alp_time_offset_ = {
         '20240730':   -17.43,
         '20240801':   -17.74,
         '20240802':   -17.97,
+        '20240807':   -17.97,
         }
 _spns_time_offset_ = {
         '20240517': 0.0,
@@ -116,7 +116,9 @@ _spns_time_offset_ = {
         '20240730': 0.0,
         '20240801': 0.0,
         '20240802': 0.0,
+        '20240807': 0.0,
         }
+
 _ssfr1_time_offset_ = {
         '20240517': 185.0,
         '20240521': 182.0,
@@ -141,7 +143,9 @@ _ssfr1_time_offset_ = {
         '20240730': -307.64,
         '20240801': -315.90,
         '20240802': -317.40,
+        '20240807': -317.40,
         }
+
 _ssfr2_time_offset_ = {
         '20240517': 115.0,
         '20240521': -6.0,
@@ -166,13 +170,13 @@ _ssfr2_time_offset_ = {
         '20240730': -408.13,
         '20240801': -416.93,
         '20240802': -419.59,
+        '20240807': -419.59,
         }
-##\----------------------------------------------------------------------------/#
 
 
 
 # functions for ssfr calibrations
-#/----------------------------------------------------------------------------\#
+#╭────────────────────────────────────────────────────────────────────────────╮#
 def wvl_cal_old(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
     fdir_data = '/argus/field/arcsix/cal/wvl-cal'
@@ -200,13 +204,13 @@ def wvl_cal_old(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
     sys.exit()
 
     # figure
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(12, 6))
         fig.suptitle('%s %s (illuminated by %s Lamp)' % (ssfr_tag.upper(), lc_tag.title(), lamp_tag.upper()))
         # plot
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         ax1 = fig.add_subplot(121)
         ax1.plot(xchan, spectra0[:, 0], lw=1, c='r')
         ax1.plot(xchan, spectra1[:, 0], lw=1, c='b')
@@ -222,7 +226,7 @@ def wvl_cal_old(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
         ax2.set_ylabel('Counts')
         ax2.set_ylim(bottom=0)
         ax2.set_title('InGaAs')
-        #\--------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
 
         patches_legend = [
                           mpatches.Patch(color='red' , label='IntTime set 1'), \
@@ -231,12 +235,12 @@ def wvl_cal_old(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
         ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
 
         # save figure
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         fig.subplots_adjust(hspace=0.3, wspace=0.3)
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         fig.savefig('%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag.lower(), lc_tag.lower(), lamp_tag.lower()), bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-    #\----------------------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def rad_cal_old(ssfr_tag, lc_tag, lamp_tag, Nchan=256):
 
@@ -285,19 +289,19 @@ def ang_cal_old(fdir):
     lc_tag   = tags[2]
 
     # get angles
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 50.0, 5.0), np.arange(50.0, 91.0, 10.0)))
     angles_neg = -angles_pos
     angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # make fnames, a dictionary <key:value> with file name as key, angle as value
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
     fnames  = {
             fnames_[i]: angles[i] for i in range(angles.size)
             }
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
 
@@ -322,23 +326,23 @@ def main_calibration_old():
     """
 
     # wavelength calibration
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
     #     for lc_tag in ['zen', 'nad']:
     #         for lamp_tag in ['kr', 'hg']:
     #             wvl_cal(ssfr_tag, lc_tag, lamp_tag)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # radiometric calibration
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     for ssfr_tag in ['SSFR-A', 'SSFR-B']:
         for lc_tag in ['zen', 'nad']:
             for lamp_tag in ['1324']:
                 rad_cal(ssfr_tag, lc_tag, lamp_tag)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # angular calibration
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     # fdirs = [
     #         '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
     #         '/argus/field/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
@@ -349,13 +353,13 @@ def main_calibration_old():
     #         ]
     # for fdir in fdirs:
     #     ang_cal(fdir)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
     sys.exit()
-#\----------------------------------------------------------------------------/#
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 # instrument calibrations
-#/----------------------------------------------------------------------------\#
+#╭────────────────────────────────────────────────────────────────────────────╮#
 def rad_cal(
         fdir_pri,
         fdir_tra,
@@ -364,29 +368,29 @@ def rad_cal(
         ):
 
     # get calibration files of primary
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     tags_pri = os.path.basename(fdir_pri).split('_')
     fnames_pri_ = sorted(glob.glob('%s/*.SKS' % (fdir_pri)))
     fnames_pri = [fnames_pri_[-1]]
     if len(fnames_pri) > 1:
         msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_pri, fnames_pri[0])
         warnings.warn(msg)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # get calibration files of transfer
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     tags_tra = os.path.basename(fdir_tra).split('_')
     fnames_tra_ = sorted(glob.glob('%s/*.SKS' % (fdir_tra)))
     fnames_tra = [fnames_tra_[-1]]
     if len(fnames_tra) > 1:
         msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_tra, fnames_tra[0])
         warnings.warn(msg)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    # placeholder for calibration files of transfer
-    #/----------------------------------------------------------------------------\#
+    # secondary calibration files from field
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if fdir_sec is None:
         fdir_sec = fdir_tra
     tags_sec = os.path.basename(fdir_sec).split('_')
@@ -395,16 +399,16 @@ def rad_cal(
     if len(fnames_sec) > 1:
         msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_sec, fnames_sec[0])
         warnings.warn(msg)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # tags
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if (tags_pri[1]==tags_tra[1]) and (tags_tra[1]==tags_sec[1]):
         ssfr_tag = tags_pri[1]
     if (tags_pri[2]==tags_tra[2]) and (tags_tra[2]==tags_sec[2]):
         lc_tag = tags_pri[2]
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
 
@@ -513,36 +517,37 @@ def main_calibration_rad():
     """
 
     # radiometric calibration
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fdir_cal = '%s/rad-cal' % _fdir_cal_
 
     # primary calibrations (pre-mission)
-    #/----------------------------------------------------------------------------\#
+    #╭──────────────────────────────────────────────────────────────╮#
     # fdirs_pri_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*pri-cal_lamp-1324*si-080-120*in-250-350*')
     # fdirs_pri_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*pri-cal_lamp-506*si-080-120*in-250-350*')
     # for fdir_pri in fdirs_pri_cal:
     #     print(fdir_pri)
-    #\----------------------------------------------------------------------------/#
+    #╰──────────────────────────────────────────────────────────────╯#
 
     # transfer (pre-mission)
-    #/----------------------------------------------------------------------------\#
+    #╭──────────────────────────────────────────────────────────────╮#
     # fdirs_transfer = ssfr.util.get_all_folders(fdir_cal, pattern='*transfer_lamp-150c*si-080-120*in-250-350*')
     # fdirs_transfer = ssfr.util.get_all_folders(fdir_cal, pattern='*transfer_lamp-150e*si-080-120*in-250-350*')
     # for fdir_transfer in fdirs_transfer:
     #     print(fdir_transfer)
-    #\----------------------------------------------------------------------------/#
+    #╰──────────────────────────────────────────────────────────────╯#
 
     # secondary calibrations (in-field)
-    #/----------------------------------------------------------------------------\#
+    #╭──────────────────────────────────────────────────────────────╮#
     # fdirs_sec_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*sec-cal_lamp-150c*si-080-120*in-250-350*')
     # fdirs_sec_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*sec-cal_lamp-150e*si-080-120*in-250-350*')
     # for fdir_sec_cal in fdirs_sec_cal:
     #     print(fdir_sec_cal)
-    #\----------------------------------------------------------------------------/#
+    #╰──────────────────────────────────────────────────────────────╯#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # SSFR-A (regular setup for measuring irradiance)
-    # /--------------------------------------------------------------------------\ #
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fdirs_pri = [
             {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
              'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
@@ -561,11 +566,11 @@ def main_calibration_rad():
             {'zen': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
              'nad': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
             ]
-    # \--------------------------------------------------------------------------/ #
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # SSFR-B (backup setup for measuring irradiance)
-    # /--------------------------------------------------------------------------\ #
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fdirs_pri = [
             {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
              'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
@@ -588,7 +593,7 @@ def main_calibration_rad():
             {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
              'zen': 'data/arcsix/cal/rad-cal/2024-08-05_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
             ]
-    # \--------------------------------------------------------------------------/ #
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     for fdir_pri in fdirs_pri:
         for fdir_tra in fdirs_tra:
@@ -603,13 +608,12 @@ def main_calibration_rad():
                     print(fdir_tra0)
                     print(fdir_sec0)
                     rad_cal(fdir_pri0, fdir_tra0, fdir_sec=fdir_sec0, spec_reverse=False)
-    #\----------------------------------------------------------------------------/#
-    sys.exit()
-#\----------------------------------------------------------------------------/#
+    return
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 # functions for processing HSK and ALP
-#/----------------------------------------------------------------------------\#
+#╭────────────────────────────────────────────────────────────────────────────╮#
 def cdata_arcsix_hsk_v0(
         date,
         fdir_data=_fdir_data_,
@@ -632,10 +636,10 @@ def cdata_arcsix_hsk_v0(
     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _hsk_.upper(), _platform_.upper(), date_s)
     if run:
 
-        # this would change if we are processing IWG file
-        #/--------------------------------------------------------------\#
         try:
 
+            # ict file from P3 data system team, best quality but cannot be accessed immediately
+            #╭────────────────────────────────────────────────────────────────────────────╮#
             fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
             data_hsk = ssfr.util.read_ict(fname)
             var_dict = {
@@ -648,10 +652,13 @@ def cdata_arcsix_hsk_v0(
                     'ang_hed': 'true_heading',
                     'ir_surf_temp': 'ir_surf_temp',
                     }
+            #╰────────────────────────────────────────────────────────────────────────────╯#
 
         except Exception as error:
             print(error)
 
+            # iwg file from <https://asp-archive.arc.nasa.gov>, secondary option
+            #╭────────────────────────────────────────────────────────────────────────────╮#
             fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
             data_hsk = ssfr.util.read_iwg_nsrc(fname)
             var_dict = {
@@ -663,7 +670,10 @@ def cdata_arcsix_hsk_v0(
                     'ang_rol': 'roll_angle',
                     'ang_hed': 'true_heading',
                     }
+            #╰────────────────────────────────────────────────────────────────────────────╯#
 
+            # wts file from <https://mts2.nasa.gov/> -> Telemetry, immediately availale after flight but poor quality
+            #╭────────────────────────────────────────────────────────────────────────────╮#
             # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.mts' % (date.year, date.month, date.day))[0]
             # data_hsk = ssfr.util.read_iwg_mts(fname)
             # var_dict = {
@@ -675,15 +685,15 @@ def cdata_arcsix_hsk_v0(
             #         'ang_rol': 'roll',
             #         'ang_hed': 'true_heading',
             #         }
+            #╰────────────────────────────────────────────────────────────────────────────╯#
 
         print()
         print('Processing HSK file:', fname)
         print()
-        #\--------------------------------------------------------------/#
 
 
         # fake hsk for PSB (Pituffik Space Base)
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         # tmhr_range = [10.0, 13.5]
         # tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
         # lon0 = -68.6471 # PSB longitude
@@ -710,11 +720,11 @@ def cdata_arcsix_hsk_v0(
         #         'ang_rol': 'roll',
         #         'ang_hed': 'heading',
         #         }
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # fake hsk for NASA WFF
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         # if date == datetime.datetime(2024, 7, 8):
         #     dtime_s = datetime.datetime(2024, 7, 8, 18, 24)
         #     dtime_e = datetime.datetime(2024, 7, 8, 19, 1)
@@ -748,18 +758,19 @@ def cdata_arcsix_hsk_v0(
         #         'ang_rol': 'roll',
         #         'ang_hed': 'heading',
         #         }
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # solar geometries
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         jday0 = ssfr.util.dtime_to_jday(date)
         jday  = jday0 + data_hsk[var_dict['tmhr']]['data']/24.0
         sza, saa = ssfr.util.cal_solar_angles(jday, data_hsk[var_dict['lon']]['data'], data_hsk[var_dict['lat']]['data'], data_hsk[var_dict['alt']]['data'])
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
 
         # save processed data
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         f = h5py.File(fname_h5, 'w')
         for var in var_dict.keys():
             f[var] = data_hsk[var_dict[var]]['data']
@@ -767,7 +778,7 @@ def cdata_arcsix_hsk_v0(
         f['sza']  = sza
         f['saa']  = saa
         f.close()
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return fname_h5
 
@@ -822,12 +833,12 @@ def cdata_arcsix_hsk_from_alp_v0(
                     }
 
         # solar geometries
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         sza, saa = ssfr.util.cal_solar_angles(jday, data_hsk['lon']['data'], data_hsk['lat']['data'], data_hsk['alt']['data'])
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # save processed data
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         f = h5py.File(fname_h5, 'w')
         for var in data_hsk.keys():
             f[var] = data_hsk[var]['data']
@@ -835,7 +846,7 @@ def cdata_arcsix_hsk_from_alp_v0(
         f['sza']  = sza
         f['saa']  = saa
         f.close()
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return fname_h5
 
@@ -857,13 +868,13 @@ def cdata_arcsix_alp_v0(
     date_s = date.strftime('%Y%m%d')
 
     # read ALP raw data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _alp_.upper(), _platform_.upper(), date_s)
     if run:
         fnames_alp = ssfr.util.get_all_files(fdir_data, pattern='*.plt3')
         alp0 = ssfr.lasp_alp.read_alp(fnames_alp, date=date)
         alp0.save_h5(fname_h5)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return os.path.abspath(fname_h5)
 
@@ -916,11 +927,11 @@ def cdata_arcsix_alp_v1(
         f.close()
 
     return fname_h5
-#\----------------------------------------------------------------------------/#
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 # functions for processing SPNS
-#/----------------------------------------------------------------------------\#
+#╭────────────────────────────────────────────────────────────────────────────╮#
 def cdata_arcsix_spns_v0(
         date,
         fdir_data=_fdir_data_,
@@ -939,23 +950,23 @@ def cdata_arcsix_spns_v0(
     if run:
 
         # read spn-s raw data
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         fname_dif = ssfr.util.get_all_files(fdir_data, pattern='*Diffuse*.txt')[-1]
         data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
 
         fname_tot = ssfr.util.get_all_files(fdir_data, pattern='*Total*.txt')[-1]
         data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
-        #/----------------------------------------------------------------------------\#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # read wavelengths and calculate toa downwelling solar flux
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         flux_toa = ssfr.util.get_solar_kurudz()
 
         wvl_tot = data0_tot.data['wvl']
         f_dn_sol_tot = np.zeros_like(wvl_tot)
         for i, wvl0 in enumerate(wvl_tot):
             f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         f = h5py.File(fname_h5, 'w')
 
@@ -993,19 +1004,19 @@ def cdata_arcsix_spns_v1(
 
     if run:
         # read spn-s v0
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         data_spns_v0 = ssfr.util.load_h5(fname_spns_v0)
-        #/----------------------------------------------------------------------------\#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # read hsk v0
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         data_hsk= ssfr.util.load_h5(fname_hsk)
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         time_offset = _spns_time_offset_[date_s]
 
         # interpolate spn-s data to hsk time frame
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         flux_dif = np.zeros((data_hsk['jday'].size, data_spns_v0['dif/wvl'].size), dtype=np.float64)
         for i in range(flux_dif.shape[-1]):
             flux_dif[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['dif/jday']+time_offset/86400.0, data_spns_v0['dif/flux'][:, i], mode='nearest')
@@ -1013,7 +1024,7 @@ def cdata_arcsix_spns_v1(
         flux_tot = np.zeros((data_hsk['jday'].size, data_spns_v0['tot/wvl'].size), dtype=np.float64)
         for i in range(flux_tot.shape[-1]):
             flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday']+time_offset/86400.0, data_spns_v0['tot/flux'][:, i], mode='nearest')
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         f = h5py.File(fname_h5, 'w')
 
@@ -1059,17 +1070,17 @@ def cdata_arcsix_spns_v2(
     if run:
 
         # read spn-s v1
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         data_spns_v1 = ssfr.util.load_h5(fname_spns_v1)
-        #/----------------------------------------------------------------------------\#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # read hsk v0
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         data_hsk = ssfr.util.load_h5(fname_hsk)
-        #/----------------------------------------------------------------------------\#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # correction factor
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         mu = np.cos(np.deg2rad(data_hsk['sza']))
 
         try:
@@ -1080,20 +1091,19 @@ def cdata_arcsix_spns_v2(
         dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
 
         factors = mu / dc
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # attitude correction
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         f_dn_dir = data_spns_v1['tot/flux'] - data_spns_v1['dif/flux']
         f_dn_dir_corr = np.zeros_like(f_dn_dir)
         f_dn_tot_corr = np.zeros_like(f_dn_dir)
         for iwvl in range(data_spns_v1['tot/wvl'].size):
             f_dn_dir_corr[..., iwvl] = f_dn_dir[..., iwvl]*factors
             f_dn_tot_corr[..., iwvl] = f_dn_dir_corr[..., iwvl] + data_spns_v1['dif/flux'][..., iwvl]
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         f = h5py.File(fname_h5, 'w')
-
 
         g0 = f.create_group('att_corr')
         g0['mu'] = mu
@@ -1148,36 +1158,36 @@ def cdata_arcsix_spns_archive(
 
 
     # placeholder for additional information such as calibration
-    #/----------------------------------------------------------------------------\#
-    #\----------------------------------------------------------------------------/#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # date info
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     date_s = date.strftime('%Y%m%d')
     date_today = datetime.date.today()
     date_info  = '%4.4d, %2.2d, %2.2d, %4.4d, %2.2d, %2.2d' % (date.year, date.month, date.day, date_today.year, date_today.month, date_today.day)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # version info
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     version = version.upper()
     version_info = {
             'RA': 'field data',
             }
     version_info = version_info[version]
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # data info
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     data_info = 'Shortwave Total and Diffuse Downwelling Spectral Irradiance from %s %s' % (platform_info.upper(), instrument_info)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # routine comments
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     comments_routine_list = OrderedDict({
             'PI_CONTACT_INFO': 'Address: University of Colorado Boulder, LASP, 3665 Discovery Drive, Boulder, CO 80303; E-mail: hong.chen@lasp.colorado.edu and sebastian.schmidt@lasp.colorado.edu',
             'PLATFORM': platform_info.upper(),
@@ -1199,11 +1209,11 @@ def cdata_arcsix_spns_archive(
             })
 
     comments_routine = '\n'.join(['%s: %s' % (var0, comments_routine_list[var0]) for var0 in comments_routine_list.keys()])
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # special comments
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     comments_special_dict = {
             '20240530': 'Noticed icing on dome after flight',
             }
@@ -1216,11 +1226,11 @@ def cdata_arcsix_spns_archive(
         Nspecial = len(comments_special.split('\n'))
     else:
         Nspecial = 0
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # data processing
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     data_v2 = ssfr.util.load_h5(fname_spns_v2)
     data_v2['tot/flux'][data_v2['tot/flux']<0.0] = np.nan
     data_v2['dif/flux'][data_v2['dif/flux']<0.0] = np.nan
@@ -1307,7 +1317,7 @@ def cdata_arcsix_spns_archive(
     Nvar = len(data.keys())
     comments_routine = '%s\n%s' % (comments_routine, ','.join(data.keys()))
     Nroutine = len(comments_routine.split('\n'))
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     header_list = [file_format_index,
@@ -1351,11 +1361,11 @@ def cdata_arcsix_spns_archive(
         f.close()
 
     return fname_h5
-#\----------------------------------------------------------------------------/#
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 # functions for processing SSFR
-#/----------------------------------------------------------------------------\#
+#╭────────────────────────────────────────────────────────────────────────────╮#
 def cdata_arcsix_ssfr_v0(
         date,
         fdir_data=_fdir_data_,
@@ -1384,7 +1394,7 @@ def cdata_arcsix_ssfr_v0(
         #   wvl_nad [nm]
         #   cnt_nad [counts/ms]
         #   sat_nad: saturation tag, 1 means saturation
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         f = h5py.File(fname_h5, 'w')
 
         g = f.create_group('raw')
@@ -1398,7 +1408,7 @@ def cdata_arcsix_ssfr_v0(
                 g.create_dataset(key, data=ssfr0.data_spec[key], compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return fname_h5
 
@@ -1427,32 +1437,31 @@ def cdata_arcsix_ssfr_v1(
     if run:
 
         # load ssfr v0 data
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         data_ssfr_v0 = ssfr.util.load_h5(fname_ssfr_v0)
-        #\----------------------------------------------------------------------------/#
-
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # load hsk
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         data_hsk = ssfr.util.load_h5(fname_hsk)
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # read wavelengths and calculate toa downwelling solar flux
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         flux_toa = ssfr.util.get_solar_kurudz()
 
         wvl_zen = data_ssfr_v0['spec/wvl_zen']
         f_dn_sol_zen = np.zeros_like(wvl_zen)
         for i, wvl0 in enumerate(wvl_zen):
             f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         f = h5py.File(fname_h5, 'w')
 
         # processing data - since we have dual integration times, SSFR data with different
         # integration time will be processed seperately
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         jday     = data_ssfr_v0['raw/jday']
         dset_num = data_ssfr_v0['raw/dset_num']
 
@@ -1468,7 +1477,7 @@ def cdata_arcsix_ssfr_v1(
 
             if which_ssfr_for_flux == which_ssfr:
                 # select calibration file (can later be adjusted for different integration time sets)
-                #/----------------------------------------------------------------------------\#
+                #╭──────────────────────────────────────────────────────────────╮#
                 fdir_cal = '%s/rad-cal' % _fdir_cal_
 
                 jday_today = ssfr.util.dtime_to_jday(date)
@@ -1501,7 +1510,7 @@ def cdata_arcsix_ssfr_v1(
 
                 msg = '\nMessage [cdata_arcsix_ssfr_v1]: Using <%s> for %s nadir irradiance ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
                 print(msg)
-                #\----------------------------------------------------------------------------/#
+                #╰──────────────────────────────────────────────────────────────╯#
             else:
                 # radiance (scale the data to 0 - 2.0 for now,
                 # later we will apply radiometric response after mission to retrieve spectral RADIANCE)
@@ -1525,34 +1534,34 @@ def cdata_arcsix_ssfr_v1(
             logic_dset = (dset_num == idset)
 
             # convert counts to flux
-            #/----------------------------------------------------------------------------\#
+            #╭──────────────────────────────────────────────────────────────╮#
             for i in range(wvl_zen.size):
                 spec_zen[logic_dset, i] = cnt_zen[logic_dset, i] / data_cal_zen['sec_resp'][i]
 
             for i in range(wvl_nad.size):
                 spec_nad[logic_dset, i] = cnt_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
-            #\----------------------------------------------------------------------------/#
+            #╰──────────────────────────────────────────────────────────────╯#
 
             # set saturation to 0
-            #/--------------------------------------------------------------\#
+            #╭──────────────────────────────────────────────────────────────╮#
             spec_zen[data_ssfr_v0['spec/sat_zen']==1] = -0.05
             spec_nad[data_ssfr_v0['spec/sat_nad']==1] = -0.05
-            #\--------------------------------------------------------------/#
-        #\----------------------------------------------------------------------------/#
+            #╰──────────────────────────────────────────────────────────────╯#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # check time offset
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         if which_ssfr == 'ssfr-a':
             time_offset = _ssfr1_time_offset_[date_s]
         elif which_ssfr == 'ssfr-b':
             time_offset = _ssfr2_time_offset_[date_s]
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # interpolate ssfr data to hsk time frame
         # and convert counts to flux
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         cnt_zen_hsk  = np.zeros((data_hsk['jday'].size, wvl_zen.size), dtype=np.float64)
         spec_zen_hsk = np.zeros_like(cnt_zen_hsk)
 
@@ -1565,11 +1574,11 @@ def cdata_arcsix_ssfr_v1(
         for i in range(wvl_nad.size):
             cnt_nad_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_nad[:, i], mode='nearest')
             spec_nad_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_nad[:, i], mode='nearest')
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # save processed data
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         g0 = f.create_group('v0')
         g0.create_dataset('jday', data=jday+time_offset/86400.0, compression='gzip', compression_opts=9, chunks=True)
         g0.create_dataset('wvl_zen', data=wvl_zen, compression='gzip', compression_opts=9, chunks=True)
@@ -1593,11 +1602,11 @@ def cdata_arcsix_ssfr_v1(
             g2.create_dataset('flux', data=spec_nad_hsk, compression='gzip', compression_opts=9, chunks=True)
         else:
             g2.create_dataset('rad', data=spec_nad_hsk, compression='gzip', compression_opts=9, chunks=True)
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # save processed data
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         for key in data_hsk.keys():
             f[key] = data_hsk[key]
 
@@ -1606,7 +1615,7 @@ def cdata_arcsix_ssfr_v1(
         f['jday_ori'] = data_hsk['jday'] - time_offset/86400.0
 
         f.close()
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return fname_h5
 
@@ -1651,7 +1660,7 @@ def cdata_arcsix_ssfr_v2(
         data_ssfr_v1 = ssfr.util.load_h5(fname_ssfr_v1)
 
         # temporary fix to bypass the attitude correction for SSFR-B
-        # /--------------------------------------------------------------------------\ #
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         if data_ssfr_v1['zen/wvl'].size > 424:
             data_ssfr_v1['zen/toa0'] = data_ssfr_v1['zen/toa0'][:424]
             data_ssfr_v1['zen/wvl'] = data_ssfr_v1['zen/wvl'][:424]
@@ -1659,14 +1668,14 @@ def cdata_arcsix_ssfr_v2(
             data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][:, :424]
             data_ssfr_v1['v0/spec_zen'] = data_ssfr_v1['v0/spec_zen'][:, :424]
             data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:424]
-        # \--------------------------------------------------------------------------/ #
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         fname_aux = '%s/%s-%s_%s_%s_v2-aux.h5' % (fdir_out, _mission_.upper(), which_ssfr.upper(), _platform_.upper(), date_s)
 
         if run_aux:
 
             # calculate diffuse/global ratio from SPNS data
-            #/----------------------------------------------------------------------------\#
+            #╭────────────────────────────────────────────────────────────────────────────╮#
             data_spns_v2 = ssfr.util.load_h5(fname_spns_v2)
 
             f_ = h5py.File(fname_aux, 'w')
@@ -1685,7 +1694,7 @@ def cdata_arcsix_ssfr_v2(
             qual_flag = np.repeat(0, Nt)
 
             # do spectral fit based on 400 nm - 750 nm observations
-            #/--------------------------------------------------------------\#
+            #╭──────────────────────────────────────────────────────────────╮#
             for i in tqdm(range(Nt)):
 
                 diff_ratio0_spns = data_spns_v2['dif/flux'][i, :] / data_spns_v2['tot/flux'][i, :]
@@ -1703,10 +1712,10 @@ def cdata_arcsix_ssfr_v2(
 
             diff_ratio[diff_ratio<0.0] = 0.0
             diff_ratio[diff_ratio>1.0] = 1.0
-            #\--------------------------------------------------------------/#
+            #╰──────────────────────────────────────────────────────────────╯#
 
             # fill in nan values in time space
-            #/--------------------------------------------------------------\#
+            #╭──────────────────────────────────────────────────────────────╮#
             for i in range(Nwvl):
 
                 logic_nan   = np.isnan(diff_ratio[:, i])
@@ -1716,21 +1725,21 @@ def cdata_arcsix_ssfr_v2(
 
             diff_ratio[diff_ratio<0.0] = 0.0
             diff_ratio[diff_ratio>1.0] = 1.0
-            #\--------------------------------------------------------------/#
+            #╰──────────────────────────────────────────────────────────────╯#
 
             # save data
-            #/--------------------------------------------------------------\#
+            #╭──────────────────────────────────────────────────────────────╮#
             f_.create_dataset('diff_ratio', data=diff_ratio  , compression='gzip', compression_opts=9, chunks=True)
             g_ = f_.create_group('diff_ratio_aux')
             g_.create_dataset('wvl'       , data=wvl_ssfr_zen, compression='gzip', compression_opts=9, chunks=True)
             g_.create_dataset('coef'      , data=poly_coefs  , compression='gzip', compression_opts=9, chunks=True)
             g_.create_dataset('qual_flag' , data=qual_flag   , compression='gzip', compression_opts=9, chunks=True)
-            #\--------------------------------------------------------------/#
-            #\----------------------------------------------------------------------------/#
+            #╰──────────────────────────────────────────────────────────────╯#
+            #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
             # alp
-            #/----------------------------------------------------------------------------\#
+            #╭────────────────────────────────────────────────────────────────────────────╮#
             data_alp_v1  = ssfr.util.load_h5(fname_alp_v1)
             for key in data_alp_v1.keys():
                 try:
@@ -1739,20 +1748,18 @@ def cdata_arcsix_ssfr_v2(
                     print(error)
                     f_[key] = data_alp_v1[key]
             f_.close()
-            #\----------------------------------------------------------------------------/#
+            #╰────────────────────────────────────────────────────────────────────────────╯#
 
-        # aux data processing ends here
 
         data_aux = ssfr.util.load_h5(fname_aux)
 
         # diffuse ratio
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         diff_ratio = data_aux['diff_ratio']
-        #\----------------------------------------------------------------------------/#
-
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # angles
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         angles = {}
         angles['sza'] = data_aux['sza']
         angles['saa'] = data_aux['saa']
@@ -1763,32 +1770,32 @@ def cdata_arcsix_ssfr_v2(
         angles['ang_rol_m'] = data_aux['ang_rol_m']
         angles['ang_pit_offset'] = ang_pit_offset
         angles['ang_rol_offset'] = ang_rol_offset
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # select calibration file for attitude correction
         # angular response is relative change, thus irrelavant to integration time (ideally)
         # and is intrinsic property of light collector, thus fixed to use SSFR-A with larger
         # integration time for consistency and simplicity, will revisit this after mission
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         dset_s = 'dset1'
         fdir_cal = '%s/ang-cal' % _fdir_cal_
         fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*zen*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
         fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*vaa-180|*%s*%s*nad*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # calculate attitude correction factors
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         fnames_cal = {
                 'zen': fname_cal_zen,
                 'nad': fname_cal_nad,
                 }
         factors = ssfr.corr.att_corr(fnames_cal, angles, diff_ratio=diff_ratio)
-        #\----------------------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # save data
-        #/----------------------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         f = h5py.File(fname_h5, 'w')
         for key in ['tmhr', 'jday', 'lon', 'lat', 'alt']:
             f.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
@@ -1800,7 +1807,7 @@ def cdata_arcsix_ssfr_v2(
             g1.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
 
         # apply attitude correction
-        #/----------------------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         g2 = f.create_group('zen')
         g2.create_dataset('flux', data=data_ssfr_v1['zen/flux']*factors['zen'], compression='gzip', compression_opts=9, chunks=True)
         g2.create_dataset('wvl' , data=data_ssfr_v1['zen/wvl']                , compression='gzip', compression_opts=9, chunks=True)
@@ -1809,9 +1816,10 @@ def cdata_arcsix_ssfr_v2(
         g3 = f.create_group('nad')
         g3.create_dataset('flux', data=data_ssfr_v1['nad/flux']*factors['nad'], compression='gzip', compression_opts=9, chunks=True)
         g3.create_dataset('wvl' , data=data_ssfr_v1['nad/wvl']                , compression='gzip', compression_opts=9, chunks=True)
-        #\----------------------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
 
         f.close()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return fname_h5
 
@@ -1838,7 +1846,7 @@ def cdata_arcsix_ssfr_archive(
 
 
     # placeholder for additional information such as calibration
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     # comments_list = []
     # comments_list.append('Bandwidth of Silicon channels (wavelength < 950nm) as defined by the FWHM: 6 nm')
     # comments_list.append('Bandwidth of InGaAs channels (wavelength > 950nm) as defined by the FWHM: 12 nm')
@@ -1854,11 +1862,11 @@ def cdata_arcsix_ssfr_archive(
     # print(date_s)
     # print(comments)
     # print()
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # date info
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     date_s = date.strftime('%Y%m%d')
     date_today = datetime.date.today()
     date_info  = '%4.4d, %2.2d, %2.2d, %4.4d, %2.2d, %2.2d' % (date.year, date.month, date.day, date_today.year, date_today.month, date_today.day)
@@ -1868,27 +1876,27 @@ def cdata_arcsix_ssfr_archive(
         instrument_info = 'SSFR-A (Solar Spectral Flux Radiometer - Alvin)'
     else:
         instrument_info = 'SSFR-B (Solar Spectral Flux Radiometer - Belana)'
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # version info
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     version = version.upper()
     version_info = {
             'RA': 'field data',
             }
     version_info = version_info[version]
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # data info
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     data_info = 'Shortwave Total Downwelling and Upwelling Spectral Irradiance from %s %s' % (platform_info.upper(), instrument_info)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # routine comments
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     comments_routine_list = OrderedDict({
             'PI_CONTACT_INFO': 'Address: University of Colorado Boulder, LASP, 3665 Discovery Drive, Boulder, CO 80303; E-mail: hong.chen@lasp.colorado.edu and sebastian.schmidt@lasp.colorado.edu',
             'PLATFORM': platform_info.upper(),
@@ -1910,11 +1918,11 @@ def cdata_arcsix_ssfr_archive(
             })
 
     comments_routine = '\n'.join(['%s: %s' % (var0, comments_routine_list[var0]) for var0 in comments_routine_list.keys()])
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # special comments
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     comments_special_dict = {
             '20240530': 'Noticed icing on zenith light collector dome after flight',
             '20240531': 'Encountered temperature control issue (after around 1:30 UTC)',
@@ -1930,11 +1938,11 @@ def cdata_arcsix_ssfr_archive(
         Nspecial = len(comments_special.split('\n'))
     else:
         Nspecial = 0
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # data processing
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     data_v2 = ssfr.util.load_h5(fname_ssfr_v2)
     data_v2['zen/flux'][data_v2['zen/flux']<0.0] = np.nan
     data_v2['nad/flux'][data_v2['nad/flux']<0.0] = np.nan
@@ -2021,7 +2029,7 @@ def cdata_arcsix_ssfr_archive(
     Nvar = len(data.keys())
     comments_routine = '%s\n%s' % (comments_routine, ','.join(data.keys()))
     Nroutine = len(comments_routine.split('\n'))
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     header_list = [file_format_index,
@@ -2065,11 +2073,11 @@ def cdata_arcsix_ssfr_archive(
         f.close()
 
     return fname_h5
-#\----------------------------------------------------------------------------/#
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 # additional functions under development
-#/----------------------------------------------------------------------------\#
+#╭────────────────────────────────────────────────────────────────────────────╮#
 def run_time_offset_check(date):
 
     date_s = date.strftime('%Y%m%d')
@@ -2090,7 +2098,7 @@ def run_time_offset_check(date):
     _offset_x_range_ = [-600.0, 600.0]
 
     # ALP pitch vs HSK pitch
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     data_offset = {
             'x0': data_hsk['jday']*86400.0,
             'y0': data_hsk['ang_pit'],
@@ -2105,10 +2113,11 @@ def run_time_offset_check(date):
             y_reset=False,
             description='ALP Pitch vs. HSK Pitch',
             fname_html='alp-pit_offset_check_%s.html' % date_s)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
 
     # ALP roll vs HSK roll
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     data_offset = {
             'x0': data_hsk['jday']*86400.0,
             'y0': data_hsk['ang_rol'],
@@ -2123,10 +2132,11 @@ def run_time_offset_check(date):
             y_reset=False,
             description='ALP Roll vs. HSK Roll',
             fname_html='alp-rol_offset_check_%s.html' % date_s)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
 
     # ALP altitude vs HSK altitude
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     data_offset = {
             'x0': data_hsk['jday']*86400.0,
             'y0': data_hsk['alt'],
@@ -2141,11 +2151,11 @@ def run_time_offset_check(date):
             y_reset=True,
             description='ALP Altitude vs. HSK Altitude',
             fname_html='alp-alt_offset_check_%s.html' % date_s)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # SPNS vs TOA
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     index_wvl = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
     data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
 
@@ -2169,11 +2179,11 @@ def run_time_offset_check(date):
             y_reset=True,
             description='SPNS Total vs. TOA (745 nm)',
             fname_html='spns-toa_offset_check_%s.html' % date_s)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # SSFR-A vs SPNS
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
     data_y0 = data_spns_v0['tot/flux'][:, index_wvl_spns]
 
@@ -2193,10 +2203,11 @@ def run_time_offset_check(date):
             y_reset=True,
             description='SSFR-A Zenith Count vs. SPNS Total (745nm)',
             fname_html='ssfr-a_offset_check_%s.html' % (date_s))
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
 
     # SSFR-B vs SSFR-A
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_nad']))
     data_y0 = data_ssfr1_v0['spec/cnt_nad'][:, index_wvl_ssfr]
 
@@ -2216,9 +2227,9 @@ def run_time_offset_check(date):
             y_reset=True,
             description='SSFR-B Nadir Count vs. SSFR-A Nadir (745nm)',
             fname_html='ssfr-b_offset_check_%s.html' % (date_s))
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    sys.exit()
+    return
 
 def run_angle_offset_check(
         date,
@@ -2232,15 +2243,15 @@ def run_angle_offset_check(
 
 
     # SPNS v1
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     data_spns_v1 = ssfr.util.load_h5(_fnames_['%s_spns_v1' % date_s])
     index_wvl_spns = np.argmin(np.abs(wvl0-data_spns_v1['tot/wvl']))
     data_y1 = data_spns_v1['tot/flux'][:, index_wvl_spns]
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # SPNS v2
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
             fdir_out=_fdir_out_,
             run=True,
@@ -2249,24 +2260,24 @@ def run_angle_offset_check(
             )
     data_spns_v2 = ssfr.util.load_h5(_fnames_['%s_spns_v2' % date_s])
     data_y2 = data_spns_v2['tot/flux'][:, index_wvl_spns]
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # SSFR-A v2
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     data_ssfr1_v2 = ssfr.util.load_h5(_fnames_['%s_ssfr1_v2' % date_s])
     index_wvl_ssfr = np.argmin(np.abs(wvl0-data_ssfr1_v2['zen/wvl']))
     data_y0 = data_ssfr1_v2['zen/flux'][:, index_wvl_ssfr]
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # figure
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if True:
         plt.close('all')
         fig = plt.figure(figsize=(15, 6))
         # fig.suptitle('Figure')
         # plot
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         ax1 = fig.add_subplot(111)
         # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
         ax1.scatter(data_hsk['tmhr'], data_y1, s=3, c='r', lw=0.0)
@@ -2281,15 +2292,15 @@ def run_angle_offset_check(
         # ax1.set_title('')
         # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
         # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
-        #\--------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
         # save figure
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         # fig.subplots_adjust(hspace=0.3, wspace=0.3)
         # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
         plt.show()
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
     sys.exit()
 
 def dark_corr_temp(date, iChan=100, idset=0):
@@ -2307,7 +2318,7 @@ def dark_corr_temp(date, iChan=100, idset=0):
     logic_light = (shutter==0) & (dset_num==idset)
 
     # figure
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if True:
 
 
@@ -2315,7 +2326,7 @@ def dark_corr_temp(date, iChan=100, idset=0):
         fig = plt.figure(figsize=(13, 19))
         fig.suptitle('Channel #%d' % iChan)
         # plot
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         ax0 = fig.add_subplot(12,1,1)
         ax00 = fig.add_subplot(12,1,2)
         ax000 = fig.add_subplot(12,1,3)
@@ -2384,21 +2395,21 @@ def dark_corr_temp(date, iChan=100, idset=0):
         ax4.set_ylabel('Counts')
 
         ax0000.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 3]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 3], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        #\--------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
         # save figure
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         fig.subplots_adjust(hspace=0.3, wspace=0.4)
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         fig.savefig('%s_dset%d_%3.3d.png' % (_metadata['Function'], idset, iChan), bbox_inches='tight', metadata=_metadata, dpi=150)
-        #\--------------------------------------------------------------/#
+        #╰──────────────────────────────────────────────────────────────╯#
         plt.show()
         sys.exit()
-    #\----------------------------------------------------------------------------/#
-#\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 # main program
-#/----------------------------------------------------------------------------\#
+#╭────────────────────────────────────────────────────────────────────────────╮#
 def main_process_data_instrument(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
@@ -2440,7 +2451,7 @@ def main_process_data_v0(date, run=True):
     date_s = date.strftime('%Y%m%d')
 
     # # ALP v0: raw data
-    # #/----------------------------------------------------------------------------\#
+    # #╭────────────────────────────────────────────────────────────────────────────╮#
     # fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
     # fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
     # fnames_alp = ssfr.util.get_all_files(fdir_data_alp, pattern='*.plt3')
@@ -2450,10 +2461,10 @@ def main_process_data_v0(date, run=True):
     #     fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
     #             fdir_out=fdir_out, run=run)
     #     _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
-    # #\----------------------------------------------------------------------------/#
+    # #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # # HSK v0: raw data
-    # #/----------------------------------------------------------------------------\#
+    # #╭────────────────────────────────────────────────────────────────────────────╮#
     # fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
     # if run and len(fnames_hsk) == 0:
     #     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
@@ -2464,12 +2475,12 @@ def main_process_data_v0(date, run=True):
     #     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
     #             fdir_out=fdir_out, run=run)
     # _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    # #\----------------------------------------------------------------------------/#
+    # #╰────────────────────────────────────────────────────────────────────────────╯#
     # sys.exit()
 
 
     # SSFR-A v0: raw data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr1_))
     fdir_data_ssfr1 = sorted(fdirs, key=os.path.getmtime)[-1]
     fnames_ssfr1 = ssfr.util.get_all_files(fdir_data_ssfr1, pattern='*.SKS')
@@ -2479,11 +2490,11 @@ def main_process_data_v0(date, run=True):
         fname_ssfr1_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr1,
                 which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
         _fnames_['%s_ssfr1_v0' % date_s] = fname_ssfr1_v0
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # SSFR-B v0: raw data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ssfr2_))
     fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
     fnames_ssfr2 = ssfr.util.get_all_files(fdir_data_ssfr2, pattern='*.SKS')
@@ -2493,11 +2504,11 @@ def main_process_data_v0(date, run=True):
         fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
                 which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
         _fnames_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # ALP v0: raw data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _alp_))
     fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
     fnames_alp = ssfr.util.get_all_files(fdir_data_alp, pattern='*.plt3')
@@ -2507,11 +2518,11 @@ def main_process_data_v0(date, run=True):
         fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
                 fdir_out=fdir_out, run=run)
         _fnames_['%s_alp_v0' % date_s]   = fname_alp_v0
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # SPNS v0: raw data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fdirs = ssfr.util.get_all_folders(_fdir_data_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s*' % (date.year, date.month, date.day, 'spns'))
     fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
     fnames_spns = ssfr.util.get_all_files(fdir_data_spns, pattern='*.txt')
@@ -2521,11 +2532,11 @@ def main_process_data_v0(date, run=True):
         fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
                 fdir_out=fdir_out, run=run)
         _fnames_['%s_spns_v0' % date_s]  = fname_spns_v0
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # HSK v0: raw data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
     if run and len(fnames_hsk) == 0:
         # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
@@ -2536,7 +2547,7 @@ def main_process_data_v0(date, run=True):
         fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
                 fdir_out=fdir_out, run=run)
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main_process_data_v0_metnav(date, run=True):
 
@@ -2547,7 +2558,7 @@ def main_process_data_v0_metnav(date, run=True):
     date_s = date.strftime('%Y%m%d')
 
     # HSK v0: raw data
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fnames_hsk = ssfr.util.get_all_files(_fdir_hsk_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
     if run and len(fnames_hsk) == 0:
         return
@@ -2556,7 +2567,7 @@ def main_process_data_v0_metnav(date, run=True):
         fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_fdir_hsk_,
                 fdir_out=fdir_out, run=run)
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main_process_data_v1(date, run=True):
 
@@ -2567,36 +2578,36 @@ def main_process_data_v1(date, run=True):
     date_s = date.strftime('%Y%m%d')
 
     # ALP v1: time synced with hsk time with time offset applied
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_alp_v1 = cdata_arcsix_alp_v1(date, _fnames_['%s_alp_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
 
     _fnames_['%s_alp_v1'   % date_s] = fname_alp_v1
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # SPNS v1: time synced with hsk time with time offset applied
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_spns_v1 = cdata_arcsix_spns_v1(date, _fnames_['%s_spns_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
 
     _fnames_['%s_spns_v1'  % date_s] = fname_spns_v1
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # SSFR-A v1: time synced with hsk time with time offset applied
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_ssfr1_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr1_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
             which_ssfr_for_flux=_which_ssfr_for_flux_, fdir_out=fdir_out, run=run)
 
     _fnames_['%s_ssfr1_v1' % date_s] = fname_ssfr1_v1
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # SSFR-B v1: time synced with hsk time with time offset applied
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _fnames_['%s_ssfr2_v0' % date_s], _fnames_['%s_hsk_v0' % date_s],
             which_ssfr_for_flux=_which_ssfr_for_flux_, fdir_out=fdir_out, run=run)
 
     _fnames_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main_process_data_v2(date, run=True):
 
@@ -2613,7 +2624,7 @@ def main_process_data_v2(date, run=True):
         os.makedirs(fdir_out)
 
     # SPNS v2
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     # * based on ALP v1
     # fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=run)
@@ -2623,12 +2634,12 @@ def main_process_data_v2(date, run=True):
     # * based on HSK v0
     fname_spns_v2 = cdata_arcsix_spns_v2(date, _fnames_['%s_spns_v1' % date_s], _fnames_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
     _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
 
 
     # SSFR v2
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if _which_ssfr_for_flux_ == _ssfr1_:
         _vname_ssfr_v1_ = '%s_ssfr1_v1' % date_s
         _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
@@ -2638,7 +2649,7 @@ def main_process_data_v2(date, run=True):
 
     fname_ssfr_v2 = cdata_arcsix_ssfr_v2(date, _fnames_[_vname_ssfr_v1_], _fnames_['%s_alp_v1' % date_s], _fnames_['%s_spns_v2' % date_s],
             fdir_out=fdir_out, run=run, run_aux=True)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
     _fnames_[_vname_ssfr_v2_] = fname_ssfr_v2
 
 def main_process_data_archive(date, run=True):
@@ -2654,15 +2665,15 @@ def main_process_data_archive(date, run=True):
         os.makedirs(fdir_out)
 
     # SPNS RA
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_spns_ra = cdata_arcsix_spns_archive(date, _fnames_['%s_spns_v2' % date_s],
             fdir_out=fdir_out, run=run)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
     _fnames_['%s_spns_ra' % date_s] = fname_spns_ra
 
 
     # SSFR RA
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if _which_ssfr_for_flux_ == _ssfr1_:
         _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
         _vname_ssfr_ra_ = '%s_ssfr1_ra' % date_s
@@ -2672,9 +2683,9 @@ def main_process_data_archive(date, run=True):
 
     fname_ssfr_ra = cdata_arcsix_ssfr_archive(date, _fnames_[_vname_ssfr_v2_],
             fdir_out=fdir_out, run=run)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
     _fnames_[_vname_ssfr_ra_] = fname_ssfr_ra
-#\----------------------------------------------------------------------------/#
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 if __name__ == '__main__':
@@ -2682,24 +2693,24 @@ if __name__ == '__main__':
     warnings.warn('\n!!!!!!!! Under development !!!!!!!!')
 
     # process field calibration
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     # main_calibration_rad()
     # sys.exit()
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # process field data
-    #/----------------------------------------------------------------------------\#
+    # dates
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral
-             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall
-             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley, surface BRDF
-             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall
-             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley, surface BRDF
-             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall
-             # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7, cloud wall
-             # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8
-             # datetime.datetime(2024, 6, 11), # ARCSIX science flight #9
-             # datetime.datetime(2024, 6, 13), # ARCSIX science flight #10
+             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral, operator - Vikas Nataraja
+             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall, operator - Vikas Nataraja
+             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
+             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall, operator - Vikas Nataraja
+             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley; surface BRDF, operator - Vikas Nataraja, Sebastian Becker
+             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall, operator - Vikas Nataraja, Jeffery Drouet
+             # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
+             # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8, operator - Jeffery Drouet
+             # datetime.datetime(2024, 6, 11), # ARCSIX science flight #9, operator - Arabella Chamberlain, Sebastian Becker
+             # datetime.datetime(2024, 6, 13), # ARCSIX science flight #10, operator - Arabella Chamberlain
              # datetime.datetime(2024, 7, 8), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
              # datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
              # datetime.datetime(2024, 7, 22), # ARCSIX-2 transit from WFF to Pituffik, noticed TEC2 (SSFR-A nadir) issue, operator - Ken Hirata, Vikas Nataraja
@@ -2709,49 +2720,50 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
              # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
-             datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+             # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
              # datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
+             datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
             ]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     for date in dates[::-1]:
 
         # step 1
-        #/--------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         main_process_data_v0(date, run=True)
         main_process_data_v0_metnav(date, run=True)
         sys.exit()
-        #\--------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
-        #/--------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         # main_process_data_v0(date, run=False)
         # run_time_offset_check(date)
         # sys.exit()
-        #\--------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
-        #/--------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         # main_process_data_v0(date, run=False)
         # main_process_data_v1(date, run=True)
         # sys.exit()
-        #\--------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4
-        #/--------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         # main_process_data_v0(date, run=False)
         # main_process_data_v1(date, run=False)
         # main_process_data_v2(date, run=True)
         # sys.exit()
-        # #\--------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 5
-        #/--------------------------------------------------------------\#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
         # main_process_data_v0(date, run=False)
         # main_process_data_v1(date, run=False)
         # main_process_data_v2(date, run=False)
         # main_process_data_archive(date, run=True)
         # sys.exit()
-        #\--------------------------------------------------------------/#
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         pass
-    #\----------------------------------------------------------------------------/#
