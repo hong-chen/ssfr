@@ -834,8 +834,8 @@ def cdata_arcsix_hsk_from_alp_v0(
 
         # empirical offset angles between ALP and HSK
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        data_hsk['ang_pit'] += 3.85
-        data_hsk['ang_rol'] += 0.45
+        data_hsk['ang_pit']['data'] += 3.85
+        data_hsk['ang_rol']['data'] += 0.45
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # solar geometries
