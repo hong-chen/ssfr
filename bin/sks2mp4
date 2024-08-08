@@ -536,7 +536,7 @@ def main_pre(
         which_ssfr=_default_ssfr_,
         ):
 
-    msg = '\nMessage [sks2mp4]: Recognized data from <%s> (default flux radiometer is set to <%s>).' % (which_ssfr.upper(), _default_ssfr_.upper())
+    msg = '\nMessage [sks2mp4]: Processing data from <%s> (default flux radiometer is set to <%s>) ...' % (which_ssfr.upper(), _default_ssfr_.upper())
     print(msg)
 
     # retrieve date from ssfr data object
