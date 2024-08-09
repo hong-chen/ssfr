@@ -2749,9 +2749,9 @@ if __name__ == '__main__':
 
         # step 2
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # run_time_offset_check(date)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        run_time_offset_check(date)
+        sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
@@ -2771,11 +2771,11 @@ if __name__ == '__main__':
 
         # step 5
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=False)
-        main_process_data_archive(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         pass
