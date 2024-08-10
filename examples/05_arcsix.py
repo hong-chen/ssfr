@@ -517,6 +517,9 @@ def main_calibration_rad():
         data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
         data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
         data/arcsix/cal/rad-cal/2024-08-05_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik # after disassembly
+        data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik
+        data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik1
+        data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik2 # after disassembly
 
     fdirs = [
             {'zen': '',
@@ -598,8 +601,12 @@ def main_calibration_rad():
             #  'zen': 'data/arcsix/cal/rad-cal/2024-07-31_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
             # {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
             #  'zen': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-            {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-             'zen': 'data/arcsix/cal/rad-cal/2024-08-05_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+            # {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+            #  'zen': 'data/arcsix/cal/rad-cal/2024-08-05_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+            # {'nad': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+            #  'zen': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik1'},
+            {'nad': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+             'zen': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik2'},
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -2709,8 +2716,8 @@ if __name__ == '__main__':
 
     # process field calibration
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # main_calibration_rad()
-    # sys.exit()
+    main_calibration_rad()
+    sys.exit()
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # dates
@@ -2738,7 +2745,7 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
              # datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
              # datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 8, 8), # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 8), # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
              datetime.datetime(2024, 8, 9), # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
