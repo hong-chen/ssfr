@@ -1950,6 +1950,8 @@ def cdata_arcsix_ssfr_archive(
             '20240730': 'Noticed icing on dome inside zenith light collector after flight',
             '20240801': 'Noticed condensation on dome inside zenith light collector before flight',
             '20240807': 'Noticed condensation on dome inside zenith light collector after flight',
+            '20240808': 'Noticed condensation on dome inside zenith light collector after flight',
+            '20240809': 'Noticed condensation on dome inside zenith light collector after flight',
             }
     if date_s in comments_special_dict.keys():
         comments_special = comments_special_dict[date_s]
