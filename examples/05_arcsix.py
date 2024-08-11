@@ -91,7 +91,7 @@ _alp_time_offset_ = {
         '20240801': -17.74,
         '20240802': -17.97,
         '20240807': -17.67,
-        '20240808': -17.97,
+        '20240808': -18.04,
         '20240809': -17.97,
         }
 _spns_time_offset_ = {
@@ -148,7 +148,7 @@ _ssfr1_time_offset_ = {
         '20240801': -315.90,
         '20240802': -317.40,
         '20240807': -328.88,
-        '20240808': -317.40,
+        '20240808': -331.98,
         '20240809': -317.40,
         }
 
@@ -177,7 +177,7 @@ _ssfr2_time_offset_ = {
         '20240801': -416.93,
         '20240802': -419.59,
         '20240807': -434.47,
-        '20240808': -434.59,
+        '20240808': -437.18,
         '20240809': -434.59,
         }
 
@@ -2746,8 +2746,8 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
              # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
              # datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
-             datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 8, 8), # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 8), # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
              # datetime.datetime(2024, 8, 9), # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -2756,8 +2756,8 @@ if __name__ == '__main__':
 
         # step 1
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(date, run=True)
-        main_process_data_v0_metnav(date, run=True)
+        # main_process_data_v0(date, run=True)
+        # main_process_data_v0_metnav(date, run=True)
         # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -2770,25 +2770,25 @@ if __name__ == '__main__':
 
         # step 3
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=True)
+        main_process_data_v0(date, run=False)
+        main_process_data_v1(date, run=True)
         # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=False)
-        # main_process_data_v2(date, run=True)
+        main_process_data_v0(date, run=False)
+        main_process_data_v1(date, run=False)
+        main_process_data_v2(date, run=True)
         # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 5
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=False)
-        # main_process_data_v2(date, run=False)
-        # main_process_data_archive(date, run=True)
+        main_process_data_v0(date, run=False)
+        main_process_data_v1(date, run=False)
+        main_process_data_v2(date, run=False)
+        main_process_data_archive(date, run=True)
         # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
