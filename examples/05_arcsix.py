@@ -90,7 +90,7 @@ _alp_time_offset_ = {
         '20240730': -17.43,
         '20240801': -17.74,
         '20240802': -17.97,
-        '20240807': -17.97,
+        '20240807': -17.67,
         '20240808': -17.97,
         '20240809': -17.97,
         }
@@ -147,7 +147,7 @@ _ssfr1_time_offset_ = {
         '20240730': -307.64,
         '20240801': -315.90,
         '20240802': -317.40,
-        '20240807': -317.40,
+        '20240807': -328.88,
         '20240808': -317.40,
         '20240809': -317.40,
         }
@@ -176,7 +176,7 @@ _ssfr2_time_offset_ = {
         '20240730': -408.13,
         '20240801': -416.93,
         '20240802': -419.59,
-        '20240807': -434.59,
+        '20240807': -434.47,
         '20240808': -434.59,
         '20240809': -434.59,
         }
@@ -2716,8 +2716,8 @@ if __name__ == '__main__':
 
     # process field calibration
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    main_calibration_rad()
-    sys.exit()
+    # main_calibration_rad()
+    # sys.exit()
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # dates
@@ -2744,9 +2744,9 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
              # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
              # datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
-             # datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 8, 8), # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 8, 9), # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 8, 8), # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 8, 9), # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
