@@ -2747,8 +2747,8 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
              # datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
              # datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 8, 8), # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 8, 9), # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 8, 8), # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 9), # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -2763,9 +2763,9 @@ if __name__ == '__main__':
 
         # step 2
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # run_time_offset_check(date)
-        # sys.exit()
+        main_process_data_v0(date, run=False)
+        run_time_offset_check(date)
+        sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3

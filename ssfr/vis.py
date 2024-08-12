@@ -187,7 +187,6 @@ def quicklook_bokeh_spns(
     from bokeh.plotting import figure, output_file, save
     from bokeh.transform import linear_cmap
     from bokeh.palettes import RdYlBu6, Spectral6
-    from bokeh.tile_providers import get_provider, Vendors
 
     # prepare data
     #/----------------------------------------------------------------------------\#
@@ -282,17 +281,16 @@ def quicklook_bokeh_spns(
                   output_backend='webgl',
                   )
 
-    tile_provider = get_provider(Vendors.CARTODBPOSITRON)
-    plt_geo.add_tile(tile_provider)
+    plt_geo.add_tile('CartoDB Positron')
 
     htool = HoverTool(tooltips=[('Longitude', '@lon{0.0000}º'), ('Latitude', '@lat{0.0000}º'), ('Altitude', '@alt{0.0000}km'), ('Solar Zenith', '@sza{0.00}º')], mode='mouse', line_policy='nearest')
     plt_geo.add_tools(htool)
 
     mapper = linear_cmap(field_name='alt', palette=Spectral6, low=0.0, high=np.round(np.nanmax(data_geo_dict['alt']), decimals=0))
 
-    plt_geo.circle('x', 'y', source=data_geo , color=mapper, size=6, fill_alpha=0.1, line_width=0.0)
-    plt_geo.circle('x', 'y', source=data_geo0, color=mapper, line_color=mapper, size=15, fill_alpha=0.5, line_width=2.0)
-    plt_geo.circle('x', 'y', source=data_geo1, color=mapper, size=4, fill_alpha=1.0, line_width=0.0)
+    plt_geo.scatter('x', 'y', source=data_geo , color=mapper, size=6, fill_alpha=0.1, line_width=0.0)
+    plt_geo.scatter('x', 'y', source=data_geo0, color=mapper, line_color=mapper, size=15, fill_alpha=0.5, line_width=2.0)
+    plt_geo.scatter('x', 'y', source=data_geo1, color=mapper, size=4, fill_alpha=1.0, line_width=0.0)
 
     color_bar = ColorBar(color_mapper=mapper['transform'], width=10, location=(0,0))
     plt_geo.add_layout(color_bar, 'right')
@@ -327,9 +325,9 @@ def quicklook_bokeh_spns(
     htool = HoverTool(tooltips = [('Wavelength', '$x{0.00}nm'), ('Flux', '$y{0.0000}')], mode='mouse', line_policy='nearest')
     plt_spec.add_tools(htool)
 
-    plt_spec.circle('wvl0', 'toa_plot'  , source=data_spec, color='gray'      , size=3, legend_label='TOA↓ (Kurudz)', fill_alpha=0.4, line_alpha=0.4)
-    plt_spec.circle('wvl0', 'flux0_plot', source=data_spec, color='green'     , size=3, legend_label='Total↓ (SPN-S)')
-    plt_spec.circle('wvl1', 'flux1_plot', source=data_spec, color='lightgreen', size=3, legend_label='Diffuse↓ (SPN-S)')
+    plt_spec.scatter('wvl0', 'toa_plot'  , source=data_spec, color='gray'      , size=3, legend_label='TOA↓ (Kurudz)', fill_alpha=0.4, line_alpha=0.4)
+    plt_spec.scatter('wvl0', 'flux0_plot', source=data_spec, color='green'     , size=3, legend_label='Total↓ (SPN-S)')
+    plt_spec.scatter('wvl1', 'flux1_plot', source=data_spec, color='lightgreen', size=3, legend_label='Diffuse↓ (SPN-S)')
 
 
     slider_spec = Slider(start=wvl_range[0], end=wvl_range[-1], value=wvl0, step=0.01, width=width_spec, height=40, title='Wavelength [nm]', format='0[.]00')
@@ -374,9 +372,9 @@ def quicklook_bokeh_spns(
     plt_time.add_tools(htool)
 
     plt_time.varea(x=data_time.data['tmhr'], y1=np.zeros_like(data_time.data['tmhr']), y2=data_time.data['alt'], fill_alpha=0.2, fill_color='purple')
-    plt_time.circle('tmhr', 'toa_plot'  , source=data_time, color='gray'      , size=3, legend_label='TOA↓ (Kurudz)', fill_alpha=0.4, line_alpha=0.4)
-    plt_time.circle('tmhr', 'flux0_plot', source=data_time, color='green'     , size=3, legend_label='Total↓ (SPN-S)')
-    plt_time.circle('tmhr', 'flux1_plot', source=data_time, color='lightgreen', size=3, legend_label='Diffuse↓ (SPN-S)')
+    plt_time.scatter('tmhr', 'toa_plot'  , source=data_time, color='gray'      , size=3, legend_label='TOA↓ (Kurudz)', fill_alpha=0.4, line_alpha=0.4)
+    plt_time.scatter('tmhr', 'flux0_plot', source=data_time, color='green'     , size=3, legend_label='Total↓ (SPN-S)')
+    plt_time.scatter('tmhr', 'flux1_plot', source=data_time, color='lightgreen', size=3, legend_label='Diffuse↓ (SPN-S)')
 
     slider_time = Slider(start=xrange_s, end=xrange_e, value=data_time.data['tmhr'][index_tmhr], step=0.0001, width=width_time, height=40, title='Time [Hour]', format='0[.]0000')
     vline_time  = Span(location=slider_time.value, dimension='height', line_color='black', line_dash='dashed', line_width=1)
@@ -591,7 +589,6 @@ def find_offset_bokeh(
     from bokeh.plotting import figure, output_file, save
     from bokeh.transform import linear_cmap
     from bokeh.palettes import RdYlBu6, Spectral6
-    from bokeh.tile_providers import get_provider, Vendors
 
     # prepare data
     #/----------------------------------------------------------------------------\#
@@ -684,9 +681,9 @@ def find_offset_bokeh(
     htool = HoverTool(tooltips = [('x', '$x{0.0000}'), ('y', '$y{0.0}')], mode='mouse', line_policy='nearest')
     plt_offset.add_tools(htool)
 
-    plt_offset.circle('x0'    , 'y0'    , source=data0, color='black', size=3, legend_label='Reference')
-    plt_offset.circle('x1'    , 'y1'    , source=data1, color='red', size=3, legend_label='Raw', visible=False)
-    plt_offset.circle('x1_new', 'y1_new', source=data1, color='green', size=3, legend_label='With Offset')
+    plt_offset.scatter('x0'    , 'y0'    , source=data0, color='black', size=3, legend_label='Reference')
+    plt_offset.scatter('x1'    , 'y1'    , source=data1, color='red', size=3, legend_label='Raw', visible=False)
+    plt_offset.scatter('x1_new', 'y1_new', source=data1, color='green', size=3, legend_label='With Offset')
 
     slider_x_offset = Slider(start=offset_x_range[0], end=offset_x_range[1], value=0.0, step=0.01, width=width_time, height=40, title='X Offset', format='0[.]00')
     slider_y_offset = Slider(start=offset_y_range[0], end=offset_y_range[1], value=0.0, step=0.01, width=width_time, height=40, title='Y Offset', format='0[.]00')
