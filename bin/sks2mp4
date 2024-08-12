@@ -54,7 +54,8 @@ _delete_ask_     = False
 _flux_range_     = [0.0, 2.0]
 _Ncpu_ = max(1, mp.cpu_count()-2)
 
-_data_ = {}
+
+_DATA_ = {}
 
 
 def plot_video_frame(statements, test=False):
@@ -474,18 +475,18 @@ def main_vid(
 
     # create temporary directory to store images
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    job_tag = '%s_%s_quicklook-by-sks2mp4' % (_data_['date_s'], which_ssfr.upper())
+    job_tag = '%s_%s_quicklook-by-sks2mp4' % (_DATA_['date_s'], which_ssfr.upper())
     fdir_tmp = os.path.join(fdir_tmp, job_tag)
     if os.path.exists(fdir_tmp):
         os.system('rm -rf %s' % fdir_tmp)
     os.makedirs(fdir_tmp)
-    _data_['fdir_tmp'] = fdir_tmp
+    _DATA_['fdir_tmp'] = fdir_tmp
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # prepare statements for parallel processing
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    Ndata = _data_['jday'].size // time_interval
+    Ndata = _DATA_['jday'].size // time_interval
     indices = np.arange(Ndata)*time_interval
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -496,8 +497,8 @@ def main_vid(
         shared_data = {}
         unshared_data = {}
 
-        for key in _data_.keys():
-            data0 = _data_[key]
+        for key in _DATA_.keys():
+            data0 = _DATA_[key]
             if isinstance(data0, np.ndarray):
                 shm = smm.SharedMemory(data0.nbytes)
                 shm_np_array = np.ndarray(data0.shape, dtype=data0.dtype, buffer=shm.buf)
@@ -578,30 +579,30 @@ def main_pre(
 
     # recreate a dictionary to contain ssfr data
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    _data_['which_ssfr'] = which_ssfr.lower()
-    _data_['date_s'] = date_s
-    _data_['jday'] = jday
-    _data_['tmhr'] = tmhr
+    _DATA_['which_ssfr'] = which_ssfr.lower()
+    _DATA_['date_s'] = date_s
+    _DATA_['jday'] = jday
+    _DATA_['tmhr'] = tmhr
 
-    _data_['zen_si_cnt_raw'] = zen_si_cnt_raw
-    _data_['zen_in_cnt_raw'] = zen_in_cnt_raw
-    _data_['nad_si_cnt_raw'] = nad_si_cnt_raw
-    _data_['nad_in_cnt_raw'] = nad_in_cnt_raw
+    _DATA_['zen_si_cnt_raw'] = zen_si_cnt_raw
+    _DATA_['zen_in_cnt_raw'] = zen_in_cnt_raw
+    _DATA_['nad_si_cnt_raw'] = nad_si_cnt_raw
+    _DATA_['nad_in_cnt_raw'] = nad_in_cnt_raw
 
-    _data_['zen_si_cnt_dc']  = zen_si_cnt_dc
-    _data_['zen_in_cnt_dc']  = zen_in_cnt_dc
-    _data_['nad_si_cnt_dc']  = nad_si_cnt_dc
-    _data_['nad_in_cnt_dc']  = nad_in_cnt_dc
+    _DATA_['zen_si_cnt_dc']  = zen_si_cnt_dc
+    _DATA_['zen_in_cnt_dc']  = zen_in_cnt_dc
+    _DATA_['nad_si_cnt_dc']  = nad_si_cnt_dc
+    _DATA_['nad_in_cnt_dc']  = nad_in_cnt_dc
 
-    _data_['zen_si_wvl'] = zen_si_wvl
-    _data_['zen_in_wvl'] = zen_in_wvl
-    _data_['nad_si_wvl'] = nad_si_wvl
-    _data_['nad_in_wvl'] = nad_in_wvl
+    _DATA_['zen_si_wvl'] = zen_si_wvl
+    _DATA_['zen_in_wvl'] = zen_in_wvl
+    _DATA_['nad_si_wvl'] = nad_si_wvl
+    _DATA_['nad_in_wvl'] = nad_in_wvl
 
-    _data_['int_time'] = int_time
-    _data_['shutter']  = shutter
-    _data_['shutter_dc']  = shutter_dc
-    _data_['temperature'] = temperature
+    _DATA_['int_time'] = int_time
+    _DATA_['shutter']  = shutter
+    _DATA_['shutter_dc']  = shutter_dc
+    _DATA_['temperature'] = temperature
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -614,7 +615,7 @@ def main_pre(
     data_zen = ssfr0.data_spec['cnt_zen']
     data_nad = ssfr0.data_spec['cnt_nad']
 
-    _data_['is_flux'] = False
+    _DATA_['is_flux'] = False
     for idset in np.unique(ssfr0.data_raw['dset_num']):
 
         logic_dset = (ssfr0.data_raw['dset_num'] == idset)
@@ -658,7 +659,7 @@ def main_pre(
                 data_zen[logic_dset, i] = data_zen[logic_dset, i] / data_cal_zen['sec_resp'][i]
             data_zen[ssfr0.data_spec['sat_zen']==1] = -0.05
 
-            _data_['is_flux'] = True
+            _DATA_['is_flux'] = True
             #╰────────────────────────────────────────────────╯#
         else:
             # apply scaling only
@@ -709,7 +710,7 @@ def main_pre(
                 data_nad[logic_dset, i] = data_nad[logic_dset, i] / data_cal_nad['sec_resp'][i]
             data_nad[ssfr0.data_spec['sat_nad']==1] = -0.05
 
-            _data_['is_flux'] = True
+            _DATA_['is_flux'] = True
             #╰────────────────────────────────────────────────╯#
         else:
             # apply scaling only
@@ -721,20 +722,20 @@ def main_pre(
             #╰────────────────────────────────────────────────╯#
         #╰──────────────────────────────────────────────────────────────╯#
 
-    _data_['zen_wvl']  = wvl_zen[::wvl_step]
-    _data_['nad_wvl']  = wvl_nad[::wvl_step]
-    _data_['zen_spec'] = data_zen[::time_step, ::wvl_step].astype(np.float16)
-    _data_['nad_spec'] = data_nad[::time_step, ::wvl_step].astype(np.float16)
+    _DATA_['zen_wvl']  = wvl_zen[::wvl_step]
+    _DATA_['nad_wvl']  = wvl_nad[::wvl_step]
+    _DATA_['zen_spec'] = data_zen[::time_step, ::wvl_step].astype(np.float16)
+    _DATA_['nad_spec'] = data_nad[::time_step, ::wvl_step].astype(np.float16)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # reduce memory size
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    for key in _data_.keys():
+    for key in _DATA_.keys():
         if key not in ['jday', 'date_s', 'which_ssfr', 'is_flux']:
-            if _data_[key].dtype in ['float64']:
-                _data_[key] = _data_[key].astype(np.float32)
-            elif _data_[key].dtype in ['int64','int32', 'int16']:
-                _data_[key] = _data_[key].astype(np.int8)
+            if _DATA_[key].dtype in ['float64']:
+                _DATA_[key] = _DATA_[key].astype(np.float32)
+            elif _DATA_[key].dtype in ['int64','int32', 'int16']:
+                _DATA_[key] = _DATA_[key].astype(np.int8)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main(
