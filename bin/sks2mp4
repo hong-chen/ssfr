@@ -39,20 +39,20 @@ mplstyle.use('fast')
 import ssfr
 
 
-_default_ssfr_   = 'ssfr-b'
-_file_extension_ = 'SKS'
-_fdir_out_       = './'
-_fdir_cal_       = '%s/cal' % ssfr.common.fdir_data
-_lamp_pri_       = 'lamp-1324'
-_lamp_sec_       = 'lamp-150c'
-_time_step_      = 1
-_wvl_step_       = 1
-_time_interval_  = 9
-_fdir_tmp_       = './tmp-data'
-_delete_tmp_     = True
-_delete_ask_     = False
-_flux_range_     = [0.0, 2.0]
-_Ncpu_ = max(1, mp.cpu_count()-2)
+_DEFAULT_SSFR_   = 'ssfr-b'
+_FILE_EXTENSION_ = 'SKS'
+_FDIR_OUT_       = './'
+_FDIR_CAL_       = '%s/cal' % ssfr.common.fdir_data
+_LAMP_PRI_       = 'lamp-1324'
+_LAMP_SEC_       = 'lamp-150c'
+_TIME_STEP_      = 1
+_WVL_STEP_       = 1
+_TIME_INTERVAL_  = 9
+_FDIR_TMP_       = './tmp-data'
+_DELETE_TMP_     = True
+_DELETE_ASK_     = False
+_FLUX_RANGE_     = [0.0, 2.0]
+_NCPU_ = max(1, mp.cpu_count()-2)
 
 
 _DATA_ = {}
@@ -339,7 +339,7 @@ def plot_video_frame(statements, test=False):
             ax_wvl.set_ylabel('Flux [$\\mathrm{W m^{-2} nm^{-1}}$]')
         else:
             ax_wvl.set_ylabel('Scaled Radiation')
-        ax_wvl.set_ylim(_flux_range_)
+        ax_wvl.set_ylim(_FLUX_RANGE_)
 
     else:
         ax_wvl.set_ylabel('N/A')
@@ -467,10 +467,10 @@ def plot_video_frame(statements, test=False):
         plt.close(fig)
 
 def main_vid(
-        fdir_tmp=_fdir_tmp_,
-        Ncpu=_Ncpu_,
-        which_ssfr=_default_ssfr_,
-        time_interval=_time_interval_,
+        fdir_tmp=_FDIR_TMP_,
+        Ncpu=_NCPU_,
+        which_ssfr=_DEFAULT_SSFR_,
+        time_interval=_TIME_INTERVAL_,
         ):
 
     # create temporary directory to store images
@@ -522,8 +522,8 @@ def main_vid(
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_mp4 = '%s.mp4' % (job_tag)
     os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.jpg" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 10 -pix_fmt yuvj420p %s' % (fdir_tmp, fname_mp4))
-    if _delete_tmp_:
-        if _delete_ask_:
+    if _DELETE_TMP_:
+        if _DELETE_ASK_:
             print('\nMessage [sks2mp4]: Press <y/n> to delete/keep temporary files (total of %s):' % (subprocess.check_output('du -hs %s' % fdir_tmp, shell=True, text=True).split('\t')[0]))
             os.system('rm -rf -I %s' % fdir_tmp)
         else:
@@ -532,12 +532,12 @@ def main_vid(
 
 def main_pre(
         ssfr0,
-        time_step=_time_step_,
-        wvl_step=_wvl_step_,
-        which_ssfr=_default_ssfr_,
+        time_step=_TIME_STEP_,
+        wvl_step=_WVL_STEP_,
+        which_ssfr=_DEFAULT_SSFR_,
         ):
 
-    msg = '\nMessage [sks2mp4]: Processing data from <%s> (default flux radiometer is set to <%s>) ...' % (which_ssfr.upper(), _default_ssfr_.upper())
+    msg = '\nMessage [sks2mp4]: Processing data from <%s> (default flux radiometer is set to <%s>) ...' % (which_ssfr.upper(), _DEFAULT_SSFR_.upper())
     print(msg)
 
     # retrieve date from ssfr data object
@@ -623,7 +623,7 @@ def main_pre(
         # zenith
         #╭──────────────────────────────────────────────────────────────╮#
         int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 0], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 1])
-        fnames_cal_zen = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*zen*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
+        fnames_cal_zen = sorted(ssfr.util.get_all_files(_FDIR_CAL_, pattern='*%s*|*%s*|*%s*zen*%s*' % (_LAMP_PRI_, _LAMP_SEC_, which_ssfr.lower(), int_time_tag_zen)), key=os.path.getmtime)
 
         if len(fnames_cal_zen) > 0:
             # find most recent available calibration
@@ -639,7 +639,7 @@ def main_pre(
             # apply radiometric calibration
             #╭────────────────────────────────────────────────╮#
             data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
-            # if (which_ssfr.lower() == _default_ssfr_):
+            # if (which_ssfr.lower() == _DEFAULT_SSFR_):
             #     data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
             # else:
             #     data_cal_zen = None
@@ -664,9 +664,9 @@ def main_pre(
         else:
             # apply scaling only
             #╭────────────────────────────────────────────────╮#
-            msg = '\nMessage [sks2mp4]: Applying scaling [%.1f, %.1f] for %s zenith %s ...' % (*_flux_range_, which_ssfr.upper(), int_time_tag_zen)
+            msg = '\nMessage [sks2mp4]: Applying scaling [%.1f, %.1f] for %s zenith %s ...' % (*_FLUX_RANGE_, which_ssfr.upper(), int_time_tag_zen)
             print(msg)
-            scaler0 = (_flux_range_[-1]-_flux_range_[0])
+            scaler0 = (_FLUX_RANGE_[-1]-_FLUX_RANGE_[0])
             data_zen[logic_dset, :] = data_zen[logic_dset, :]/(np.nanmax(data_zen[logic_dset, :])-np.nanmin(data_zen[logic_dset, :]))*scaler0
             #╰────────────────────────────────────────────────╯#
         #╰──────────────────────────────────────────────────────────────╯#
@@ -674,7 +674,7 @@ def main_pre(
         # nadir
         #╭──────────────────────────────────────────────────────────────╮#
         int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 2], ssfr0.data_raw['int_time'][ssfr0.data_raw['dset_num']==idset][0, 3])
-        fnames_cal_nad = sorted(ssfr.util.get_all_files(_fdir_cal_, pattern='*%s*|*%s*|*%s*nad*%s*' % (_lamp_pri_, _lamp_sec_, which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
+        fnames_cal_nad = sorted(ssfr.util.get_all_files(_FDIR_CAL_, pattern='*%s*|*%s*|*%s*nad*%s*' % (_LAMP_PRI_, _LAMP_SEC_, which_ssfr.lower(), int_time_tag_nad)), key=os.path.getmtime)
 
         if len(fnames_cal_nad) > 0:
             # find most recent available calibration
@@ -690,7 +690,7 @@ def main_pre(
             # apply radiometric calibration
             #╭────────────────────────────────────────────────╮#
             data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
-            # if (which_ssfr.lower() == _default_ssfr_):
+            # if (which_ssfr.lower() == _DEFAULT_SSFR_):
             #     data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
             # else:
             #     data_cal_nad = None
@@ -715,9 +715,9 @@ def main_pre(
         else:
             # apply scaling only
             #╭────────────────────────────────────────────────╮#
-            msg = '\nMessage [sks2mp4]: Applying scaling [%.1f, %.1f] for %s nadir %s ...' % (*_flux_range_, which_ssfr.upper(), int_time_tag_nad)
+            msg = '\nMessage [sks2mp4]: Applying scaling [%.1f, %.1f] for %s nadir %s ...' % (*_FLUX_RANGE_, which_ssfr.upper(), int_time_tag_nad)
             print(msg)
-            scaler0 = (_flux_range_[-1]-_flux_range_[0])
+            scaler0 = (_FLUX_RANGE_[-1]-_FLUX_RANGE_[0])
             data_nad[logic_dset, :] = data_nad[logic_dset, :]/(np.nanmax(data_nad[logic_dset, :])-np.nanmin(data_nad[logic_dset, :]))*scaler0
             #╰────────────────────────────────────────────────╯#
         #╰──────────────────────────────────────────────────────────────╯#
@@ -740,8 +740,8 @@ def main_pre(
 
 def main(
         fnames,
-        fdir_out=_fdir_out_,
-        which_ssfr=_default_ssfr_
+        fdir_out=_FDIR_OUT_,
+        which_ssfr=_DEFAULT_SSFR_
         ):
 
     # read in ssfr data
@@ -766,7 +766,7 @@ if __name__ == '__main__':
 
     fdir_inp = sys.argv[1]
     if len(sys.argv) == 2:
-        fdir_out = _fdir_out_
+        fdir_out = _FDIR_OUT_
     elif len(sys.argv) == 3:
         fdir_out = sys.argv[2]
 
@@ -774,7 +774,7 @@ if __name__ == '__main__':
     fdir_out = os.path.abspath(fdir_out)
 
     if os.path.exists(fdir_inp):
-        fnames = ssfr.util.get_all_files(fdir_inp, pattern='*.%s' % _file_extension_)
+        fnames = ssfr.util.get_all_files(fdir_inp, pattern='*.%s' % _FILE_EXTENSION_)
 
         if len(fnames) > 0:
 
@@ -786,7 +786,7 @@ if __name__ == '__main__':
             elif 'ssfr-b' in fdir_inp.lower():
                 which_ssfr = 'ssfr-b'
             else:
-                which_ssfr = _default_ssfr_
+                which_ssfr = _DEFAULT_SSFR_
 
             main(fnames, fdir_out=fdir_out, which_ssfr=which_ssfr)
 
