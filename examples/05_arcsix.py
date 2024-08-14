@@ -2725,30 +2725,24 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             # datetime.datetime(2024, 5, 28), # ARCSIX science flight #1, clear-sky spiral, operator - Vikas Nataraja
-             # datetime.datetime(2024, 5, 30), # ARCSIX science flight #2, cloud wall, operator - Vikas Nataraja
-             # datetime.datetime(2024, 5, 31), # ARCSIX science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
-             # datetime.datetime(2024, 6, 3), # ARCSIX science flight #4, cloud wall, operator - Vikas Nataraja
-             # datetime.datetime(2024, 6, 5), # ARCSIX science flight #5, bowling alley; surface BRDF, operator - Vikas Nataraja, Sebastian Becker
-             # datetime.datetime(2024, 6, 6), # ARCSIX science flight #6, cloud wall, operator - Vikas Nataraja, Jeffery Drouet
-             # datetime.datetime(2024, 6, 7), # ARCSIX science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
-             # datetime.datetime(2024, 6, 10), # ARCSIX science flight #8, operator - Jeffery Drouet
-             # datetime.datetime(2024, 6, 11), # ARCSIX science flight #9, operator - Arabella Chamberlain, Sebastian Becker
-             # datetime.datetime(2024, 6, 13), # ARCSIX science flight #10, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 7, 8), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
-             # datetime.datetime(2024, 7, 9), # ARCSIX-2 pre-mission test data after SARP, collected inside NASA WFF hangar
-             # datetime.datetime(2024, 7, 22), # ARCSIX-2 transit from WFF to Pituffik, noticed TEC2 (SSFR-A nadir) issue, operator - Ken Hirata, Vikas Nataraja
-             # datetime.datetime(2024, 7, 24), # ARCSIX-2 science flight #11, cancelled due to weather condition, data from ground, operator - Arabella Chamberlain, Ken Hirata
+             # datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1, clear-sky spiral, operator - Vikas Nataraja
+             # datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
+             # datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
+             # datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
+             # datetime.datetime(2024, 6, 5),  # ARCSIX-1 science flight #5, bowling alley; surface BRDF, operator - Vikas Nataraja, Sebastian Becker
+             # datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6, cloud wall, operator - Vikas Nataraja, Jeffery Drouet
+             # datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
+             # datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
+             # datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
+             # datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
              # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 7, 26), # ARCSIX-2 science flight #12, cancelled due to weather condition, data from ground, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
-             # datetime.datetime(2024, 8, 1), # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
-             # datetime.datetime(2024, 8, 2), # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
-             # datetime.datetime(2024, 8, 4), # calibration test to check TEC issue
-             # datetime.datetime(2024, 8, 7), # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 8, 8), # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 8, 9), # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
+             # datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+             # datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
