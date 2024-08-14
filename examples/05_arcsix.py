@@ -51,9 +51,9 @@ _SSFR2_       = 'ssfr-b'
 _CAM_         = 'nac'
 
 # _SPNS_        = 'spns-a'
-# _WHICH_SSFR_FOR_FLUX_ = 'ssfr-a'
+# _WHICH_SSFR_ = 'ssfr-a'
 _SPNS_        = 'spns-b'
-_WHICH_SSFR_FOR_FLUX_ = 'ssfr-b'
+_WHICH_SSFR_ = 'ssfr-b'
 
 _FDIR_HSK_   = 'data/arcsix/2024/p3/aux/hsk'
 _FDIR_CAL_   = 'data/%s/cal' % _MISSION_
@@ -1439,7 +1439,7 @@ def cdata_arcsix_ssfr_v1(
         fname_hsk,
         fdir_out=_FDIR_OUT_,
         time_offset=0.0,
-        which_ssfr_for_flux=_WHICH_SSFR_FOR_FLUX_,
+        which_ssfr_for_flux=_WHICH_SSFR_,
         run=True,
         ):
 
@@ -2108,7 +2108,7 @@ def run_time_offset_check(date):
     data_hsk = ssfr.util.load_h5(_FNAMES_['%s_hsk_v0' % date_s])
     data_alp = ssfr.util.load_h5(_FNAMES_['%s_alp_v0' % date_s])
     data_spns_v0 = ssfr.util.load_h5(_FNAMES_['%s_spns_v0' % date_s])
-    if _WHICH_SSFR_FOR_FLUX_ == _SSFR1_:
+    if _WHICH_SSFR_ == _SSFR1_:
         data_ssfr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr1_v0' % date_s])
         data_ssfr2_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr2_v0' % date_s])
     else:
@@ -2620,7 +2620,7 @@ def main_process_data_v1(date, run=True):
     # SSFR-A v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_ssfr1_v1 = cdata_arcsix_ssfr_v1(date, _FNAMES_['%s_ssfr1_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
-            which_ssfr_for_flux=_WHICH_SSFR_FOR_FLUX_, fdir_out=fdir_out, run=run)
+            which_ssfr_for_flux=_WHICH_SSFR_, fdir_out=fdir_out, run=run)
 
     _FNAMES_['%s_ssfr1_v1' % date_s] = fname_ssfr1_v1
     #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -2628,7 +2628,7 @@ def main_process_data_v1(date, run=True):
     # SSFR-B v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _FNAMES_['%s_ssfr2_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
-            which_ssfr_for_flux=_WHICH_SSFR_FOR_FLUX_, fdir_out=fdir_out, run=run)
+            which_ssfr_for_flux=_WHICH_SSFR_, fdir_out=fdir_out, run=run)
 
     _FNAMES_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
     #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -2664,7 +2664,7 @@ def main_process_data_v2(date, run=True):
 
     # SSFR v2
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    if _WHICH_SSFR_FOR_FLUX_ == _SSFR1_:
+    if _WHICH_SSFR_ == _SSFR1_:
         _vname_ssfr_v1_ = '%s_ssfr1_v1' % date_s
         _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
     else:
@@ -2698,7 +2698,7 @@ def main_process_data_archive(date, run=True):
 
     # SSFR RA
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    if _WHICH_SSFR_FOR_FLUX_ == _SSFR1_:
+    if _WHICH_SSFR_ == _SSFR1_:
         _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
         _vname_ssfr_ra_ = '%s_ssfr1_ra' % date_s
     else:
