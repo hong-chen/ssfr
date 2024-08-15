@@ -464,70 +464,6 @@ def plot_video_frame(statements, test=False):
         plt.savefig('%s/%5.5d.jpg' % (_DATA_PLT_['fdir_tmp'], index_pnt), bbox_inches='tight', dpi=150, pil_kwargs={'quality':95})
         plt.close(fig)
 
-def main_vid(
-        fdir_tmp=_FDIR_TMP_,
-        Ncpu=_NCPU_,
-        which_ssfr=_DEFAULT_SSFR_,
-        time_interval=_TIME_INTERVAL_,
-        ):
-
-    # create temporary directory to store images
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    job_tag = '%s_%s_quicklook-by-sks2mp4' % (_DATA_PLT_['date_s'], which_ssfr.upper())
-    fdir_tmp = os.path.join(fdir_tmp, job_tag)
-    if os.path.exists(fdir_tmp):
-        os.system('rm -rf %s' % fdir_tmp)
-    os.makedirs(fdir_tmp)
-    _DATA_PLT_['fdir_tmp'] = fdir_tmp
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # prepare statements for parallel processing
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    Ndata = _DATA_PLT_['jday'].size // time_interval
-    indices = np.arange(Ndata)*time_interval
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-    # create images
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    with SharedMemoryManager() as smm:
-
-        shared_data = {}
-        unshared_data = {}
-
-        for key in _DATA_PLT_.keys():
-            data0 = _DATA_PLT_[key]
-            if isinstance(data0, np.ndarray):
-                shm = smm.SharedMemory(data0.nbytes)
-                shm_np_array = np.ndarray(data0.shape, dtype=data0.dtype, buffer=shm.buf)
-                shm_np_array[...] = data0[...]
-                shared_data[key] = {
-                        'name': key,
-                        'shm_name': shm.name,
-                        'shape': data0.shape,
-                        'dtype': data0.dtype,
-                        }
-            else:
-                unshared_data[key] = data0
-
-        statements = zip([shared_data]*Ndata, [unshared_data]*Ndata, indices)
-        with mp.Pool(processes=Ncpu) as pool:
-            r = list(tqdm(pool.imap(plot_video_frame, statements), total=Ndata))
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # make video
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_mp4 = '%s.mp4' % (job_tag)
-    os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.jpg" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 10 -pix_fmt yuvj420p %s' % (fdir_tmp, fname_mp4))
-    if _DELETE_TMP_:
-        if _DELETE_ASK_:
-            print('\nMessage [sks2mp4]: Press <y/n> to delete/keep temporary files (total of %s):' % (subprocess.check_output('du -hs %s' % fdir_tmp, shell=True, text=True).split('\t')[0]))
-            os.system('rm -rf -I %s' % fdir_tmp)
-        else:
-            os.system('rm -rf %s' % fdir_tmp)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
 def main_pre(
         ssfr0,
         time_step=_TIME_STEP_,
@@ -740,10 +676,13 @@ def main_pre(
 
     return data_plt
 
-def main(
+def main_vid(
         fnames,
+        fdir_tmp=_FDIR_TMP_,
+        Ncpu=_NCPU_,
+        which_ssfr=_DEFAULT_SSFR_,
+        time_interval=_TIME_INTERVAL_,
         fdir_out=_FDIR_OUT_,
-        which_ssfr=_DEFAULT_SSFR_
         ):
 
     # read in ssfr data
@@ -753,15 +692,65 @@ def main(
 
     # pre-process data
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    main_pre(ssfr0, which_ssfr=which_ssfr)
+    _DATA_PLT_ = main_pre(ssfr0, which_ssfr=which_ssfr)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # generate video
+    # create temporary directory to store images
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    main_vid(which_ssfr=which_ssfr)
+    job_tag = '%s_%s_quicklook-by-sks2mp4' % (_DATA_PLT_['date_s'], which_ssfr.upper())
+    fdir_tmp = os.path.join(fdir_tmp, job_tag)
+    if os.path.exists(fdir_tmp):
+        os.system('rm -rf %s' % fdir_tmp)
+    os.makedirs(fdir_tmp)
+    _DATA_PLT_['fdir_tmp'] = fdir_tmp
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    return
+
+    # prepare statements for parallel processing
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    Ndata = _DATA_PLT_['jday'].size // time_interval
+    indices = np.arange(Ndata)*time_interval
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # create images
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    with SharedMemoryManager() as smm:
+
+        shared_data = {}
+        unshared_data = {}
+
+        for key in _DATA_PLT_.keys():
+            data0 = _DATA_PLT_[key]
+            if isinstance(data0, np.ndarray):
+                shm = smm.SharedMemory(data0.nbytes)
+                shm_np_array = np.ndarray(data0.shape, dtype=data0.dtype, buffer=shm.buf)
+                shm_np_array[...] = data0[...]
+                shared_data[key] = {
+                        'name': key,
+                        'shm_name': shm.name,
+                        'shape': data0.shape,
+                        'dtype': data0.dtype,
+                        }
+            else:
+                unshared_data[key] = data0
+
+        statements = zip([shared_data]*Ndata, [unshared_data]*Ndata, indices)
+        with mp.Pool(processes=Ncpu) as pool:
+            r = list(tqdm(pool.imap(plot_video_frame, statements), total=Ndata))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # make video
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_mp4 = '%s.mp4' % (job_tag)
+    os.system('ffmpeg -y -framerate 10 -pattern_type glob -i "%s/*.jpg" -vf "pad=ceil(iw/2)*2:ceil(ih/2)*2" -c:v libx264 -crf 10 -pix_fmt yuvj420p %s' % (fdir_tmp, fname_mp4))
+    if _DELETE_TMP_:
+        if _DELETE_ASK_:
+            print('\nMessage [sks2mp4]: Press <y/n> to delete/keep temporary files (total of %s):' % (subprocess.check_output('du -hs %s' % fdir_tmp, shell=True, text=True).split('\t')[0]))
+            os.system('rm -rf -I %s' % fdir_tmp)
+        else:
+            os.system('rm -rf %s' % fdir_tmp)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 if __name__ == '__main__':
@@ -790,7 +779,7 @@ if __name__ == '__main__':
             else:
                 which_ssfr = _DEFAULT_SSFR_
 
-            main(fnames, fdir_out=fdir_out, which_ssfr=which_ssfr)
+            main_vid(fnames, fdir_out=fdir_out, which_ssfr=which_ssfr)
 
         else:
             msg = '\nError [sks2mp4]: <%s> does not contain any SKS files.'
