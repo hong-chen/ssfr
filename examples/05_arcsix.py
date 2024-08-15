@@ -1529,7 +1529,7 @@ def cdata_arcsix_ssfr_v1(
                 for i in range(jday_cal_nad.size):
                     dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
                     dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
-                    jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0)
+                    jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
                 fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
 
