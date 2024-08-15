@@ -1516,7 +1516,7 @@ def cdata_arcsix_ssfr_v1(
                 for i in range(jday_cal_zen.size):
                     dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
                     dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
-                    jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0)
+                    jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
                 fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
                 data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
@@ -2755,9 +2755,9 @@ if __name__ == '__main__':
 
         # step 1
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(date, run=True)
-        main_process_data_v0_metnav(date, run=True)
-        sys.exit()
+        # main_process_data_v0(date, run=True)
+        # main_process_data_v0_metnav(date, run=True)
+        # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
@@ -2769,8 +2769,8 @@ if __name__ == '__main__':
 
         # step 3
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=True)
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=True)
         # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
