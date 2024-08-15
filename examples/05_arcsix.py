@@ -93,6 +93,7 @@ _ALP_TIME_OFFSET_ = {
         '20240807': -17.67,
         '20240808': -18.04,
         '20240809': -18.01,
+        '20240815': -18.01,
         }
 _SPNS_TIME_OFFSET_ = {
         '20240517': 0.0,
@@ -121,6 +122,7 @@ _SPNS_TIME_OFFSET_ = {
         '20240807': 0.0,
         '20240808': 0.0,
         '20240809': 0.0,
+        '20240815': 0.0,
         }
 
 _SSFR1_TIME_OFFSET_ = {
@@ -150,6 +152,7 @@ _SSFR1_TIME_OFFSET_ = {
         '20240807': -328.88,
         '20240808': -331.98,
         '20240809': -333.53,
+        '20240815': -333.53,
         }
 
 _SSFR2_TIME_OFFSET_ = {
@@ -179,6 +182,7 @@ _SSFR2_TIME_OFFSET_ = {
         '20240807': -434.47,
         '20240808': -437.18,
         '20240809': -439.71,
+        '20240815': -439.71,
         }
 
 
@@ -2742,7 +2746,8 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
              # datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
              # datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
+             # datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 15),  # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -2750,9 +2755,9 @@ if __name__ == '__main__':
 
         # step 1
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=True)
-        # main_process_data_v0_metnav(date, run=True)
-        # sys.exit()
+        main_process_data_v0(date, run=True)
+        main_process_data_v0_metnav(date, run=True)
+        sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
