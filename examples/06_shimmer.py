@@ -42,12 +42,13 @@ import ssfr
 # parameters
 #╭────────────────────────────────────────────────────────────────────────────╮#
 _MISSION_     = 'shimmer'
+_YEAR_        = '2024'
 _PLATFORM_    = 'dhc6'
 
 _HSK_         = 'hsk'
 _HSR1_        = 'hsr1-b'
 
-_FDIR_HSK_   = 'data/%s/2024/p3/aux/hsk' % _MISSION_.lower()
+_FDIR_HSK_   = 'data/%s/%s/%s/aux/%s' % (_MISSION_.lower(), _YEAR_, _PLATFORM_.lower(), _HSK_.lower())
 
 _FDIR_DATA_  = 'data/%s' % _MISSION_
 _FDIR_OUT_   = '%s/processed' % _FDIR_DATA_
@@ -447,7 +448,7 @@ def cdata_hsr1_archive(
         principal_investigator_info = 'Chen, Hong',
         affiliation_info = 'University of Colorado Boulder',
         instrument_info = 'HSR1-B (Sunshine Pyranometer - Spectral)',
-        mission_info = '%s 2024' % _MISSION_.upper(),
+        mission_info = '%s %s' % (_MISSION_.upper(), _YEAR_),
         project_info = '',
         file_format_index = '1001',
         file_volume_number = '1, 1',
@@ -504,8 +505,8 @@ def cdata_hsr1_archive(
             'LLOD_FLAG': '-8888',
             'LLOD_VALUE': 'N/A',
             'DM_CONTACT_INFO': 'N/A',
-            'PROJECT_INFO': '%s field experiment out of Pituffik, Greenland, May - August 2024' % _MISSION_.upper(),
-            'STIPULATIONS_ON_USE': 'This is initial in-field release of the %s-2024 data set. Please consult the PI, both for updates to the data set, and for the proper and most recent interpretation of the data for specific science use.' % _MISSION_.upper(),
+            'PROJECT_INFO': '%s field experiment in %s' % (_MISSION_.upper(), _YEAR_),
+            'STIPULATIONS_ON_USE': 'This is initial in-field release of the %s-%s data set. Please consult the PI, both for updates to the data set, and for the proper and most recent interpretation of the data for specific science use.' % (_MISSION_.upper(), _YEAR_),
             'OTHER_COMMENTS': 'Minimal corrections were applied.\n',
             'REVISION': version,
             version: version_info
