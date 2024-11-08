@@ -47,7 +47,7 @@ _PLATFORM_    = 'dhc6'
 _HSK_         = 'hsk'
 _HSR1_        = 'hsr1-b'
 
-_FDIR_HSK_   = 'data/arcsix/2024/p3/aux/hsk'
+_FDIR_HSK_   = 'data/%s/2024/p3/aux/hsk' % _MISSION_.lower()
 
 _FDIR_DATA_  = 'data/%s' % _MISSION_
 _FDIR_OUT_   = '%s/processed' % _FDIR_DATA_
@@ -63,7 +63,7 @@ _HSR1_TIME_OFFSET_ = {
 
 # functions for processing HSK
 #╭────────────────────────────────────────────────────────────────────────────╮#
-def cdata_arcsix_hsk_v0(
+def cdata_hsk_v0(
         date,
         fdir_data=_FDIR_DATA_,
         fdir_out=_FDIR_OUT_,
@@ -235,7 +235,7 @@ def cdata_arcsix_hsk_v0(
 
 # functions for processing HSR1
 #╭────────────────────────────────────────────────────────────────────────────╮#
-def cdata_arcsix_hsr1_v0(
+def cdata_hsr1_v0(
         date,
         fdir_data=_FDIR_DATA_,
         fdir_out=_FDIR_OUT_,
@@ -288,7 +288,7 @@ def cdata_arcsix_hsr1_v0(
 
     return fname_h5
 
-def cdata_arcsix_hsr1_v1(
+def cdata_hsr1_v1(
         date,
         fname_hsr1_v0,
         fname_hsk,
@@ -351,7 +351,7 @@ def cdata_arcsix_hsr1_v1(
 
     return fname_h5
 
-def cdata_arcsix_hsr1_v2(
+def cdata_hsr1_v2(
         date,
         fname_hsr1_v1,
         fname_hsk, # interchangable with fname_alp_v1
@@ -437,7 +437,7 @@ def cdata_arcsix_hsr1_v2(
 
     return fname_h5
 
-def cdata_arcsix_hsr1_archive(
+def cdata_hsr1_archive(
         date,
         fname_hsr1_v2,
         ang_pit_offset=0.0,
@@ -447,7 +447,7 @@ def cdata_arcsix_hsr1_archive(
         principal_investigator_info = 'Chen, Hong',
         affiliation_info = 'University of Colorado Boulder',
         instrument_info = 'HSR1-B (Sunshine Pyranometer - Spectral)',
-        mission_info = 'ARCSIX 2024',
+        mission_info = '%s 2024' % _MISSION_.upper(),
         project_info = '',
         file_format_index = '1001',
         file_volume_number = '1, 1',
@@ -504,8 +504,8 @@ def cdata_arcsix_hsr1_archive(
             'LLOD_FLAG': '-8888',
             'LLOD_VALUE': 'N/A',
             'DM_CONTACT_INFO': 'N/A',
-            'PROJECT_INFO': 'ARCSIX field experiment out of Pituffik, Greenland, May - August 2024',
-            'STIPULATIONS_ON_USE': 'This is initial in-field release of the ARCSIX-2024 data set. Please consult the PI, both for updates to the data set, and for the proper and most recent interpretation of the data for specific science use.',
+            'PROJECT_INFO': '%s field experiment out of Pituffik, Greenland, May - August 2024' % _MISSION_.upper(),
+            'STIPULATIONS_ON_USE': 'This is initial in-field release of the %s-2024 data set. Please consult the PI, both for updates to the data set, and for the proper and most recent interpretation of the data for specific science use.' % _MISSION_.upper(),
             'OTHER_COMMENTS': 'Minimal corrections were applied.\n',
             'REVISION': version,
             version: version_info
@@ -844,7 +844,7 @@ def run_angle_offset_check(
 
     # HSR1 v2
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_hsr1_v2 = cdata_arcsix_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
+    fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
             fdir_out=_FDIR_OUT_,
             run=True,
             ang_pit_offset=ang_pit_offset,
@@ -894,109 +894,6 @@ def run_angle_offset_check(
         plt.show()
     #╰────────────────────────────────────────────────────────────────────────────╯#
     sys.exit()
-
-def dark_corr_temp(date, iChan=100, idset=0):
-
-    date_s = date.strftime('%Y%m%d')
-    data_ssfr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr1_v0' % date_s])
-
-    tmhr = data_ssfr1_v0['raw/tmhr']
-    x_temp_zen = data_ssfr1_v0['raw/temp'][:, 1]
-    x_temp_nad = data_ssfr1_v0['raw/temp'][:, 2]
-    shutter = data_ssfr1_v0['raw/shutter_dark-corr']
-    dset_num = data_ssfr1_v0['raw/dset_num']
-
-    logic_dark = (shutter==1) & (dset_num==idset)
-    logic_light = (shutter==0) & (dset_num==idset)
-
-    # figure
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    if True:
-
-
-        plt.close('all')
-        fig = plt.figure(figsize=(13, 19))
-        fig.suptitle('Channel #%d' % iChan)
-        # plot
-        #╭──────────────────────────────────────────────────────────────╮#
-        ax0 = fig.add_subplot(12,1,1)
-        ax00 = fig.add_subplot(12,1,2)
-        ax000 = fig.add_subplot(12,1,3)
-        ax0000 = fig.add_subplot(12,1,4)
-
-        ax1 = fig.add_subplot(323)
-        logic_fit = (x_temp_zen>25.0) & logic_dark
-        logic_x   = (x_temp_zen>25.0) & logic_light
-        coef = np.polyfit(x_temp_zen[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 0], 5)
-        xx = np.linspace(x_temp_zen[logic_x].min(), x_temp_zen[logic_x].max(), 1000)
-        yy = np.polyval(coef, xx)
-
-        ax1.scatter(x_temp_zen[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 0]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 0], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        ax1.plot(xx, yy, color='gray', zorder=1)
-        ax1.scatter(x_temp_zen[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 0], color='k', s=10, alpha=0.2, zorder=2)
-        ax1.set_title('Zenith Silicon (%.2f nm)' % data_ssfr1_v0['raw/wvl_zen_si'][iChan])
-        ax1.set_xlabel('Zenith InGaAs Temperature')
-        ax1.set_ylabel('Counts')
-
-        ax0.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 0]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 0], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-
-        logic_fit = (x_temp_zen>25.0) & logic_dark
-        logic_x   = (x_temp_zen>25.0) & logic_light
-        coef = np.polyfit(x_temp_zen[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 1], 5)
-        xx = np.linspace(x_temp_zen[logic_x].min(), x_temp_zen[logic_x].max(), 1000)
-        yy = np.polyval(coef, xx)
-
-        ax2 = fig.add_subplot(324)
-        ax2.scatter(x_temp_zen[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 1]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 1], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        ax2.plot(xx, yy, color='gray', zorder=1)
-        ax2.scatter(x_temp_zen[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 1], color='k', s=10, alpha=0.2, zorder=2)
-        ax2.set_title('Zenith InGaAs (%.2f nm)' % data_ssfr1_v0['raw/wvl_zen_in'][iChan])
-        ax2.set_xlabel('Zenith InGaAs Temperature')
-        ax2.set_ylabel('Counts')
-
-        ax00.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 1]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 1], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-
-        logic_fit = (x_temp_nad>25.0) & logic_dark
-        logic_x   = (x_temp_nad>25.0) & logic_light
-        coef = np.polyfit(x_temp_nad[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 2], 5)
-        xx = np.linspace(x_temp_nad[logic_x].min(), x_temp_nad[logic_x].max(), 1000)
-        yy = np.polyval(coef, xx)
-
-        ax3 = fig.add_subplot(325)
-        ax3.scatter(x_temp_nad[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 2]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 2], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        ax3.plot(xx, yy, color='gray', zorder=1)
-        ax3.scatter(x_temp_nad[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 2], color='k', s=10, alpha=0.2, zorder=2)
-        ax3.set_title('Nadir Silicon (%.2f nm)' % data_ssfr1_v0['raw/wvl_nad_si'][iChan])
-        ax3.set_xlabel('Nadir InGaAs Temperature')
-        ax3.set_ylabel('Counts')
-
-        ax000.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 2]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 2], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-
-        logic_fit = (x_temp_nad>25.0) & logic_dark
-        logic_x   = (x_temp_nad>25.0) & logic_light
-        coef = np.polyfit(x_temp_nad[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 3], 5)
-        xx = np.linspace(x_temp_nad[logic_x].min(), x_temp_nad[logic_x].max(), 1000)
-        yy = np.polyval(coef, xx)
-
-        ax4 = fig.add_subplot(326)
-        ax4.scatter(x_temp_nad[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 3]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 3], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        ax4.plot(xx, yy, color='gray', zorder=1)
-        ax4.scatter(x_temp_nad[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 3], color='k', s=10, alpha=0.2, zorder=2)
-        ax4.set_title('Nadir InGaAs (%.2f nm)' % data_ssfr1_v0['raw/wvl_nad_in'][iChan])
-        ax4.set_xlabel('Nadir InGaAs Temperature')
-        ax4.set_ylabel('Counts')
-
-        ax0000.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 3]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 3], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        #╰──────────────────────────────────────────────────────────────╯#
-        # save figure
-        #╭──────────────────────────────────────────────────────────────╮#
-        fig.subplots_adjust(hspace=0.3, wspace=0.4)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_dset%d_%3.3d.png' % (_metadata['Function'], idset, iChan), bbox_inches='tight', metadata=_metadata, dpi=150)
-        #╰──────────────────────────────────────────────────────────────╯#
-        plt.show()
-        sys.exit()
-    #╰────────────────────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -1010,17 +907,16 @@ def main_process_data_v0(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-
     # # HSK v0: raw data
     # #╭────────────────────────────────────────────────────────────────────────────╮#
     # fnames_hsk = ssfr.util.get_all_files(_FDIR_HSK_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
     # if run and len(fnames_hsk) == 0:
     #     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
-    #     fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _FNAMES_['%s_alp_v0' % date_s], fdir_data=_FDIR_HSK_,
+    #     fname_hsk_v0 = cdata_hsk_from_alp_v0(date, _FNAMES_['%s_alp_v0' % date_s], fdir_data=_FDIR_HSK_,
     #             fdir_out=fdir_out, run=run)
     # else:
     #     # * preferred, use P3 housekeeping file, ict > iwg > mts
-    #     fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_FDIR_HSK_,
+    #     fname_hsk_v0 = cdata_hsk_v0(date, fdir_data=_FDIR_HSK_,
     #             fdir_out=fdir_out, run=run)
     # _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
     # #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -1035,26 +931,13 @@ def main_process_data_v0(date, run=True):
     if run and len(fnames_hsr1) == 0:
         pass
     else:
-        fname_hsr1_v0 = cdata_arcsix_hsr1_v0(date, fdir_data=fdir_data_hsr1,
+        fname_hsr1_v0 = cdata_hsr1_v0(date, fdir_data=fdir_data_hsr1,
                 fdir_out=fdir_out, run=run)
         _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
     sys.exit()
 
-
-    # HSK v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_hsk = ssfr.util.get_all_files(_FDIR_HSK_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
-    if run and len(fnames_hsk) == 0:
-        # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
-        fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _FNAMES_['%s_alp_v0' % date_s], fdir_data=_FDIR_HSK_,
-                fdir_out=fdir_out, run=run)
-    else:
-        # * preferred, use P3 housekeeping file, ict > iwg > mts
-        fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_FDIR_HSK_,
-                fdir_out=fdir_out, run=run)
-    _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
+    return
 
 def main_process_data_v1(date, run=True):
 
@@ -1066,7 +949,7 @@ def main_process_data_v1(date, run=True):
 
     # HSR1 v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_hsr1_v1 = cdata_arcsix_hsr1_v1(date, _FNAMES_['%s_hsr1_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
+    fname_hsr1_v1 = cdata_hsr1_v1(date, _FNAMES_['%s_hsr1_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
 
     _FNAMES_['%s_hsr1_v1'  % date_s] = fname_hsr1_v1
@@ -1089,18 +972,16 @@ def main_process_data_v2(date, run=True):
     # HSR1 v2
     #╭────────────────────────────────────────────────────────────────────────────╮#
     # * based on ALP v1
-    # fname_hsr1_v2 = cdata_arcsix_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
+    # fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=run)
-    # fname_hsr1_v2 = cdata_arcsix_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
+    # fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=True)
 
     # * based on HSK v0
-    fname_hsr1_v2 = cdata_arcsix_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
+    fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
     #╰────────────────────────────────────────────────────────────────────────────╯#
     _FNAMES_['%s_hsr1_v2' % date_s] = fname_hsr1_v2
-
-    _FNAMES_[_vname_ssfr_v2_] = fname_ssfr_v2
 
 def main_process_data_archive(date, run=True):
 
@@ -1116,25 +997,12 @@ def main_process_data_archive(date, run=True):
 
     # HSR1 RA
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_hsr1_ra = cdata_arcsix_hsr1_archive(date, _FNAMES_['%s_hsr1_v2' % date_s],
+    fname_hsr1_ra = cdata_hsr1_archive(date, _FNAMES_['%s_hsr1_v2' % date_s],
             fdir_out=fdir_out, run=run)
     #╰────────────────────────────────────────────────────────────────────────────╯#
     _FNAMES_['%s_hsr1_ra' % date_s] = fname_hsr1_ra
 
-
-    # SSFR RA
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    if _WHICH_SSFR_ == _SSFR1_:
-        _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
-        _vname_ssfr_ra_ = '%s_ssfr1_ra' % date_s
-    else:
-        _vname_ssfr_v2_ = '%s_ssfr2_v2' % date_s
-        _vname_ssfr_ra_ = '%s_ssfr2_ra' % date_s
-
-    fname_ssfr_ra = cdata_arcsix_ssfr_archive(date, _FNAMES_[_vname_ssfr_v2_],
-            fdir_out=fdir_out, run=run)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-    _FNAMES_[_vname_ssfr_ra_] = fname_ssfr_ra
+    return
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -1228,7 +1096,6 @@ if __name__ == '__main__':
         # step 1
         #╭────────────────────────────────────────────────────────────────────────────╮#
         main_process_data_v0(date, run=True)
-        main_process_data_v0_metnav(date, run=True)
         sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
