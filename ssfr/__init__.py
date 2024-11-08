@@ -6,4 +6,5 @@ from . import common
 from . import lasp_ssfr
 from . import nasa_ssfr
 from . import lasp_spn
+from . import lasp_hsr
 from . import lasp_alp
