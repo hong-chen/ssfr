@@ -101,29 +101,36 @@ def cal_solar_angles(julian_day, longitude, latitude, altitude, verbose=ssfr.com
 
         jday = julian_day[i]
 
-        dtime_i = (dateRef + datetime.timedelta(days=jday-jdayRef)).replace(tzinfo=datetime.timezone.utc)
+        try:
+            dtime_i = (dateRef + datetime.timedelta(days=jday-jdayRef)).replace(tzinfo=datetime.timezone.utc)
 
-        sza_i = 90.0 - pysolar.solar.get_altitude(latitude[i], longitude[i], dtime_i, elevation=altitude[i])
-        if sza_i < 0.0 or sza_i > 90.0:
-            sza_i = np.nan
-        sza[i] = sza_i
+            sza_i = 90.0 - pysolar.solar.get_altitude(latitude[i], longitude[i], dtime_i, elevation=altitude[i])
+            if sza_i < 0.0 or sza_i > 90.0:
+                sza_i = np.nan
+            sza[i] = sza_i
 
-        saa_i = pysolar.solar.get_azimuth(latitude[i], longitude[i], dtime_i, elevation=altitude[i])
-        if saa_i >= 0.0:
-            if 0.0<=saa_i<=180.0:
-                saa_i = 180.0 - saa_i
-            elif 180.0<saa_i<=360.0:
-                saa_i = 540.0 - saa_i
-            else:
-                saa_i = np.nan
-        elif saa_i < 0.0:
-            if -180.0<=saa_i<0.0:
-                saa_i = -saa_i + 180.0
-            elif -360.0<=saa_i<-180.0:
-                saa_i = -saa_i - 180.0
-            else:
-                saa_i = np.nan
-        saa[i] = saa_i
+            saa_i = pysolar.solar.get_azimuth(latitude[i], longitude[i], dtime_i, elevation=altitude[i])
+            if saa_i >= 0.0:
+                if 0.0<=saa_i<=180.0:
+                    saa_i = 180.0 - saa_i
+                elif 180.0<saa_i<=360.0:
+                    saa_i = 540.0 - saa_i
+                else:
+                    saa_i = np.nan
+            elif saa_i < 0.0:
+                if -180.0<=saa_i<0.0:
+                    saa_i = -saa_i + 180.0
+                elif -360.0<=saa_i<-180.0:
+                    saa_i = -saa_i - 180.0
+                else:
+                    saa_i = np.nan
+            saa[i] = saa_i
+
+        except Exception as error:
+            print('\nError [cal_solar_angles]: received the following error for [i=%d] ...' % i)
+            print(error)
+            sza[i] = np.nan
+            saa[i] = np.nan
 
     return sza, saa
 
@@ -536,7 +543,7 @@ def read_iwg_mts(fname, date_ref=None, tmhr_range=None):
 
 
 
-def read_cabin(fname, tmhr_range=None, Nskip=1, lower=True, time_units='sec'):
+def read_cabin(fname, tmhr_range=None, Nskip=1, lower=True, time_units='sec', split='\t'):
 
     """
     Reader for Cabin file from Twin Otter aircraft (data shared by Dr. Anthony Bucholtz)
@@ -552,7 +559,7 @@ def read_cabin(fname, tmhr_range=None, Nskip=1, lower=True, time_units='sec'):
     units  = []
 
     line = f.readline()
-    vnames_ = line.strip().split('\t')
+    vnames_ = line.strip().split(split)
     for vname_ in vnames_:
         words = vname_.replace(')', '').split('(')
         if len(words) > 1:
@@ -566,7 +573,7 @@ def read_cabin(fname, tmhr_range=None, Nskip=1, lower=True, time_units='sec'):
     f.close()
     #\----------------------------------------------------------------------------/#
 
-    data_all = np.genfromtxt(fname, skip_header=Nskip, delimiter='\t', invalid_raise=False)
+    data_all = np.genfromtxt(fname, skip_header=Nskip, delimiter=split, invalid_raise=False)
 
     data = OrderedDict()
     if time_units.lower() == 'sec':

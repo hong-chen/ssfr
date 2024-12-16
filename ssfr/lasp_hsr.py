@@ -14,7 +14,7 @@ __all__ = ['read_hsr1']
 class read_hsr1:
 
     """
-    Read data (Diffuse.txt or Total.txt) of SPN-S
+    Read data (Diffuse.txt or Total.txt) of HSR1
 
     Input:
         fname       : string, file path of the data
@@ -31,14 +31,14 @@ class read_hsr1:
             self.data['flux']      : numpy array (Ndata, Nwvl)
     """
 
-    ID = 'CU LASP SPN-S'
+    ID = 'CU LASP HSR1'
 
     def __init__(self, fname, date_ref=None, skip_header=3, info_line=3, quiet=False):
 
         # read data
         #/----------------------------------------------------------------------------\#
         with open(fname, 'r') as f:
-            msg = '\nMessage [read_hsr1]: Processing CU-LASP SPN-S file:\n    reading <%s> ...' % (fname)
+            msg = '\nMessage [read_hsr1]: Processing CU-LASP HSR1 file:\n    reading <%s> ...' % (fname)
             print(msg)
             lines = f.readlines()
 
@@ -50,7 +50,7 @@ class read_hsr1:
         #/----------------------------------------------------------------------------\#
         self.data = {}
         self.data['general_info'] = {}
-        self.data['general_info']['spn_tag'] = 'CU LASP SPN-S'
+        self.data['general_info']['spn_tag'] = 'CU LASP HSR1'
         self.data['general_info']['fname'] = fname
         #\----------------------------------------------------------------------------/#
 

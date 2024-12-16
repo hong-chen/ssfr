@@ -35,7 +35,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # mpl.use('Agg')
 
 
-
 import ssfr
 
 
@@ -86,92 +85,25 @@ def cdata_hsk_v0(
     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _MISSION_.upper(), _HSK_.upper(), _PLATFORM_.upper(), date_s)
     if run:
 
-        try:
-
-            # ict file from P3 data system team, best quality but cannot be accessed immediately
-            #╭────────────────────────────────────────────────────────────────────────────╮#
-            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
-            data_hsk = ssfr.util.read_ict(fname)
-            var_dict = {
-                    'lon': 'longitude',
-                    'lat': 'latitude',
-                    'alt': 'gps_altitude',
-                    'tmhr': 'tmhr',
-                    'ang_pit': 'pitch_angle',
-                    'ang_rol': 'roll_angle',
-                    'ang_hed': 'true_heading',
-                    'ir_surf_temp': 'ir_surf_temp',
-                    }
-            #╰────────────────────────────────────────────────────────────────────────────╯#
-
-        except Exception as error:
-            print(error)
-
-            # iwg file from <https://asp-archive.arc.nasa.gov>, secondary option
-            #╭────────────────────────────────────────────────────────────────────────────╮#
-            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
-            data_hsk = ssfr.util.read_iwg_nsrc(fname)
-            var_dict = {
-                    'tmhr': 'tmhr',
-                    'lon': 'longitude',
-                    'lat': 'latitude',
-                    'alt': 'gps_alt_msl',
-                    'ang_pit': 'pitch_angle',
-                    'ang_rol': 'roll_angle',
-                    'ang_hed': 'true_heading',
-                    }
-            #╰────────────────────────────────────────────────────────────────────────────╯#
-
-            # wts file from <https://mts2.nasa.gov/> -> Telemetry, immediately availale after flight but poor quality
-            #╭────────────────────────────────────────────────────────────────────────────╮#
-            # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.mts' % (date.year, date.month, date.day))[0]
-            # data_hsk = ssfr.util.read_iwg_mts(fname)
-            # var_dict = {
-            #         'tmhr': 'tmhr',
-            #         'lon': 'longitude',
-            #         'lat': 'latitude',
-            #         'alt': 'gps_msl_altitude',
-            #         'ang_pit': 'pitch',
-            #         'ang_rol': 'roll',
-            #         'ang_hed': 'true_heading',
-            #         }
-            #╰────────────────────────────────────────────────────────────────────────────╯#
+        # hsk file from DHC6 data system team, best quality but cannot be accessed immediately
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        fname = ssfr.util.get_all_files(fdir_data, pattern='CABIN_1hz_*%2.2d*%2.2d*%s*.txt' % (date.month, date.day, str(date.year)[2:]))[-1]
+        data_hsk = ssfr.util.read_cabin(fname, split=',')
+        var_dict = {
+                'lon': 'long',
+                'lat': 'lat',
+                'alt': 'cmigits alt',
+                'tmhr': 'tmhr',
+                'ang_pit': 'pitch',
+                'ang_rol': 'roll',
+                'ang_hed': 'heading',
+                'ir_surf_temp': 'irt nad',
+                }
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         print()
         print('Processing HSK file:', fname)
         print()
-
-
-        # fake hsk for PSB (Pituffik Space Base)
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        # tmhr_range = [10.0, 13.5]
-        # tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
-        # lon0 = -68.6471 # PSB longitude
-        # lat0 = 76.5324  # PSB latitude
-        # alt0 =  4.0     # airplane altitude
-        # pit0 = 0.0
-        # rol0 = 0.0
-        # hed0 = 0.0
-        # data_hsk = {
-        #         'tmhr': {'data': tmhr, 'units': 'hour'},
-        #         'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
-        #         'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
-        #         'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
-        #         'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
-        #         'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
-        #         'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
-        #         }
-        # var_dict = {
-        #         'lon': 'long',
-        #         'lat': 'lat',
-        #         'alt': 'palt',
-        #         'tmhr': 'tmhr',
-        #         'ang_pit': 'pitch',
-        #         'ang_rol': 'roll',
-        #         'ang_hed': 'heading',
-        #         }
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
 
         # fake hsk for NASA WFF
         #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -908,20 +840,14 @@ def main_process_data_v0(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-    # # HSK v0: raw data
-    # #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fnames_hsk = ssfr.util.get_all_files(_FDIR_HSK_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
-    # if run and len(fnames_hsk) == 0:
-    #     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
-    #     fname_hsk_v0 = cdata_hsk_from_alp_v0(date, _FNAMES_['%s_alp_v0' % date_s], fdir_data=_FDIR_HSK_,
-    #             fdir_out=fdir_out, run=run)
-    # else:
-    #     # * preferred, use P3 housekeeping file, ict > iwg > mts
-    #     fname_hsk_v0 = cdata_hsk_v0(date, fdir_data=_FDIR_HSK_,
-    #             fdir_out=fdir_out, run=run)
-    # _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    # #╰────────────────────────────────────────────────────────────────────────────╯#
-    # sys.exit()
+    # HSK v0: raw data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_hsk = ssfr.util.get_all_files(_FDIR_HSK_, pattern='CABIN*%2.2d_%2.2d_%s*.txt' % (date.month, date.day, str(date.year)[2:]))
+    if len(fnames_hsk) > 0:
+        fname_hsk_v0 = cdata_hsk_v0(date, fdir_data=_FDIR_HSK_,
+                fdir_out=fdir_out, run=True)
+    _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # HSR1 v0: raw data
@@ -936,7 +862,6 @@ def main_process_data_v0(date, run=True):
                 fdir_out=fdir_out, run=run)
         _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
-    sys.exit()
 
     return
 
@@ -1085,7 +1010,14 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             datetime.datetime(2024, 11, 6),  # SHIMMER flight #1
+             datetime.datetime(2024, 11, 8),  # SHIMMER flight #
+             datetime.datetime(2024, 11, 9),  # SHIMMER flight #
+             datetime.datetime(2024, 11, 12),  # SHIMMER flight #
+             datetime.datetime(2024, 11, 13),  # SHIMMER flight #
+             datetime.datetime(2024, 11, 14),  # SHIMMER flight #
+             datetime.datetime(2024, 11, 19),  # SHIMMER flight #
+             datetime.datetime(2024, 11, 20),  # SHIMMER flight #
+             datetime.datetime(2024, 11, 21),  # SHIMMER flight #
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -1097,7 +1029,6 @@ if __name__ == '__main__':
         # step 1
         #╭────────────────────────────────────────────────────────────────────────────╮#
         main_process_data_v0(date, run=True)
-        sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
@@ -1109,25 +1040,25 @@ if __name__ == '__main__':
 
         # step 3
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=True)
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=True)
         # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=True)
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=True)
         # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 5
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(date, run=False)
-        main_process_data_v1(date, run=False)
-        main_process_data_v2(date, run=False)
-        main_process_data_archive(date, run=True)
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
         # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
