@@ -1,9 +1,27 @@
+"""
+Code for processing data collected by "HSR1-A" (used to be called SPNS-A) during NRL MAGPIE 2023.
+
+Acknowledgements:
+    Instrument engineering:
+        John Wood
+    Data analysis:
+        Hong Chen, Arabella Chamberlain, Sebastian Schmidt
+    Instrument operation:
+        Anthony Bucholtz
+"""
+
 import os
 import sys
 import glob
 import datetime
+import warnings
+from collections import OrderedDict
+from tqdm import tqdm
 import h5py
 import numpy as np
+from scipy import interpolate
+from scipy.io import readsav
+from scipy.optimize import curve_fit
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.path as mpl_path
@@ -20,500 +38,1037 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import ssfr
 
 
-_fdir_data_ = '/argus/field'
-_fdir_v0_  = '/argus/field/magpie/2023/dhc6/processed'
-_fdir_v1_  = '/argus/field/magpie/2023/dhc6/processed'
-_fdir_v2_  = '/argus/field/magpie/2023/dhc6/processed'
+# parameters
+#╭────────────────────────────────────────────────────────────────────────────╮#
+_MISSION_     = 'magpie'
+_YEAR_        = '2023'
+_PLATFORM_    = 'dhc6'
+
+_HSK_         = 'hsk'
+_HSR1_        = 'hsr1-a'
+
+_FDIR_HSK_   = 'data/%s/%s/%s/aux/%s' % (_MISSION_.lower(), _YEAR_, _PLATFORM_.lower(), _HSK_.lower())
+
+_FDIR_DATA_  = 'data/%s' % _MISSION_
+_FDIR_OUT_   = '%s/processed' % _FDIR_DATA_
+
+_VERBOSE_   = True
+_FNAMES_ = {}
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-def cdata_magpie_hsk_v0(
+_HSR1_TIME_OFFSET_ = {
+        '20241106': 0.0,
+        }
+
+# functions for processing HSK
+#╭────────────────────────────────────────────────────────────────────────────╮#
+def cdata_hsk_v0(
         date,
-        tmhr_range=[10.0, 24.0],
-        fdir_data=_fdir_data_,
-        fdir_out=_fdir_v0_,
+        fdir_data=_FDIR_DATA_,
+        fdir_out=_FDIR_OUT_,
+        run=True,
         ):
 
     """
-    process raw aircraft nav data
+    For processing aricraft housekeeping file
+
+    Notes:
+        The housekeeping data would require some corrections before its release by the
+        data system team, we usually request the raw IWG file (similar data but with a
+        slightly different data formatting) from the team right after each flight to
+        facilitate our data processing in a timely manner.
     """
 
-    # read aircraft nav data (housekeeping file)
-    #/----------------------------------------------------------------------------\#
-    fname = sorted(glob.glob('%s/magpie/2023/dhc6/hsk/raw/CABIN_1hz*%s*' % (fdir_data, date.strftime('%m_%d'))))[0]
-    # if date == datetime.datetime(2023, 8, 21):
-    #     data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='hour')
+    date_s = date.strftime('%Y%m%d')
 
-    #     tmhr_ = data_hsk['tmhr']['data'].copy()
-    #     tmhr0_ = tmhr_[0]
-    #     Ntmhr0_ = (tmhr_==tmhr0_).sum()
-    #     tmhr0 = tmhr0_ + 0.1 - Ntmhr0_/3600.0
-    #     tmhr = tmhr0 + np.arange(data_hsk['tmhr']['data'].size)/3600.0
-    #     data_hsk['tmhr']['data'] = tmhr
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _MISSION_.upper(), _HSK_.upper(), _PLATFORM_.upper(), date_s)
+    if run:
 
-    # else:
-    #     data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='sec')
-    data_hsk = ssfr.util.read_cabin(fname, tmhr_range=tmhr_range, time_units='sec')
-    data_hsk['long']['data'] = -data_hsk['long']['data']
-    #\----------------------------------------------------------------------------/#
+        # hsk file from DHC6 data system team, best quality but cannot be accessed immediately
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        fname = ssfr.util.get_all_files(fdir_data, pattern='CABIN_1hz_*%2.2d*%2.2d*%s*.txt' % (date.month, date.day, str(date.year)[2:]))[-1]
+        data_hsk = ssfr.util.read_cabin(fname, split='\t')
+        var_dict = {
+                'lon': 'long',
+                'lat': 'lat',
+                'alt': 'palt',
+                'tmhr': 'tmhr',
+                'ang_pit': 'pitch',
+                'ang_rol': 'roll',
+                'ang_hed': 'heading',
+                # 'ir_surf_temp': 'irt nad',
+                }
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # solar geometries
-    #/----------------------------------------------------------------------------\#
-    jday0 = ssfr.util.dtime_to_jday(date)
-    jday = jday0 + data_hsk['tmhr']['data']/24.0
-    sza, saa = ssfr.util.cal_solar_angles(jday, data_hsk['long']['data'], data_hsk['lat']['data'], data_hsk['palt']['data'])
-    #\----------------------------------------------------------------------------/#
+        print()
+        print('Processing HSK file:', fname)
+        print()
 
-    # save processed data
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_HSK_%s_v0.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
+        # fake hsk for NASA WFF
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        # if date == datetime.datetime(2024, 7, 8):
+        #     dtime_s = datetime.datetime(2024, 7, 8, 18, 24)
+        #     dtime_e = datetime.datetime(2024, 7, 8, 19, 1)
+        # elif date == datetime.datetime(2024, 7, 9):
+        #     dtime_s = datetime.datetime(2024, 7, 9, 15, 15)
+        #     dtime_e = datetime.datetime(2024, 7, 9, 16, 5)
+        # sec_s = (dtime_s - date).total_seconds()
+        # sec_e = (dtime_e - date).total_seconds()
+        # tmhr = np.arange(sec_s, sec_e, 1.0)/3600.0
+        # lon0 = -75.47058922297123
+        # lat0 = 37.94080738931773
+        # alt0 =  4.0                # airplane altitude
+        # pit0 = 0.0
+        # rol0 = 0.0
+        # hed0 = 0.0
+        # data_hsk = {
+        #         'tmhr': {'data': tmhr, 'units': 'hour'},
+        #         'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
+        #         'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
+        #         'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
+        #         'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
+        #         'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
+        #         'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
+        #         }
+        # var_dict = {
+        #         'lon': 'long',
+        #         'lat': 'lat',
+        #         'alt': 'palt',
+        #         'tmhr': 'tmhr',
+        #         'ang_pit': 'pitch',
+        #         'ang_rol': 'roll',
+        #         'ang_hed': 'heading',
+        #         }
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    f = h5py.File(fname_h5, 'w')
-    f['tmhr'] = data_hsk['tmhr']['data']
-    f['lon']  = data_hsk['long']['data']
-    f['lat']  = data_hsk['lat']['data']
-    f['alt']  = data_hsk['palt']['data']
-    f['pit']  = data_hsk['pitch']['data']
-    f['rol']  = data_hsk['roll']['data']
-    f['hed']  = data_hsk['heading']['data']
-    f['jday'] = jday
-    f['sza']  = sza
-    f['saa']  = saa
-    f.close()
-    #\----------------------------------------------------------------------------/#
+        data_hsk[var_dict['lon']]['data'] = -data_hsk[var_dict['lon']]['data']
 
-def cdata_magpie_spns_v0(
+        # solar geometries
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        jday0 = ssfr.util.dtime_to_jday(date)
+        jday  = jday0 + data_hsk[var_dict['tmhr']]['data']/24.0
+        sza, saa = ssfr.util.cal_solar_angles(jday, data_hsk[var_dict['lon']]['data'], data_hsk[var_dict['lat']]['data'], data_hsk[var_dict['alt']]['data'])
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+        # save processed data
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        f = h5py.File(fname_h5, 'w')
+        for var in var_dict.keys():
+            f[var] = data_hsk[var_dict[var]]['data']
+        f['jday'] = jday
+        f['sza']  = sza
+        f['saa']  = saa
+        f.close()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    return fname_h5
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+# functions for processing HSR1
+#╭────────────────────────────────────────────────────────────────────────────╮#
+def cdata_hsr1_v0(
         date,
-        fdir_data=_fdir_data_,
-        fdir_out=_fdir_v0_,
+        fdir_data=_FDIR_DATA_,
+        fdir_out=_FDIR_OUT_,
+        run=True,
         ):
 
     """
-    process raw SPN-S data
+    Process raw HSR1 data
     """
 
-    # read spn-s raw data
-    #/----------------------------------------------------------------------------\#
-    fdir = '%s/magpie/2023/dhc6/spn-s/raw/%s' % (fdir_data, date.strftime('%Y-%m-%d'))
+    date_s = date.strftime('%Y%m%d')
 
-    fname_dif = sorted(glob.glob('%s/Diffuse.txt' % fdir))[0]
-    data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _MISSION_.upper(), _HSR1_.split('-')[0].upper(), _PLATFORM_.upper(), date_s)
 
-    fname_tot = sorted(glob.glob('%s/Total.txt' % fdir))[0]
-    data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
-    #/----------------------------------------------------------------------------\#
+    if run:
 
-    # read wavelengths and calculate toa downwelling solar flux
-    #/----------------------------------------------------------------------------\#
-    flux_toa = ssfr.util.get_solar_kurudz()
+        # read hsr1 raw data
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        fname_dif = ssfr.util.get_all_files(fdir_data, pattern='*Diffuse*.txt')[-1]
+        data0_dif = ssfr.lasp_hsr.read_hsr1(fname=fname_dif)
 
-    wvl_tot = data0_tot.data['wavelength']
-    f_dn_sol_tot = np.zeros_like(wvl_tot)
-    for i, wvl0 in enumerate(wvl_tot):
-        f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])
-    #\----------------------------------------------------------------------------/#
+        fname_tot = ssfr.util.get_all_files(fdir_data, pattern='*Total*.txt')[-1]
+        data0_tot = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # save processed data
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
+        # read wavelengths and calculate toa downwelling solar flux
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        flux_toa = ssfr.util.get_solar_kurudz()
 
-    f = h5py.File(fname_h5, 'w')
+        wvl_tot = data0_tot.data['wvl']
+        f_dn_sol_tot = np.zeros_like(wvl_tot)
+        for i, wvl0 in enumerate(wvl_tot):
+            f_dn_sol_tot[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    g1 = f.create_group('dif')
-    g1['tmhr']  = data0_dif.data['tmhr']
-    g1['wvl']   = data0_dif.data['wavelength']
-    g1['flux']  = data0_dif.data['flux']
+        f = h5py.File(fname_h5, 'w')
 
-    g2 = f.create_group('tot')
-    g2['tmhr']  = data0_tot.data['tmhr']
-    g2['wvl']   = data0_tot.data['wavelength']
-    g2['flux']  = data0_tot.data['flux']
-    g2['toa0']  = f_dn_sol_tot
+        g1 = f.create_group('dif')
+        for key in data0_dif.data.keys():
+            if key in ['tmhr', 'jday', 'wvl', 'flux']:
+                dset0 = g1.create_dataset(key, data=data0_dif.data[key], compression='gzip', compression_opts=9, chunks=True)
 
-    f.close()
-    #\----------------------------------------------------------------------------/#
+        g2 = f.create_group('tot')
+        for key in data0_tot.data.keys():
+            if key in ['tmhr', 'jday', 'wvl', 'flux']:
+                dset0 = g2.create_dataset(key, data=data0_tot.data[key], compression='gzip', compression_opts=9, chunks=True)
+        g2['toa0'] = f_dn_sol_tot
 
-def cdata_magpie_spns_v1(
+        f.close()
+
+    return fname_h5
+
+def cdata_hsr1_v1(
         date,
+        fname_hsr1_v0,
+        fname_hsk,
+        fdir_out=_FDIR_OUT_,
         time_offset=0.0,
-        fdir_data=_fdir_v0_,
-        fdir_out=_fdir_v1_,
+        run=True,
         ):
 
     """
-    check for time offset and merge SPN-S data with aircraft data
+    Check for time offset and merge HSR1 data with aircraft data
     """
 
-    # read hsk v0
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_HSK_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
-    f = h5py.File(fname_h5, 'r')
-    jday = f['jday'][...]
-    sza  = f['sza'][...]
-    saa  = f['saa'][...]
-    tmhr = f['tmhr'][...]
-    lon  = f['lon'][...]
-    lat  = f['lat'][...]
-    alt  = f['alt'][...]
-    pit  = f['pit'][...]
-    rol  = f['rol'][...]
-    hed  = f['hed'][...]
-    f.close()
-    #\----------------------------------------------------------------------------/#
+    date_s = date.strftime('%Y%m%d')
 
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _MISSION_.upper(), _HSR1_.split('-')[0].upper(), _PLATFORM_.upper(), date_s)
 
-    # read spn-s v0
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
-    f = h5py.File(fname_h5, 'r')
-    f_dn_dif  = f['dif/flux'][...]
-    wvl_dif   = f['dif/wvl'][...]
-    tmhr_dif  = f['dif/tmhr'][...]
+    if run:
+        # read hsr1 v0
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        data_hsr1_v0 = ssfr.util.load_h5(fname_hsr1_v0)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    f_dn_tot  = f['tot/flux'][...]
-    wvl_tot   = f['tot/wvl'][...]
-    tmhr_tot  = f['tot/tmhr'][...]
-    f_dn_tot_toa0 = f['tot/toa0'][...]
-    f.close()
-    #/----------------------------------------------------------------------------\#
+        # read hsk v0
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        data_hsk= ssfr.util.load_h5(fname_hsk)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
+        time_offset = _HSR1_TIME_OFFSET_[date_s]
 
-    # interpolate spn-s data to hsk time frame
-    #/----------------------------------------------------------------------------\#
-    flux_dif = np.zeros((tmhr.size, wvl_dif.size), dtype=np.float64)
-    for i in range(wvl_dif.size):
-        flux_dif[:, i] = ssfr.util.interp(tmhr, tmhr_dif, f_dn_dif[:, i])
+        # interpolate hsr1 data to hsk time frame
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        flux_dif = np.zeros((data_hsk['jday'].size, data_hsr1_v0['dif/wvl'].size), dtype=np.float64)
+        for i in range(flux_dif.shape[-1]):
+            flux_dif[:, i] = ssfr.util.interp(data_hsk['jday'], data_hsr1_v0['dif/jday']+time_offset/86400.0, data_hsr1_v0['dif/flux'][:, i], mode='nearest')
 
-    flux_tot = np.zeros((tmhr.size, wvl_tot.size), dtype=np.float64)
-    for i in range(wvl_tot.size):
-        flux_tot[:, i] = ssfr.util.interp(tmhr, tmhr_tot, f_dn_tot[:, i])
-    #\----------------------------------------------------------------------------/#
+        flux_tot = np.zeros((data_hsk['jday'].size, data_hsr1_v0['tot/wvl'].size), dtype=np.float64)
+        for i in range(flux_tot.shape[-1]):
+            flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_hsr1_v0['tot/jday']+time_offset/86400.0, data_hsr1_v0['tot/flux'][:, i], mode='nearest')
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
+        f = h5py.File(fname_h5, 'w')
 
-    # save processed data
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v1.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
+        for key in data_hsk.keys():
+            f[key] = data_hsk[key]
 
-    f = h5py.File(fname_h5, 'w')
+        f['time_offset'] = time_offset
+        f['tmhr_ori'] = data_hsk['tmhr'] - time_offset/3600.0
+        f['jday_ori'] = data_hsk['jday'] - time_offset/86400.0
 
-    f['jday'] = jday
-    f['tmhr'] = tmhr
-    f['lon']  = lon
-    f['lat']  = lat
-    f['alt']  = alt
-    f['sza']  = sza
-    f['saa']  = saa
-    f['pit']  = pit
-    f['rol']  = rol
-    f['hed']  = hed
+        g1 = f.create_group('dif')
+        g1['wvl']   = data_hsr1_v0['dif/wvl']
+        dset0 = g1.create_dataset('flux', data=flux_dif, compression='gzip', compression_opts=9, chunks=True)
 
-    g1 = f.create_group('dif')
-    g1['wvl']   = wvl_dif
-    g1['flux']  = flux_dif
+        g2 = f.create_group('tot')
+        g2['wvl']   = data_hsr1_v0['tot/wvl']
+        g2['toa0']  = data_hsr1_v0['tot/toa0']
+        dset0 = g2.create_dataset('flux', data=flux_tot, compression='gzip', compression_opts=9, chunks=True)
 
-    g2 = f.create_group('tot')
-    g2['wvl']   = wvl_tot
-    g2['flux']  = flux_tot
-    g2['toa0']  = f_dn_tot_toa0
+        f.close()
 
-    f.close()
-    #\----------------------------------------------------------------------------/#
+    return fname_h5
 
-def cdata_magpie_spns_v2(
+def cdata_hsr1_v2(
         date,
-        time_offset=0.0,
-        fdir_data=_fdir_v1_,
-        fdir_out=_fdir_v2_,
+        fname_hsr1_v1,
+        fname_hsk, # interchangable with fname_alp_v1
+        wvl_range=None,
+        ang_pit_offset=0.0,
+        ang_rol_offset=0.0,
+        fdir_out=_FDIR_OUT_,
+        run=True,
         ):
 
     """
-    apply attitude correction to account for pitch and roll
+    Apply attitude correction to account for aircraft attitude (pitch, roll, heading)
     """
 
-    # read spn-s v1
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v1.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
-    f = h5py.File(fname_h5, 'r')
-    f_dn_dif  = f['dif/flux'][...]
-    wvl_dif   = f['dif/wvl'][...]
+    date_s = date.strftime('%Y%m%d')
 
-    f_dn_tot  = f['tot/flux'][...]
-    wvl_tot   = f['tot/wvl'][...]
-    f_dn_toa0 = f['tot/toa0'][...]
+    fname_h5 = '%s/%s-%s_%s_%s_v2.h5' % (fdir_out, _MISSION_.upper(), _HSR1_.split('-')[0].upper(), _PLATFORM_.upper(), date_s)
 
-    jday = f['jday'][...]
-    tmhr = f['tmhr'][...]
-    lon = f['lon'][...]
-    lat = f['lat'][...]
-    alt = f['alt'][...]
-    sza  = f['sza'][...]
-    saa  = f['saa'][...]
+    if run:
 
-    pit = f['pit'][...]
-    rol = f['rol'][...]
-    hed = f['hed'][...]
+        # read hsr1 v1
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        data_hsr1_v1 = ssfr.util.load_h5(fname_hsr1_v1)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    f.close()
-    #/----------------------------------------------------------------------------\#
+        # read hsk v0
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        data_hsk = ssfr.util.load_h5(fname_hsk)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # correction factor
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        mu = np.cos(np.deg2rad(data_hsk['sza']))
+
+        try:
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit']+ang_pit_offset, data_hsk['ang_rol']+ang_rol_offset, data_hsk['ang_hed'])
+        except Exception as error:
+            print(error)
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_s']+ang_pit_offset, data_hsk['ang_rol_s']+ang_rol_offset, data_hsk['ang_hed'])
+        dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
+
+        factors = mu / dc
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # attitude correction
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        f_dn_dir = data_hsr1_v1['tot/flux'] - data_hsr1_v1['dif/flux']
+        f_dn_dir_corr = np.zeros_like(f_dn_dir)
+        f_dn_tot_corr = np.zeros_like(f_dn_dir)
+        for iwvl in range(data_hsr1_v1['tot/wvl'].size):
+            f_dn_dir_corr[..., iwvl] = f_dn_dir[..., iwvl]*factors
+            f_dn_tot_corr[..., iwvl] = f_dn_dir_corr[..., iwvl] + data_hsr1_v1['dif/flux'][..., iwvl]
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        f = h5py.File(fname_h5, 'w')
+
+        g0 = f.create_group('att_corr')
+        g0['mu'] = mu
+        g0['dc'] = dc
+        g0['factors'] = factors
+        for key in data_hsk.keys():
+            if key in ['sza', 'saa', 'ang_pit', 'ang_rol', 'ang_hed']:
+                g0[key] = data_hsk[key]
+            else:
+                f[key] = data_hsk[key]
+
+        if wvl_range is None:
+            wvl_range = [0.0, 2200.0]
+
+        logic_wvl_dif = (data_hsr1_v1['dif/wvl']>=wvl_range[0]) & (data_hsr1_v1['dif/wvl']<=wvl_range[1])
+        logic_wvl_tot = (data_hsr1_v1['tot/wvl']>=wvl_range[0]) & (data_hsr1_v1['tot/wvl']<=wvl_range[1])
+
+        g1 = f.create_group('dif')
+        g1['wvl']   = data_hsr1_v1['dif/wvl'][logic_wvl_dif]
+        dset0 = g1.create_dataset('flux', data=data_hsr1_v1['dif/flux'][:, logic_wvl_dif], compression='gzip', compression_opts=9, chunks=True)
+
+        g2 = f.create_group('tot')
+        g2['wvl']   = data_hsr1_v1['tot/wvl'][logic_wvl_tot]
+        g2['toa0']  = data_hsr1_v1['tot/toa0'][logic_wvl_tot]
+        dset0 = g2.create_dataset('flux', data=f_dn_tot_corr[:, logic_wvl_tot], compression='gzip', compression_opts=9, chunks=True)
+
+        f.close()
+
+    return fname_h5
+
+def cdata_hsr1_archive(
+        date,
+        fname_hsr1_v2,
+        ang_pit_offset=0.0,
+        ang_rol_offset=0.0,
+        wvl_range=[400.0, 800.0],
+        platform_info = 'p3',
+        principal_investigator_info = 'Chen, Hong',
+        affiliation_info = 'University of Colorado Boulder',
+        instrument_info = 'HSR1-B (Sunshine Pyranometer - Spectral)',
+        mission_info = '%s %s' % (_MISSION_.upper(), _YEAR_),
+        project_info = '',
+        file_format_index = '1001',
+        file_volume_number = '1, 1',
+        data_interval = '1.0',
+        scale_factor = '1.0',
+        fill_value = 'NaN',
+        version='RA',
+        fdir_out=_FDIR_OUT_,
+        run=True,
+        ):
 
 
-    # correction factor
-    #/----------------------------------------------------------------------------\#
-    mu = np.cos(np.deg2rad(sza))
-
-    iza, iaa = ssfr.util.prh2za(pit, rol, hed)
-    dc = ssfr.util.muslope(sza, saa, iza, iaa)
-
-    factors = mu / dc
-    #\----------------------------------------------------------------------------/#
+    # placeholder for additional information such as calibration
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    # attitude correction
-    #/----------------------------------------------------------------------------\#
-    f_dn_dir = f_dn_tot - f_dn_dif
-    f_dn_dir_corr = np.zeros_like(f_dn_dir)
-    f_dn_tot_corr = np.zeros_like(f_dn_tot)
-    for iwvl in range(wvl_tot.size):
-        f_dn_dir_corr[..., iwvl] = f_dn_dir[..., iwvl]*factors
-        f_dn_tot_corr[..., iwvl] = f_dn_dir_corr[..., iwvl] + f_dn_dif[..., iwvl]
-    #\----------------------------------------------------------------------------/#
+    # date info
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    date_s = date.strftime('%Y%m%d')
+    date_today = datetime.date.today()
+    date_info  = '%4.4d, %2.2d, %2.2d, %4.4d, %2.2d, %2.2d' % (date.year, date.month, date.day, date_today.year, date_today.month, date_today.day)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    # save processed data
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v2.h5' % (fdir_out, date.strftime('%Y-%m-%d'))
-
-    f = h5py.File(fname_h5, 'w')
-
-    f['jday'] = jday
-    f['tmhr'] = tmhr
-    f['lon']  = lon
-    f['lat']  = lat
-    f['alt']  = alt
-    f['sza']  = sza
-    f['dc']   = dc
-
-    g1 = f.create_group('dif')
-    g1['wvl']   = wvl_dif
-    g1['flux']  = f_dn_dif
-
-    g2 = f.create_group('tot')
-    g2['wvl']   = wvl_tot
-    g2['flux']  = f_dn_tot_corr
-    g2['toa0']  = f_dn_toa0
-
-    f.close()
-    #\----------------------------------------------------------------------------/#
+    # version info
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    version = version.upper()
+    version_info = {
+            'RA': 'field data',
+            }
+    version_info = version_info[version]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    if False:
-        wvl0 = 532.0
-        index_wvl = np.argmin(np.abs(wvl_tot-wvl0))
+    # data info
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    data_info = 'Shortwave Total and Diffuse Downwelling Spectral Irradiance from %s %s' % (platform_info.upper(), instrument_info)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
+
+    # routine comments
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    comments_routine_list = OrderedDict({
+            'PI_CONTACT_INFO': 'Address: University of Colorado Boulder, LASP, 3665 Discovery Drive, Boulder, CO 80303; E-mail: hong.chen@lasp.colorado.edu and sebastian.schmidt@lasp.colorado.edu',
+            'PLATFORM': platform_info.upper(),
+            'LOCATION': 'N/A',
+            'ASSOCIATED_DATA': 'N/A',
+            'INSTRUMENT_INFO': instrument_info,
+            'DATA_INFO': 'Reported are only of a selected wavelength range (%d-%d nm), time/lat/lon/alt/pitch/roll/heading from aircraft, sza calculated from time/lon/lat.' % (wvl_range[0], wvl_range[1]),
+            'UNCERTAINTY': 'Nominal HSR1 uncertainty (shortwave): total: N/A; diffuse: N/A',
+            'ULOD_FLAG': '-7777',
+            'ULOD_VALUE': 'N/A',
+            'LLOD_FLAG': '-8888',
+            'LLOD_VALUE': 'N/A',
+            'DM_CONTACT_INFO': 'N/A',
+            'PROJECT_INFO': '%s field experiment in %s' % (_MISSION_.upper(), _YEAR_),
+            'STIPULATIONS_ON_USE': 'This is initial in-field release of the %s-%s data set. Please consult the PI, both for updates to the data set, and for the proper and most recent interpretation of the data for specific science use.' % (_MISSION_.upper(), _YEAR_),
+            'OTHER_COMMENTS': 'Minimal corrections were applied.\n',
+            'REVISION': version,
+            version: version_info
+            })
+
+    comments_routine = '\n'.join(['%s: %s' % (var0, comments_routine_list[var0]) for var0 in comments_routine_list.keys()])
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # special comments
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    comments_special_dict = {
+            '20240530': 'Noticed icing on dome after flight',
+            }
+    if date_s in comments_special_dict.keys():
+        comments_special = comments_special_dict[date_s]
+    else:
+        comments_special = ''
+
+    if comments_special != '':
+        Nspecial = len(comments_special.split('\n'))
+    else:
+        Nspecial = 0
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # data processing
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    data_v2 = ssfr.util.load_h5(fname_hsr1_v2)
+    data_v2['tot/flux'][data_v2['tot/flux']<0.0] = np.nan
+    data_v2['dif/flux'][data_v2['dif/flux']<0.0] = np.nan
+
+    logic_tot = (data_v2['tot/wvl']>=wvl_range[0]) & (data_v2['tot/wvl']<=wvl_range[1])
+    logic_dif = (data_v2['dif/wvl']>=wvl_range[0]) & (data_v2['dif/wvl']<=wvl_range[1])
+
+    data = OrderedDict({
+            'Time_Start': {
+                'data': data_v2['tmhr']*3600.0,
+                'unit': 'second',
+                'description': 'UTC time in seconds from the midnight 00:00:00',
+                },
+
+            'jday': {
+                'data': data_v2['jday'],
+                'unit': 'day',
+                'description': 'UTC time in decimal day from 0001-01-01 00:00:00',
+                },
+
+            'tmhr': {
+                'data': data_v2['tmhr'],
+                'unit': 'hour',
+                'description': 'UTC time in decimal hour from the midnight 00:00:00',
+                },
+
+            'lon': {
+                'data': data_v2['lon'],
+                'unit': 'degree',
+                'description': 'longitude',
+                },
+
+            'lat': {
+                'data': data_v2['lat'],
+                'unit': 'degree',
+                'description': 'latitude',
+                },
+
+            'alt': {
+                'data': data_v2['alt'],
+                'unit': 'meter',
+                'description': 'altitude',
+                },
+
+            'sza': {
+                'data': data_v2['att_corr/sza'],
+                'unit': 'degree',
+                'description': 'solar zenith angle',
+                },
+
+            'tot/flux': {
+                'data': data_v2['tot/flux'][:, logic_tot],
+                'unit': 'W m^-2 nm^-1',
+                'description': 'total downwelling spectral irradiance',
+                },
+
+            'tot/toa0': {
+                'data': data_v2['tot/toa0'][logic_tot],
+                'unit': 'W m^-2 nm^-1',
+                'description': 'Kurucz reference total downwelling spectral irradiance',
+                },
+
+            'tot/wvl': {
+                'data': data_v2['tot/wvl'][logic_tot],
+                'unit': 'nm',
+                'description': 'wavelength for total downwelling spectral irradiance',
+                },
+
+            'dif/flux': {
+                'data': data_v2['dif/flux'][:, logic_dif],
+                'unit': 'W m^-2 nm^-1',
+                'description': 'diffuse downwelling spectral irradiance',
+                },
+
+            'dif/wvl': {
+                'data': data_v2['dif/wvl'][logic_dif],
+                'unit': 'nm',
+                'description': 'wavelength for diffuse downwelling spectral irradiance',
+                },
+            })
+    for key in data.keys():
+        data[key]['description'] = '%s: %s, %s' % (key, data[key]['unit'], data[key]['description'])
+
+    Nvar = len(data.keys())
+    comments_routine = '%s\n%s' % (comments_routine, ','.join(data.keys()))
+    Nroutine = len(comments_routine.split('\n'))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    header_list = [file_format_index,
+                   principal_investigator_info,
+                   affiliation_info,       # Organization/affiliation of PI.
+                   data_info,              # Data source description (e.g., instrument name, platform name, model name, etc.).
+                   mission_info,           # Mission name (usually the mission acronym).
+                   file_volume_number,     # File volume number, number of file volumes (these integer values are used when the data require more than one file per day; for data that require only one file these values are set to 1, 1) - comma delimited.
+                   date_info,              # UTC date when data begin, UTC date of data reduction or revision - comma delimited (yyyy, mm, dd, yyyy, mm, dd).
+                   data_interval,          # Data Interval (This value describes the time spacing (in seconds) between consecutive data records. It is the (constant) interval between values of the independent variable. For 1 Hz data the data interval value is 1 and for 10 Hz data the value is 0.1. All intervals longer than 1 second must be reported as Start and Stop times, and the Data Interval value is set to 0. The Mid-point time is required when it is not at the average of Start and Stop times. For additional information see Section 2.5 below.).
+                   data['Time_Start']['description'],                # Description or name of independent variable (This is the name chosen for the start time. It always refers to the number of seconds UTC from the start of the day on which measurements began. It should be noted here that the independent variable should monotonically increase even when crossing over to a second day.).
+                   str(Nvar-1),                                      # Number of variables (Integer value showing the number of dependent variables: the total number of columns of data is this value plus one.).
+                   ', '.join([scale_factor for i in range(Nvar-1)]), # Scale factors (1 for most cases, except where grossly inconvenient) - comma delimited.
+                   ', '.join([fill_value for i in range(Nvar-1)]),   # Missing data indicators (This is -9999 (or -99999, etc.) for any missing data condition, except for the main time (independent) variable which is never missing) - comma delimited.
+                   '\n'.join([data[vname]['description'] for vname in data.keys() if vname != 'Time_Start']), # Variable names and units (Short variable name and units are required, and optional long descriptive name, in that order, and separated by commas. If the variable is unitless, enter the keyword "none" for its units. Each short variable name and units (and optional long name) are entered on one line. The short variable name must correspond exactly to the name used for that variable as a column header, i.e., the last header line prior to start of data.).
+                   str(Nspecial),                                   # Number of SPECIAL comment lines (Integer value indicating the number of lines of special comments, NOT including this line.).
+                   comments_special,
+                   str(Nroutine),
+                   comments_routine,
+                ]
+
+
+    header = '\n'.join([header0 for header0 in header_list if header0 != ''])
+
+    Nline = len(header.split('\n'))
+    header = '%d, %s' % (Nline, header)
+
+    print(header)
+
+    fname_h5 = '%s/%s-HSR1_%s_%s_%s.h5' % (fdir_out, _MISSION_.upper(), _PLATFORM_.upper(), date_s, version.upper())
+    if run:
+        f = h5py.File(fname_h5, 'w')
+
+        dset = f.create_dataset('header', data=header)
+        dset.attrs['description'] = 'header follows ICT format'
+
+        for key in data.keys():
+            dset = f.create_dataset(key, data=data[key]['data'], compression='gzip', compression_opts=9, chunks=True)
+            dset.attrs['description'] = data[key]['description']
+            dset.attrs['unit'] = data[key]['unit']
+        f.close()
+
+    return fname_h5
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+
+# additional functions under development
+#╭────────────────────────────────────────────────────────────────────────────╮#
+def run_time_offset_check(date):
+
+    date_s = date.strftime('%Y%m%d')
+    data_hsk = ssfr.util.load_h5(_FNAMES_['%s_hsk_v0' % date_s])
+    data_alp = ssfr.util.load_h5(_FNAMES_['%s_alp_v0' % date_s])
+    data_hsr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_hsr1_v0' % date_s])
+    if _WHICH_SSFR_ == _SSFR1_:
+        data_ssfr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr1_v0' % date_s])
+        data_ssfr2_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr2_v0' % date_s])
+    else:
+        data_ssfr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr2_v0' % date_s])
+        data_ssfr2_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr1_v0' % date_s])
+
+    # data_hsr1_v0['tot/jday'] += 1.0
+    # data_hsr1_v0['dif/jday'] += 1.0
+
+    # _offset_x_range_ = [-6000.0, 6000.0]
+    _offset_x_range_ = [-600.0, 600.0]
+
+    # ALP pitch vs HSK pitch
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['ang_pit'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['ang_pit_s'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=False,
+            description='ALP Pitch vs. HSK Pitch',
+            fname_html='alp-pit_offset_check_%s.html' % date_s)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # ALP roll vs HSK roll
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['ang_rol'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['ang_rol_s'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=False,
+            description='ALP Roll vs. HSK Roll',
+            fname_html='alp-rol_offset_check_%s.html' % date_s)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # ALP altitude vs HSK altitude
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_hsk['alt'],
+            'x1': data_alp['jday'][::10]*86400.0,
+            'y1': data_alp['alt'][::10],
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='ALP Altitude vs. HSK Altitude',
+            fname_html='alp-alt_offset_check_%s.html' % date_s)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # HSR1 vs TOA
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    index_wvl = np.argmin(np.abs(745.0-data_hsr1_v0['tot/wvl']))
+    data_y1   = data_hsr1_v0['tot/flux'][:, index_wvl]
+
+    mu = np.cos(np.deg2rad(data_hsk['sza']))
+    iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit'], data_hsk['ang_rol'], data_hsk['ang_hed'])
+    dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
+    factors = mu/dc
+    data_y0   = data_hsr1_v0['tot/toa0'][index_wvl]*np.cos(np.deg2rad(data_hsk['sza']))/factors
+
+    data_offset = {
+            'x0': data_hsk['jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_hsr1_v0['tot/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='HSR1 Total vs. TOA (745 nm)',
+            fname_html='hsr1-toa_offset_check_%s.html' % date_s)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # SSFR-A vs HSR1
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    index_wvl_hsr1 = np.argmin(np.abs(745.0-data_hsr1_v0['tot/wvl']))
+    data_y0 = data_hsr1_v0['tot/flux'][:, index_wvl_hsr1]
+
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_zen']))
+    data_y1 = data_ssfr1_v0['spec/cnt_zen'][:, index_wvl_ssfr]
+    data_offset = {
+            'x0': data_hsr1_v0['tot/jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_ssfr1_v0['raw/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SSFR-A Zenith Count vs. HSR1 Total (745nm)',
+            fname_html='ssfr-a_offset_check_%s.html' % (date_s))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # SSFR-B vs SSFR-A
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_nad']))
+    data_y0 = data_ssfr1_v0['spec/cnt_nad'][:, index_wvl_ssfr]
+
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr2_v0['spec/wvl_nad']))
+    data_y1 = data_ssfr2_v0['spec/cnt_nad'][:, index_wvl_ssfr]
+    data_offset = {
+            'x0': data_ssfr1_v0['raw/jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_ssfr2_v0['raw/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=_offset_x_range_,
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SSFR-B Nadir Count vs. SSFR-A Nadir (745nm)',
+            fname_html='ssfr-b_offset_check_%s.html' % (date_s))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    return
+
+def run_angle_offset_check(
+        date,
+        ang_pit_offset=0.0,
+        ang_rol_offset=0.0,
+        wvl0=745.0,
+        ):
+
+    date_s = date.strftime('%Y%m%d')
+    data_hsk = ssfr.util.load_h5(_FNAMES_['%s_hsk_v0' % date_s])
+
+
+    # HSR1 v1
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    data_hsr1_v1 = ssfr.util.load_h5(_FNAMES_['%s_hsr1_v1' % date_s])
+    index_wvl_hsr1 = np.argmin(np.abs(wvl0-data_hsr1_v1['tot/wvl']))
+    data_y1 = data_hsr1_v1['tot/flux'][:, index_wvl_hsr1]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # HSR1 v2
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
+            fdir_out=_FDIR_OUT_,
+            run=True,
+            ang_pit_offset=ang_pit_offset,
+            ang_rol_offset=ang_rol_offset,
+            )
+    data_hsr1_v2 = ssfr.util.load_h5(_FNAMES_['%s_hsr1_v2' % date_s])
+    data_y2 = data_hsr1_v2['tot/flux'][:, index_wvl_hsr1]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # SSFR-A v2
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    data_ssfr1_v2 = ssfr.util.load_h5(_FNAMES_['%s_ssfr1_v2' % date_s])
+    index_wvl_ssfr = np.argmin(np.abs(wvl0-data_ssfr1_v2['zen/wvl']))
+    data_y0 = data_ssfr1_v2['zen/flux'][:, index_wvl_ssfr]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # figure
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    if True:
         plt.close('all')
-        fig = plt.figure(figsize=(18, 6))
+        fig = plt.figure(figsize=(15, 6))
+        # fig.suptitle('Figure')
         # plot
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         ax1 = fig.add_subplot(111)
-        ax1.scatter(tmhr, mu*f_dn_toa0[index_wvl], s=1, c='k', lw=0.0)
-        ax1.scatter(tmhr, f_dn_tot[..., index_wvl], s=1, c='r', lw=0.0)
-        ax1.scatter(tmhr, f_dn_tot_corr[..., index_wvl], s=1, c='g', lw=0.0)
-        ax1.set_title('MAGPIE %s (%d nm)' % (date.strftime('%Y-%m-%d'), wvl0))
-        #\--------------------------------------------------------------/#
+        # cs = ax1.imshow(.T, origin='lower', cmap='jet', zorder=0) #, extent=extent, vmin=0.0, vmax=0.5)
+        ax1.scatter(data_hsk['tmhr'], data_y1, s=3, c='r', lw=0.0)
+        ax1.scatter(data_hsk['tmhr'], data_y0, s=3, c='k', lw=0.0)
+        ax1.scatter(data_hsk['tmhr'], data_y2, s=3, c='g', lw=0.0)
+        # ax1.hist(.ravel(), bins=100, histtype='stepfilled', alpha=0.5, color='black')
+        # ax1.plot([0, 1], [0, 1], color='k', ls='--')
+        # ax1.set_xlim(())
+        # ax1.set_ylim(())
+        # ax1.set_xlabel('')
+        # ax1.set_ylabel('')
+        # ax1.set_title('')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #╰──────────────────────────────────────────────────────────────╯#
+        # save figure
+        #╭──────────────────────────────────────────────────────────────╮#
+        # fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s.png' % _metadata['Function'], bbox_inches='tight', metadata=_metadata)
+        #╰──────────────────────────────────────────────────────────────╯#
+        plt.show()
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+    sys.exit()
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+# main program
+#╭────────────────────────────────────────────────────────────────────────────╮#
+def main_process_data_v0(date, run=True):
+
+    fdir_out = _FDIR_OUT_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    date_s = date.strftime('%Y%m%d')
+
+    # HSK v0: raw data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_hsk = ssfr.util.get_all_files(_FDIR_HSK_, pattern='CABIN*%2.2d_%2.2d_%s*.txt' % (date.month, date.day, str(date.year)[2:]))
+    if len(fnames_hsk) > 0:
+        fname_hsk_v0 = cdata_hsk_v0(date, fdir_data=_FDIR_HSK_,
+                fdir_out=fdir_out, run=True)
+    _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # HSR1 v0: raw data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fdirs = ssfr.util.get_all_folders(_FDIR_DATA_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s*' % (date.year, date.month, date.day, _HSR1_.lower()))
+    # fdir_data_hsr1 = sorted(fdirs, key=os.path.getmtime)[-1]
+    # fnames_hsr1 = ssfr.util.get_all_files(fdir_data_hsr1, pattern='*.txt')
+    # if run and len(fnames_hsr1) == 0:
+    #     pass
+    # else:
+    #     fname_hsr1_v0 = cdata_hsr1_v0(date, fdir_data=fdir_data_hsr1,
+    #             fdir_out=fdir_out, run=run)
+    #     _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    return
+
+def main_process_data_v1(date, run=True):
+
+    fdir_out = _FDIR_OUT_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    date_s = date.strftime('%Y%m%d')
+
+    # HSR1 v1: time synced with hsk time with time offset applied
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_hsr1_v1 = cdata_hsr1_v1(date, _FNAMES_['%s_hsr1_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+
+    _FNAMES_['%s_hsr1_v1'  % date_s] = fname_hsr1_v1
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+def main_process_data_v2(date, run=True):
+
+    """
+    v0: raw data directly read out from the data files
+    v1: data collocated/synced to aircraft nav
+    v2: attitude corrected data
+    """
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_out = _FDIR_OUT_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    # HSR1 v2
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # * based on ALP v1
+    # fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
+    #         fdir_out=fdir_out, run=run)
+    # fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
+    #         fdir_out=fdir_out, run=True)
+
+    # * based on HSK v0
+    fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
+            fdir_out=fdir_out, run=run)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+    _FNAMES_['%s_hsr1_v2' % date_s] = fname_hsr1_v2
+
+def main_process_data_archive(date, run=True):
+
+    """
+    ra: in-field data to be uploaded to https://www-air.larc.nasa.gov/cgi-bin/ArcView/arcsix
+    """
+
+    date_s = date.strftime('%Y%m%d')
+
+    fdir_out = _FDIR_OUT_
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    # HSR1 RA
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_hsr1_ra = cdata_hsr1_archive(date, _FNAMES_['%s_hsr1_v2' % date_s],
+            fdir_out=fdir_out, run=run)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+    _FNAMES_['%s_hsr1_ra' % date_s] = fname_hsr1_ra
+
+    return
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+# check data
+#╭────────────────────────────────────────────────────────────────────────────╮#
+def check(date):
+
+    date_s = date.strftime('%Y%m%d')
+
+    fname = ssfr.util.get_all_files(_FDIR_OUT_, pattern='*%s*%s*v0*' % (_HSR1_.upper(), date_s))[0]
+
+    data = ssfr.util.load_h5(fname)
+
+    logic_nan = np.isnan(data['tot/tmhr']) | np.isnan(data['dif/tmhr'])
+    for key in data.keys():
+        if data['tot/tmhr'].size in data[key].shape:
+            data[key] = data[key][~logic_nan]
+
+    wvl0 = 555.0
+    index_wvl = np.argmin(np.abs(data['tot/wvl']-wvl0))
+
+    indices = np.unravel_index(np.argmax(data['tot/flux']), data['tot/flux'].shape)
+
+    # figure
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 8))
+        fig.suptitle('%s on %s (%dnm)' % (_MISSION_.upper(), date.strftime('%Y-%m-%d'), wvl0), y=0.94)
+
+        # plot1
+        #╭──────────────────────────────────────────────────────────────╮#
+        ax1 = fig.add_subplot(211)
+        ax1.scatter(data['tot/tmhr'], data['tot/flux'][:, index_wvl], s=6, c='green', lw=0.0)
+        ax1.scatter(data['dif/tmhr'], data['dif/flux'][:, index_wvl], s=6, c='springgreen', lw=0.0)
+        ax1.axvline(data['tot/tmhr'][indices[0]], color='k', ls='--')
+        ax1.set_ylabel('Irradiance [$\\mathrm{W m^{-2} nm^{-1}}$]')
+        ax1.set_xlabel('Time [Hour]')
+        ax1.set_xlim((22, 24.2))
+        ax1.set_ylim(bottom=0.0)
 
         patches_legend = [
-                          mpatches.Patch(color='black' , label='TOA (Kurudz)'), \
-                          mpatches.Patch(color='red'   , label='Original (Direct)'), \
-                          mpatches.Patch(color='green' , label='Attitude Corrected (Direct)'), \
+                          mpatches.Patch(color='green'      , label='Total'), \
+                          mpatches.Patch(color='springgreen', label='Diffuse'), \
                          ]
         ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+        #╰──────────────────────────────────────────────────────────────╯#
 
-        ax1.set_ylim((0.0, 2.2))
-        ax1.set_xlabel('UTC Time [Hour]')
-        ax1.set_ylabel('Irradiance [$\mathrm{W m^{-2} nm^{-1}}$]')
+        # plot2
+        #╭──────────────────────────────────────────────────────────────╮#
+        ax2 = fig.add_subplot(212)
+        ax2.scatter(data['tot/wvl'], data['tot/flux'][indices[0], :], s=6, c='green', lw=0.0)
+        ax2.scatter(data['dif/wvl'], data['dif/flux'][indices[0], :], s=6, c='springgreen', lw=0.0)
+        ax2.set_ylabel('Irradiance [$\\mathrm{W m^{-2} nm^{-1}}$]')
+        ax2.set_xlabel('Wavelength [nm]')
+        ax2.set_ylim(bottom=0.0)
+        #╰──────────────────────────────────────────────────────────────╯#
 
         # save figure
-        #/--------------------------------------------------------------\#
+        #╭──────────────────────────────────────────────────────────────╮#
         fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_%s.png' % (_metadata['Function'], date.strftime('%Y-%m-%d')), bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
+        _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        plt.savefig('%s_%s_%s.png' % (_metadata_['Function'], _MISSION_.lower(), date_s), bbox_inches='tight', metadata=_metadata_)
+        #╰──────────────────────────────────────────────────────────────╯#
         plt.show()
         sys.exit()
+        plt.close(fig)
+        plt.clf()
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
-def cdata_sat_img(
-        date,
-        margin=0.1,
-        fdir_data=_fdir_v0_,
-        ):
-
-    # read hsk v0
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_HSK_%s_v0.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
-    f = h5py.File(fname_h5, 'r')
-    jday = f['jday'][...]
-    sza  = f['sza'][...]
-    tmhr = f['tmhr'][...]
-    lon  = f['lon'][...]
-    lat  = f['lat'][...]
-    alt  = f['alt'][...]
-    f.close()
-    #\----------------------------------------------------------------------------/#
-
-    # extent = [np.nanmin(lon)-margin, np.nanmax(lon)+margin, np.nanmin(lat)-margin, np.nanmax(lat)+margin]
-    extent = [-60.5, -58.5, 12, 14]
-
-    command = 'sdown --date %s --extent %s --products MODRGB MYDRGB VNPRGB VJ1RGB --fdir data/sat-img' % (date.strftime('%Y%m%d'), ' '.join([str(a) for a in extent]))
-
-    print(command)
-
-def cal_pit_offset(
-        date,
-        time_offset=0.0,
-        fdir_data=_fdir_v1_,
-        fdir_out=_fdir_v2_,
-        ):
-
-    """
-    apply attitude correction to account for pitch and roll
-    """
-
-    # read spn-s v1
-    #/----------------------------------------------------------------------------\#
-    fname_h5 = '%s/MAGPIE_SPN-S_%s_v1.h5' % (fdir_data, date.strftime('%Y-%m-%d'))
-    f = h5py.File(fname_h5, 'r')
-    f_dn_dif  = f['dif/flux'][...]
-    wvl_dif   = f['dif/wvl'][...]
-
-    f_dn_tot  = f['tot/flux'][...]
-    wvl_tot   = f['tot/wvl'][...]
-    f_dn_toa0 = f['tot/toa0'][...]
-
-    jday = f['jday'][...]
-    tmhr = f['tmhr'][...]
-    lon = f['lon'][...]
-    lat = f['lat'][...]
-    alt = f['alt'][...]
-    sza  = f['sza'][...]
-    saa  = f['saa'][...]
-
-    pit = f['pit'][...]
-    rol = f['rol'][...]
-    hed = f['hed'][...]
-
-    f.close()
-    #/----------------------------------------------------------------------------\#
-
-
-    # distance
-    #/----------------------------------------------------------------------------\#
-    dist = np.sqrt((lon-lon[100])**2 + (lat-lat[100])**2) * 111000.0
-    logic = (dist<10) & (tmhr<16.0)
-    #\----------------------------------------------------------------------------/#
-
-
-    pit_offsets = np.linspace(-10.0, 10.0, 201)
-    rol_offsets = np.linspace(-5.0, 5.0, 101)
-    diffs = np.zeros((pit_offsets.size, rol_offsets.size), dtype=np.float64)
-    mu_ = np.cos(np.deg2rad(sza[logic]))
-    for i, pit_offset in enumerate(pit_offsets):
-        for j, rol_offset in enumerate(rol_offsets):
-            iza_, iaa_ = ssfr.util.prh2za(pit[logic]+pit_offset, rol[logic]+rol_offset, hed[logic])
-            dc_ = ssfr.util.muslope(sza[logic], saa[logic], iza_, iaa_)
-            diffs[i, j] = np.nanmean(mu_ - dc_)
-
-    index_pit, index_rol = np.unravel_index(np.argmin(np.abs(diffs)), diffs.shape)
-    pit_offset = pit_offsets[index_pit]
-    rol_offset = rol_offsets[index_rol]
-    print(date, pit_offset, rol_offset)
-
-    # correction factor
-    #/----------------------------------------------------------------------------\#
-    mu = np.cos(np.deg2rad(sza))
-
-    iza, iaa = ssfr.util.prh2za(pit+pit_offset, rol+rol_offset, hed)
-    dc = ssfr.util.muslope(sza, saa, iza, iaa)
-
-    iza0, iaa0 = ssfr.util.prh2za(pit, rol, hed)
-    dc0 = ssfr.util.muslope(sza, saa, iza0, iaa0)
-
-    # factors = mu / dc
-    #\----------------------------------------------------------------------------/#
-
-    if True:
-
-        plt.close('all')
-        fig = plt.figure(figsize=(18, 12))
-        # plot
-        #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(211)
-        ax1.scatter(tmhr[logic], mu[logic], s=4, c='k', lw=0.0, alpha=0.7)
-        ax1.scatter(tmhr[logic], dc0[logic], s=1, c='r', lw=0.0)
-        ax1.scatter(tmhr[logic], dc[logic], s=1, c='g', lw=0.0)
-
-        ax2 = fig.add_subplot(223)
-        ax2.hist(mu[logic], bins=100, color='k', lw=2.0, histtype='step')
-        ax2.hist(dc0[logic], bins=100, color='r', lw=1.0, histtype='step')
-        ax2.hist(dc[logic], bins=100, color='g', lw=1.0, histtype='step')
-        ax2.set_xlabel('$cos(SZA)$')
-        ax2.set_ylabel('PDF')
-
-        ax3 = fig.add_subplot(224)
-        ax3.hist(mu[logic]-dc0[logic], bins=100, color='r', lw=1.0, histtype='step')
-        ax3.hist(mu[logic]-dc[logic], bins=100, color='g', lw=1.0, histtype='step')
-        ax3.axvline(0.0, color='gray', ls='--')
-        ax3.set_xlabel('$cos(SZA)$')
-        ax3.set_ylabel('PDF')
-        #\--------------------------------------------------------------/#
-
-        fig.suptitle('MAGPIE %s (Pitch %.1f$^\circ$, Roll %.1f$^\circ$)' % (date.strftime('%Y-%m-%d'), pit_offset, rol_offset))
-
-        patches_legend = [
-                          mpatches.Patch(color='black' , label='$cos(SZA)$'), \
-                          mpatches.Patch(color='red'   , label='$cos(SZA_{ref})$'), \
-                          mpatches.Patch(color='green' , label='With Offset'), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
-
-        ax1.set_xlabel('UTC Time [Hour]')
-        ax1.set_ylabel('$cos(SZA)$')
-
-        # save figure
-        #/--------------------------------------------------------------\#
-        fig.subplots_adjust(hspace=0.3, wspace=0.3)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_%s.png' % (_metadata['Function'], date.strftime('%Y-%m-%d')), bbox_inches='tight', metadata=_metadata)
-        #\--------------------------------------------------------------/#
-        plt.show()
+    return
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 if __name__ == '__main__':
 
+    warnings.warn('\n!!!!!!!! Under development !!!!!!!!')
+
+    # dates
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-            # datetime.datetime(2023, 8, 2),
-            # datetime.datetime(2023, 8, 3),
-            # datetime.datetime(2023, 8, 5),
-            # datetime.datetime(2023, 8, 13),
-            # datetime.datetime(2023, 8, 14), # heavy aerosol condition
-            # datetime.datetime(2023, 8, 15), # heaviest aerosol condition
-            # datetime.datetime(2023, 8, 16),
-            # datetime.datetime(2023, 8, 18),
-            # datetime.datetime(2023, 8, 20),
-            # datetime.datetime(2023, 8, 21),
-            # datetime.datetime(2023, 8, 22),
-            # datetime.datetime(2023, 8, 23),
-            # datetime.datetime(2023, 8, 25),
-            # datetime.datetime(2023, 8, 26),
-            # datetime.datetime(2023, 8, 27),
+            datetime.datetime(2023, 8, 2),
+            datetime.datetime(2023, 8, 3),
+            datetime.datetime(2023, 8, 5),
+            datetime.datetime(2023, 8, 13),
+            datetime.datetime(2023, 8, 14), # heavy aerosol condition
+            datetime.datetime(2023, 8, 15), # heaviest aerosol condition
+            datetime.datetime(2023, 8, 16),
+            datetime.datetime(2023, 8, 18),
+            datetime.datetime(2023, 8, 20),
+            datetime.datetime(2023, 8, 21),
+            datetime.datetime(2023, 8, 22),
+            datetime.datetime(2023, 8, 23),
+            datetime.datetime(2023, 8, 25),
+            datetime.datetime(2023, 8, 26),
+            datetime.datetime(2023, 8, 27),
             datetime.datetime(2023, 8, 28), # bad dewpoint temperature (thus RH) data at the end of the flight
         ]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    for date in dates:
-        cdata_magpie_hsk_v0(date)  # read aircraft raw data and calculate solar angles
-        cdata_magpie_spns_v0(date) # read SPN-S raw data
-        cdata_magpie_spns_v1(date) # interpolate SPN-S data to aircraft time coordinate
-        cdata_magpie_spns_v2(date) # apply attitude correction (pitch, roll, and heading) to SPN-S data
+    for date in dates[::-1]:
 
-    for date in dates:
-        date_s = date.strftime('%Y-%m-%d')
-        fname = '%s/MAGPIE_SPN-S_%s_v2.h5' % (_fdir_v1_, date_s)
-        ssfr.vis.quicklook_bokeh_spns(fname, wvl0=None, tmhr0=None, tmhr_range=None, wvl_range=[350.0, 800.0], tmhr_step=10, wvl_step=5, description='MAGPIE', fname_html='spns-ql_magpie_%s_v2.html' % date_s)
+        # check(date)
+        # sys.exit()
+
+        # step 1
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        main_process_data_v0(date, run=True)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # step 2
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        # main_process_data_v0(date, run=False)
+        # run_time_offset_check(date)
+        # sys.exit()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # step 3
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=True)
+        # sys.exit()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # step 4
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=True)
+        # sys.exit()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # step 5
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        # main_process_data_v0(date, run=False)
+        # main_process_data_v1(date, run=False)
+        # main_process_data_v2(date, run=False)
+        # main_process_data_archive(date, run=True)
+        # sys.exit()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        pass

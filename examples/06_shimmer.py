@@ -852,15 +852,15 @@ def main_process_data_v0(date, run=True):
 
     # HSR1 v0: raw data
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fdirs = ssfr.util.get_all_folders(_FDIR_DATA_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s*' % (date.year, date.month, date.day, _HSR1_.lower()))
-    fdir_data_hsr1 = sorted(fdirs, key=os.path.getmtime)[-1]
-    fnames_hsr1 = ssfr.util.get_all_files(fdir_data_hsr1, pattern='*.txt')
-    if run and len(fnames_hsr1) == 0:
-        pass
-    else:
-        fname_hsr1_v0 = cdata_hsr1_v0(date, fdir_data=fdir_data_hsr1,
-                fdir_out=fdir_out, run=run)
-        _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
+    # fdirs = ssfr.util.get_all_folders(_FDIR_DATA_, pattern='*%4.4d*%2.2d*%2.2d*raw?%s*' % (date.year, date.month, date.day, _HSR1_.lower()))
+    # fdir_data_hsr1 = sorted(fdirs, key=os.path.getmtime)[-1]
+    # fnames_hsr1 = ssfr.util.get_all_files(fdir_data_hsr1, pattern='*.txt')
+    # if run and len(fnames_hsr1) == 0:
+    #     pass
+    # else:
+    #     fname_hsr1_v0 = cdata_hsr1_v0(date, fdir_data=fdir_data_hsr1,
+    #             fdir_out=fdir_out, run=run)
+    #     _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return
