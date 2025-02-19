@@ -88,7 +88,7 @@ def cdata_hsk_v0(
         # hsk file from DHC6 data system team, best quality but cannot be accessed immediately
         #╭────────────────────────────────────────────────────────────────────────────╮#
         fname = ssfr.util.get_all_files(fdir_data, pattern='CABIN_1hz_*%2.2d*%2.2d*%s*.txt' % (date.month, date.day, str(date.year)[2:]))[-1]
-        data_hsk = ssfr.util.read_cabin(fname, split='\t')
+        data_hsk = ssfr.util.read_cabin(fname, tmhr_range=[10.0, 24.0], split='\t')
         var_dict = {
                 'lon': 'long',
                 'lat': 'lat',
