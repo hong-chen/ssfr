@@ -9,18 +9,18 @@ mission = 'arcsix'
 platform = 'p3'
 comments = 'Clear-sky spiral'
 
-hsr1_tag = 'spns-a'
-_SPNS_        = 'spns-a'
-_WHICH_SSFR_ = 'ssfr-a'
-# _SPNS_        = 'spns-b'
-# _WHICH_SSFR_ = 'ssfr-b'
+hsk_tag  = 'hsk'
 
-_FDIR_CAL_   = 'data/%s/cal' % _MISSION_
+hsr1_tag = 'hsr1-a'
 
-_FDIR_DATA_  = 'data/%s' % _MISSION_
-_FDIR_OUT_   = '%s/processed' % _FDIR_DATA_
+ssfr_tag = 'ssfr-a'
 
-_VERBOSE_   = True
+ssrr_tag = 'ssfr-b'
+
+alp_tag  = 'alp'
+
+fdir_cal = 'data/%s/cal' % mission
+fdir_out = 'data/%s/processed' % mission
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 common = {
@@ -34,18 +34,18 @@ common = {
         }
 
 hsk = {
-        'tag': 'hsk',
+        'tag': hsk_tag.lower(),
         'fdir': 'data/arcsix/2024/p3/aux/hsk',
         }
 
-ssfr1 = {
-        'tag': 'ssfr-a',
+ssfr = {
+        'tag': ssfr_tag.lower(),
 
         'fdir_data': 'data/arcsix/2024/p3/20240528_sci-flt-01/raw/ssfr-a',
 
         'fname_rad_cal': 'data/arcsix/cal/rad-cal/2024-03-29_lamp-506|2024-03-29_lamp-150e_spec-zen|2024-04-01|dset1|rad-resp|lasp|ssfr-a|zen|si-120|in-350.h5',
 
-        'which_ssfr': 'lasp|ssfr-a',
+        'which_ssfr': 'lasp|%s' % ssfr_tag.lower(),
 
         # zenith wavelength setting
         'wvl_s_zen': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
@@ -78,14 +78,14 @@ ssfr1 = {
         'light_threshold': 10,
         }
 
-ssfr2 = {
-        'tag': 'ssfr-b',
+ssrr = {
+        'tag': ssrr_tag.lower(),
 
         'fdir_data': 'data/arcsix/2024/p3/20240528_sci-flt-01/raw/ssfr-b',
 
         'fname_rad_cal': 'data/arcsix/cal/rad-cal/2024-03-29_lamp-506|2024-03-29_lamp-150e_spec-zen|2024-04-01|dset1|rad-resp|lasp|ssfr-a|zen|si-120|in-350.h5',
 
-        'which_ssfr': 'lasp|ssfr-a',
+        'which_ssfr': 'lasp|%s' % ssrr_tag.lower(),
 
         # zenith wavelength setting
         'wvl_s_zen': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
@@ -119,7 +119,7 @@ ssfr2 = {
         }
 
 hsr1 = {
-        'tag': 'spns-a',
+        'tag': hsr1_tag.lower(),
         }
 
 alp = {
