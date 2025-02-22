@@ -2738,7 +2738,7 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1, clear-sky spiral, operator - Vikas Nataraja
+             datetime.datetime(2024, 5, 28),
              # datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
              # datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
              # datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
@@ -2762,10 +2762,10 @@ if __name__ == '__main__':
 
     for date in dates[::-1]:
 
-        config_s = date.strftime('cfg_%Y%m%d')
-        config = importlib.import_module(config_s)
-        print(config._common_params_)
-        print(config._ssfr_params_)
+        cfg_s = date.strftime('cfg_%Y%m%d')
+        cfg = importlib.import_module(cfg_s)
+        print(cfg.common)
+        print(cfg.ssfr1)
 
 
         # step 1

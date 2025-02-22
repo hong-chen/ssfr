@@ -1,21 +1,26 @@
 import datetime
 
-_common_params_ = {
+common = {
         'date': datetime.datetime(2024, 5, 28),
-        'comments' : ''
+        'mission': 'ARCSIX-1',
+        'platform': 'P3B',
+        'operator': 'Vikas Nataraja',
+        'tag': 'Science Flight #1',
+        'comments': 'Clear-sky spiral',
         }
 
-_ssfr_params_ = {
+ssfr1 = {
         'fdir_data': '',
         'fname_cal': '',
 
         'which_ssfr': 'lasp|ssfr-a',
 
+        # zenith wavelength setting
         'wvl_s_zen': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
         'wvl_e_zen': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
         'wvl_j_zen': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
-
+        # nadir wavelength setting
         'wvl_s_nad': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
         'wvl_e_nad': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
         'wvl_j_nad': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
@@ -41,7 +46,9 @@ _ssfr_params_ = {
         'light_threshold': 10,
         }
 
-_alp_params_ = {
+alp = {
+        'time_offset': -17.19,
+
         'ang_pit_offset': 0.0,
 
         'ang_rol_offset': 0.0,
