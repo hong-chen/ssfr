@@ -40,4 +40,4 @@ future_dev/*
 !examples
 !ssfr/data
 !ssfr/data/*.dat
-!ssfr/data/cal/*.h5
+!ssfr/data/cal/*rad*.h5
