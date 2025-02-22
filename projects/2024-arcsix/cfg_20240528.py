@@ -7,7 +7,9 @@ date = datetime.datetime(2024, 5, 28)
 operator = 'Vikas Nataraja'
 mission = 'arcsix'
 platform = 'p3'
+comments = 'Clear-sky spiral'
 
+hsr1_tag = 'spns-a'
 _SPNS_        = 'spns-a'
 _WHICH_SSFR_ = 'ssfr-a'
 # _SPNS_        = 'spns-b'
@@ -25,13 +27,10 @@ common = {
         'date': date,
         'date_s': date.strftime('%Y%m%d'),
         'date_s_': date.strftime('%Y-%m-%d'),
-
         'mission': mission.lower(),
         'platform': platform.lower(),
-
-        'operator': 'Vikas Nataraja',
-        'tag': 'Science Flight #1',
-        'comments': 'Clear-sky spiral',
+        'operator': operator,
+        'comments': comments,
         }
 
 hsk = {
