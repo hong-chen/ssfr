@@ -10,8 +10,9 @@ common = {
         }
 
 ssfr1 = {
-        'fdir_data': '',
-        'fname_cal': '',
+        'fdir_data': 'data/arcsix/2024/p3/20240528_sci-flt-01/raw/ssfr-a',
+
+        'fname_rad_cal': 'data/arcsix/cal/rad-cal/2024-03-29_lamp-506|2024-03-29_lamp-150e_spec-zen|2024-04-01|dset1|rad-resp|lasp|ssfr-a|zen|si-120|in-350.h5',
 
         'which_ssfr': 'lasp|ssfr-a',
 
