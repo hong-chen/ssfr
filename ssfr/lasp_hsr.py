@@ -50,7 +50,7 @@ class read_hsr1:
         #/----------------------------------------------------------------------------\#
         self.data = {}
         self.data['general_info'] = {}
-        self.data['general_info']['spn_tag'] = 'CU LASP HSR1'
+        self.data['general_info']['hsr_tag'] = 'CU LASP HSR1'
         self.data['general_info']['fname'] = fname
         #\----------------------------------------------------------------------------/#
 

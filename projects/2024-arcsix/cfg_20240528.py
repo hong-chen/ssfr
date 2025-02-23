@@ -87,7 +87,7 @@ hsk = {
 # Hyper-Spectral Radiometer 1
 #╭────────────────────────────────────────────────────────────────────────────╮#
 hsr1 = {
-        'aka': 'spns',
+        'aka': 'hsr1',
         'tag': hsr1_tag.lower(),
         'fnames': fnames_hsr1,
         'ang_pit_offset': hsr1_ang_pit_offset,

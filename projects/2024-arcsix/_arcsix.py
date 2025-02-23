@@ -392,32 +392,31 @@ def cdata_arcsix_alp_v1(
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-# functions for processing SPNS
+# functions for processing HSR1
 #╭────────────────────────────────────────────────────────────────────────────╮#
-def cdata_arcsix_spns_v0(
+def cdata_arcsix_hsr1_v0(
         date,
-        fdir_data='./',
+        fnames_hsr,
+        fname_h5='HSR1_v0.h5',
         fdir_out='./',
         run=True,
         ):
 
     """
-    Process raw SPN-S data
+    Process raw HSR1 data
     """
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _MISSION_.upper(), _SPNS_.upper(), _PLATFORM_.upper(), date_s)
-
     if run:
 
-        # read spn-s raw data
+        # read hsr1 raw data
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        fname_dif = ssfr.util.get_all_files(fdir_data, pattern='*Diffuse*.txt')[-1]
-        data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
+        fname_dif = [fname for fname in fnames_hsr if 'diffuse' in fname.lower()][0]
+        data0_dif = ssfr.lasp_hsr.read_hsr1(fname=fname_dif)
 
-        fname_tot = ssfr.util.get_all_files(fdir_data, pattern='*Total*.txt')[-1]
-        data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
+        fname_tot = [fname for fname in fnames_hsr if 'total' in fname.lower()][0]
+        data0_tot = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # read wavelengths and calculate toa downwelling solar flux
@@ -447,9 +446,9 @@ def cdata_arcsix_spns_v0(
 
     return fname_h5
 
-def cdata_arcsix_spns_v1(
+def cdata_arcsix_hsr1_v1(
         date,
-        fname_spns_v0,
+        fname_hsr1_v0,
         fname_hsk,
         fdir_out='./',
         time_offset=0.0,
@@ -510,7 +509,7 @@ def cdata_arcsix_spns_v1(
 
     return fname_h5
 
-def cdata_arcsix_spns_v2(
+def cdata_arcsix_hsr1_v2(
         date,
         fname_spns_v1,
         fname_hsk, # interchangable with fname_alp_v1
@@ -596,7 +595,7 @@ def cdata_arcsix_spns_v2(
 
     return fname_h5
 
-def cdata_arcsix_spns_archive(
+def cdata_arcsix_hsr1_archive(
         date,
         fname_spns_v2,
         ang_pit_offset=0.0,
@@ -1915,6 +1914,7 @@ def main_process_data_v0(cfg, run=True):
     # #╰────────────────────────────────────────────────────────────────────────────╯#
     # sys.exit()
 
+
     # # HSK v0: raw data
     # #╭────────────────────────────────────────────────────────────────────────────╮#
     # fname_hsk = cfg.hsk['fname']
@@ -1942,6 +1942,7 @@ def main_process_data_v0(cfg, run=True):
     # #╰────────────────────────────────────────────────────────────────────────────╯#
     # sys.exit()
 
+
     # # SSFR v0: raw data
     # #╭────────────────────────────────────────────────────────────────────────────╮#
     # fnames_ssfr = cfg.ssfr['fnames']
@@ -1967,74 +1968,50 @@ def main_process_data_v0(cfg, run=True):
     # #╰────────────────────────────────────────────────────────────────────────────╯#
     # sys.exit()
 
-    # SSRR v0: raw data
+
+    # # SSRR v0: raw data
+    # #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fnames_ssrr = cfg.ssrr['fnames']
+    # fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssrr['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    # if run and (len(fnames_ssrr) == 0):
+    #     pass
+    # else:
+    #     fname_ssrr_v0 = cdata_arcsix_ssfr_v0(
+    #             date,
+    #             fnames_ssrr,
+    #             fname_h5=fname_h5,
+    #             which_ssfr=cfg.ssrr['which_ssfr'],
+    #             wvl_s=cfg.ssrr['wvl_s'],
+    #             wvl_e=cfg.ssrr['wvl_e'],
+    #             wvl_j=cfg.ssrr['wvl_j'],
+    #             dark_extend=cfg.ssrr['dark_extend'],
+    #             light_extend=cfg.ssrr['light_extend'],
+    #             dark_corr_mode=cfg.ssrr['dark_corr_mode'],
+    #             fdir_out=fdir_out,
+    #             run=run
+    #             )
+    #     _FNAMES_['%s_ssrr_v0' % date_s] = fname_ssrr_v0
+    # #╰────────────────────────────────────────────────────────────────────────────╯#
+    # sys.exit()
+
+
+    # HSR1 v0: raw data
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_ssrr = cfg.ssrr['fnames']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssrr['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and (len(fnames_ssrr) == 0):
+    fnames_hsr1 = cfg.hsr1['fnames']
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsr1['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    if run and len(fnames_hsr1) == 0:
         pass
     else:
-        fname_ssrr_v0 = cdata_arcsix_ssfr_v0(
+        fname_hsr1_v0 = cdata_arcsix_hsr1_v0(
                 date,
-                fnames_ssrr,
+                fnames_hsr1,
                 fname_h5=fname_h5,
-                which_ssfr=cfg.ssrr['which_ssfr'],
-                wvl_s=cfg.ssrr['wvl_s'],
-                wvl_e=cfg.ssrr['wvl_e'],
-                wvl_j=cfg.ssrr['wvl_j'],
-                dark_extend=cfg.ssrr['dark_extend'],
-                light_extend=cfg.ssrr['light_extend'],
-                dark_corr_mode=cfg.ssrr['dark_corr_mode'],
                 fdir_out=fdir_out,
                 run=run
                 )
-        _FNAMES_['%s_ssrr_v0' % date_s] = fname_ssrr_v0
+        _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
     sys.exit()
-
-
-
-    # ALP v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fdirs = ssfr.util.get_all_folders('./', pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _ALP_))
-    fdir_data_alp = sorted(fdirs, key=os.path.getmtime)[-1]
-    fnames_alp = ssfr.util.get_all_files(fdir_data_alp, pattern='*.plt3')
-    if run and len(fnames_alp) == 0:
-        pass
-    else:
-        fname_alp_v0 = cdata_arcsix_alp_v0(date, fdir_data=fdir_data_alp,
-                fdir_out=fdir_out, run=run)
-        _FNAMES_['%s_alp_v0' % date_s]   = fname_alp_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # SPNS v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fdirs = ssfr.util.get_all_folders('./', pattern='*%4.4d*%2.2d*%2.2d*raw?%s*' % (date.year, date.month, date.day, 'spns'))
-    fdir_data_spns = sorted(fdirs, key=os.path.getmtime)[-1]
-    fnames_spns = ssfr.util.get_all_files(fdir_data_spns, pattern='*.txt')
-    if run and len(fnames_spns) == 0:
-        pass
-    else:
-        fname_spns_v0 = cdata_arcsix_spns_v0(date, fdir_data=fdir_data_spns,
-                fdir_out=fdir_out, run=run)
-        _FNAMES_['%s_spns_v0' % date_s]  = fname_spns_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # HSK v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_hsk = ssfr.util.get_all_files(_FDIR_HSK_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
-    if run and len(fnames_hsk) == 0:
-        # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
-        fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _FNAMES_['%s_alp_v0' % date_s], fdir_data=_FDIR_HSK_,
-                fdir_out=fdir_out, run=run)
-    else:
-        # * preferred, use P3 housekeeping file, ict > iwg > mts
-        fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_FDIR_HSK_,
-                fdir_out=fdir_out, run=run)
-    _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main_process_data_v1(date, run=True):
 
