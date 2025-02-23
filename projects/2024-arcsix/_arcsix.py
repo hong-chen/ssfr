@@ -885,6 +885,7 @@ def cdata_arcsix_ssfr_v1(
         date,
         fname_ssfr_v0,
         fname_hsk,
+        fname_h5='SSFR_v1.h5',
         fdir_out='./',
         time_offset=0.0,
         which_ssfr_for_flux='lasp|ssfr-a',
@@ -900,8 +901,6 @@ def cdata_arcsix_ssfr_v1(
     date_s = date.strftime('%Y%m%d')
 
     which_ssfr = os.path.basename(fname_ssfr_v0).split('_')[0].replace('%s-' % _MISSION_.upper(), '').lower()
-
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _MISSION_.upper(), which_ssfr.upper(), _PLATFORM_.upper(), date_s)
 
     if run:
 
@@ -1016,15 +1015,6 @@ def cdata_arcsix_ssfr_v1(
             spec_zen[data_ssfr_v0['spec/sat_zen']==1] = -0.05
             spec_nad[data_ssfr_v0['spec/sat_nad']==1] = -0.05
             #╰──────────────────────────────────────────────────────────────╯#
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-        # check time offset
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        if which_ssfr == 'ssfr-a':
-            time_offset = _SSFR1_TIME_OFFSET_[date_s]
-        elif which_ssfr == 'ssfr-b':
-            time_offset = _SSFR2_TIME_OFFSET_[date_s]
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -2030,31 +2020,42 @@ def main_process_data_v1(cfg, run=True):
     # _FNAMES_['%s_alp_v1' % date_s] = fname_alp_v1
     # #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # HSR1 v1: time synced with hsk time with time offset applied
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsr1['aka'].upper(), cfg.common['platform'].upper(), date_s)
 
-    fname_hsr1_v1 = cdata_arcsix_hsr1_v1(
+    # # HSR1 v1: time synced with hsk time with time offset applied
+    # #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsr1['aka'].upper(), cfg.common['platform'].upper(), date_s)
+
+    # fname_hsr1_v1 = cdata_arcsix_hsr1_v1(
+    #         date,
+    #         _FNAMES_['%s_hsr1_v0' % date_s],
+    #         _FNAMES_['%s_hsk_v0' % date_s],
+    #         fname_h5=fname_h5,
+    #         time_offset=cfg.hsr1['time_offset'],
+    #         fdir_out=fdir_out,
+    #         run=run
+    #         )
+
+    # _FNAMES_['%s_hsr1_v1' % date_s] = fname_hsr1_v1
+    # #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # SSFR v1: time synced with hsk time with time offset applied
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_ssfr_v1 = cdata_arcsix_ssfr_v1(
             date,
-            _FNAMES_['%s_hsr1_v0' % date_s],
+            _FNAMES_['%s_ssfr_v0' % date_s],
             _FNAMES_['%s_hsk_v0' % date_s],
             fname_h5=fname_h5,
-            time_offset=cfg.hsr1['time_offset'],
+            time_offset=cfg.ssfr['time_offset'],
+            which_ssfr_for_flux='lasp|ssfr-a',
             fdir_out=fdir_out,
             run=run
             )
 
-    _FNAMES_['%s_hsr1_v1' % date_s] = fname_hsr1_v1
+    _FNAMES_['%s_ssfr_v1' % date_s] = fname_ssfr_v1
     #╰────────────────────────────────────────────────────────────────────────────╯#
     sys.exit()
 
-    # SSFR-A v1: time synced with hsk time with time offset applied
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_ssfr1_v1 = cdata_arcsix_ssfr_v1(date, _FNAMES_['%s_ssfr1_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
-            which_ssfr_for_flux='lasp|ssfr-a', fdir_out=fdir_out, run=run)
-
-    _FNAMES_['%s_ssfr1_v1' % date_s] = fname_ssfr1_v1
-    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # SSFR-B v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -2077,6 +2078,9 @@ def main_process_data_v2(date, run=True):
     fdir_out = './'
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
+
+    main_process_data_v0(cfg, run=False)
+    main_process_data_v1(cfg, run=False)
 
     # SPNS v2
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -2118,6 +2122,10 @@ def main_process_data_archive(date, run=True):
     fdir_out = './'
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
+
+    main_process_data_v0(date, run=False)
+    main_process_data_v1(date, run=False)
+    main_process_data_v2(date, run=False)
 
     # SPNS RA
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -2184,38 +2192,28 @@ if __name__ == '__main__':
         # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
         # main_process_data_v0(cfg, run=True)
-        # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
         # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
         # run_time_offset_check(cfg)
-        # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
         # apply time offsets to sync data to aircraft housekeeping file
         #╭────────────────────────────────────────────────────────────────────────────╮#
         main_process_data_v1(cfg, run=True)
-        sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=False)
-        # main_process_data_v2(date, run=True)
-        # sys.exit()
+        # main_process_data_v2(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 5
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=False)
-        # main_process_data_v2(date, run=False)
         # main_process_data_archive(date, run=True)
-        # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         pass
