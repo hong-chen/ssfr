@@ -1896,103 +1896,99 @@ def main_process_data_v0(cfg, run=True):
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    # # ALP v0: raw data
-    # #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fnames_alp = cfg.alp['fnames']
-    # if run and (len(fnames_alp)==0):
-    #     pass
-    # else:
-    #     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    #     fname_alp_v0 = cdata_arcsix_alp_v0(
-    #             date,
-    #             fnames_alp,
-    #             fname_h5=fname_h5,
-    #             fdir_out=fdir_out,
-    #             run=run
-    #             )
-    #     _FNAMES_['%s_alp_v0' % date_s]   = fname_alp_v0
-    # #╰────────────────────────────────────────────────────────────────────────────╯#
-    # sys.exit()
+    # ALP v0: raw data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_alp = cfg.alp['fnames']
+    if run and (len(fnames_alp)==0):
+        pass
+    else:
+        fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
+        fname_alp_v0 = cdata_arcsix_alp_v0(
+                date,
+                fnames_alp,
+                fname_h5=fname_h5,
+                fdir_out=fdir_out,
+                run=run
+                )
+        _FNAMES_['%s_alp_v0' % date_s]   = fname_alp_v0
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    # # HSK v0: raw data
-    # #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fname_hsk = cfg.hsk['fname']
-    # fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsk['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    # if run and (fname_hsk is None):
-    #     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing after flight)
-    #     fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(
-    #             date,
-    #             _FNAMES_['%s_alp_v0' % date_s],
-    #             fname_h5=fname_h5,
-    #             fdir_out=fdir_out,
-    #             run=run
-    #             )
-    # else:
-    #     # * preferred, use P3 housekeeping file, ict > iwg > mts
-    #     fname_hsk_v0 = cdata_arcsix_hsk_v0(
-    #             date,
-    #             fname_hsk,
-    #             fname_h5=fname_h5,
-    #             fdir_out=fdir_out,
-    #             run=run
-    #             )
+    # HSK v0: raw data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_hsk = cfg.hsk['fname']
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsk['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    if run and (fname_hsk is None):
+        # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing after flight)
+        fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(
+                date,
+                _FNAMES_['%s_alp_v0' % date_s],
+                fname_h5=fname_h5,
+                fdir_out=fdir_out,
+                run=run
+                )
+    else:
+        # * preferred, use P3 housekeeping file, ict > iwg > mts
+        fname_hsk_v0 = cdata_arcsix_hsk_v0(
+                date,
+                fname_hsk,
+                fname_h5=fname_h5,
+                fdir_out=fdir_out,
+                run=run
+                )
 
-    # _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    # #╰────────────────────────────────────────────────────────────────────────────╯#
-    # sys.exit()
-
-
-    # # SSFR v0: raw data
-    # #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fnames_ssfr = cfg.ssfr['fnames']
-    # fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssfr['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    # if run and (len(fnames_ssfr) == 0):
-    #     pass
-    # else:
-    #     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(
-    #             date,
-    #             fnames_ssfr,
-    #             fname_h5=fname_h5,
-    #             which_ssfr=cfg.ssfr['which_ssfr'],
-    #             wvl_s=cfg.ssfr['wvl_s'],
-    #             wvl_e=cfg.ssfr['wvl_e'],
-    #             wvl_j=cfg.ssfr['wvl_j'],
-    #             dark_extend=cfg.ssfr['dark_extend'],
-    #             light_extend=cfg.ssfr['light_extend'],
-    #             dark_corr_mode=cfg.ssfr['dark_corr_mode'],
-    #             fdir_out=fdir_out,
-    #             run=run
-    #             )
-    #     _FNAMES_['%s_ssfr_v0' % date_s] = fname_ssfr_v0
-    # #╰────────────────────────────────────────────────────────────────────────────╯#
-    # sys.exit()
+    _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    # # SSRR v0: raw data
-    # #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fnames_ssrr = cfg.ssrr['fnames']
-    # fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssrr['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    # if run and (len(fnames_ssrr) == 0):
-    #     pass
-    # else:
-    #     fname_ssrr_v0 = cdata_arcsix_ssfr_v0(
-    #             date,
-    #             fnames_ssrr,
-    #             fname_h5=fname_h5,
-    #             which_ssfr=cfg.ssrr['which_ssfr'],
-    #             wvl_s=cfg.ssrr['wvl_s'],
-    #             wvl_e=cfg.ssrr['wvl_e'],
-    #             wvl_j=cfg.ssrr['wvl_j'],
-    #             dark_extend=cfg.ssrr['dark_extend'],
-    #             light_extend=cfg.ssrr['light_extend'],
-    #             dark_corr_mode=cfg.ssrr['dark_corr_mode'],
-    #             fdir_out=fdir_out,
-    #             run=run
-    #             )
-    #     _FNAMES_['%s_ssrr_v0' % date_s] = fname_ssrr_v0
-    # #╰────────────────────────────────────────────────────────────────────────────╯#
-    # sys.exit()
+    # SSFR v0: raw data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ssfr = cfg.ssfr['fnames']
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssfr['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    if run and (len(fnames_ssfr) == 0):
+        pass
+    else:
+        fname_ssfr_v0 = cdata_arcsix_ssfr_v0(
+                date,
+                fnames_ssfr,
+                fname_h5=fname_h5,
+                which_ssfr=cfg.ssfr['which_ssfr'],
+                wvl_s=cfg.ssfr['wvl_s'],
+                wvl_e=cfg.ssfr['wvl_e'],
+                wvl_j=cfg.ssfr['wvl_j'],
+                dark_extend=cfg.ssfr['dark_extend'],
+                light_extend=cfg.ssfr['light_extend'],
+                dark_corr_mode=cfg.ssfr['dark_corr_mode'],
+                fdir_out=fdir_out,
+                run=run
+                )
+        _FNAMES_['%s_ssfr_v0' % date_s] = fname_ssfr_v0
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+    # SSRR v0: raw data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ssrr = cfg.ssrr['fnames']
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssrr['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    if run and (len(fnames_ssrr) == 0):
+        pass
+    else:
+        fname_ssrr_v0 = cdata_arcsix_ssfr_v0(
+                date,
+                fnames_ssrr,
+                fname_h5=fname_h5,
+                which_ssfr=cfg.ssrr['which_ssfr'],
+                wvl_s=cfg.ssrr['wvl_s'],
+                wvl_e=cfg.ssrr['wvl_e'],
+                wvl_j=cfg.ssrr['wvl_j'],
+                dark_extend=cfg.ssrr['dark_extend'],
+                light_extend=cfg.ssrr['light_extend'],
+                dark_corr_mode=cfg.ssrr['dark_corr_mode'],
+                fdir_out=fdir_out,
+                run=run
+                )
+        _FNAMES_['%s_ssrr_v0' % date_s] = fname_ssrr_v0
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # HSR1 v0: raw data
@@ -2011,7 +2007,6 @@ def main_process_data_v0(cfg, run=True):
                 )
         _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
-    sys.exit()
 
 def main_process_data_v1(date, run=True):
 
@@ -2180,8 +2175,7 @@ if __name__ == '__main__':
         # step 1
         #╭────────────────────────────────────────────────────────────────────────────╮#
         main_process_data_v0(cfg, run=True)
-        # main_process_data_v0_metnav(date, run=True)
-        # sys.exit()
+        sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
