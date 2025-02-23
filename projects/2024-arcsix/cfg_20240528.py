@@ -11,18 +11,23 @@ comments = 'Clear-sky spiral'
 
 hsk_tag  = 'hsk'
 
+alp_tag  = 'alp'
 hsr1_tag = 'hsr1-a'
-
 ssfr_tag = 'ssfr-a'
-
 ssrr_tag = 'ssfr-b'
 
-alp_tag  = 'alp'
+alp_time_offset  = -17.19
+hsr1_time_offset = 0.0
+ssfr_time_offset = -156.26
+ssrr_time_offset = -222.66
 
 fdir_cal = 'data/%s/cal' % mission
 fdir_out = 'data/%s/processed' % mission
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
+
+# common settings
+#╭────────────────────────────────────────────────────────────────────────────╮#
 common = {
         'date': date,
         'date_s': date.strftime('%Y%m%d'),
@@ -32,12 +37,48 @@ common = {
         'operator': operator,
         'comments': comments,
         }
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
+
+
+# House Keeping File
+#╭────────────────────────────────────────────────────────────────────────────╮#
 hsk = {
         'tag': hsk_tag.lower(),
         'fdir': 'data/arcsix/2024/p3/aux/hsk',
         }
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
+
+
+# Hyper-Spectral Radiometer 1
+#╭────────────────────────────────────────────────────────────────────────────╮#
+hsr1 = {
+        'tag': hsr1_tag.lower(),
+        }
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+
+# Active Leveling Platform
+#╭────────────────────────────────────────────────────────────────────────────╮#
+alp = {
+        'tag': 'alp',
+
+        'fdir_data': 'data/%s/%4.4d/%s/20240528_sci-flt-01/raw/alp' % (common['mission'], date.year, common['platform']),
+
+        'time_offset': -17.19,
+
+        'ang_pit_offset': 0.0,
+
+        'ang_rol_offset': 0.0,
+        }
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+
+# Solar Spectral Flux Radiometer
+#╭────────────────────────────────────────────────────────────────────────────╮#
 ssfr = {
         'tag': ssfr_tag.lower(),
 
@@ -77,7 +118,12 @@ ssfr = {
         # minimum number of lights to achieve valid dark correction
         'light_threshold': 10,
         }
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
+
+
+# Solar Spectral "Radiance" Radiometer
+#╭────────────────────────────────────────────────────────────────────────────╮#
 ssrr = {
         'tag': ssrr_tag.lower(),
 
@@ -117,19 +163,4 @@ ssrr = {
         # minimum number of lights to achieve valid dark correction
         'light_threshold': 10,
         }
-
-hsr1 = {
-        'tag': hsr1_tag.lower(),
-        }
-
-alp = {
-        'tag': 'alp',
-
-        'fdir_data': 'data/%s/%4.4d/%s/20240528_sci-flt-01/raw/alp' % (common['mission'], date.year, common['platform']),
-
-        'time_offset': -17.19,
-
-        'ang_pit_offset': 0.0,
-
-        'ang_rol_offset': 0.0,
-        }
+#╰────────────────────────────────────────────────────────────────────────────╯#
