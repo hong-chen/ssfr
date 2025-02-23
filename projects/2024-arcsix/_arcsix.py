@@ -346,6 +346,7 @@ def cdata_arcsix_alp_v1(
         fname_v0,
         fname_hsk,
         fname_h5='ALP_v1.h5',
+        time_offset=0.0,
         fdir_out='./',
         run=True
         ):
@@ -367,9 +368,6 @@ def cdata_arcsix_alp_v1(
 
         data_hsk = ssfr.util.load_h5(fname_hsk)
         data_alp = ssfr.util.load_h5(fname_v0)
-
-        time_offset = _ALP_TIME_OFFSET_[date_s]
-
 
         f = h5py.File(fname_h5, 'w')
         f.attrs['description'] = 'v1:\n  1) raw data interpolated to HSK time frame;\n  2) time offset (seconds) was calculated and applied.'
@@ -450,23 +448,22 @@ def cdata_arcsix_hsr1_v1(
         date,
         fname_hsr1_v0,
         fname_hsk,
+        fname_h5='HSR1_v1.h5',
         fdir_out='./',
         time_offset=0.0,
         run=True,
         ):
 
     """
-    Check for time offset and merge SPN-S data with aircraft data
+    Check for time offset and merge HSR1 data with aircraft data
     """
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _MISSION_.upper(), _SPNS_.upper(), _PLATFORM_.upper(), date_s)
-
     if run:
-        # read spn-s v0
+        # read hsr1 v0
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        data_spns_v0 = ssfr.util.load_h5(fname_spns_v0)
+        data_hsr1_v0 = ssfr.util.load_h5(fname_hsr1_v0)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # read hsk v0
@@ -474,17 +471,15 @@ def cdata_arcsix_hsr1_v1(
         data_hsk= ssfr.util.load_h5(fname_hsk)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
-        time_offset = _SPNS_TIME_OFFSET_[date_s]
-
-        # interpolate spn-s data to hsk time frame
+        # interpolate hsr1 data to hsk time frame
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        flux_dif = np.zeros((data_hsk['jday'].size, data_spns_v0['dif/wvl'].size), dtype=np.float64)
+        flux_dif = np.zeros((data_hsk['jday'].size, data_hsr1_v0['dif/wvl'].size), dtype=np.float64)
         for i in range(flux_dif.shape[-1]):
-            flux_dif[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['dif/jday']+time_offset/86400.0, data_spns_v0['dif/flux'][:, i], mode='nearest')
+            flux_dif[:, i] = ssfr.util.interp(data_hsk['jday'], data_hsr1_v0['dif/jday']+time_offset/86400.0, data_hsr1_v0['dif/flux'][:, i], mode='nearest')
 
-        flux_tot = np.zeros((data_hsk['jday'].size, data_spns_v0['tot/wvl'].size), dtype=np.float64)
+        flux_tot = np.zeros((data_hsk['jday'].size, data_hsr1_v0['tot/wvl'].size), dtype=np.float64)
         for i in range(flux_tot.shape[-1]):
-            flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday']+time_offset/86400.0, data_spns_v0['tot/flux'][:, i], mode='nearest')
+            flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_hsr1_v0['tot/jday']+time_offset/86400.0, data_hsr1_v0['tot/flux'][:, i], mode='nearest')
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         f = h5py.File(fname_h5, 'w')
@@ -497,12 +492,12 @@ def cdata_arcsix_hsr1_v1(
         f['jday_ori'] = data_hsk['jday'] - time_offset/86400.0
 
         g1 = f.create_group('dif')
-        g1['wvl']   = data_spns_v0['dif/wvl']
+        g1['wvl']   = data_hsr1_v0['dif/wvl']
         dset0 = g1.create_dataset('flux', data=flux_dif, compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('tot')
-        g2['wvl']   = data_spns_v0['tot/wvl']
-        g2['toa0']  = data_spns_v0['tot/toa0']
+        g2['wvl']   = data_hsr1_v0['tot/wvl']
+        g2['toa0']  = data_hsr1_v0['tot/toa0']
         dset0 = g2.create_dataset('flux', data=flux_tot, compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
@@ -1555,21 +1550,20 @@ def cdata_arcsix_ssfr_archive(
 
 # additional functions under development
 #╭────────────────────────────────────────────────────────────────────────────╮#
-def run_time_offset_check(date):
+def run_time_offset_check(cfg):
 
+    main_process_data_v0(cfg, run=False)
+
+    date = cfg.common['date']
     date_s = date.strftime('%Y%m%d')
     data_hsk = ssfr.util.load_h5(_FNAMES_['%s_hsk_v0' % date_s])
     data_alp = ssfr.util.load_h5(_FNAMES_['%s_alp_v0' % date_s])
-    data_spns_v0 = ssfr.util.load_h5(_FNAMES_['%s_spns_v0' % date_s])
-    if _WHICH_SSFR_ == _SSFR1_:
-        data_ssfr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr1_v0' % date_s])
-        data_ssfr2_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr2_v0' % date_s])
-    else:
-        data_ssfr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr2_v0' % date_s])
-        data_ssfr2_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr1_v0' % date_s])
+    data_hsr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_hsr1_v0' % date_s])
+    data_ssfr_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr_v0' % date_s])
+    data_ssrr_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssrr_v0' % date_s])
 
-    # data_spns_v0['tot/jday'] += 1.0
-    # data_spns_v0['dif/jday'] += 1.0
+    # data_hsr1_v0['tot/jday'] += 1.0
+    # data_hsr1_v0['dif/jday'] += 1.0
 
     # _offset_x_range_ = [-6000.0, 6000.0]
     _offset_x_range_ = [-600.0, 600.0]
@@ -1631,21 +1625,21 @@ def run_time_offset_check(date):
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    # SPNS vs TOA
+    # HSR1 vs TOA
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    index_wvl = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
-    data_y1   = data_spns_v0['tot/flux'][:, index_wvl]
+    index_wvl = np.argmin(np.abs(745.0-data_hsr1_v0['tot/wvl']))
+    data_y1   = data_hsr1_v0['tot/flux'][:, index_wvl]
 
     mu = np.cos(np.deg2rad(data_hsk['sza']))
     iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit'], data_hsk['ang_rol'], data_hsk['ang_hed'])
     dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
     factors = mu/dc
-    data_y0   = data_spns_v0['tot/toa0'][index_wvl]*np.cos(np.deg2rad(data_hsk['sza']))/factors
+    data_y0   = data_hsr1_v0['tot/toa0'][index_wvl]*np.cos(np.deg2rad(data_hsk['sza']))/factors
 
     data_offset = {
             'x0': data_hsk['jday']*86400.0,
             'y0': data_y0,
-            'x1': data_spns_v0['tot/jday']*86400.0,
+            'x1': data_hsr1_v0['tot/jday']*86400.0,
             'y1': data_y1,
             }
     ssfr.vis.find_offset_bokeh(
@@ -1654,22 +1648,22 @@ def run_time_offset_check(date):
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
-            description='SPNS Total vs. TOA (745 nm)',
-            fname_html='spns-toa_offset_check_%s.html' % date_s)
+            description='HSR1 Total vs. TOA (745 nm)',
+            fname_html='hsr1-toa_offset_check_%s.html' % date_s)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    # SSFR-A vs SPNS
+    # SSFR vs HSR1
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    index_wvl_spns = np.argmin(np.abs(745.0-data_spns_v0['tot/wvl']))
-    data_y0 = data_spns_v0['tot/flux'][:, index_wvl_spns]
+    index_wvl_hsr1 = np.argmin(np.abs(745.0-data_hsr1_v0['tot/wvl']))
+    data_y0 = data_hsr1_v0['tot/flux'][:, index_wvl_hsr1]
 
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_zen']))
-    data_y1 = data_ssfr1_v0['spec/cnt_zen'][:, index_wvl_ssfr]
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr_v0['spec/wvl_zen']))
+    data_y1 = data_ssfr_v0['spec/cnt_zen'][:, index_wvl_ssfr]
     data_offset = {
-            'x0': data_spns_v0['tot/jday']*86400.0,
+            'x0': data_hsr1_v0['tot/jday']*86400.0,
             'y0': data_y0,
-            'x1': data_ssfr1_v0['raw/jday']*86400.0,
+            'x1': data_ssfr_v0['raw/jday']*86400.0,
             'y1': data_y1,
             }
     ssfr.vis.find_offset_bokeh(
@@ -1678,22 +1672,22 @@ def run_time_offset_check(date):
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
-            description='SSFR-A Zenith Count vs. SPNS Total (745nm)',
-            fname_html='ssfr-a_offset_check_%s.html' % (date_s))
+            description='SSFR Zenith Count vs. HSR1 Total (745nm)',
+            fname_html='ssfr_offset_check_%s.html' % (date_s))
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-    # SSFR-B vs SSFR-A
+    # SSRR vs SSFR
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr1_v0['spec/wvl_nad']))
-    data_y0 = data_ssfr1_v0['spec/cnt_nad'][:, index_wvl_ssfr]
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr_v0['spec/wvl_nad']))
+    data_y0 = data_ssfr_v0['spec/cnt_nad'][:, index_wvl_ssfr]
 
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr2_v0['spec/wvl_nad']))
-    data_y1 = data_ssfr2_v0['spec/cnt_nad'][:, index_wvl_ssfr]
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssrr_v0['spec/wvl_nad']))
+    data_y1 = data_ssrr_v0['spec/cnt_nad'][:, index_wvl_ssfr]
     data_offset = {
-            'x0': data_ssfr1_v0['raw/jday']*86400.0,
+            'x0': data_ssfr_v0['raw/jday']*86400.0,
             'y0': data_y0,
-            'x1': data_ssfr2_v0['raw/jday']*86400.0,
+            'x1': data_ssrr_v0['raw/jday']*86400.0,
             'y1': data_y1,
             }
     ssfr.vis.find_offset_bokeh(
@@ -1702,8 +1696,8 @@ def run_time_offset_check(date):
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
-            description='SSFR-B Nadir Count vs. SSFR-A Nadir (745nm)',
-            fname_html='ssfr-b_offset_check_%s.html' % (date_s))
+            description='SSRR Nadir Count vs. SSFR Nadir (745nm)',
+            fname_html='ssrr_offset_check_%s.html' % (date_s))
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return
@@ -1899,10 +1893,10 @@ def main_process_data_v0(cfg, run=True):
     # ALP v0: raw data
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fnames_alp = cfg.alp['fnames']
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
     if run and (len(fnames_alp)==0):
         pass
     else:
-        fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
         fname_alp_v0 = cdata_arcsix_alp_v0(
                 date,
                 fnames_alp,
@@ -2008,31 +2002,51 @@ def main_process_data_v0(cfg, run=True):
         _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-def main_process_data_v1(date, run=True):
+def main_process_data_v1(cfg, run=True):
 
-    fdir_out = './'
+    date = cfg.common['date']
+    date_s = cfg.common['date_s']
+
+    fdir_out = cfg.common['fdir_out']
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    date_s = date.strftime('%Y%m%d')
+    main_process_data_v0(cfg, run=False)
 
-    # ALP v1: time synced with hsk time with time offset applied
+    # # ALP v1: time synced with hsk time with time offset applied
+    # #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
+
+    # fname_alp_v1 = cdata_arcsix_alp_v1(
+    #         date,
+    #         _FNAMES_['%s_alp_v0' % date_s],
+    #         _FNAMES_['%s_hsk_v0' % date_s],
+    #         fname_h5=fname_h5,
+    #         time_offset=cfg.alp['time_offset'],
+    #         fdir_out=fdir_out,
+    #         run=run
+    #         )
+
+    # _FNAMES_['%s_alp_v1' % date_s] = fname_alp_v1
+    # #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # HSR1 v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _MISSION_.upper(), _ALP_.upper(), _PLATFORM_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsr1['aka'].upper(), cfg.common['platform'].upper(), date_s)
 
-    fname_alp_v1 = cdata_arcsix_alp_v1(date, _FNAMES_['%s_alp_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
+    fname_hsr1_v1 = cdata_arcsix_hsr1_v1(
+            date,
+            _FNAMES_['%s_hsr1_v0' % date_s],
+            _FNAMES_['%s_hsk_v0' % date_s],
+            fname_h5=fname_h5,
+            time_offset=cfg.hsr1['time_offset'],
+            fdir_out=fdir_out,
+            run=run
+            )
 
-    _FNAMES_['%s_alp_v1'   % date_s] = fname_alp_v1
+    _FNAMES_['%s_hsr1_v1' % date_s] = fname_hsr1_v1
     #╰────────────────────────────────────────────────────────────────────────────╯#
-
-    # SPNS v1: time synced with hsk time with time offset applied
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_spns_v1 = cdata_arcsix_spns_v1(date, _FNAMES_['%s_spns_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
-
-    _FNAMES_['%s_spns_v1'  % date_s] = fname_spns_v1
-    #╰────────────────────────────────────────────────────────────────────────────╯#
+    sys.exit()
 
     # SSFR-A v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -2131,11 +2145,6 @@ def main_process_data_archive(date, run=True):
 
 if __name__ == '__main__':
 
-    # process field calibration
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    # main_calibration_rad()
-    # sys.exit()
-    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -2171,25 +2180,25 @@ if __name__ == '__main__':
         cfg = importlib.import_module(fname_cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
-
         # step 1
+        # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(cfg, run=True)
-        sys.exit()
+        # main_process_data_v0(cfg, run=True)
+        # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
+        # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # run_time_offset_check(date)
+        # run_time_offset_check(cfg)
         # sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
+        # apply time offsets to sync data to aircraft housekeeping file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(date, run=False)
-        # main_process_data_v1(date, run=True)
-        # sys.exit()
+        main_process_data_v1(cfg, run=True)
+        sys.exit()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4
