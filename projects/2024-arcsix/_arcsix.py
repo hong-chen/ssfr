@@ -181,6 +181,7 @@ _SSFR2_TIME_OFFSET_ = {
 #╭────────────────────────────────────────────────────────────────────────────╮#
 def cdata_arcsix_hsk_v0(
         date,
+        fname_hsk,
         fdir_data='./',
         fdir_out='./',
         fname_h5='HSK_v0.h5',
@@ -201,130 +202,24 @@ def cdata_arcsix_hsk_v0(
 
     if run:
 
-        try:
-
-            # ict file from P3 data system team, best quality but cannot be accessed immediately
-            #╭────────────────────────────────────────────────────────────────────────────╮#
-            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.ict' % (date.year, date.month, date.day))[-1]
-            data_hsk = ssfr.util.read_ict(fname)
-            var_dict = {
-                    'lon': 'longitude',
-                    'lat': 'latitude',
-                    'alt': 'gps_altitude',
-                    'tmhr': 'tmhr',
-                    'ang_pit': 'pitch_angle',
-                    'ang_rol': 'roll_angle',
-                    'ang_hed': 'true_heading',
-                    'ir_surf_temp': 'ir_surf_temp',
-                    }
-            #╰────────────────────────────────────────────────────────────────────────────╯#
-
-        except Exception as error:
-            print(error)
-
-            # iwg file from <https://asp-archive.arc.nasa.gov>, secondary option
-            #╭────────────────────────────────────────────────────────────────────────────╮#
-            fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.iwg' % (date.year, date.month, date.day))[0]
-            data_hsk = ssfr.util.read_iwg_nsrc(fname)
-            var_dict = {
-                    'tmhr': 'tmhr',
-                    'lon': 'longitude',
-                    'lat': 'latitude',
-                    'alt': 'gps_alt_msl',
-                    'ang_pit': 'pitch_angle',
-                    'ang_rol': 'roll_angle',
-                    'ang_hed': 'true_heading',
-                    }
-            #╰────────────────────────────────────────────────────────────────────────────╯#
-
-            # wts file from <https://mts2.nasa.gov/> -> Telemetry, immediately availale after flight but poor quality
-            #╭────────────────────────────────────────────────────────────────────────────╮#
-            # fname = ssfr.util.get_all_files(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*.mts' % (date.year, date.month, date.day))[0]
-            # data_hsk = ssfr.util.read_iwg_mts(fname)
-            # var_dict = {
-            #         'tmhr': 'tmhr',
-            #         'lon': 'longitude',
-            #         'lat': 'latitude',
-            #         'alt': 'gps_msl_altitude',
-            #         'ang_pit': 'pitch',
-            #         'ang_rol': 'roll',
-            #         'ang_hed': 'true_heading',
-            #         }
-            #╰────────────────────────────────────────────────────────────────────────────╯#
-
-        print()
-        print('Processing HSK file:', fname)
-        print()
-
-
-        # fake hsk for PSB (Pituffik Space Base)
+        # ict file from P3 data system team, best quality but cannot be accessed immediately
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # tmhr_range = [10.0, 13.5]
-        # tmhr = np.arange(tmhr_range[0]*3600.0, tmhr_range[-1]*3600.0, 1.0)/3600.0
-        # lon0 = -68.6471 # PSB longitude
-        # lat0 = 76.5324  # PSB latitude
-        # alt0 =  4.0     # airplane altitude
-        # pit0 = 0.0
-        # rol0 = 0.0
-        # hed0 = 0.0
-        # data_hsk = {
-        #         'tmhr': {'data': tmhr, 'units': 'hour'},
-        #         'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
-        #         'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
-        #         'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
-        #         'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
-        #         'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
-        #         'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
-        #         }
-        # var_dict = {
-        #         'lon': 'long',
-        #         'lat': 'lat',
-        #         'alt': 'palt',
-        #         'tmhr': 'tmhr',
-        #         'ang_pit': 'pitch',
-        #         'ang_rol': 'roll',
-        #         'ang_hed': 'heading',
-        #         }
+        data_hsk = ssfr.util.read_ict(fname_hsk)
+        var_dict = {
+                'lon': 'longitude',
+                'lat': 'latitude',
+                'alt': 'gps_altitude',
+                'tmhr': 'tmhr',
+                'ang_pit': 'pitch_angle',
+                'ang_rol': 'roll_angle',
+                'ang_hed': 'true_heading',
+                'ir_surf_temp': 'ir_surf_temp',
+                }
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
-
-        # fake hsk for NASA WFF
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        # if date == datetime.datetime(2024, 7, 8):
-        #     dtime_s = datetime.datetime(2024, 7, 8, 18, 24)
-        #     dtime_e = datetime.datetime(2024, 7, 8, 19, 1)
-        # elif date == datetime.datetime(2024, 7, 9):
-        #     dtime_s = datetime.datetime(2024, 7, 9, 15, 15)
-        #     dtime_e = datetime.datetime(2024, 7, 9, 16, 5)
-        # sec_s = (dtime_s - date).total_seconds()
-        # sec_e = (dtime_e - date).total_seconds()
-        # tmhr = np.arange(sec_s, sec_e, 1.0)/3600.0
-        # lon0 = -75.47058922297123
-        # lat0 = 37.94080738931773
-        # alt0 =  4.0                # airplane altitude
-        # pit0 = 0.0
-        # rol0 = 0.0
-        # hed0 = 0.0
-        # data_hsk = {
-        #         'tmhr': {'data': tmhr, 'units': 'hour'},
-        #         'long': {'data': np.repeat(lon0, tmhr.size), 'units': 'degree'},
-        #         'lat' : {'data': np.repeat(lat0, tmhr.size), 'units': 'degree'},
-        #         'palt': {'data': np.repeat(alt0, tmhr.size), 'units': 'meter'},
-        #         'pitch'   : {'data': np.repeat(pit0, tmhr.size), 'units': 'degree'},
-        #         'roll'    : {'data': np.repeat(rol0, tmhr.size), 'units': 'degree'},
-        #         'heading' : {'data': np.repeat(hed0, tmhr.size), 'units': 'degree'},
-        #         }
-        # var_dict = {
-        #         'lon': 'long',
-        #         'lat': 'lat',
-        #         'alt': 'palt',
-        #         'tmhr': 'tmhr',
-        #         'ang_pit': 'pitch',
-        #         'ang_rol': 'roll',
-        #         'ang_hed': 'heading',
-        #         }
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
+        print()
+        print('Processing HSK file:', fname_hsk)
+        print()
 
         # solar geometries
         #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -368,6 +263,7 @@ def cdata_arcsix_hsk_from_alp_v0(
     date_s = date.strftime('%Y%m%d')
 
     if run:
+
         data_alp = ssfr.util.load_h5(fname_alp_v0)
 
         tmhr_ = data_alp['tmhr'][(data_alp['tmhr']>=0.0) & (data_alp['tmhr']<=48.0)]
@@ -422,7 +318,7 @@ def cdata_arcsix_hsk_from_alp_v0(
 
 def cdata_arcsix_alp_v0(
         date,
-        fnames_alp=[],
+        fnames_alp,
         fdir_out='./',
         fname_h5='ALP_v0.h5',
         run=True,
@@ -451,6 +347,7 @@ def cdata_arcsix_alp_v1(
         fname_v0,
         fname_hsk,
         fdir_out='./',
+        fname_h5='ALP_v1.h5',
         run=True
         ):
 
@@ -466,8 +363,6 @@ def cdata_arcsix_alp_v1(
     """
 
     date_s = date.strftime('%Y%m%d')
-
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _MISSION_.upper(), _ALP_.upper(), _PLATFORM_.upper(), date_s)
 
     if run:
 
@@ -1999,7 +1894,7 @@ def main_process_data_v0(cfg, run=True):
     #     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['tag'].upper(), cfg.common['platform'].upper(), date_s)
     #     fname_alp_v0 = cdata_arcsix_alp_v0(
     #             date,
-    #             fnames_alp=fnames_alp,
+    #             fnames_alp,
     #             fdir_out=fdir_out,
     #             fname_h5=fname_h5,
     #             run=run
@@ -2012,7 +1907,7 @@ def main_process_data_v0(cfg, run=True):
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_hsk = cfg.hsk['fname']
     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsk['tag'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and (fname_hsk is not None):
+    if run and (fname_hsk is None):
         # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing after flight)
         fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(
                 date,
@@ -2136,6 +2031,8 @@ def main_process_data_v1(date, run=True):
 
     # ALP v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _MISSION_.upper(), _ALP_.upper(), _PLATFORM_.upper(), date_s)
+
     fname_alp_v1 = cdata_arcsix_alp_v1(date, _FNAMES_['%s_alp_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
 
