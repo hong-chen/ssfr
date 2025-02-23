@@ -8,7 +8,7 @@ operator = 'Vikas Nataraja'
 mission = 'arcsix'
 year = '2024'
 platform = 'p3b'
-comments = '1st research flight, had clear-sky spiral'
+comments = '1st research flight, performed clear-sky spiral'
 
 hsk_tag  = 'hsk'
 alp_tag  = 'alp'
