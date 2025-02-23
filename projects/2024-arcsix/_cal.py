@@ -258,6 +258,83 @@ def main_calibration_old():
 
 # radiometric calibrations (1. primary, 2. transfer, 3. secondary)
 #╭────────────────────────────────────────────────────────────────────────────╮#
+def retrieve_rad_cal(
+        date,
+        which_ssfr='lasp|ssfr-a',
+        which_ssfr_for_flux='lasp|ssfr-a',
+        run=True,
+        ):
+
+    """
+    version 1: 1) time adjustment          : check for time offset and merge SSFR data with aircraft housekeeping data
+               2) time synchronization     : interpolate raw SSFR data into the time frame of the housekeeping data
+               3) counts-to-flux conversion: apply primary and secondary calibration to convert counts to fluxes
+    """
+
+    date_s = date.strftime('%Y%m%d')
+
+        for idset in np.unique(dset_num):
+
+            if which_ssfr_for_flux == which_ssfr:
+                # select calibration file (can later be adjusted for different integration time sets)
+                #╭──────────────────────────────────────────────────────────────╮#
+                fdir_cal = '%s/rad-cal' % _FDIR_CAL_
+
+                jday_today = ssfr.util.dtime_to_jday(date)
+
+                int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
+                int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
+
+                # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
+                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
+                jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
+                for i in range(jday_cal_zen.size):
+                    dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
+                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                    jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
+                fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
+                data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+
+                msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s zenith irradiance ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
+                print(msg)
+
+                # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
+                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
+                jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
+                for i in range(jday_cal_nad.size):
+                    dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
+                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                    jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
+                fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
+                data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+
+                msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s nadir irradiance ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
+                print(msg)
+                #╰──────────────────────────────────────────────────────────────╯#
+            else:
+                # radiance (scale the data to 0 - 2.0 for now,
+                # later we will apply radiometric response after mission to retrieve spectral RADIANCE)
+
+                factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.0
+                data_cal_zen = {
+                        'sec_resp': np.repeat(factor_zen, wvl_zen.size)
+                        }
+
+                msg = '\nMessage [cdata_ssfr_v1]: Using [0, 2.0] scaling for %s zenith radiance ...' % (which_ssfr.upper())
+                print(msg)
+
+                factor_nad = (np.nanmax(cnt_nad)-np.nanmin(cnt_nad)) / 2.0
+                data_cal_nad = {
+                        'sec_resp': np.repeat(factor_nad, wvl_nad.size)
+                        }
+
+                msg = '\nMessage [cdata_ssfr_v1]: Using [0, 2.0] scaling for %s nadir radiance ...' % (which_ssfr.upper())
+                print(msg)
+
+            logic_dset = (dset_num == idset)
+
+    return fname_h5
+
 def ssfr_rad_cal(
         fdir_pri,
         fdir_tra,
