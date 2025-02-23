@@ -48,7 +48,6 @@ import ssfr
 
 # parameters
 #╭────────────────────────────────────────────────────────────────────────────╮#
-_VERBOSE_   = True
 _FNAMES_ = {}
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -506,7 +505,7 @@ def cdata_arcsix_hsr1_v1(
 
 def cdata_arcsix_hsr1_v2(
         date,
-        fname_spns_v1,
+        fname_hsr1_v1,
         fname_hsk, # interchangable with fname_alp_v1
         wvl_range=None,
         ang_pit_offset=0.0,
@@ -527,7 +526,7 @@ def cdata_arcsix_hsr1_v2(
 
         # read spn-s v1
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        data_spns_v1 = ssfr.util.load_h5(fname_spns_v1)
+        data_spns_v1 = ssfr.util.load_h5(fname_hsr1_v1)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # read hsk v0
@@ -592,7 +591,7 @@ def cdata_arcsix_hsr1_v2(
 
 def cdata_arcsix_hsr1_archive(
         date,
-        fname_spns_v2,
+        fname_hsr1_v2,
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         wvl_range=[400.0, 800.0],
@@ -687,7 +686,7 @@ def cdata_arcsix_hsr1_archive(
 
     # data processing
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    data_v2 = ssfr.util.load_h5(fname_spns_v2)
+    data_v2 = ssfr.util.load_h5(fname_hsr1_v2)
     data_v2['tot/flux'][data_v2['tot/flux']<0.0] = np.nan
     data_v2['dif/flux'][data_v2['dif/flux']<0.0] = np.nan
 
@@ -888,6 +887,7 @@ def cdata_arcsix_ssfr_v1(
         fname_h5='SSFR_v1.h5',
         fdir_out='./',
         time_offset=0.0,
+        which_ssfr='lasp|ssfr-a',
         which_ssfr_for_flux='lasp|ssfr-a',
         run=True,
         ):
@@ -900,8 +900,6 @@ def cdata_arcsix_ssfr_v1(
 
     date_s = date.strftime('%Y%m%d')
 
-    which_ssfr = os.path.basename(fname_ssfr_v0).split('_')[0].replace('%s-' % _MISSION_.upper(), '').lower()
-
     if run:
 
         # load ssfr v0 data
@@ -913,7 +911,6 @@ def cdata_arcsix_ssfr_v1(
         #╭────────────────────────────────────────────────────────────────────────────╮#
         data_hsk = ssfr.util.load_h5(fname_hsk)
         #╰────────────────────────────────────────────────────────────────────────────╯#
-
 
         # read wavelengths and calculate toa downwelling solar flux
         #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -1082,7 +1079,7 @@ def cdata_arcsix_ssfr_v2(
         date,
         fname_ssfr_v1,
         fname_alp_v1,
-        fname_spns_v2,
+        fname_hsr1_v2,
         fdir_out='./',
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
@@ -1135,7 +1132,7 @@ def cdata_arcsix_ssfr_v2(
 
             # calculate diffuse/global ratio from SPNS data
             #╭────────────────────────────────────────────────────────────────────────────╮#
-            data_spns_v2 = ssfr.util.load_h5(fname_spns_v2)
+            data_spns_v2 = ssfr.util.load_h5(fname_hsr1_v2)
 
             f_ = h5py.File(fname_aux, 'w')
 
@@ -1713,7 +1710,7 @@ def run_angle_offset_check(
 
     # SPNS v2
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, _FNAMES_['%s_spns_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
+    fname_hsr1_v2 = cdata_arcsix_spns_v2(date, _FNAMES_['%s_spns_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
             fdir_out='./',
             run=True,
             ang_pit_offset=ang_pit_offset,
@@ -1781,7 +1778,6 @@ def dark_corr_temp(date, iChan=100, idset=0):
     # figure
     #╭────────────────────────────────────────────────────────────────────────────╮#
     if True:
-
 
         plt.close('all')
         fig = plt.figure(figsize=(13, 19))
@@ -2041,13 +2037,16 @@ def main_process_data_v1(cfg, run=True):
 
     # SSFR v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssfr['aka'].upper(), cfg.common['platform'].upper(), date_s)
+
     fname_ssfr_v1 = cdata_arcsix_ssfr_v1(
             date,
             _FNAMES_['%s_ssfr_v0' % date_s],
             _FNAMES_['%s_hsk_v0' % date_s],
             fname_h5=fname_h5,
             time_offset=cfg.ssfr['time_offset'],
-            which_ssfr_for_flux='lasp|ssfr-a',
+            which_ssfr=cfg.ssfr['which_ssfr'],
+            which_ssfr_for_flux=cfg.ssfr['which_ssfr'],
             fdir_out=fdir_out,
             run=run
             )
@@ -2057,13 +2056,25 @@ def main_process_data_v1(cfg, run=True):
     sys.exit()
 
 
-    # SSFR-B v1: time synced with hsk time with time offset applied
+    # SSRR v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_ssfr2_v1 = cdata_arcsix_ssfr_v1(date, _FNAMES_['%s_ssfr2_v0' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
-            which_ssfr_for_flux='lasp|ssfr-b', fdir_out=fdir_out, run=run)
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssrr['aka'].upper(), cfg.common['platform'].upper(), date_s)
 
-    _FNAMES_['%s_ssfr2_v1' % date_s] = fname_ssfr2_v1
+    fname_ssrr_v1 = cdata_arcsix_ssfr_v1(
+            date,
+            _FNAMES_['%s_ssrr_v0' % date_s],
+            _FNAMES_['%s_hsk_v0' % date_s],
+            fname_h5=fname_h5,
+            time_offset=cfg.ssrr['time_offset'],
+            which_ssfr=cfg.ssrr['which_ssfr'],
+            which_ssfr_for_flux=cfg.ssfr['which_ssfr'],
+            fdir_out=fdir_out,
+            run=run
+            )
+
+    _FNAMES_['%s_ssrr_v1' % date_s] = fname_ssrr_v1
     #╰────────────────────────────────────────────────────────────────────────────╯#
+    sys.exit()
 
 def main_process_data_v2(date, run=True):
 
@@ -2085,16 +2096,16 @@ def main_process_data_v2(date, run=True):
     # SPNS v2
     #╭────────────────────────────────────────────────────────────────────────────╮#
     # * based on ALP v1
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _FNAMES_['%s_spns_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
+    # fname_hsr1_v2 = cdata_arcsix_spns_v2(date, _FNAMES_['%s_spns_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=run)
-    # fname_spns_v2 = cdata_arcsix_spns_v2(date, _FNAMES_['%s_spns_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
+    # fname_hsr1_v2 = cdata_arcsix_spns_v2(date, _FNAMES_['%s_spns_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
     #         fdir_out=fdir_out, run=True)
 
     # * based on HSK v0
-    fname_spns_v2 = cdata_arcsix_spns_v2(date, _FNAMES_['%s_spns_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
+    fname_hsr1_v2 = cdata_arcsix_spns_v2(date, _FNAMES_['%s_spns_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
             fdir_out=fdir_out, run=run)
     #╰────────────────────────────────────────────────────────────────────────────╯#
-    _FNAMES_['%s_spns_v2' % date_s] = fname_spns_v2
+    _FNAMES_['%s_spns_v2' % date_s] = fname_hsr1_v2
 
 
     # SSFR v2
@@ -2129,10 +2140,10 @@ def main_process_data_archive(date, run=True):
 
     # SPNS RA
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_spns_ra = cdata_arcsix_spns_archive(date, _FNAMES_['%s_spns_v2' % date_s],
+    fname_hsr1_ra = cdata_arcsix_spns_archive(date, _FNAMES_['%s_spns_v2' % date_s],
             fdir_out=fdir_out, run=run)
     #╰────────────────────────────────────────────────────────────────────────────╯#
-    _FNAMES_['%s_spns_ra' % date_s] = fname_spns_ra
+    _FNAMES_['%s_spns_ra' % date_s] = fname_hsr1_ra
 
 
     # SSFR RA
