@@ -67,6 +67,7 @@ common = {
         'platform': platform.lower(),
         'operator': operator,
         'comments': comments,
+        'fdir_out': fdir_out,
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -114,7 +115,7 @@ ssfr = {
 
         'fnames': fnames_ssfr,
 
-        'fname_rad_cal': fname_rad_cal_ssfr,
+        # 'fname_rad_cal': fname_rad_cal_ssfr,
 
         'which_ssfr': 'lasp|%s' % ssfr_tag.lower(),
 
