@@ -6,11 +6,11 @@ import ssfr
 date = datetime.datetime(2024, 5, 28)
 operator = 'Vikas Nataraja'
 mission = 'arcsix'
-platform = 'p3'
-comments = 'Clear-sky spiral'
+year = '2024'
+platform = 'p3b'
+comments = '1st research flight, had clear-sky spiral'
 
 hsk_tag  = 'hsk'
-
 alp_tag  = 'alp'
 hsr1_tag = 'hsr1-a'
 ssfr_tag = 'ssfr-a'
@@ -21,8 +21,39 @@ hsr1_time_offset = 0.0
 ssfr_time_offset = -156.26
 ssrr_time_offset = -222.66
 
+alp_ang_pit_offset = 0.0
+alp_ang_rol_offset = 0.0
+hsr1_ang_pit_offset = 0.0
+hsr1_ang_rol_offset = 0.0
+
+fdir_data = 'data/%s/%s/%s' % (mission, year, platform)
 fdir_cal = 'data/%s/cal' % mission
 fdir_out = 'data/%s/processed' % mission
+
+# parameters that require extra processing
+#╭──────────────────────────────────────────────────────────────╮#
+# data directory
+#╭────────────────────────────────────────────────╮#
+fdir_hsk = '%s/aux' % (fdir_data)
+fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, alp_tag))[-1]
+fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, hsr1_tag))[-1]
+fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, ssfr_tag))[-1]
+fdir_ssrr = ssfr.util.get_all_folders(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, ssrr_tag))[-1]
+#╰────────────────────────────────────────────────╯#
+
+# data files
+#╭────────────────────────────────────────────────╮#
+fname_hsk = ssfr.util.get_all_files(fdir_hsk, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))[-1]
+fnames_alp = ssfr.util.get_all_files(fdir_alp, pattern='*.plt3')
+fnames_hsr1 = ssfr.util.get_all_files(fdir_hsr1, pattern='*.txt')
+fnames_ssfr = ssfr.util.get_all_files(fdir_ssfr, pattern='*.SKS')
+fnames_ssrr = ssfr.util.get_all_files(fdir_ssrr, pattern='*.SKS')
+#╰────────────────────────────────────────────────╯#
+
+# calibrations
+#╭────────────────────────────────────────────────╮#
+#╰────────────────────────────────────────────────╯#
+#╰──────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -45,7 +76,7 @@ common = {
 #╭────────────────────────────────────────────────────────────────────────────╮#
 hsk = {
         'tag': hsk_tag.lower(),
-        'fdir': 'data/arcsix/2024/p3/aux/hsk',
+        'fname': fname_hsk,
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -55,6 +86,9 @@ hsk = {
 #╭────────────────────────────────────────────────────────────────────────────╮#
 hsr1 = {
         'tag': hsr1_tag.lower(),
+        'fnames': fnames_hsr1,
+        'ang_pit_offset': hsr1_ang_pit_offset,
+        'ang_rol_offset': hsr1_ang_rol_offset,
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -63,15 +97,11 @@ hsr1 = {
 # Active Leveling Platform
 #╭────────────────────────────────────────────────────────────────────────────╮#
 alp = {
-        'tag': 'alp',
-
-        'fdir_data': 'data/%s/%4.4d/%s/20240528_sci-flt-01/raw/alp' % (common['mission'], date.year, common['platform']),
-
-        'time_offset': -17.19,
-
-        'ang_pit_offset': 0.0,
-
-        'ang_rol_offset': 0.0,
+        'tag': alp_tag.lower(),
+        'fnames': fnames_alp,
+        'time_offset': alp_time_offset,
+        'ang_pit_offset': alp_ang_pit_offset,
+        'ang_rol_offset': alp_ang_rol_offset,
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -82,9 +112,9 @@ alp = {
 ssfr = {
         'tag': ssfr_tag.lower(),
 
-        'fdir_data': 'data/arcsix/2024/p3/20240528_sci-flt-01/raw/ssfr-a',
+        'fnames': fnames_ssfr,
 
-        'fname_rad_cal': 'data/arcsix/cal/rad-cal/2024-03-29_lamp-506|2024-03-29_lamp-150e_spec-zen|2024-04-01|dset1|rad-resp|lasp|ssfr-a|zen|si-120|in-350.h5',
+        'fname_rad_cal': fname_rad_cal_ssfr,
 
         'which_ssfr': 'lasp|%s' % ssfr_tag.lower(),
 
@@ -127,9 +157,9 @@ ssfr = {
 ssrr = {
         'tag': ssrr_tag.lower(),
 
-        'fdir_data': 'data/arcsix/2024/p3/20240528_sci-flt-01/raw/ssfr-b',
+        'fnames': fnames_ssrr,
 
-        'fname_rad_cal': 'data/arcsix/cal/rad-cal/2024-03-29_lamp-506|2024-03-29_lamp-150e_spec-zen|2024-04-01|dset1|rad-resp|lasp|ssfr-a|zen|si-120|in-350.h5',
+        'fname_ssrr_rad_cal': None,
 
         'which_ssfr': 'lasp|%s' % ssrr_tag.lower(),
 
