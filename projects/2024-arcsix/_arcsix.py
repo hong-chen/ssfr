@@ -182,9 +182,8 @@ _SSFR2_TIME_OFFSET_ = {
 def cdata_arcsix_hsk_v0(
         date,
         fname_hsk,
-        fdir_data='./',
-        fdir_out='./',
         fname_h5='HSK_v0.h5',
+        fdir_out='./',
         run=True,
         ):
 
@@ -245,8 +244,8 @@ def cdata_arcsix_hsk_v0(
 def cdata_arcsix_hsk_from_alp_v0(
         date,
         fname_alp_v0,
-        fdir_out='./',
         fname_h5='HSK_v0.h5',
+        fdir_out='./',
         run=True,
         ):
 
@@ -319,8 +318,8 @@ def cdata_arcsix_hsk_from_alp_v0(
 def cdata_arcsix_alp_v0(
         date,
         fnames_alp,
-        fdir_out='./',
         fname_h5='ALP_v0.h5',
+        fdir_out='./',
         run=True,
         ):
 
@@ -346,8 +345,8 @@ def cdata_arcsix_alp_v1(
         date,
         fname_v0,
         fname_hsk,
-        fdir_out='./',
         fname_h5='ALP_v1.h5',
+        fdir_out='./',
         run=True
         ):
 
@@ -831,9 +830,16 @@ def cdata_arcsix_spns_archive(
 #╭────────────────────────────────────────────────────────────────────────────╮#
 def cdata_arcsix_ssfr_v0(
         date,
-        fdir_data='./',
+        fnames_ssfr,
+        fname_h5='SSFR_v0.h5',
         fdir_out='./',
-        which_ssfr='ssfr-a',
+        which_ssfr='lasp|ssfr-a',
+        wvl_s=350.0,
+        wvl_e=2000.0,
+        wvl_j=950.0,
+        dark_extend=1,
+        light_extend=1,
+        dark_corr_mode='interp',
         run=True,
         ):
 
@@ -843,12 +849,18 @@ def cdata_arcsix_ssfr_v0(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _MISSION_.upper(), which_ssfr.upper(), _PLATFORM_.upper(), date_s)
-
     if run:
-        fnames_ssfr = ssfr.util.get_all_files(fdir_data, pattern='*.SKS')
 
-        ssfr0 = ssfr.lasp_ssfr.read_ssfr(fnames_ssfr, dark_corr_mode='interp', which_ssfr='lasp|%s' % which_ssfr.lower())
+        ssfr0 = ssfr.lasp_ssfr.read_ssfr(
+                fnames_ssfr,
+                which_ssfr=which_ssfr.lower(),
+                wvl_s=wvl_s,
+                wvl_e=wvl_e,
+                wvl_j=wvl_j,
+                dark_extend=dark_extend,
+                light_extend=light_extend,
+                dark_corr_mode=dark_corr_mode,
+                )
 
         # data that are useful
         #   wvl_zen [nm]
@@ -1891,72 +1903,95 @@ def main_process_data_v0(cfg, run=True):
     # if run and (len(fnames_alp)==0):
     #     pass
     # else:
-    #     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['tag'].upper(), cfg.common['platform'].upper(), date_s)
+    #     fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
     #     fname_alp_v0 = cdata_arcsix_alp_v0(
     #             date,
     #             fnames_alp,
-    #             fdir_out=fdir_out,
     #             fname_h5=fname_h5,
+    #             fdir_out=fdir_out,
     #             run=run
     #             )
     #     _FNAMES_['%s_alp_v0' % date_s]   = fname_alp_v0
     # #╰────────────────────────────────────────────────────────────────────────────╯#
     # sys.exit()
 
-    # HSK v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_hsk = cfg.hsk['fname']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsk['tag'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and (fname_hsk is None):
-        # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing after flight)
-        fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(
-                date,
-                _FNAMES_['%s_alp_v0' % date_s],
-                fdir_out=fdir_out,
-                fname_h5=fname_h5,
-                run=run
-                )
-    else:
-        # * preferred, use P3 housekeeping file, ict > iwg > mts
-        fname_hsk_v0 = cdata_arcsix_hsk_v0(
-                date,
-                fname_hsk,
-                fdir_out=fdir_out,
-                fname_h5=fname_h5,
-                run=run
-                )
+    # # HSK v0: raw data
+    # #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fname_hsk = cfg.hsk['fname']
+    # fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsk['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    # if run and (fname_hsk is None):
+    #     # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing after flight)
+    #     fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(
+    #             date,
+    #             _FNAMES_['%s_alp_v0' % date_s],
+    #             fname_h5=fname_h5,
+    #             fdir_out=fdir_out,
+    #             run=run
+    #             )
+    # else:
+    #     # * preferred, use P3 housekeeping file, ict > iwg > mts
+    #     fname_hsk_v0 = cdata_arcsix_hsk_v0(
+    #             date,
+    #             fname_hsk,
+    #             fname_h5=fname_h5,
+    #             fdir_out=fdir_out,
+    #             run=run
+    #             )
 
-    _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    # _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
+    # #╰────────────────────────────────────────────────────────────────────────────╯#
+    # sys.exit()
+
+    # # SSFR v0: raw data
+    # #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fnames_ssfr = cfg.ssfr['fnames']
+    # fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssfr['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    # if run and (len(fnames_ssfr) == 0):
+    #     pass
+    # else:
+    #     fname_ssfr_v0 = cdata_arcsix_ssfr_v0(
+    #             date,
+    #             fnames_ssfr,
+    #             fname_h5=fname_h5,
+    #             which_ssfr=cfg.ssfr['which_ssfr'],
+    #             wvl_s=cfg.ssfr['wvl_s'],
+    #             wvl_e=cfg.ssfr['wvl_e'],
+    #             wvl_j=cfg.ssfr['wvl_j'],
+    #             dark_extend=cfg.ssfr['dark_extend'],
+    #             light_extend=cfg.ssfr['light_extend'],
+    #             dark_corr_mode=cfg.ssfr['dark_corr_mode'],
+    #             fdir_out=fdir_out,
+    #             run=run
+    #             )
+    #     _FNAMES_['%s_ssfr_v0' % date_s] = fname_ssfr_v0
+    # #╰────────────────────────────────────────────────────────────────────────────╯#
+    # sys.exit()
+
+    # SSRR v0: raw data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ssrr = cfg.ssrr['fnames']
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssrr['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    if run and (len(fnames_ssrr) == 0):
+        pass
+    else:
+        fname_ssrr_v0 = cdata_arcsix_ssfr_v0(
+                date,
+                fnames_ssrr,
+                fname_h5=fname_h5,
+                which_ssfr=cfg.ssrr['which_ssfr'],
+                wvl_s=cfg.ssrr['wvl_s'],
+                wvl_e=cfg.ssrr['wvl_e'],
+                wvl_j=cfg.ssrr['wvl_j'],
+                dark_extend=cfg.ssrr['dark_extend'],
+                light_extend=cfg.ssrr['light_extend'],
+                dark_corr_mode=cfg.ssrr['dark_corr_mode'],
+                fdir_out=fdir_out,
+                run=run
+                )
+        _FNAMES_['%s_ssrr_v0' % date_s] = fname_ssrr_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
     sys.exit()
 
-
-    # SSFR-A v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fdirs = ssfr.util.get_all_folders('./', pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _SSFR1_))
-    fdir_data_ssfr1 = sorted(fdirs, key=os.path.getmtime)[-1]
-    fnames_ssfr1 = ssfr.util.get_all_files(fdir_data_ssfr1, pattern='*.SKS')
-    if run and len(fnames_ssfr1) == 0:
-        pass
-    else:
-        fname_ssfr1_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr1,
-                which_ssfr='ssfr-a', fdir_out=fdir_out, run=run)
-        _FNAMES_['%s_ssfr1_v0' % date_s] = fname_ssfr1_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # SSFR-B v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fdirs = ssfr.util.get_all_folders('./', pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, _SSFR2_))
-    fdir_data_ssfr2 = sorted(fdirs, key=os.path.getmtime)[-1]
-    fnames_ssfr2 = ssfr.util.get_all_files(fdir_data_ssfr2, pattern='*.SKS')
-    if run and len(fnames_ssfr2) == 0:
-        pass
-    else:
-        fname_ssfr2_v0 = cdata_arcsix_ssfr_v0(date, fdir_data=fdir_data_ssfr2,
-                which_ssfr='ssfr-b', fdir_out=fdir_out, run=run)
-        _FNAMES_['%s_ssfr2_v0' % date_s] = fname_ssfr2_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # ALP v0: raw data
@@ -1994,26 +2029,6 @@ def main_process_data_v0(cfg, run=True):
         # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing)
         fname_hsk_v0 = cdata_arcsix_hsk_from_alp_v0(date, _FNAMES_['%s_alp_v0' % date_s], fdir_data=_FDIR_HSK_,
                 fdir_out=fdir_out, run=run)
-    else:
-        # * preferred, use P3 housekeeping file, ict > iwg > mts
-        fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_FDIR_HSK_,
-                fdir_out=fdir_out, run=run)
-    _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-def main_process_data_v0_metnav(date, run=True):
-
-    fdir_out = './'
-    if not os.path.exists(fdir_out):
-        os.makedirs(fdir_out)
-
-    date_s = date.strftime('%Y%m%d')
-
-    # HSK v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_hsk = ssfr.util.get_all_files(_FDIR_HSK_, pattern='*%4.4d*%2.2d*%2.2d*.???' % (date.year, date.month, date.day))
-    if run and len(fnames_hsk) == 0:
-        return
     else:
         # * preferred, use P3 housekeeping file, ict > iwg > mts
         fname_hsk_v0 = cdata_arcsix_hsk_v0(date, fdir_data=_FDIR_HSK_,

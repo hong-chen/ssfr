@@ -76,6 +76,7 @@ common = {
 # House Keeping File
 #╭────────────────────────────────────────────────────────────────────────────╮#
 hsk = {
+        'aka': 'hsk',
         'tag': hsk_tag.lower(),
         'fname': fname_hsk,
         }
@@ -86,6 +87,7 @@ hsk = {
 # Hyper-Spectral Radiometer 1
 #╭────────────────────────────────────────────────────────────────────────────╮#
 hsr1 = {
+        'aka': 'spns',
         'tag': hsr1_tag.lower(),
         'fnames': fnames_hsr1,
         'ang_pit_offset': hsr1_ang_pit_offset,
@@ -98,6 +100,7 @@ hsr1 = {
 # Active Leveling Platform
 #╭────────────────────────────────────────────────────────────────────────────╮#
 alp = {
+        'aka': 'alp',
         'tag': alp_tag.lower(),
         'fnames': fnames_alp,
         'time_offset': alp_time_offset,
@@ -111,6 +114,8 @@ alp = {
 # Solar Spectral Flux Radiometer
 #╭────────────────────────────────────────────────────────────────────────────╮#
 ssfr = {
+        'aka': 'ssfr',
+
         'tag': ssfr_tag.lower(),
 
         'fnames': fnames_ssfr,
@@ -119,15 +124,10 @@ ssfr = {
 
         'which_ssfr': 'lasp|%s' % ssfr_tag.lower(),
 
-        # zenith wavelength setting
-        'wvl_s_zen': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
-        'wvl_e_zen': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
-        'wvl_j_zen': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
-
-        # nadir wavelength setting
-        'wvl_s_nad': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
-        'wvl_e_nad': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
-        'wvl_j_nad': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
+        # wavelength setting
+        'wvl_s': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
+        'wvl_e': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
+        'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
         'time_offset': 0.0,
@@ -142,12 +142,6 @@ ssfr = {
         #   also available in `mean`, which uses the average to represent darks
         #   generally, `interp` is preferred
         'dark_corr_mode': 'interp',
-
-        # minimum number of darks to achieve valid dark correction
-        'dark_threshold': 5,
-
-        # minimum number of lights to achieve valid dark correction
-        'light_threshold': 10,
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -156,6 +150,8 @@ ssfr = {
 # Solar Spectral "Radiance" Radiometer
 #╭────────────────────────────────────────────────────────────────────────────╮#
 ssrr = {
+        'aka': 'ssrr',
+
         'tag': ssrr_tag.lower(),
 
         'fnames': fnames_ssrr,
@@ -164,15 +160,10 @@ ssrr = {
 
         'which_ssfr': 'lasp|%s' % ssrr_tag.lower(),
 
-        # zenith wavelength setting
-        'wvl_s_zen': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
-        'wvl_e_zen': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
-        'wvl_j_zen': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
-
-        # nadir wavelength setting
-        'wvl_s_nad': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
-        'wvl_e_nad': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
-        'wvl_j_nad': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
+        # wavelength setting
+        'wvl_s': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
+        'wvl_e': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
+        'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
         'time_offset': 0.0,
@@ -187,11 +178,5 @@ ssrr = {
         #   also available in `mean`, which uses the average to represent darks
         #   generally, `interp` is preferred
         'dark_corr_mode': 'interp',
-
-        # minimum number of darks to achieve valid dark correction
-        'dark_threshold': 5,
-
-        # minimum number of lights to achieve valid dark correction
-        'light_threshold': 10,
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
