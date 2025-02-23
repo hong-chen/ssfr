@@ -183,7 +183,7 @@ def cdata_arcsix_hsk_v0(
         date,
         fdir_data='./',
         fdir_out='./',
-        fname_h5='HSK.h5',
+        fname_h5='HSK_v0.h5',
         run=True,
         ):
 
@@ -351,7 +351,7 @@ def cdata_arcsix_hsk_from_alp_v0(
         date,
         fname_alp_v0,
         fdir_out='./',
-        fname_h5='HSK.h5',
+        fname_h5='HSK_v0.h5',
         run=True,
         ):
 
@@ -424,7 +424,7 @@ def cdata_arcsix_alp_v0(
         date,
         fnames_alp=[],
         fdir_out='./',
-        fname_h5='ALP.h5',
+        fname_h5='ALP_v0.h5',
         run=True,
         ):
 
