@@ -273,65 +273,65 @@ def retrieve_rad_cal(
 
     date_s = date.strftime('%Y%m%d')
 
-        for idset in np.unique(dset_num):
+    for idset in np.unique(dset_num):
 
-            if which_ssfr_for_flux == which_ssfr:
-                # select calibration file (can later be adjusted for different integration time sets)
-                #╭──────────────────────────────────────────────────────────────╮#
-                fdir_cal = '%s/rad-cal' % _FDIR_CAL_
+        if which_ssfr_for_flux == which_ssfr:
+            # select calibration file (can later be adjusted for different integration time sets)
+            #╭──────────────────────────────────────────────────────────────╮#
+            fdir_cal = '%s/rad-cal' % _FDIR_CAL_
 
-                jday_today = ssfr.util.dtime_to_jday(date)
+            jday_today = ssfr.util.dtime_to_jday(date)
 
-                int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
-                int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
+            int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
+            int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
 
-                # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
-                for i in range(jday_cal_zen.size):
-                    dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
-                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
-                    jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
-                fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
-                data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
+            # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
+            fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
+            jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
+            for i in range(jday_cal_zen.size):
+                dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
+                dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
+            fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
+            data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
-                msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s zenith irradiance ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
-                print(msg)
+            msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s zenith irradiance ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
+            print(msg)
 
-                # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
-                for i in range(jday_cal_nad.size):
-                    dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
-                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
-                    jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
-                fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
-                data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
+            # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
+            fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
+            jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
+            for i in range(jday_cal_nad.size):
+                dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
+                dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
+            fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
+            data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
 
-                msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s nadir irradiance ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
-                print(msg)
-                #╰──────────────────────────────────────────────────────────────╯#
-            else:
-                # radiance (scale the data to 0 - 2.0 for now,
-                # later we will apply radiometric response after mission to retrieve spectral RADIANCE)
+            msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s nadir irradiance ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
+            print(msg)
+            #╰──────────────────────────────────────────────────────────────╯#
+        else:
+            # radiance (scale the data to 0 - 2.0 for now,
+            # later we will apply radiometric response after mission to retrieve spectral RADIANCE)
 
-                factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.0
-                data_cal_zen = {
-                        'sec_resp': np.repeat(factor_zen, wvl_zen.size)
-                        }
+            factor_zen = (np.nanmax(cnt_zen)-np.nanmin(cnt_zen)) / 2.0
+            data_cal_zen = {
+                    'sec_resp': np.repeat(factor_zen, wvl_zen.size)
+                    }
 
-                msg = '\nMessage [cdata_ssfr_v1]: Using [0, 2.0] scaling for %s zenith radiance ...' % (which_ssfr.upper())
-                print(msg)
+            msg = '\nMessage [cdata_ssfr_v1]: Using [0, 2.0] scaling for %s zenith radiance ...' % (which_ssfr.upper())
+            print(msg)
 
-                factor_nad = (np.nanmax(cnt_nad)-np.nanmin(cnt_nad)) / 2.0
-                data_cal_nad = {
-                        'sec_resp': np.repeat(factor_nad, wvl_nad.size)
-                        }
+            factor_nad = (np.nanmax(cnt_nad)-np.nanmin(cnt_nad)) / 2.0
+            data_cal_nad = {
+                    'sec_resp': np.repeat(factor_nad, wvl_nad.size)
+                    }
 
-                msg = '\nMessage [cdata_ssfr_v1]: Using [0, 2.0] scaling for %s nadir radiance ...' % (which_ssfr.upper())
-                print(msg)
+            msg = '\nMessage [cdata_ssfr_v1]: Using [0, 2.0] scaling for %s nadir radiance ...' % (which_ssfr.upper())
+            print(msg)
 
-            logic_dset = (dset_num == idset)
+        logic_dset = (dset_num == idset)
 
     return fname_h5
 
@@ -534,19 +534,17 @@ def main_ssfr_rad_cal():
     # SSFR-A (regular setup for measuring irradiance)
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fdirs_pri = [
-            # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
-            #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
-            # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
+            {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+             'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+            # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post0',
             #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
-            {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post0',
-             'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
             ]
 
     fdirs_tra = [
-            # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
-            #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
-            {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
-             'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+            {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
+             'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
+            # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
+            #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
             ]
 
     fdirs_sec = [
@@ -604,6 +602,63 @@ def main_ssfr_rad_cal():
                     print(fdir_sec0)
                     ssfr_rad_cal(fdir_pri0, fdir_tra0, fdir_sec=fdir_sec0, spec_reverse=False)
     return
+
+def field_calibration_check(
+        ssfr_tag='ssfr-a',
+        lc_tag='zen',
+        int_time={'si':80.0, 'in':250.0},
+        ):
+
+
+    tag = '%s|%s|si-%3.3d|in-%3.3d' % (ssfr_tag, lc_tag, int_time['si'], int_time['in'])
+    # fnames = sorted(glob.glob('*lamp-1324_post|*pituffik*%s*.h5' % tag))
+    # fnames = sorted(glob.glob('*lamp-1324_post0|*pituffik*%s*.h5' % tag))
+    fnames = sorted(glob.glob('*lamp-1324|*pituffik*%s*.h5' % tag))
+    print(fnames)
+
+    # colors = plt.cm.jet(np.linspace(0.0, 1.0, len(fnames)))
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(16, 8))
+
+        ax1 = fig.add_subplot(111)
+
+        for i, fname in enumerate(fnames):
+            tags = os.path.basename(fname).replace('.h5', '').split('|')
+            f = h5py.File(fname, 'r')
+            wvl = f['wvl'][...]
+            sec_resp = f['sec_resp'][...]
+            pri_resp = f['pri_resp'][...]
+            f.close()
+
+            if i == 0:
+                ax1.plot(wvl, pri_resp, marker='o', markersize=2, lw=0.5, label='%s (Primary)' % tags[0])
+
+            ax1.plot(wvl, sec_resp, marker='o', markersize=2, lw=0.5, label='%s (Secondary)' % tags[2])
+
+        ax1.set_title('%s (%s)' % (ssfr_tag.upper(), lc_tag.upper()))
+        ax1.set_xlabel('Wavelength [nm]')
+        ax1.set_ylabel('Irradiance [$W m^{-2} nm^{-1}$]')
+        ax1.set_xlim((200, 2400))
+        if lc_tag == 'zen':
+            ax1.set_ylim((0, 600))
+        else:
+            ax1.set_ylim((0, 800))
+        plt.legend(fontsize=12)
+        # fig.suptitle('Field Calibration (%s|%s|%s|%s)' % (ssfr_tag.upper(), lc_tag.upper(), tags[-2].upper(), tags[-1].upper()), fontsize=24)
+
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        # fig.savefig('%s_%s_%s_%s_%s.png' % (_metadata['Function'], ssfr_tag, lc_tag, tags[-2], tags[-1]), bbox_inches='tight', metadata=_metadata)
+        fig.savefig('%s_%s_%s.png' % (_metadata['Function'], ssfr_tag, lc_tag), bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -611,7 +666,11 @@ if __name__ == '__main__':
 
     # process field calibration
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    main_ssfr_rad_cal()
+    # main_ssfr_rad_cal()
+
+    for lc_tag in ['zen', 'nad']:
+        for int_time in [{'si':80, 'in':250}, {'si':120, 'in':350}]:
+            field_calibration_check(lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     pass
