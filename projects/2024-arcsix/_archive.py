@@ -1133,7 +1133,7 @@ def main_process_data_archive_ra(date, run=True):
     #╰────────────────────────────────────────────────────────────────────────────╯#
     _FNAMES_[_vname_ssfr_ra_] = fname_ssfr_ra
 
-def main_process_data_archive_r0_from_ra(date, run=True):
+def main_process_data_archive_r0_from_ra(date, run=False):
 
     """
     ra: in-field data to be uploaded to https://www-air.larc.nasa.gov/cgi-bin/ArcView/arcsix
@@ -1167,6 +1167,25 @@ def main_process_data_archive_r0_from_ra(date, run=True):
     #╰────────────────────────────────────────────────────────────────────────────╯#
     _FNAMES_['%s_ssfr_ra' % date_s] = fname_ssfr_ra
 #╰────────────────────────────────────────────────────────────────────────────╯#
+
+def plot(date):
+
+    date_s = date.strftime('%Y%m%d')
+
+    fname_hsr1_r0 = 'ARCSIX-HSR1_P3B_%s_R0.h5' % date_s
+    fname_ssfr_r0 = 'ARCSIX-SSFR_P3B_%s_R0.h5' % date_s
+
+    data_hsr1 = ssfr.util.load_h5(fname_hsr1_r0)
+    data_ssfr = ssfr.util.load_h5(fname_ssfr_r0)
+
+    # vname = 'time'
+    # vname = 'lon'
+    # vname = 'lat'
+    vname = 'alt'
+    diff = (data_hsr1[vname]-data_ssfr[vname]).sum()
+    print(diff)
+
+
 
 if __name__ == '__main__':
 
@@ -1206,7 +1225,9 @@ if __name__ == '__main__':
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_archive_r0_from_ra(date, run=True)
+        # main_process_data_archive_r0_from_ra(date, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        plot(date)
 
         pass
