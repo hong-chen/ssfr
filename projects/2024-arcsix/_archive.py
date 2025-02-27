@@ -625,7 +625,7 @@ def cdata_hsr1_archive_r0_from_ra(
     # special comments
     #╭────────────────────────────────────────────────────────────────────────────╮#
     comments_special_dict = {
-            '20240530': 'Noticed icing on dome after 20240530 flight - this might affect the downwelling total and diffuse irradiance - compare with SSFR measurements for consistency',
+            '20240530': 'Additional notes: noticed icing on dome after 20240530 flight - this might affect the downwelling total and diffuse irradiance - compare with SSFR measurements for consistency.',
             }
     if date_s in comments_special_dict.keys():
         comments_special = comments_special_dict[date_s]
@@ -643,29 +643,31 @@ def cdata_hsr1_archive_r0_from_ra(
     #╭────────────────────────────────────────────────────────────────────────────╮#
     data_ra = ssfr.util.load_h5(fname_hsr1_ra)
 
+    fname_hsk = 'data/arcsix/processed/ARCSIX-HSK_P3B_%s_v0.h5' % date_s
+    data_hsk = ssfr.util.load_h5(fname_hsk)
 
     data = OrderedDict({
             'time': {
-                'data': data_ra['Time_Start']*3600.0,
+                'data': data_hsk['tmhr']*3600.0,
                 'unit': 'second',
                 'long_name': 'UTC time of measurement instant',
                 'units': 'seconds since %s' % date,
                 },
 
             'lon': {
-                'data': data_ra['lon'],
+                'data': data_hsk['lon'],
                 'long_name': 'longitude of aircraft',
                 'units': 'degrees_east',
                 },
 
             'lat': {
-                'data': data_ra['lat'],
+                'data': data_hsk['lat'],
                 'long_name': 'latitude of aircraft',
                 'units': 'degrees_north',
                 },
 
             'alt': {
-                'data': data_ra['alt'],
+                'data': data_hsk['alt'],
                 'long_name': 'altitude of aircraft',
                 'units': 'meter',
                 },
@@ -907,13 +909,13 @@ def cdata_ssfr_archive_r0_from_ra(
     # special comments
     #╭────────────────────────────────────────────────────────────────────────────╮#
     comments_special_dict = {
-            '20240530': 'Noticed icing on dome outside zenith light collector after 20240530 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency',
-            '20240531': 'Encountered temperature control issue (after around 1:30 UTC) on 20240531 flight - downwelling and upwelling irradiance might be compromised after this time - contact the PI if you use this data',
-            '20240730': 'Noticed icing on dome inside zenith light collector after 20240730 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency',
-            '20240801': 'Noticed condensation on dome inside zenith light collector before 20240801 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency',
-            '20240807': 'Noticed condensation on dome inside zenith light collector after 20240807 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency',
-            '20240808': 'Noticed condensation on dome inside zenith light collector after 20240808 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency',
-            '20240809': 'Noticed condensation on dome inside zenith light collector after 20240809 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency',
+            '20240530': 'Additional notes: noticed icing on dome outside zenith light collector after 20240530 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency.',
+            '20240531': 'Additional notes: encountered temperature control issue (after around 1:30 UTC) on 20240531 flight - downwelling and upwelling irradiance might be compromised after this time - contact the PI if you use this data.',
+            '20240730': 'Additional notes: noticed icing on dome inside zenith light collector after 20240730 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency.',
+            '20240801': 'Additional notes: noticed condensation on dome inside zenith light collector before 20240801 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency.',
+            '20240807': 'Additional notes: noticed condensation on dome inside zenith light collector after 20240807 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency.',
+            '20240808': 'Additional notes: noticed condensation on dome inside zenith light collector after 20240808 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency.',
+            '20240809': 'Additional notes: noticed condensation on dome inside zenith light collector after 20240809 flight - this might affect the downwelling irradiance - compare with HSR measurements for consistency.',
             }
     if date_s in comments_special_dict.keys():
         comments_special = comments_special_dict[date_s]
@@ -930,30 +932,32 @@ def cdata_ssfr_archive_r0_from_ra(
     # data processing
     #╭────────────────────────────────────────────────────────────────────────────╮#
     data_ra = ssfr.util.load_h5(fname_ssfr_ra)
-    data_ra['lon'][data_ra['lon']>180.0] -= 360.0
+
+    fname_hsk = 'data/arcsix/processed/ARCSIX-HSK_P3B_%s_v0.h5' % date_s
+    data_hsk = ssfr.util.load_h5(fname_hsk)
 
     data = OrderedDict({
             'time': {
-                'data': data_ra['Time_Start']*3600.0,
+                'data': data_hsk['tmhr']*3600.0,
                 'unit': 'second',
                 'long_name': 'UTC time of measurement instant',
                 'units': 'seconds since %s' % date,
                 },
 
             'lon': {
-                'data': data_ra['lon'],
+                'data': data_hsk['lon'],
                 'long_name': 'longitude of aircraft',
                 'units': 'degrees_east',
                 },
 
             'lat': {
-                'data': data_ra['lat'],
+                'data': data_hsk['lat'],
                 'long_name': 'latitude of aircraft',
                 'units': 'degrees_north',
                 },
 
             'alt': {
-                'data': data_ra['alt'],
+                'data': data_hsk['alt'],
                 'long_name': 'altitude of aircraft',
                 'units': 'meter',
                 },
@@ -975,8 +979,7 @@ def cdata_ssfr_archive_r0_from_ra(
                 'ACVSN_standard_name': 'Rad_IrradianceDownwelling_InSitu_SP',
                 'long_name': 'spectral downwelling irradiance',
                 'units': 'W m^-2 nm^-1',
-                'coordinates': ['time', 'wvl_dn'],
-                '_FillValue': 'nan',
+                'coordinates': ['time', 'wvl_dn'], '_FillValue': 'nan',
                 },
 
             'f_up': {
@@ -1178,12 +1181,49 @@ def plot(date):
     data_hsr1 = ssfr.util.load_h5(fname_hsr1_r0)
     data_ssfr = ssfr.util.load_h5(fname_ssfr_r0)
 
-    # vname = 'time'
-    # vname = 'lon'
-    # vname = 'lat'
-    vname = 'alt'
-    diff = (data_hsr1[vname]-data_ssfr[vname]).sum()
-    print(diff)
+    wvl0 = 555.0
+    f_dn_tot = data_hsr1['f_dn_tot'][:, np.argmin(np.abs(data_hsr1['wvl_dn_tot']-wvl0))]
+    f_dn_dif = data_hsr1['f_dn_dif'][:, np.argmin(np.abs(data_hsr1['wvl_dn_dif']-wvl0))]
+    f_dn = data_ssfr['f_dn'][:, np.argmin(np.abs(data_ssfr['wvl_dn']-wvl0))]
+    f_up = data_ssfr['f_up'][:, np.argmin(np.abs(data_ssfr['wvl_up']-wvl0))]
+
+    # figure
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    plot = True
+    if plot:
+        plt.close('all')
+        fig = plt.figure(figsize=(22, 6))
+        # fig.suptitle('Figure')
+        # plot1
+        #╭──────────────────────────────────────────────────────────────╮#
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(data_hsr1['time']/3600.0, f_dn_tot, color='green', lw=0.0, s=2)
+        ax1.scatter(data_hsr1['time']/3600.0, f_dn_dif, color='lightgreen', lw=0.0, s=2)
+        ax1.scatter(data_hsr1['time']/3600.0, f_dn, color='blue', lw=0.0, s=2)
+        ax1.scatter(data_hsr1['time']/3600.0, f_up, color='red', lw=0.0, s=2)
+        # ax1.scatter(data_hsr1['lon'], data_hsr1['lat'], s=8, c='r', lw=0.0)
+        # ax1.scatter(data_ssfr['lon'], data_ssfr['lat'], s=2, c='k', lw=0.0)
+        # ax1.scatter(data_hsr1['lon'], data_hsr1['lat'], s=8, c='r', lw=0.0)
+        # ax1.scatter(data_ssfr['lon'], data_ssfr['lat'], s=2, c='k', lw=0.0)
+        ax1.set_ylim((0.0, 1.2))
+        # ax1.set_xlabel('X')
+        # ax1.set_ylabel('Y')
+        # ax1.set_title('Plot1')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #╰──────────────────────────────────────────────────────────────╯#
+        # save figure
+        #╭──────────────────────────────────────────────────────────────╮#
+        fig.subplots_adjust(hspace=0.35, wspace=0.35)
+        _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+        fname_fig = '%s_%s.png' % (date_s, _metadata_['Function'],)
+        plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+        #╰──────────────────────────────────────────────────────────────╯#
+        # plt.show()
+        # sys.exit()
+        plt.close(fig)
+        plt.clf()
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 
