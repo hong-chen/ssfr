@@ -654,21 +654,21 @@ def cdata_hsr1_archive_r0_from_ra(
                 'units': 'seconds since %s' % date,
                 },
 
-            'lon': {
+            'gps_lon': {
                 'data': data_hsk['lon'],
-                'long_name': 'GPS longitude of aircraft',
+                'long_name': 'longitude of aircraft',
                 'units': 'degrees_east',
                 },
 
-            'lat': {
+            'gps_lat': {
                 'data': data_hsk['lat'],
-                'long_name': 'GPS latitude of aircraft',
+                'long_name': 'latitude of aircraft',
                 'units': 'degrees_north',
                 },
 
-            'alt': {
+            'gps_alt': {
                 'data': data_hsk['alt'],
-                'long_name': 'GPS altitude of aircraft',
+                'long_name': 'altitude of aircraft',
                 'units': 'meter',
                 },
 
@@ -756,10 +756,10 @@ def cdata_hsr1_archive_r0_from_ra(
             'file_originator'                : 'Hong Chen, K. Sebastian Schmidt',
             'file_originator_contact'        : 'hong.chen@lasp.colorado.edu, sebastian.schmidt@lasp.colorado.edu',
             'flight_start_date'              : date_s,
-            'geospatial_lat_max'             : '%.4fdegrees_north' % data['lat']['data'].max(),
-            'geospatial_lat_min'             : '%.4fdegrees_north' % data['lat']['data'].min(),
-            'geospatial_lon_max'             : '%.4fdegrees_east' % data['lon']['data'].max(),
-            'geospatial_lon_min'             : '%.4fdegrees_east' % data['lon']['data'].min(),
+            'geospatial_lat_max'             : '%.4fdegrees_north' % data['gps_lat']['data'].max(),
+            'geospatial_lat_min'             : '%.4fdegrees_north' % data['gps_lat']['data'].min(),
+            'geospatial_lon_max'             : '%.4fdegrees_east' % data['gps_lon']['data'].max(),
+            'geospatial_lon_min'             : '%.4fdegrees_east' % data['gps_lon']['data'].min(),
             'history'                        : 'R0: First public data release.',
             'institution'                    : 'University of Colorado',
             'keywords'                       : 'radiation, irradiance, spectral, diffuse, total',
@@ -944,32 +944,32 @@ def cdata_ssfr_archive_r0_from_ra(
                 'units': 'seconds since %s' % date,
                 },
 
-            'lon': {
+            'gps_lon': {
                 'data': data_hsk['lon'],
-                'long_name': 'GPS longitude of aircraft',
+                'long_name': 'longitude of aircraft',
                 'units': 'degrees_east',
                 },
 
-            'lat': {
+            'gps_lat': {
                 'data': data_hsk['lat'],
-                'long_name': 'GPS latitude of aircraft',
+                'long_name': 'latitude of aircraft',
                 'units': 'degrees_north',
                 },
 
-            'alt': {
+            'gps_alt': {
                 'data': data_hsk['alt'],
-                'long_name': 'GPS altitude of aircraft',
+                'long_name': 'altitude of aircraft',
                 'units': 'meter',
                 },
 
             'wvl_up': {
-                'data': data_ra['zen/wvl'],
+                'data': data_ra['nad/wvl'],
                 'long_name': 'wavelength for spectral upwelling irradiance',
                 'units': 'nm',
                 },
 
             'wvl_dn': {
-                'data': data_ra['nad/wvl'],
+                'data': data_ra['zen/wvl'],
                 'long_name': 'wavelength for spectral downwelling irradiance',
                 'units': 'nm',
                 },
@@ -979,7 +979,8 @@ def cdata_ssfr_archive_r0_from_ra(
                 'ACVSN_standard_name': 'Rad_IrradianceDownwelling_InSitu_SP',
                 'long_name': 'spectral downwelling irradiance',
                 'units': 'W.m-2.nm-1',
-                'coordinates': ['time', 'wvl_dn'], '_FillValue': 'nan',
+                'coordinates': ['time', 'wvl_dn'],
+                '_FillValue': 'nan',
                 },
 
             'f_up': {
@@ -1043,10 +1044,10 @@ def cdata_ssfr_archive_r0_from_ra(
             'file_originator'                : 'Hong Chen, K. Sebastian Schmidt',
             'file_originator_contact'        : 'hong.chen@lasp.colorado.edu, sebastian.schmidt@lasp.colorado.edu',
             'flight_start_date'              : date_s,
-            'geospatial_lat_max'             : '%.4fdegrees_north' % data['lat']['data'].max(),
-            'geospatial_lat_min'             : '%.4fdegrees_north' % data['lat']['data'].min(),
-            'geospatial_lon_max'             : '%.4fdegrees_east' % data['lon']['data'].max(),
-            'geospatial_lon_min'             : '%.4fdegrees_east' % data['lon']['data'].min(),
+            'geospatial_lat_max'             : '%.4fdegrees_north' % data['gps_lat']['data'].max(),
+            'geospatial_lat_min'             : '%.4fdegrees_north' % data['gps_lat']['data'].min(),
+            'geospatial_lon_max'             : '%.4fdegrees_east' % data['gps_lon']['data'].max(),
+            'geospatial_lon_min'             : '%.4fdegrees_east' % data['gps_lon']['data'].min(),
             'history'                        : 'R0: First public data release.',
             'institution'                    : 'University of Colorado',
             'keywords'                       : 'radiation, irradiance, spectral, upwelling, downwelling',
