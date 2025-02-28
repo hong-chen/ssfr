@@ -13,6 +13,7 @@ build
 *graph*
 *.png
 *.mp4
+*.zip
 
 # tests
 *test*
