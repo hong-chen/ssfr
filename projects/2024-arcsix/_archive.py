@@ -656,19 +656,19 @@ def cdata_hsr1_archive_r0_from_ra(
 
             'lon': {
                 'data': data_hsk['lon'],
-                'long_name': 'longitude of aircraft',
+                'long_name': 'GPS longitude of aircraft',
                 'units': 'degrees_east',
                 },
 
             'lat': {
                 'data': data_hsk['lat'],
-                'long_name': 'latitude of aircraft',
+                'long_name': 'GPS latitude of aircraft',
                 'units': 'degrees_north',
                 },
 
             'alt': {
                 'data': data_hsk['alt'],
-                'long_name': 'altitude of aircraft',
+                'long_name': 'GPS altitude of aircraft',
                 'units': 'meter',
                 },
 
@@ -688,7 +688,7 @@ def cdata_hsr1_archive_r0_from_ra(
                 'data': data_ra['dif/flux'],
                 'ACVSN_standard_name': 'Rad_IrradianceDownwellingDiffuse_InSitu_SP',
                 'long_name': 'spectral downwelling diffuse irradiance',
-                'units': 'W m^-2 nm^-1',
+                'units': 'W.m-2.nm-1',
                 'coordinates': ['time', 'wvl_dn_dif'],
                 '_FillValue': 'nan',
                 },
@@ -697,7 +697,7 @@ def cdata_hsr1_archive_r0_from_ra(
                 'data': data_ra['tot/flux'],
                 'ACVSN_standard_name': 'Rad_IrradianceDownwelling_InSitu_SP',
                 'long_name': 'spectral downwelling total irradiance',
-                'units': 'W m^-2 nm^-1',
+                'units': 'W.m-2.nm-1',
                 'coordinates': ['time', 'wvl_dn_tot'],
                 '_FillValue': 'nan',
                 },
@@ -946,19 +946,19 @@ def cdata_ssfr_archive_r0_from_ra(
 
             'lon': {
                 'data': data_hsk['lon'],
-                'long_name': 'longitude of aircraft',
+                'long_name': 'GPS longitude of aircraft',
                 'units': 'degrees_east',
                 },
 
             'lat': {
                 'data': data_hsk['lat'],
-                'long_name': 'latitude of aircraft',
+                'long_name': 'GPS latitude of aircraft',
                 'units': 'degrees_north',
                 },
 
             'alt': {
                 'data': data_hsk['alt'],
-                'long_name': 'altitude of aircraft',
+                'long_name': 'GPS altitude of aircraft',
                 'units': 'meter',
                 },
 
@@ -978,7 +978,7 @@ def cdata_ssfr_archive_r0_from_ra(
                 'data': data_ra['zen/flux'],
                 'ACVSN_standard_name': 'Rad_IrradianceDownwelling_InSitu_SP',
                 'long_name': 'spectral downwelling irradiance',
-                'units': 'W m^-2 nm^-1',
+                'units': 'W.m-2.nm-1',
                 'coordinates': ['time', 'wvl_dn'], '_FillValue': 'nan',
                 },
 
@@ -986,7 +986,7 @@ def cdata_ssfr_archive_r0_from_ra(
                 'data': data_ra['nad/flux'],
                 'ACVSN_standard_name': 'Rad_IrradianceUpwelling_InSitu_SP',
                 'long_name': 'spectral upwelling irradiance',
-                'units': 'W m^-2 nm^-1',
+                'units': 'W.m-2.nm-1',
                 'coordinates': ['time', 'wvl_up'],
                 '_FillValue': 'nan',
                 },
