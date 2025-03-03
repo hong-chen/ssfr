@@ -853,20 +853,24 @@ def main_ssfr_rad_cal_all(
                 ]
 
         fdirs_sec = [
-                # {'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                #  'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2024-07-23_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                #  'zen': 'data/arcsix/cal/rad-cal/2024-07-26_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2024-07-31_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                #  'zen': 'data/arcsix/cal/rad-cal/2024-07-31_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                #  'zen': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                #  'zen': 'data/arcsix/cal/rad-cal/2024-08-05_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                #  'zen': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik1'},
+                {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
+                 'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350'},
+                {'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                 'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                {'nad': 'data/arcsix/cal/rad-cal/2024-07-23_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                 'zen': 'data/arcsix/cal/rad-cal/2024-07-26_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                {'nad': 'data/arcsix/cal/rad-cal/2024-07-31_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                 'zen': 'data/arcsix/cal/rad-cal/2024-07-31_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                 'zen': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                 'zen': 'data/arcsix/cal/rad-cal/2024-08-05_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                {'nad': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                 'zen': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik1'},
                 {'nad': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
                  'zen': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik2'},
+                {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
+                 'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
                 ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -884,6 +888,92 @@ def main_ssfr_rad_cal_all(
                     print(fdir_sec0)
                     ssfr_rad_cal(fdir_pri0, fdir_tra0, fdir_sec=fdir_sec0, spec_reverse=False)
     return
+
+def plot_time_series_all(
+        which_ssfr='lasp|ssfr-a',
+        which_lc='zen',
+        int_time={'si':80, 'in':250},
+        ):
+
+
+    if 'ssfr-a' in which_ssfr.lower():
+        pattern = '*lamp-150c_after-pri|*%s*%s*si-%3.3d*in-%3.3d*.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+    elif 'ssfr-b' in which_ssfr.lower():
+        pattern = '*lamp-150c|*%s*%s*si-%3.3d*in-%3.3d*.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+
+    fnames = sorted(glob.glob(pattern))
+
+    wvl0 = 550
+    wvl1 = 1600
+
+    data0 = np.zeros(len(fnames), dtype=np.float64)
+    data1 = np.zeros(len(fnames), dtype=np.float64)
+    xlabels = []
+
+    for i, fname in enumerate(fnames):
+        # date_s = os.path.basename(fname).split('|')[2].split('_')[0]
+        date_s = os.path.basename(fname).split('|')[2].replace('lamp-150c_', '')
+        f = h5py.File(fname, 'r')
+        wvl = f['wvl'][...]
+        resp = f['sec_resp'][...]
+        f.close()
+
+        data0[i] = resp[np.argmin(np.abs(wvl-wvl0))]
+        data1[i] = resp[np.argmin(np.abs(wvl-wvl1))]
+
+        xlabels.append(date_s)
+
+    # figure
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    plot = True
+    x = np.arange(len(fnames))
+    if plot:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        # fig.suptitle('Figure')
+        # plot1
+        #╭──────────────────────────────────────────────────────────────╮#
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, data0, marker='o', markersize=8, color='r', lw=1.0)
+        ax1.plot(x, data1, marker='o', markersize=8, color='b', lw=1.0)
+
+        ax1.xaxis.set_major_locator(FixedLocator(x))
+        ax1.set_xticklabels(xlabels, rotation=45)
+
+        if which_lc == 'zen':
+            if 'ssfr-a' in which_ssfr.lower():
+                ax1.set_ylim((0, 300))
+            elif 'ssfr-b' in which_ssfr.lower():
+                ax1.set_ylim((0, 600))
+        else:
+            if 'ssfr-a' in which_ssfr.lower():
+                ax1.set_ylim((0, 600))
+            elif 'ssfr-b' in which_ssfr.lower():
+                ax1.set_ylim((0, 600))
+
+        ax1.grid()
+        ax1.set_ylabel('Secondary Response')
+        ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
+        #╰──────────────────────────────────────────────────────────────╯#
+        patches_legend = [
+                          mpatches.Patch(color='red'  , label='550 nm'), \
+                          mpatches.Patch(color='blue' , label='1600 nm'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+        # save figure
+        #╭──────────────────────────────────────────────────────────────╮#
+        fig.subplots_adjust(hspace=0.35, wspace=0.35)
+        _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+        fname_fig = '%s_%s.png' % (_metadata_['Function'], pattern.replace('*', '_'))
+        plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+        #╰──────────────────────────────────────────────────────────────╯#
+        # plt.show()
+        # sys.exit()
+        plt.close(fig)
+        plt.clf()
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
 
 if __name__ == '__main__':
 
@@ -905,5 +995,12 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
+
+    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen')
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad')
+
     pass
