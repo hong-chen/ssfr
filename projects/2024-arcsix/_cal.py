@@ -413,6 +413,49 @@ def ssfr_rad_cal(
         ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=tags_pri[4], filename_tag=filename_tag, verbose=True, spec_reverse=spec_reverse)
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
+# angular calibrations
+#╭────────────────────────────────────────────────────────────────────────────╮#
+def ssfr_ang_cal(fdir):
+
+    """
+
+    Notes:
+        angular calibration is done for three different azimuth angles (reference to the vaccum port)
+        60, 180, 300
+
+        angles
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 50.0, 5.0), np.arange(50.0, 91.0, 10.0)))
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 def main_ssfr_rad_cal(
@@ -1000,7 +1043,14 @@ if __name__ == '__main__':
     # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
 
     # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen')
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad')
+
+
+    # angular calibrations(SSFR-B, zen-lc4,  post)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fdir = 'data/arcsix/cal/ang-cal/2025-03-05_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
+    ssfr_ang_cal(fdir)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     pass
