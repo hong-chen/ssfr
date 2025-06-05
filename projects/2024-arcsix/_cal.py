@@ -56,17 +56,23 @@ _ALP_         = 'alp'
 _SSFR1_       = 'ssfr-a'
 _SSFR2_       = 'ssfr-b'
 _CAM_         = 'nac'
+_SSRR1_       = 'ssrr-a'
+_SSRR2_       = 'ssrr-b'
 
 _SPNS_        = 'spns-a'
 _WHICH_SSFR_ = 'ssfr-a'
 # _SPNS_        = 'spns-b'
 # _WHICH_SSFR_ = 'ssfr-b'
 
-_FDIR_HSK_   = 'data/arcsix/2024/p3/aux/hsk'
-_FDIR_CAL_   = 'data/%s/cal' % _MISSION_
+# _FDIR_HSK_   = 'data/arcsix/2024/p3/aux/hsk'
+# _FDIR_CAL_   = 'data/%s/cal' % _MISSION_
+_FDIR_HSK_   = '/Volumes/argus/field/arcsix/2024/p3/aux/hsk'
+_FDIR_CAL_   = '/Volumes/argus/field/%s/cal' % _MISSION_
 
-_FDIR_DATA_  = 'data/%s' % _MISSION_
-_FDIR_OUT_   = '%s/processed' % _FDIR_DATA_
+# _FDIR_DATA_  = 'data/%s' % _MISSION_
+# _FDIR_OUT_   = '%s/processed' % _FDIR_DATA_
+_FDIR_DATA_  = '/Volumes/argus/field/%s' % _MISSION_
+_FDIR_OUT_   = './%s/processed' % _MISSION_
 
 _VERBOSE_   = True
 _FNAMES_ = {}
@@ -1016,7 +1022,261 @@ def plot_time_series_all(
         plt.clf()
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
+# radiance calibrations
+#╭────────────────────────────────────────────────────────────────────────────╮#
+def ssrr_rad_cal(
+        fdir_pri,
+        which_ssrr='lasp|ssrr-a',
+        which_lc='zen',
+        spec_reverse=False,
+        ):
 
+    # get calibration files of primary
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    tags_pri = os.path.basename(fdir_pri).split('_')
+    fnames_pri_ = sorted(glob.glob('%s/*.SKS' % (fdir_pri)))
+    fnames_pri = [fnames_pri_[-1]]
+    if len(fnames_pri) > 1:
+        msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_pri, fnames_pri[0])
+        warnings.warn(msg)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # tags
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # ssrr_tag = tags_pri[1]
+    # lc_tag = tags_pri[2]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # check SSFR spectrometer
+    #/----------------------------------------------------------------------------\#
+    which_ssrr = which_ssrr.lower()
+    which_ssfr = which_ssrr.replace('ssrr', 'ssfr')
+    which_lab  = which_ssfr.split('|')[0]
+    if which_lab == 'nasa':
+        import ssfr.nasa_ssfr as ssfr_toolbox
+    elif which_lab == 'lasp':
+        import ssfr.lasp_ssfr as ssfr_toolbox
+    else:
+        msg = '\nError [cdata_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa|ssfr-6\'> or <\'lasp|ssfr-a\'> or <\'lasp|ssfr-b\'>).' % which_ssfr
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
+
+    # check light collector
+    #/----------------------------------------------------------------------------\#
+    which_lc = which_lc.lower()
+    if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
+        which_lc = 'zen'
+        if not spec_reverse:
+            which_spec = 'zen'
+        else:
+            which_spec = 'nad'
+    elif (which_lc in ['nadir', 'nad', 'n']) | ('nad' in which_lc):
+        which_lc = 'nad'
+        if not spec_reverse:
+            which_spec = 'nad'
+        else:
+            which_spec = 'zen'
+    else:
+        msg = '\nError [cdata_cos_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
+        raise ValueError(msg)
+    #\----------------------------------------------------------------------------/#
+
+    # lamp
+    #/----------------------------------------------------------------------------\#
+    which_lamp = tags_pri[4].lower()
+    #\----------------------------------------------------------------------------/#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssrr_ = ssfr.lasp_ssfr.read_ssfr(fnames_pri, verbose=False)
+
+    for i in range(ssrr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssrr_.dset_info[dset_tag]
+
+        # si/in tag
+        #/----------------------------------------------------------------------------\#
+        si_tag = '%s|si' % which_spec
+        in_tag = '%s|in' % which_spec
+
+        if si_tag not in int_time.keys():
+            int_time[si_tag] = int_time.pop('si')
+
+        if in_tag not in int_time.keys():
+            int_time[in_tag] = int_time.pop('in')
+        #\----------------------------------------------------------------------------/#
+
+        if len(tags_pri) == 7:
+            cal_tag = '%s_%s' % (tags_pri[0], tags_pri[4])
+        elif len(tags_pri) == 8:
+            cal_tag = '%s_%s_%s' % (tags_pri[0], tags_pri[4], tags_pri[7])
+
+        filename_tag = '%s|%s_processed-for-arcsix' % (cal_tag, date_today_s)
+
+        pri_resp = ssfr.cal.cal_rad_resp(
+                fnames_pri,
+                resp=None,
+                which_ssfr=which_ssfr,
+                which_lc=which_lc,
+                spec_reverse=spec_reverse,
+                which_lamp=which_lamp,
+                int_time=int_time,
+                verbose=True,
+                )
+        
+        # wavelength
+        #/----------------------------------------------------------------------------\#
+        wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
+
+        wvl_start = 350.0
+        wvl_end   = 2200.0
+        wvl_joint = 950.0
+        logic_si  = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
+        logic_in  = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
+
+        wvl_data      = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
+        pri_resp_data = np.concatenate((pri_resp[si_tag][logic_si], pri_resp[in_tag][logic_in]))
+
+        indices_sort = np.argsort(wvl_data)
+        wvl      = wvl_data[indices_sort]
+        pri_resp = pri_resp_data[indices_sort]
+        #\----------------------------------------------------------------------------/#
+
+        # flux to radiance (reflectance panel)
+        #/----------------------------------------------------------------------------\#
+        # reflectance panel efficiency
+        effic_refl = 0.97 # 97% reflectance panel efficiency (assumed)
+        pri_resp_rad = pri_resp * np.pi / effic_refl
+        #\----------------------------------------------------------------------------/#
+
+        # brute force filtering for low response
+        #/----------------------------------------------------------------------------\#
+        resp_threshold = 60. # counts / (W m^{-2} nm^{-1} sr^{-1} s)
+        pri_resp_rad[pri_resp_rad < resp_threshold] = np.nan
+        #\----------------------------------------------------------------------------/#
+
+        # save file
+        #/----------------------------------------------------------------------------\#
+        if filename_tag is not None:
+            fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssrr, which_spec, int_time[si_tag], int_time[in_tag])
+        else:
+            fname_out = 'rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssrr, which_spec, int_time[si_tag], int_time[in_tag])
+
+        f = h5py.File(fname_out, 'w')
+        f['wvl']       = wvl
+        f['pri_resp']  = pri_resp_rad
+        f.close()
+        #\----------------------------------------------------------------------------/#
+
+def main_ssrr_rad_cal_all(
+        which_ssrr='lasp|ssrr-a',
+        ):
+
+    """
+    Notes:
+        raiance setup:
+            SSFR-A (Alvin)
+              - zenith: (what like?)
+              - nadir : LC (what like?) + exposed stainless steel fiber
+
+        radiance backup setup:
+            SSFR-B (Belana)
+              - zenith: (what like?)
+              - nadir : LC (what like?) + exposed stainless steel fiber
+
+    Available options for primary calibrations (post-mission):
+        data/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment
+        data/arcsix/cal/rad-cal/2025-06-03_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment
+
+    fdirs = [
+            {'zen': '',
+             'nad': ''},
+            ]
+    """
+
+    # radiometric calibration
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fdir_cal = '%s/rad-cal' % _FDIR_CAL_
+
+    # primary calibrations (post-mission)
+    #╭──────────────────────────────────────────────────────────────╮#
+    # fdirs_pri_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*pri-cal_lamp-1324*si-030-050*in-080-180*')
+    # fdirs_pri_cal = ssfr.util.get_all_folders(fdir_cal, pattern='*pri-cal_lamp-506*si-030-050*in-080-180*')
+    # for fdir_pri in fdirs_pri_cal:
+    #     print(fdir_pri)
+    #╰──────────────────────────────────────────────────────────────╯#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    if 'ssrr-b' in which_ssrr.lower():
+
+        # SSRR-B (regular setup for measuring radiance)
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        fdirs_pri = [
+                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
+                {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
+                ]
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+    
+    elif 'ssrr-a' in which_ssrr.lower():
+
+        # SSRR-A (backup setup for measuring radiance)
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        fdirs_pri = [
+                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
+                {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
+                # {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentnopump'},
+                # {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentazimuthallyrotated'},
+                ]
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    for fdir_pri in fdirs_pri:
+        # for spec_tag in ['nad', 'zen']: # no zenith calibration data is ready for SSRR
+        for spec_tag in ['nad',]:
+            fdir_pri0 = fdir_pri[spec_tag]
+            print(spec_tag)
+            print(fdir_pri0)
+            ssrr_rad_cal(
+                fdir_pri0,
+                which_ssrr=which_ssrr,
+                which_lc=spec_tag,
+                spec_reverse=False,
+                )
+    return
+
+def plot_response(
+        which_ssfr='lasp|ssrr-a',
+        which_lc='nad',
+        fdir='.',
+        ):
+
+    search_path = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|%s|%s|si-*|in-*.h5' % (which_ssfr, which_lc))
+    fnames = sorted(glob.glob(search_path))
+    if not fnames:
+        raise OSError('No file found for pattern: %s' % search_path)
+
+    fig = plt.figure(figsize=(12, 8))
+    ax1 = fig.add_subplot(111)
+
+    for fname in fnames:
+        # Optionally parse params from filename if needed
+        # params = parse_fname(fname)
+        f = h5py.File(fname, 'r')
+        wvl = f['wvl'][...]
+        resp = f['pri_resp'][...]
+        f.close()
+        label = os.path.basename(fname)
+        ax1.plot(wvl, resp, lw=1.0, label=label)
+
+    ax1.set_xlim(350.0, 2200.0)
+    ax1.set_ylim(0.0, None)
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Response (counts / (W m$^{-2}$ nm$^{-1}$ sr$^{-1}$ $\cdot$ s))')
+    ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fontsize=10)
+
+    fname_fig = '%s_%s.png' % (which_ssfr, which_lc)
+    fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
+    plt.close(fig)
 
 if __name__ == '__main__':
 
@@ -1049,8 +1309,16 @@ if __name__ == '__main__':
 
     # angular calibrations(SSFR-B, zen-lc4,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fdir = 'data/arcsix/cal/ang-cal/2025-03-05_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
-    ssfr_ang_cal(fdir)
+    # fdir = 'data/arcsix/cal/ang-cal/2025-03-05_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal(fdir)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # post-mission SSRR calibration (nadir)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
+    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
+    plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
+    plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     pass
