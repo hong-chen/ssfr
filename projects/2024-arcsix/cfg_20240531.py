@@ -8,7 +8,7 @@ operator = 'Vikas Nataraja'
 mission = 'arcsix'
 year = '2024'
 platform = 'p3b'
-comments = '1st research flight, performed clear-sky spiral'
+comments = '3rd research flight, performed bowling alley for surface BRDF characterization'
 
 hsk_tag  = 'hsk'
 alp_tag  = 'alp'
@@ -16,10 +16,10 @@ hsr1_tag = 'hsr1-a'
 ssfr_tag = 'ssfr-a'
 ssrr_tag = 'ssfr-b'
 
-alp_time_offset  = -17.19
+alp_time_offset  = -17.41
 hsr1_time_offset = 0.0
-ssfr_time_offset = -156.26
-ssrr_time_offset = -222.66
+ssfr_time_offset = -161.38
+ssrr_time_offset = -227.00
 
 alp_ang_pit_offset = 0.0
 alp_ang_rol_offset = 0.0
