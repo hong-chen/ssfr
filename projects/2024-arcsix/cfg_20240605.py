@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Configuration file for ARCSIX mission, flight on 2024-06-05.
+
+This file defines parameters for processing data from various instruments during ARCSIX.
+"""
+
+import os
 import datetime
 import ssfr
 
@@ -28,7 +37,7 @@ hsr1_ang_rol_offset = 0.0
 
 fdir_data = '/Volumes/argus/field/%s/%s/%s' % (mission, year, platform)
 fdir_cal = '/Volumes/argus/field/%s/cal' % mission
-fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
+fdir_out = os.path.join(ssfr.common.fdir_data, '{}'.format(mission), 'processed')
 # fdir_data = 'data/%s/%s/%s' % (mission, year, platform)
 # fdir_cal = 'data/%s/cal' % mission
 # fdir_out = 'data/%s/processed' % mission
