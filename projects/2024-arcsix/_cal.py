@@ -1145,7 +1145,15 @@ def ssrr_rad_cal(
         # flux to radiance (reflectance panel)
         #/----------------------------------------------------------------------------\#
         # reflectance panel efficiency
-        effic_refl = 0.97 # 97% reflectance panel efficiency (assumed)
+        # effic_refl = 0.97 # 97% reflectance panel efficiency (assumed)
+        fname_panel = '%s/panel/12x12Spectralon_ASDwavs.ascii' % (ssfr.common.fdir_data)
+        if not os.path.exists(fname_panel):
+            msg = '\nError [ssfr_rad_cal]: cannot locate calibration file for panel <%s>.' % fname_panel
+            raise OSError(msg)
+        data_panel = np.loadtxt(fname_panel)
+        wvl_panel = data_panel[:, 0]
+        refl_panel = data_panel[:, 1]
+        effic_refl = np.interp(wvl, wvl_panel, refl_panel)
         pri_resp_rad = pri_resp * np.pi / effic_refl
         #\----------------------------------------------------------------------------/#
 
