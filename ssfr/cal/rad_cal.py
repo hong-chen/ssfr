@@ -425,13 +425,13 @@ def cdata_rad_resp(
     # raw data
     #╭────────────────────────────────────────────────╮#
     g = f.create_group('raw')
-    g_si = f.create_group('si')
+    g_si = g.create_group('si')
     g_si['wvl'] = wvls[si_tag]
     g_si['pri_resp'] = pri_resp[si_tag]
     g_si['transfer'] = transfer[si_tag]
     g_si['sec_resp'] = sec_resp[si_tag]
 
-    g_in = f.create_group('in')
+    g_in = g.create_group('in')
     g_in['wvl'] = wvls[in_tag]
     g_in['pri_resp'] = pri_resp[in_tag]
     g_in['transfer'] = transfer[in_tag]
