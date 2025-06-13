@@ -286,7 +286,7 @@ def cdata_rad_resp(
         ):
 
     # check SSFR spectrometer
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     which_ssfr = which_ssfr.lower()
     which_lab  = which_ssfr.split('|')[0]
     if which_lab == 'nasa':
@@ -296,11 +296,11 @@ def cdata_rad_resp(
     else:
         msg = '\nError [cdata_rad_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa|ssfr-6\'> or <\'lasp|ssfr-a\'> or <\'lasp|ssfr-b\'>).' % which_ssfr
         raise ValueError(msg)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # check light collector
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     which_lc = which_lc.lower()
     if (which_lc in ['zenith', 'zen', 'z']) | ('zen' in which_lc):
         which_lc = 'zen'
@@ -317,11 +317,11 @@ def cdata_rad_resp(
     else:
         msg = '\nError [cdata_cos_resp]: <which_lc=> does not support <\'%s\'> (only supports <\'zenith, zen, z\'> or <\'nadir, nad, n\'>).' % which_lc
         raise ValueError(msg)
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # si/in tag
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     si_tag = '%s|si' % which_spec
     in_tag = '%s|in' % which_spec
 
@@ -330,7 +330,7 @@ def cdata_rad_resp(
 
     if in_tag not in int_time.keys():
         int_time[in_tag] = int_time.pop('in')
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     if fnames_pri is not None:
         pri_resp = cal_rad_resp(
@@ -388,7 +388,7 @@ def cdata_rad_resp(
                 )
 
     # wavelength
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
 
     wvl_start = wvl_range[0]
@@ -402,27 +402,44 @@ def cdata_rad_resp(
     sec_resp_data = np.concatenate((sec_resp[si_tag][logic_si], sec_resp[in_tag][logic_in]))
 
     indices_sort = np.argsort(wvl_data)
-    wvl      = wvl_data[indices_sort]
-    pri_resp = pri_resp_data[indices_sort]
-    transfer = transfer_data[indices_sort]
-    sec_resp = sec_resp_data[indices_sort]
-    #\----------------------------------------------------------------------------/#
+    wvl_      = wvl_data[indices_sort]
+    pri_resp_ = pri_resp_data[indices_sort]
+    transfer_ = transfer_data[indices_sort]
+    sec_resp_ = sec_resp_data[indices_sort]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # save file
-    #/----------------------------------------------------------------------------\#
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     if filename_tag is not None:
         fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssfr, which_spec, int_time[si_tag], int_time[in_tag])
     else:
         fname_out = 'rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssfr, which_spec, int_time[si_tag], int_time[in_tag])
 
     f = h5py.File(fname_out, 'w')
-    f['wvl']       = wvl
-    f['pri_resp']  = pri_resp
-    f['transfer']  = transfer
-    f['sec_resp']  = sec_resp
+    f['wvl']       = wvl_
+    f['pri_resp']  = pri_resp_
+    f['transfer']  = transfer_
+    f['sec_resp']  = sec_resp_
+
+    # raw data
+    #╭────────────────────────────────────────────────╮#
+    g = f.create_group('raw')
+    g_si = f.create_group('si')
+    g_si['wvl'] = wvls[si_tag]
+    g_si['pri_resp'] = pri_resp[si_tag]
+    g_si['transfer'] = transfer[si_tag]
+    g_si['sec_resp'] = sec_resp[si_tag]
+
+    g_in = f.create_group('in')
+    g_in['wvl'] = wvls[in_tag]
+    g_in['pri_resp'] = pri_resp[in_tag]
+    g_in['transfer'] = transfer[in_tag]
+    g_in['sec_resp'] = sec_resp[in_tag]
+    #╰────────────────────────────────────────────────╯#
+
     f.close()
-    #\----------------------------------------------------------------------------/#
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return fname_out
 

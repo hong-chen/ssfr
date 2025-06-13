@@ -1298,7 +1298,7 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
     # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
     # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
 
@@ -1315,10 +1315,10 @@ if __name__ == '__main__':
 
     # post-mission SSRR calibration (nadir)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
-    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
-    plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
+    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
+    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
+    # plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
+    # plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     pass
