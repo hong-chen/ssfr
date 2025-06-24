@@ -187,6 +187,8 @@ def quicklook_bokeh_spns(
     from bokeh.plotting import figure, output_file, save
     from bokeh.transform import linear_cmap
     from bokeh.palettes import RdYlBu6, Spectral6
+    from bokeh.tile_providers import get_provider
+    # from bokeh.tile_providers import CARTODBPOSITRON
 
     # prepare data
     #/----------------------------------------------------------------------------\#
@@ -236,7 +238,6 @@ def quicklook_bokeh_spns(
     #\--------------------------------------------------------------/#
     #\----------------------------------------------------------------------------/#
 
-
     # bokeh plot settings
     #/----------------------------------------------------------------------------\#
     if description is not None:
@@ -281,7 +282,9 @@ def quicklook_bokeh_spns(
                   output_backend='webgl',
                   )
 
-    plt_geo.add_tile('CartoDB Positron')
+    # plt_geo.add_tile('CartoDB Positron')
+    plt_geo.add_tile(get_provider('CARTODBPOSITRON'))
+    # plt_geo.add_tile(CARTODBPOSITRON)
 
     htool = HoverTool(tooltips=[('Longitude', '@lon{0.0000}º'), ('Latitude', '@lat{0.0000}º'), ('Altitude', '@alt{0.0000}km'), ('Solar Zenith', '@sza{0.00}º')], mode='mouse', line_policy='nearest')
     plt_geo.add_tools(htool)
