@@ -39,7 +39,7 @@ _mission_     = 'magpie-gsfc'
 _platform_    = 'ground'
 
 _hsk_         = 'hsk'
-_spns_        = 'spns'
+_hsr1_        = 'hsr1'
 
 _fdir_data_  = 'data/%s' % _mission_
 _fdir_out_   = 'data/processed'
@@ -58,7 +58,7 @@ _fnames_ = {}
 
 
 
-# functions for processing SPNS
+# functions for processing HSR1
 #/----------------------------------------------------------------------------\#
 def cdata_navy_hsk_v0(
         date,
@@ -81,10 +81,10 @@ def cdata_navy_hsk_v0(
     # fake hsk for skywatch
     #/----------------------------------------------------------------------------\#
     tmhr = np.arange(0.0, 24.0, 60.0/3600.0)
-    # lon0 = -76.85117523899086
-    # lat0 = 38.99806212497037
-    lon0 = -59.43
-    lat0 = 13.16
+    lon0 = -76.85117523899086
+    lat0 = 38.99806212497037
+    # lon0 = -59.43
+    # lat0 = 13.16
     alt0 =  10.0  # building altitude
     pit0 = 0.0
     rol0 = 0.0
@@ -125,7 +125,7 @@ def cdata_navy_hsk_v0(
 
     return fname_h5
 
-def cdata_navy_spns_v0(
+def cdata_navy_hsr1_v0(
         date,
         fdir_data=_fdir_data_,
         fdir_out=_fdir_out_,
@@ -138,7 +138,7 @@ def cdata_navy_spns_v0(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, _mission_.upper(), _hsr1_.upper(), _platform_.upper(), date_s)
 
     if run:
 
@@ -148,9 +148,9 @@ def cdata_navy_spns_v0(
         data0_dif = ssfr.lasp_spn.read_spns(fname=fname_dif)
 
         fname_tot = ssfr.util.get_all_files(fdir_data, pattern='*Total.txt')[-1]
-        data0_tot = ssfr.lasp_spn.read_spns(fname=fname_tot)
+        data0_tot = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
 
-        msg = 'Processing %s data:\n%s\n%s\n' % (_spns_.upper(), fname_dif, fname_tot)
+        msg = 'Processing %s data:\n%s\n%s\n' % (_hsr1_.upper(), fname_dif, fname_tot)
         print(msg)
         #/----------------------------------------------------------------------------\#
 
@@ -182,13 +182,13 @@ def cdata_navy_spns_v0(
 
     return fname_h5
 
-def cdata_navy_spns_v1(
+def cdata_navy_hsr1_v1(
         date,
-        fname_spns_v0,
+        fname_hsr1_v0,
         fname_hsk,
         fdir_out=_fdir_out_,
-        # time_offset=7.0*3600.0,
-        time_offset=0.0,
+        time_offset=-1.0*3600.0,
+        # time_offset=0.0,
         run=True,
         ):
 
@@ -198,12 +198,12 @@ def cdata_navy_spns_v1(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, _mission_.upper(), _hsr1_.upper(), _platform_.upper(), date_s)
 
     if run:
         # read spn-s v0
         #/----------------------------------------------------------------------------\#
-        data_spns_v0 = ssfr.util.load_h5(fname_spns_v0)
+        data_hsr1_v0 = ssfr.util.load_h5(fname_hsr1_v0)
         #/----------------------------------------------------------------------------\#
 
         # read hsk v0
@@ -213,13 +213,15 @@ def cdata_navy_spns_v1(
 
         # interpolate spn-s data to hsk time frame
         #/----------------------------------------------------------------------------\#
-        flux_dif = np.zeros((data_hsk['jday'].size, data_spns_v0['dif/wvl'].size), dtype=np.float64)
+        flux_dif = np.zeros((data_hsk['jday'].size, data_hsr1_v0['dif/wvl'].size), dtype=np.float64)
         for i in range(flux_dif.shape[-1]):
-            flux_dif[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['dif/jday']+time_offset/86400.0, data_spns_v0['dif/flux'][:, i])
+            flux_dif[:, i] = ssfr.util.interp(data_hsk['jday'], data_hsr1_v0['dif/jday']+time_offset/86400.0, data_hsr1_v0['dif/flux'][:, i])
+        # flux_dif[np.isnan(flux_dif)] = -1.0
 
-        flux_tot = np.zeros((data_hsk['jday'].size, data_spns_v0['tot/wvl'].size), dtype=np.float64)
+        flux_tot = np.zeros((data_hsk['jday'].size, data_hsr1_v0['tot/wvl'].size), dtype=np.float64)
         for i in range(flux_tot.shape[-1]):
-            flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_spns_v0['tot/jday']+time_offset/86400.0, data_spns_v0['tot/flux'][:, i])
+            flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_hsr1_v0['tot/jday']+time_offset/86400.0, data_hsr1_v0['tot/flux'][:, i])
+        # flux_tot[np.isnan(flux_tot)] = -1.0
         #\----------------------------------------------------------------------------/#
 
         f = h5py.File(fname_h5, 'w')
@@ -232,21 +234,21 @@ def cdata_navy_spns_v1(
         f['jday_ori'] = data_hsk['jday'] - time_offset/86400.0
 
         g1 = f.create_group('dif')
-        g1['wvl']   = data_spns_v0['dif/wvl']
+        g1['wvl']   = data_hsr1_v0['dif/wvl']
         dset0 = g1.create_dataset('flux', data=flux_dif, compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('tot')
-        g2['wvl']   = data_spns_v0['tot/wvl']
-        g2['toa0']  = data_spns_v0['tot/toa0']
+        g2['wvl']   = data_hsr1_v0['tot/wvl']
+        g2['toa0']  = data_hsr1_v0['tot/toa0']
         dset0 = g2.create_dataset('flux', data=flux_tot, compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
 
     return fname_h5
 
-def cdata_navy_spns_v2(
+def cdata_navy_hsr1_v2(
         date,
-        fname_spns_v1,
+        fname_hsr1_v1,
         fname_hsk, # interchangable with fname_alp_v1
         wvl_range=[350.0, 900.0],
         ang_pit_offset=0.0,
@@ -261,13 +263,13 @@ def cdata_navy_spns_v2(
 
     date_s = date.strftime('%Y%m%d')
 
-    fname_h5 = '%s/%s-%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _spns_.upper(), _platform_.upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v2.h5' % (fdir_out, _mission_.upper(), _hsr1_.upper(), _platform_.upper(), date_s)
 
     if run:
 
         # read spn-s v1
         #/----------------------------------------------------------------------------\#
-        data_spns_v1 = ssfr.util.load_h5(fname_spns_v1)
+        data_hsr1_v1 = ssfr.util.load_h5(fname_hsr1_v1)
         #/----------------------------------------------------------------------------\#
 
         # read hsk v0
@@ -287,44 +289,46 @@ def cdata_navy_spns_v2(
 
         # attitude correction
         #/----------------------------------------------------------------------------\#
-        f_dn_dir = data_spns_v1['tot/flux'] - data_spns_v1['dif/flux']
+        f_dn_dir = data_hsr1_v1['tot/flux'] - data_hsr1_v1['dif/flux']
         f_dn_dir_corr = np.zeros_like(f_dn_dir)
         f_dn_tot_corr = np.zeros_like(f_dn_dir)
-        for iwvl in range(data_spns_v1['tot/wvl'].size):
+        for iwvl in range(data_hsr1_v1['tot/wvl'].size):
             f_dn_dir_corr[..., iwvl] = f_dn_dir[..., iwvl]*factors
-            f_dn_tot_corr[..., iwvl] = f_dn_dir_corr[..., iwvl] + data_spns_v1['dif/flux'][..., iwvl]
+            f_dn_tot_corr[..., iwvl] = f_dn_dir_corr[..., iwvl] + data_hsr1_v1['dif/flux'][..., iwvl]
         #\----------------------------------------------------------------------------/#
+
+        logic_ts = np.logical_not(np.isnan(f_dn_tot_corr[:, np.argmin(np.abs(data_hsr1_v1['tot/wvl']-550.0))]))
 
         f = h5py.File(fname_h5, 'w')
 
         for key in data_hsk.keys():
-            f[key] = data_hsk[key]
+            f[key] = data_hsk[key][logic_ts]
 
         g0 = f.create_group('att_corr')
-        g0['mu'] = mu
-        g0['dc'] = dc
-        g0['factors'] = factors
+        g0['mu'] = mu[logic_ts]
+        g0['dc'] = dc[logic_ts]
+        g0['factors'] = factors[logic_ts]
 
         if wvl_range is None:
             wvl_range = [0.0, 2200.0]
 
-        logic_wvl_dif = (data_spns_v1['dif/wvl']>=wvl_range[0]) & (data_spns_v1['dif/wvl']<=wvl_range[1])
-        logic_wvl_tot = (data_spns_v1['tot/wvl']>=wvl_range[0]) & (data_spns_v1['tot/wvl']<=wvl_range[1])
+        logic_wvl_dif = (data_hsr1_v1['dif/wvl']>=wvl_range[0]) & (data_hsr1_v1['dif/wvl']<=wvl_range[1])
+        logic_wvl_tot = (data_hsr1_v1['tot/wvl']>=wvl_range[0]) & (data_hsr1_v1['tot/wvl']<=wvl_range[1])
 
         g1 = f.create_group('dif')
-        g1['wvl']   = data_spns_v1['dif/wvl'][logic_wvl_dif]
-        dset0 = g1.create_dataset('flux', data=data_spns_v1['dif/flux'][:, logic_wvl_dif], compression='gzip', compression_opts=9, chunks=True)
+        g1['wvl']   = data_hsr1_v1['dif/wvl'][logic_wvl_dif]
+        dset0 = g1.create_dataset('flux', data=data_hsr1_v1['dif/flux'][logic_ts, :][:, logic_wvl_dif], compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('tot')
-        g2['wvl']   = data_spns_v1['tot/wvl'][logic_wvl_tot]
-        g2['toa0']  = data_spns_v1['tot/toa0'][logic_wvl_tot]
-        dset0 = g2.create_dataset('flux', data=f_dn_tot_corr[:, logic_wvl_tot], compression='gzip', compression_opts=9, chunks=True)
+        g2['wvl']   = data_hsr1_v1['tot/wvl'][logic_wvl_tot]
+        g2['toa0']  = data_hsr1_v1['tot/toa0'][logic_wvl_tot]
+        dset0 = g2.create_dataset('flux', data=f_dn_tot_corr[logic_ts, :][:, logic_wvl_tot], compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
 
     return fname_h5
 
-def process_spns_data(date, run=True):
+def process_hsr1_data(date, run=True):
 
     """
     v0: raw data directly read out from the data files
@@ -343,17 +347,53 @@ def process_spns_data(date, run=True):
 
     fname_hsk_v0 = cdata_navy_hsk_v0(date,
             fdir_out=fdir_out, run=run)
-    fname_spns_v0 = cdata_navy_spns_v0(date, fdir_data=fdir_data,
+    fname_hsr1_v0 = cdata_navy_hsr1_v0(date, fdir_data=fdir_data,
             fdir_out=fdir_out, run=run)
-    fname_spns_v1 = cdata_navy_spns_v1(date, fname_spns_v0, fname_hsk_v0,
+    fname_hsr1_v1 = cdata_navy_hsr1_v1(date, fname_hsr1_v0, fname_hsk_v0,
             fdir_out=fdir_out, run=run)
-    fname_spns_v2 = cdata_navy_spns_v2(date, fname_spns_v1, fname_hsk_v0,
+    fname_hsr1_v2 = cdata_navy_hsr1_v2(date, fname_hsr1_v1, fname_hsk_v0,
             fdir_out=fdir_out, run=run)
 
     _fnames_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    _fnames_['%s_spns_v0' % date_s] = fname_spns_v0
-    _fnames_['%s_spns_v1' % date_s] = fname_spns_v1
-    _fnames_['%s_spns_v2' % date_s] = fname_spns_v2
+    _fnames_['%s_hsr1_v0' % date_s] = fname_hsr1_v0
+    _fnames_['%s_hsr1_v1' % date_s] = fname_hsr1_v1
+    _fnames_['%s_hsr1_v2' % date_s] = fname_hsr1_v2
+
+def plot_time_series(fname):
+
+    data_hsr1 = ssfr.util.load_h5(fname)
+    # figure
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    plot = True
+    if plot:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot1
+        #╭──────────────────────────────────────────────────────────────╮#
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(data_hsr1['tmhr'], data_hsr1['tot/flux'][:, np.argmin(np.abs(data_hsr1['tot/wvl']-550.0))], s=2, c='k', lw=0.0)
+        ax1.scatter(data_hsr1['tmhr'], data_hsr1['dif/flux'][:, np.argmin(np.abs(data_hsr1['dif/wvl']-550.0))], s=2, c='gray', lw=0.0)
+        # ax1.set_xlim((0, 1))
+        # ax1.set_ylim((0, 1))
+        # ax1.set_xlabel('X')
+        # ax1.set_ylabel('Y')
+        # ax1.set_title('Plot1')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #╰──────────────────────────────────────────────────────────────╯#
+        # save figure
+        #╭──────────────────────────────────────────────────────────────╮#
+        fig.subplots_adjust(hspace=0.35, wspace=0.35)
+        _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+        fname_fig = '%s_%s.png' % (_metadata_['Date'], _metadata_['Function'],)
+        plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+        #╰──────────────────────────────────────────────────────────────╯#
+        plt.show()
+        sys.exit()
+        plt.close(fig)
+        plt.clf()
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 #\----------------------------------------------------------------------------/#
 
 
@@ -366,11 +406,12 @@ def main_process_data(date, run=True):
 
     date_s = date.strftime('%Y%m%d')
 
-    # 1. SPNS - irradiance (400nm - 900nm)
+    # 1. HSR1 - irradiance (400nm - 900nm)
     #    - spectral downwelling diffuse
     #    - spectral downwelling global/direct (direct=global-diffuse)
-    process_spns_data(date, run=True)
-    ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_spns_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=[0, 24], wvl_range=[350.0, 900.0], tmhr_step=1, wvl_step=5, description=_mission_.upper(), fname_html='%s-%s_%s_%s_ql.html' % (_mission_.upper(), _spns_.upper(), _platform_.upper(), date_s))
+    process_hsr1_data(date, run=True)
+    # plot_time_series(_fnames_['%s_hsr1_v2' % date_s])
+    ssfr.vis.quicklook_bokeh_spns(_fnames_['%s_hsr1_v2' % date_s], wvl0=None, tmhr0=None, tmhr_range=[0, 24], wvl_range=[350.0, 900.0], tmhr_step=1, wvl_step=5, description=_mission_.upper(), fname_html='%s-%s_%s_%s_ql.html' % (_mission_.upper(), _hsr1_.upper(), _platform_.upper(), date_s))
 #\----------------------------------------------------------------------------/#
 
 
@@ -380,12 +421,12 @@ if __name__ == '__main__':
 
     # data procesing
     #/----------------------------------------------------------------------------\#
-    # fdirs = sorted(glob.glob('data/%s/????-??-??' % _mission_))
-    # for fdir in fdirs:
-    #     date_s = os.path.basename(fdir)
-    #     date = datetime.datetime.strptime(date_s, '%Y-%m-%d')
-    #     main_process_data(date)
+    fdirs = sorted(glob.glob('data/%s/????-??-??' % _mission_))
+    for fdir in fdirs:
+        date_s = os.path.basename(fdir)
+        date = datetime.datetime.strptime(date_s, '%Y-%m-%d')
+        main_process_data(date)
     #\----------------------------------------------------------------------------/#
-    main_process_data(datetime.datetime(2024, 10, 15))
+    # main_process_data(datetime.datetime(2024, 10, 15))
 
     pass
