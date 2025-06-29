@@ -169,14 +169,16 @@ def fig_cos_resp(fname, wvl0=555.0):
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
-        ax1.scatter(mu, cos_resp[:, np.argmin(np.abs(wvl-wvl0))], s=6, c='k', lw=0.0, alpha=0.2)
-        ax1.plot(mu_[:19]  , cos_resp_[:19, np.argmin(np.abs(wvl_-wvl0))]  , marker='o', markersize=8, color='r', lw=1.0, alpha=0.6)
+        # ax1.scatter(mu, cos_resp[:, np.argmin(np.abs(wvl-wvl0))], s=6, c='k', lw=0.0, alpha=0.2)
+        ax1.plot(mu_[ang_>=0.0]  , cos_resp_[ang_>=0.0, np.argmin(np.abs(wvl_-wvl0))]  , marker='o', markersize=8, color='r', lw=1.0, alpha=0.6)
+        ax1.plot(mu_[ang_<0.0]  , cos_resp_[ang_<0.0, np.argmin(np.abs(wvl_-wvl0))]  , marker='o', markersize=8, color='b', lw=1.0, alpha=0.6)
 
-        angle_offset = -2.5
-        mu_new = np.cos(np.deg2rad(np.rad2deg(np.arccos(mu_[19:-1])) + angle_offset))
-        ax1.plot(mu_[19:-1], cos_resp_[19:-1, np.argmin(np.abs(wvl_-wvl0))], marker='o', markersize=8, color='b', lw=1.0, alpha=0.2)
-        ax1.plot(mu_new, cos_resp_[19:-1, np.argmin(np.abs(wvl_-wvl0))], marker='o', markersize=8, color='b', lw=1.0, alpha=0.6)
-        ax1.errorbar(mu0, cos_resp0[:, np.argmin(np.abs(wvl_-wvl0))], yerr=cos_resp_std0[:, np.argmin(np.abs(wvl_-wvl0))], color='g', lw=1.0)
+        # angle_offset = -2.5
+        angle_offset = 0.0
+        # mu_new = np.cos(np.deg2rad(np.rad2deg(np.arccos(mu_[19:-1])) + angle_offset))
+        # ax1.plot(mu_[19:-1], cos_resp_[19:-1, np.argmin(np.abs(wvl_-wvl0))], marker='o', markersize=8, color='b', lw=1.0, alpha=0.2)
+        # ax1.plot(mu_new, cos_resp_[19:-1, np.argmin(np.abs(wvl_-wvl0))], marker='o', markersize=8, color='b', lw=1.0, alpha=0.6)
+        # ax1.errorbar(mu0, cos_resp0[:, np.argmin(np.abs(wvl_-wvl0))], yerr=cos_resp_std0[:, np.argmin(np.abs(wvl_-wvl0))], color='g', lw=1.0)
         ax1.axhline(1.0, color='gray', ls='--')
         ax1.plot([0.0, 1.0], [0.0, 1.0], color='gray', ls='--')
         ax1.set_xlim((0.0, 1.0))
@@ -189,7 +191,7 @@ def fig_cos_resp(fname, wvl0=555.0):
                           mpatches.Patch(color='black' , label='Average&Interpolated'), \
                           mpatches.Patch(color='red'   , label='Pos. Angles (C.C.W.)'), \
                           mpatches.Patch(color='blue'  , label='Neg. Angles (C.W.)'), \
-                          mpatches.Patch(color='green' , label='Average&Std.'), \
+                          # mpatches.Patch(color='green' , label='Average&Std.'), \
                          ]
         ax1.legend(handles=patches_legend, loc='lower right', fontsize=16)
         # ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
