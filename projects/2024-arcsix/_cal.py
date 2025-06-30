@@ -219,46 +219,46 @@ def ang_cal_old(fdir):
 
         ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
 
-def main_calibration_old():
+# def main_calibration_old():
 
-    """
-    Notes:
-        irradiance setup:
-            SSFR-A (Alvin)
-              - nadir : LC6 + stainless steel cased fiber
-              - zenith: LC4 + black plastic cased fiber
-    """
+#     """
+#     Notes:
+#         irradiance setup:
+#             SSFR-A (Alvin)
+#               - nadir : LC6 + stainless steel cased fiber
+#               - zenith: LC4 + black plastic cased fiber
+#     """
 
-    # wavelength calibration
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
-    #     for lc_tag in ['zen', 'nad']:
-    #         for lamp_tag in ['kr', 'hg']:
-    #             wvl_cal(ssfr_tag, lc_tag, lamp_tag)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
+#     # wavelength calibration
+#     #╭────────────────────────────────────────────────────────────────────────────╮#
+#     # for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+#     #     for lc_tag in ['zen', 'nad']:
+#     #         for lamp_tag in ['kr', 'hg']:
+#     #             wvl_cal(ssfr_tag, lc_tag, lamp_tag)
+#     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # radiometric calibration
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    for ssfr_tag in ['SSFR-A', 'SSFR-B']:
-        for lc_tag in ['zen', 'nad']:
-            for lamp_tag in ['1324']:
-                rad_cal(ssfr_tag, lc_tag, lamp_tag)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
+#     # radiometric calibration
+#     #╭────────────────────────────────────────────────────────────────────────────╮#
+#     for ssfr_tag in ['SSFR-A', 'SSFR-B']:
+#         for lc_tag in ['zen', 'nad']:
+#             for lamp_tag in ['1324']:
+#                 rad_cal(ssfr_tag, lc_tag, lamp_tag)
+#     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # angular calibration
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fdirs = [
-    #         '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
-    #         '/argus/field/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
-    #         '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
-    #         '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
-    #         '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
-    #         '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
-    #         ]
-    # for fdir in fdirs:
-    #     ang_cal(fdir)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-    sys.exit()
+#     # angular calibration
+#     #╭────────────────────────────────────────────────────────────────────────────╮#
+#     # fdirs = [
+#     #         '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
+#     #         '/argus/field/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
+#     #         '/argus/field/arcsix/cal/ang-cal/2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
+#     #         '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-060_lamp-507_si-080-120_in-250-350',
+#     #         '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350',
+#     #         '/argus/field/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-300_lamp-507_si-080-120_in-250-350',
+#     #         ]
+#     # for fdir in fdirs:
+#     #     ang_cal(fdir)
+#     #╰────────────────────────────────────────────────────────────────────────────╯#
+#     sys.exit()
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -1030,6 +1030,41 @@ def ssrr_rad_cal(
         which_lc='zen',
         spec_reverse=False,
         ):
+    """
+    Calculates the radiometric response for the SSRR (radiance) instrument.
+    This function processes primary calibration files (.SKS) to determine
+    the spectral radiometric response of an SSRR instrument. The calculated
+    response is then filtered, converted to radiance, and saved to an
+    HDF5 file.
+
+    Args:
+    ----
+        fdir_pri (str):
+            Directory path containing the primary calibration files.
+            The function expects .SKS files in this directory.
+        which_ssrr (str, optional):
+            Identifier for the SSRR instrument. Defaults to 'lasp|ssrr-a'.
+            Supported formats: 'lasp|ssrr-a', 'lasp|ssrr-b', 'nasa|ssfr-6'.
+        which_lc (str, optional):
+            Identifier for the light collector. Defaults to 'zen'.
+            Supported values: 'zenith', 'zen', 'z' for zenith;
+                              'nadir', 'nad', 'n' for nadir.
+        spec_reverse (bool, optional):
+            Indicates if the spectrometer orientation is reversed.
+            If True, 'zen' light collector implies 'nad' spectrometer,
+            and 'nad' light collector implies 'zen' spectrometer.
+            Defaults to False.
+
+    Returns:
+    -------
+        None:
+            The function does not return any value. Instead, it saves
+            the calculated radiometric response (wavelength and primary response)
+            into HDF5 files. The filenames are generated based on calibration
+            tags, date, SSRR instrument, spectrometer, and integration times.
+            Example filename:
+            'CALTAG_YYYY-MM-DD|rad-resp|ssrr-identifier|spec-identifier|si-INT_TIME|in-INT_TIME.h5'
+    """
 
     # get calibration files of primary
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -1123,7 +1158,7 @@ def ssrr_rad_cal(
                 int_time=int_time,
                 verbose=True,
                 )
-        
+
         # wavelength
         #/----------------------------------------------------------------------------\#
         wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
@@ -1155,7 +1190,7 @@ def ssrr_rad_cal(
         pri_resp_rad[pri_resp_rad < resp_threshold] = np.nan
         #\----------------------------------------------------------------------------/#
 
-        # save file
+        # save file as HDF5
         #/----------------------------------------------------------------------------\#
         if filename_tag is not None:
             fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssrr, which_spec, int_time[si_tag], int_time[in_tag])
@@ -1173,7 +1208,23 @@ def main_ssrr_rad_cal_all(
         ):
 
     """
+    Main function to perform radiometric calibration for SSRR (radiance) instruments.
+    This function sets up the calibration directories and calls the
+    `ssrr_rad_cal` function for each specified SSRR instrument and light
+    collector.
+    Args:
+    ----
+        which_ssrr (str, optional): Identifier for the SSRR instrument.
+            Defaults to 'lasp|ssrr-a'. Supported values include:
+            - 'lasp|ssrr-a' for SSRR-A
+            - 'lasp|ssrr-b' for SSRR-B
+    Returns:
+    -------
+        None: The function does not return any value. It processes the
+            calibration data and saves the results in HDF5 files.
+
     Notes:
+    -----
         raiance setup:
             SSFR-A (Alvin)
               - zenith: (what like?)
@@ -1216,7 +1267,7 @@ def main_ssrr_rad_cal_all(
                 {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
                 ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
-    
+
     elif 'ssrr-a' in which_ssrr.lower():
 
         # SSRR-A (backup setup for measuring radiance)
@@ -1249,6 +1300,30 @@ def plot_response(
         fdir='.',
         ):
 
+    """
+    Plots radiometric response curves from processed HDF5 files.
+
+    The resulting plot, displaying response curves for the specified
+    instrument(s) and light collector(s), is saved as a PNG file.
+
+    Args:
+    ----
+        which_ssfr (str, optional): A string or pattern identifying the SSFR
+            instrument. This is used to form the search pattern for HDF5
+            files. Defaults to 'lasp|ssrr-a'.
+        which_lc (str, optional): A string or pattern identifying the light
+            collector. This is also used in the HDF5 file search pattern.
+            Defaults to 'nad'.
+        fdir (str, optional): The directory path where the processed HDF5
+            files are located. Defaults to '.' (the current directory).
+
+    Returns:
+    -------
+        None: This function does not return any value. It saves a plot
+                to a PNG file named '{which_ssfr}_{which_lc}.png' in the
+                current working directory.
+    """
+
     search_path = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|%s|%s|si-*|in-*.h5' % (which_ssfr, which_lc))
     fnames = sorted(glob.glob(search_path))
     if not fnames:
@@ -1277,6 +1352,8 @@ def plot_response(
     fname_fig = '%s_%s.png' % (which_ssfr, which_lc)
     fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
     plt.close(fig)
+    print('Message [plot_response]: Saved figure to "%s".' % fname_fig)
+
 
 if __name__ == '__main__':
 
