@@ -467,10 +467,9 @@ def ssfr_ang_cal_20250627(fdir):
     """
 
     Notes:
-        angular calibration is done for three different azimuth angles (reference to the vaccum port)
-        60, 180, 300
+        angular calibration test for SSFR-B zenith
 
-        angles
+        only limited angles are taken to check consistency
     """
 
     tags = os.path.basename(fdir).split('_')
@@ -486,6 +485,43 @@ def ssfr_ang_cal_20250627(fdir):
     angles_pos = np.array([0.0, 30.0, 45.0, 60.0, 90.0, 60.0, 45.0, 30.0, 0.0])
     angles_neg = np.array([-30.0, -45.0, -60.0, -90.0, -60.0, -45.0, -30.0, 0.0])
     angles = np.concatenate((angles_pos, angles_neg))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+
+def ssfr_ang_cal_20250630(fdir):
+
+    """
+    Notes:
+        angular calibration is done for SSFR-A zenith
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 90.0, 5.0), np.array([90.0, 60.0, 45.0, 30.0])))
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # make fnames, a dictionary <key:value> with file name as key, angle as value
@@ -1315,7 +1351,7 @@ def plot_response(
     ax1.set_xlim(350.0, 2200.0)
     ax1.set_ylim(0.0, None)
     ax1.set_xlabel('Wavelength (nm)')
-    ax1.set_ylabel('Response (counts / (W m$^{-2}$ nm$^{-1}$ sr$^{-1}$ $\cdot$ s))')
+    ax1.set_ylabel('Response (counts / (W m$^{-2}$ nm$^{-1}$ sr$^{-1}$ $\\cdot$ s))')
     ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
     ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fontsize=10)
 
@@ -1357,8 +1393,11 @@ if __name__ == '__main__':
     # fdir = 'data/arcsix/cal/ang-cal/2025-03-05_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
     # ssfr_ang_cal(fdir)
 
-    fdir = 'data/arcsix/cal/ang-cal/2025-06-27_SSFR-B_zen-lc4_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
-    ssfr_ang_cal_20250627(fdir)
+    # fdir = 'data/arcsix/cal/ang-cal/2025-06-27_SSFR-B_zen-lc4_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal_20250627(fdir)
+
+    fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    ssfr_ang_cal_20250630(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # post-mission SSRR calibration (nadir)

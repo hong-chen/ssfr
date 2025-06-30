@@ -188,7 +188,7 @@ def fig_cos_resp(fname, wvl0=555.0):
         ax1.set_title('%s' % (title), fontsize=12)
 
         patches_legend = [
-                          mpatches.Patch(color='black' , label='Average&Interpolated'), \
+                          # mpatches.Patch(color='black' , label='Average&Interpolated'), \
                           mpatches.Patch(color='red'   , label='Pos. Angles (C.C.W.)'), \
                           mpatches.Patch(color='blue'  , label='Neg. Angles (C.W.)'), \
                           # mpatches.Patch(color='green' , label='Average&Std.'), \
