@@ -204,15 +204,15 @@ def fig_cos_resp(fname, wvl0=555.0):
         _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         fig.savefig(fname_png, bbox_inches='tight', metadata=_metadata)
         #\--------------------------------------------------------------/#
-        plt.show()
-        sys.exit()
+        # plt.show()
+        # sys.exit()
     #\----------------------------------------------------------------------------/#
 
 if __name__ == '__main__':
 
     # fig_belana_darks_si()
     # fig_alvin_darks_si()
-    fnames = sorted(glob.glob('/Users/hchen/Work/mygit/ssfr/projects/2024-arcsix/*ang-resp*.h5'))
+    fnames = sorted(glob.glob('/Users/hchen/Work/mygit/ssfr/projects/2024-arcsix/*ang-resp*si-120|in-350.h5'))
     # fnames = sorted(glob.glob('/Users/hchen/Work/mygit/ssfr/projects/2024-arcsix/2024-03-16*cos-resp*zen*.h5'))
-    for fname in [fnames[-1]]:
+    for fname in fnames:
         fig_cos_resp(fname)
