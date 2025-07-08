@@ -1242,7 +1242,7 @@ def ssrr_rad_cal(
                 int_time=int_time,
                 verbose=True,
                 )
-        
+
         # wavelength
         #/----------------------------------------------------------------------------\#
         wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
