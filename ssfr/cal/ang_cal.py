@@ -319,7 +319,7 @@ def cdata_ang_resp(
 
         ax1.axvline(wvl_joint, ls='--', color='gray')
 
-        ax1.set_title('%s\n$\\mu$=%.4f (%.2f$^\circ$)' % (os.path.basename(fname_out), ang_mu_all[index], np.rad2deg(np.arccos(ang_mu_all[index]))))
+        ax1.set_title('%s\n$\\mu$=%.4f (%.2f$^\\circ$)' % (os.path.basename(fname_out), ang_mu_all[index], np.rad2deg(np.arccos(ang_mu_all[index]))))
 
         ax1.set_ylim((0.85, 0.95))
         ax1.set_xlabel('Wavelength [nm]')
