@@ -1140,6 +1140,7 @@ def plot_time_series_all(
         plt.clf()
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
+
 # radiance calibrations
 #╭────────────────────────────────────────────────────────────────────────────╮#
 def ssrr_rad_cal(
@@ -1395,6 +1396,8 @@ def plot_response(
     fname_fig = '%s_%s.png' % (which_ssfr, which_lc)
     fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
     plt.close(fig)
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
 
 if __name__ == '__main__':
 
@@ -1432,13 +1435,16 @@ if __name__ == '__main__':
 
     # fdir = 'data/arcsix/cal/ang-cal/2025-06-27_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
     # ssfr_ang_cal_20250627(fdir)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
+    # angular calibrations(SSFR-A, zen-lc4,  post)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
     # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
     # ssfr_ang_cal_20250630(fdir)
 
-    for vaa in np.arange(0.0, 181.0, 30.0):
-        fdir = 'data/arcsix/cal/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
-        ssfr_ang_cal_20250707(fdir)
+    # for vaa in np.arange(0.0, 181.0, 30.0):
+    #     fdir = 'data/arcsix/cal/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
+    #     ssfr_ang_cal_20250707(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # post-mission SSRR calibration (nadir)
