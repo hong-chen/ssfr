@@ -1169,6 +1169,24 @@ def ssrr_rad_cal(
         pri_resp_rad_[pri_resp_rad_ < resp_threshold] = np.nan
         #\----------------------------------------------------------------------------/#
 
+        # Silicon scaling based on the joint wavelength signals
+        #/----------------------------------------------------------------------------\#
+        if   which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'zen':
+            si_in_diff = 0.9036051272130695
+        elif which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'nad':
+            si_in_diff = 0.9808717432930821
+        elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'zen':
+            si_in_diff = 0.9279473175434759
+        elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'nad':
+            si_in_diff = 0.9887711508106611
+        else:
+            msg = '\nError [ssfr_rad_cal]: <which_ssrr=> does not support <\'%s\'> (only supports <\'lasp|ssrr-a\'> or <\'lasp|ssrr-b\'>).' % which_ssrr
+            raise ValueError(msg)
+        scaling_factor = -(si_in_diff - 1.) * np.exp( 0.015 * (350. - wvl_[wvl_ < wvl_joint])) + si_in_diff
+        pri_resp_rad_[wvl_ < wvl_joint] = pri_resp_rad_[wvl_ < wvl_joint] * scaling_factor 
+        #\----------------------------------------------------------------------------/#
+
+
         # save file
         #/----------------------------------------------------------------------------\#
         if filename_tag is not None:
@@ -1232,36 +1250,6 @@ def main_ssrr_rad_cal_all(
     #╰──────────────────────────────────────────────────────────────╯#
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # # _date = '2025-06-03'
-    # # _date = '2025-06-06'
-    # # _date = '2025-06-09'
-    # # _date = '2025-06-13'
-    # # _date = '2025-06-16'
-    # _date = '2025-06-18'
-    # # _which_lamp = 'lamp-1324'
-    # _which_lamp = 'lamp-507'
-    # # _int_si = '030-050'
-    # # _int_si = '060-100'
-    # # _int_si = '090-150'
-    # # _int_si = '120-200'
-    # _int_si = '180-300'
-    # # _keyword = 'postdeployment'
-    # # _keyword = 'postdeploymentwigglecw'
-    # # _keyword = 'postdeploymentwiggleccw'
-    # # _keyword = 'postdeploymentafterwiggle'
-    # # _keyword = 'postdeploymentuncal'
-    # # _keyword = 'postdeploymentuncalcw'
-    # # _keyword = 'postdeploymentuncalccw'
-    # # _keyword = 'postdeploymentuncaldiag'
-    # # _keyword = 'postdeploymentuncaldiagcw'
-    # # _keyword = 'postdeploymentuncaldiagccw'
-    # # _keyword = 'postdeployment123test'
-    # # _keyword = 'postdeployment123testfiberoutin'
-    # _keyword = 'postdeploymentzen2zenaz180'
-    # # _keyword = 'postdeploymentzen2nadaz000'
-    # # _keyword = 'postdeploymentnad2nadaz360'
-
-
     if 'ssrr-b' in which_ssrr.lower():
 
         # SSRR-B (regular setup for measuring radiance)
@@ -1269,7 +1257,6 @@ def main_ssrr_rad_cal_all(
         fdirs_pri = [
                 {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentafterwiggle',
                  'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/%s_SSRR-B_zen-lcx_pri-cal_%s_si-%s_in-080-180_%s' % (_date, _which_lamp, _int_si, _keyword)},
                 # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
                 # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
                 # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-060-100_in-080-180_postdeployment'},
@@ -1337,7 +1324,6 @@ def main_ssrr_rad_cal_all(
         fdirs_pri = [
                 {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentafterwiggle',
                  'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-A_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/%s_SSRR-A_nad-lcx_pri-cal_%s_si-%s_in-080-180_%s' % (_date, _which_lamp, _int_si, _keyword)},
                 # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
                 # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentazimuthallyrotated'},
                 # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentnopump'},

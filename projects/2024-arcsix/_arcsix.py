@@ -1051,14 +1051,14 @@ def cdata_ssfr_v1(
 
                 ### (tentative solution) Force the lower integration time data to be NaN
                 #╭──────────────────────────────────────────────────────────────╮#
-                idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 0] for i in np.unique(dset_num)])
-                if idset != idset_zen_max_int:
-                    for i in range(wvl_zen.size):
-                        spec_zen[logic_dset, :] = np.nan
-                idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 2] for i in np.unique(dset_num)])
-                if idset != idset_zen_max_int:
-                    for i in range(wvl_zen.size):
-                        spec_nad[logic_dset, :] = np.nan
+                # idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 0] for i in np.unique(dset_num)])
+                # if idset != idset_zen_max_int:
+                #     for i in range(wvl_zen.size):
+                #         spec_zen[logic_dset, :] = np.nan
+                # idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 2] for i in np.unique(dset_num)])
+                # if idset != idset_zen_max_int:
+                #     for i in range(wvl_zen.size):
+                #         spec_nad[logic_dset, :] = np.nan
                 #╰──────────────────────────────────────────────────────────────╯#
 
 
