@@ -992,10 +992,12 @@ def cdata_ssfr_v1(
 
                 jday_today = ssfr.util.dtime_to_jday(date)
 
-                int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
-                int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
+                # int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
+                int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0]*6, data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
+                # int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
+                int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2]*6, data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
 
-                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*zen*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_zen)), key=os.path.getmtime)
+                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment*|*%s*zen*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_zen)), key=os.path.getmtime)
                 jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
                 for i in range(jday_cal_zen.size):
                     dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[1].split('_')[0]
@@ -1007,7 +1009,7 @@ def cdata_ssfr_v1(
                 msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s zenith radince ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
                 print(msg)
 
-                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*nad*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_nad)), key=os.path.getmtime)
+                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment*|*%s*nad*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_nad)), key=os.path.getmtime)
                 jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
                 for i in range(jday_cal_nad.size):
                     dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[1].split('_')[0]
@@ -1049,14 +1051,14 @@ def cdata_ssfr_v1(
 
                 ### (tentative solution) Force the lower integration time data to be NaN
                 #╭──────────────────────────────────────────────────────────────╮#
-                idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 0] for i in np.unique(dset_num)])
-                if idset != idset_zen_max_int:
-                    for i in range(wvl_zen.size):
-                        spec_zen[logic_dset, :] = np.nan
-                idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 2] for i in np.unique(dset_num)])
-                if idset != idset_zen_max_int:
-                    for i in range(wvl_zen.size):
-                        spec_nad[logic_dset, :] = np.nan
+                # idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 0] for i in np.unique(dset_num)])
+                # if idset != idset_zen_max_int:
+                #     for i in range(wvl_zen.size):
+                #         spec_zen[logic_dset, :] = np.nan
+                # idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 2] for i in np.unique(dset_num)])
+                # if idset != idset_zen_max_int:
+                #     for i in range(wvl_zen.size):
+                #         spec_nad[logic_dset, :] = np.nan
                 #╰──────────────────────────────────────────────────────────────╯#
 
 
@@ -2224,10 +2226,10 @@ if __name__ == '__main__':
     dates = [
              # datetime.datetime(2024, 5, 28),
              # datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
-             # datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
+             datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
              # datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
-             datetime.datetime(2024, 6, 5),
-             # datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6, cloud wall, operator - Vikas Nataraja, Jeffery Drouet
+            #  datetime.datetime(2024, 6, 5),
+             datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6, cloud wall, operator - Vikas Nataraja, Jeffery Drouet
              # datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
              # datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
              # datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
@@ -2235,12 +2237,12 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
              # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
              # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
-             # datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
+             datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
              # datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
              # datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
              # datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
              # datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
+             datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 

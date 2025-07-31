@@ -3,12 +3,12 @@ import ssfr
 
 # parameters that need frequent change
 #╭────────────────────────────────────────────────────────────────────────────╮#
-date = datetime.datetime(2024, 5, 28)
-operator = 'Vikas Nataraja'
+date = datetime.datetime(2024, 6, 6)
+operator = 'Vikas Nataraja, Jeffery Drouet'
 mission = 'arcsix'
 year = '2024'
 platform = 'p3b'
-comments = '1st research flight, performed clear-sky spiral'
+comments = '6th research flight, performed cloud wall'
 
 hsk_tag  = 'hsk'
 alp_tag  = 'alp'
@@ -16,10 +16,10 @@ hsr1_tag = 'hsr1-a'
 ssfr_tag = 'ssfr-a'
 ssrr_tag = 'ssfr-b'
 
-alp_time_offset  = -17.19
+alp_time_offset  = -18.08
 hsr1_time_offset = 0.0
-ssfr_time_offset = -156.26
-ssrr_time_offset = -222.66
+ssfr_time_offset = -180.41
+ssrr_time_offset = -256.90
 
 alp_ang_pit_offset = 0.0
 alp_ang_rol_offset = 0.0
