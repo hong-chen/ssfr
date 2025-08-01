@@ -774,74 +774,6 @@ def main_process_data_v0(cfg, run=True):
     _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-
-    # SSFR v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_ssfr = cfg.ssfr['fnames']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssfr['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and (len(fnames_ssfr) == 0):
-        pass
-    else:
-        fname_ssfr_v0 = cdata_ssfr_v0(
-                date,
-                fnames_ssfr,
-                fname_h5=fname_h5,
-                which_ssfr=cfg.ssfr['which_ssfr'],
-                wvl_s=cfg.ssfr['wvl_s'],
-                wvl_e=cfg.ssfr['wvl_e'],
-                wvl_j=cfg.ssfr['wvl_j'],
-                dark_extend=cfg.ssfr['dark_extend'],
-                light_extend=cfg.ssfr['light_extend'],
-                dark_corr_mode=cfg.ssfr['dark_corr_mode'],
-                fdir_out=fdir_out,
-                run=run
-                )
-        _FNAMES_['%s_ssfr_v0' % date_s] = fname_ssfr_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # SSRR v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_ssrr = cfg.ssrr['fnames']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssrr['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and (len(fnames_ssrr) == 0):
-        pass
-    else:
-        fname_ssrr_v0 = cdata_ssfr_v0(
-                date,
-                fnames_ssrr,
-                fname_h5=fname_h5,
-                which_ssfr=cfg.ssrr['which_ssfr'],
-                wvl_s=cfg.ssrr['wvl_s'],
-                wvl_e=cfg.ssrr['wvl_e'],
-                wvl_j=cfg.ssrr['wvl_j'],
-                dark_extend=cfg.ssrr['dark_extend'],
-                light_extend=cfg.ssrr['light_extend'],
-                dark_corr_mode=cfg.ssrr['dark_corr_mode'],
-                fdir_out=fdir_out,
-                run=run
-                )
-        _FNAMES_['%s_ssrr_v0' % date_s] = fname_ssrr_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # HSR1 v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_hsr1 = cfg.hsr1['fnames']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsr1['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and len(fnames_hsr1) == 0:
-        pass
-    else:
-        fname_hsr1_v0 = cdata_hsr1_v0(
-                date,
-                fnames_hsr1,
-                fname_h5=fname_h5,
-                fdir_out=fdir_out,
-                run=run
-                )
-        _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
 def main_process_data_v1(cfg, run=True):
 
     date = cfg.common['date']
@@ -975,44 +907,6 @@ def main_process_data_v2(date, run=True):
             fdir_out=fdir_out, run=run, run_aux=True)
     #╰────────────────────────────────────────────────────────────────────────────╯#
     _FNAMES_[_vname_ssfr_v2_] = fname_ssfr_v2
-
-def main_process_data_archive(date, run=True):
-
-    """
-    ra: in-field data to be uploaded to https://www-air.larc.nasa.gov/cgi-bin/ArcView/arcsix
-    """
-
-    date_s = date.strftime('%Y%m%d')
-
-    fdir_out = './'
-    if not os.path.exists(fdir_out):
-        os.makedirs(fdir_out)
-
-    main_process_data_v0(date, run=False)
-    main_process_data_v1(date, run=False)
-    main_process_data_v2(date, run=False)
-
-    # HSR1 RA
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_hsr1_ra = cdata_hsr1_archive(date, _FNAMES_['%s_hsr1_v2' % date_s],
-            fdir_out=fdir_out, run=run)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-    _FNAMES_['%s_hsr1_ra' % date_s] = fname_hsr1_ra
-
-
-    # SSFR RA
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    if _WHICH_SSFR_ == _SSFR1_:
-        _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
-        _vname_ssfr_ra_ = '%s_ssfr1_ra' % date_s
-    else:
-        _vname_ssfr_v2_ = '%s_ssfr2_v2' % date_s
-        _vname_ssfr_ra_ = '%s_ssfr2_ra' % date_s
-
-    fname_ssfr_ra = cdata_ssfr_archive(date, _FNAMES_[_vname_ssfr_v2_],
-            fdir_out=fdir_out, run=run)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-    _FNAMES_[_vname_ssfr_ra_] = fname_ssfr_ra
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -1026,8 +920,8 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
              # datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
              # datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
-             datetime.datetime(2024, 6, 5),
-             # datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6, cloud wall, operator - Vikas Nataraja, Jeffery Drouet
+             # datetime.datetime(2024, 6, 5),
+             datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6, cloud wall, operator - Vikas Nataraja, Jeffery Drouet
              # datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
              # datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
              # datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
@@ -1062,13 +956,13 @@ if __name__ == '__main__':
         # step 2
         # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        run_time_offset_check(cfg)
+        # run_time_offset_check(cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
         # apply time offsets to sync data to aircraft housekeeping file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v1(cfg, run=True)
+        # main_process_data_v1(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4
