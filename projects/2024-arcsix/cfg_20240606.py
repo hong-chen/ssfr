@@ -26,19 +26,19 @@ alp_ang_rol_offset = 0.0
 hsr1_ang_pit_offset = 0.0
 hsr1_ang_rol_offset = 0.0
 
-fdir_data = '/Volumes/argus/field/%s/%s/%s' % (mission, year, platform)
-fdir_cal = '/Volumes/argus/field/%s/cal' % mission
-fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
-# fdir_data = 'data/%s/%s/%s' % (mission, year, platform)
-# fdir_cal = 'data/%s/cal' % mission
-# fdir_out = 'data/%s/processed' % mission
+# fdir_data = '/Volumes/argus/field/%s/%s/%s' % (mission, year, platform)
+# fdir_cal = '/Volumes/argus/field/%s/cal' % mission
+# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
+fdir_data = 'data/%s/%s/%s' % (mission, year, platform)
+fdir_cal = 'data/%s/cal' % mission
+fdir_out = 'data/%s/processed' % mission
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
 # data directory
 #╭────────────────────────────────────────────────╮#
-fdir_hsk = '%s/aux/hsk' % (fdir_data)
-# fdir_hsk = '%s/aux' % (fdir_data)
+# fdir_hsk = '%s/aux/hsk' % (fdir_data)
+fdir_hsk = '%s/aux' % (fdir_data)
 fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, alp_tag))[-1]
 fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, hsr1_tag))[-1]
 fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern='*%4.4d*%2.2d*%2.2d*raw?%s' % (date.year, date.month, date.day, ssfr_tag))[-1]
