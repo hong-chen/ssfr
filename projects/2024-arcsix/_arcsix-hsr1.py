@@ -1242,8 +1242,8 @@ if __name__ == '__main__':
              # datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
              # datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
              # datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
-             datetime.datetime(2024, 6, 5),
-             # datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6, cloud wall, operator - Vikas Nataraja, Jeffery Drouet
+             # datetime.datetime(2024, 6, 5),
+             datetime.datetime(2024, 6, 6),
              # datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
              # datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
              # datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
