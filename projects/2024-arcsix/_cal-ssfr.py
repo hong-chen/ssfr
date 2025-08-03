@@ -579,6 +579,43 @@ def ssfr_ang_cal_20250707(fdir):
         filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
 
         ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+
+def ssfr_ang_cal_20250731(fdir):
+
+    """
+    Notes:
+        angular calibration is done for SSFR-A nadir
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 90.0, 5.0), np.array([90.0, 60.0])))
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -1445,6 +1482,12 @@ if __name__ == '__main__':
     # for vaa in np.arange(0.0, 181.0, 30.0):
     #     fdir = 'data/arcsix/cal/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
     #     ssfr_ang_cal_20250707(fdir)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # angular calibrations(SSFR-A, nad-lc6,  post)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fdir = 'data/arcsix/cal/ang-cal/2025-07-31_SSFR-A_nad-lc6_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal_20250731(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # post-mission SSRR calibration (nadir)
