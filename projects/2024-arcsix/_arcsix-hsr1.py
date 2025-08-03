@@ -614,72 +614,13 @@ def run_time_offset_check(cfg):
     date = cfg.common['date']
     date_s = date.strftime('%Y%m%d')
     data_hsk = ssfr.util.load_h5(_FNAMES_['%s_hsk_v0' % date_s])
-    data_alp = ssfr.util.load_h5(_FNAMES_['%s_alp_v0' % date_s])
     data_hsr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_hsr1_v0' % date_s])
-    data_ssfr_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr_v0' % date_s])
-    data_ssrr_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssrr_v0' % date_s])
 
     # data_hsr1_v0['tot/jday'] += 1.0
     # data_hsr1_v0['dif/jday'] += 1.0
 
     # _offset_x_range_ = [-6000.0, 6000.0]
     _offset_x_range_ = [-600.0, 600.0]
-
-    # ALP pitch vs HSK pitch
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_hsk['ang_pit'],
-            'x1': data_alp['jday'][::10]*86400.0,
-            'y1': data_alp['ang_pit_s'][::10],
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=False,
-            description='ALP Pitch vs. HSK Pitch',
-            fname_html='alp-pit_offset_check_%s.html' % date_s)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # ALP roll vs HSK roll
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_hsk['ang_rol'],
-            'x1': data_alp['jday'][::10]*86400.0,
-            'y1': data_alp['ang_rol_s'][::10],
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=False,
-            description='ALP Roll vs. HSK Roll',
-            fname_html='alp-rol_offset_check_%s.html' % date_s)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # ALP altitude vs HSK altitude
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    data_offset = {
-            'x0': data_hsk['jday']*86400.0,
-            'y0': data_hsk['alt'],
-            'x1': data_alp['jday'][::10]*86400.0,
-            'y1': data_alp['alt'][::10],
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=True,
-            description='ALP Altitude vs. HSK Altitude',
-            fname_html='alp-alt_offset_check_%s.html' % date_s)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # HSR1 vs TOA
@@ -707,54 +648,6 @@ def run_time_offset_check(cfg):
             y_reset=True,
             description='HSR1 Total vs. TOA (745 nm)',
             fname_html='hsr1-toa_offset_check_%s.html' % date_s)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # SSFR vs HSR1
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    index_wvl_hsr1 = np.argmin(np.abs(745.0-data_hsr1_v0['tot/wvl']))
-    data_y0 = data_hsr1_v0['tot/flux'][:, index_wvl_hsr1]
-
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr_v0['spec/wvl_zen']))
-    data_y1 = data_ssfr_v0['spec/cnt_zen'][:, index_wvl_ssfr]
-    data_offset = {
-            'x0': data_hsr1_v0['tot/jday']*86400.0,
-            'y0': data_y0,
-            'x1': data_ssfr_v0['raw/jday']*86400.0,
-            'y1': data_y1,
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=True,
-            description='SSFR Zenith Count vs. HSR1 Total (745nm)',
-            fname_html='ssfr_offset_check_%s.html' % (date_s))
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # SSRR vs SSFR
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr_v0['spec/wvl_nad']))
-    data_y0 = data_ssfr_v0['spec/cnt_nad'][:, index_wvl_ssfr]
-
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssrr_v0['spec/wvl_nad']))
-    data_y1 = data_ssrr_v0['spec/cnt_nad'][:, index_wvl_ssfr]
-    data_offset = {
-            'x0': data_ssfr_v0['raw/jday']*86400.0,
-            'y0': data_y0,
-            'x1': data_ssrr_v0['raw/jday']*86400.0,
-            'y1': data_y1,
-            }
-    ssfr.vis.find_offset_bokeh(
-            data_offset,
-            offset_x_range=_offset_x_range_,
-            offset_y_range=[-10, 10],
-            x_reset=True,
-            y_reset=True,
-            description='SSRR Nadir Count vs. SSFR Nadir (745nm)',
-            fname_html='ssrr_offset_check_%s.html' % (date_s))
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return
@@ -830,108 +723,6 @@ def run_angle_offset_check(
         plt.show()
     #╰────────────────────────────────────────────────────────────────────────────╯#
     sys.exit()
-
-def dark_corr_temp(date, iChan=100, idset=0):
-
-    date_s = date.strftime('%Y%m%d')
-    data_ssfr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_ssfr1_v0' % date_s])
-
-    tmhr = data_ssfr1_v0['raw/tmhr']
-    x_temp_zen = data_ssfr1_v0['raw/temp'][:, 1]
-    x_temp_nad = data_ssfr1_v0['raw/temp'][:, 2]
-    shutter = data_ssfr1_v0['raw/shutter_dark-corr']
-    dset_num = data_ssfr1_v0['raw/dset_num']
-
-    logic_dark = (shutter==1) & (dset_num==idset)
-    logic_light = (shutter==0) & (dset_num==idset)
-
-    # figure
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    if True:
-
-        plt.close('all')
-        fig = plt.figure(figsize=(13, 19))
-        fig.suptitle('Channel #%d' % iChan)
-        # plot
-        #╭──────────────────────────────────────────────────────────────╮#
-        ax0 = fig.add_subplot(12,1,1)
-        ax00 = fig.add_subplot(12,1,2)
-        ax000 = fig.add_subplot(12,1,3)
-        ax0000 = fig.add_subplot(12,1,4)
-
-        ax1 = fig.add_subplot(323)
-        logic_fit = (x_temp_zen>25.0) & logic_dark
-        logic_x   = (x_temp_zen>25.0) & logic_light
-        coef = np.polyfit(x_temp_zen[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 0], 5)
-        xx = np.linspace(x_temp_zen[logic_x].min(), x_temp_zen[logic_x].max(), 1000)
-        yy = np.polyval(coef, xx)
-
-        ax1.scatter(x_temp_zen[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 0]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 0], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        ax1.plot(xx, yy, color='gray', zorder=1)
-        ax1.scatter(x_temp_zen[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 0], color='k', s=10, alpha=0.2, zorder=2)
-        ax1.set_title('Zenith Silicon (%.2f nm)' % data_ssfr1_v0['raw/wvl_zen_si'][iChan])
-        ax1.set_xlabel('Zenith InGaAs Temperature')
-        ax1.set_ylabel('Counts')
-
-        ax0.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 0]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 0], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-
-        logic_fit = (x_temp_zen>25.0) & logic_dark
-        logic_x   = (x_temp_zen>25.0) & logic_light
-        coef = np.polyfit(x_temp_zen[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 1], 5)
-        xx = np.linspace(x_temp_zen[logic_x].min(), x_temp_zen[logic_x].max(), 1000)
-        yy = np.polyval(coef, xx)
-
-        ax2 = fig.add_subplot(324)
-        ax2.scatter(x_temp_zen[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 1]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 1], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        ax2.plot(xx, yy, color='gray', zorder=1)
-        ax2.scatter(x_temp_zen[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 1], color='k', s=10, alpha=0.2, zorder=2)
-        ax2.set_title('Zenith InGaAs (%.2f nm)' % data_ssfr1_v0['raw/wvl_zen_in'][iChan])
-        ax2.set_xlabel('Zenith InGaAs Temperature')
-        ax2.set_ylabel('Counts')
-
-        ax00.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 1]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 1], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-
-        logic_fit = (x_temp_nad>25.0) & logic_dark
-        logic_x   = (x_temp_nad>25.0) & logic_light
-        coef = np.polyfit(x_temp_nad[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 2], 5)
-        xx = np.linspace(x_temp_nad[logic_x].min(), x_temp_nad[logic_x].max(), 1000)
-        yy = np.polyval(coef, xx)
-
-        ax3 = fig.add_subplot(325)
-        ax3.scatter(x_temp_nad[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 2]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 2], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        ax3.plot(xx, yy, color='gray', zorder=1)
-        ax3.scatter(x_temp_nad[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 2], color='k', s=10, alpha=0.2, zorder=2)
-        ax3.set_title('Nadir Silicon (%.2f nm)' % data_ssfr1_v0['raw/wvl_nad_si'][iChan])
-        ax3.set_xlabel('Nadir InGaAs Temperature')
-        ax3.set_ylabel('Counts')
-
-        ax000.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 2]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 2], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-
-        logic_fit = (x_temp_nad>25.0) & logic_dark
-        logic_x   = (x_temp_nad>25.0) & logic_light
-        coef = np.polyfit(x_temp_nad[logic_fit], data_ssfr1_v0['raw/count_raw'][logic_fit, iChan, 3], 5)
-        xx = np.linspace(x_temp_nad[logic_x].min(), x_temp_nad[logic_x].max(), 1000)
-        yy = np.polyval(coef, xx)
-
-        ax4 = fig.add_subplot(326)
-        ax4.scatter(x_temp_nad[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 3]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 3], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        ax4.plot(xx, yy, color='gray', zorder=1)
-        ax4.scatter(x_temp_nad[logic_dark], data_ssfr1_v0['raw/count_raw'][logic_dark, iChan, 3], color='k', s=10, alpha=0.2, zorder=2)
-        ax4.set_title('Nadir InGaAs (%.2f nm)' % data_ssfr1_v0['raw/wvl_nad_in'][iChan])
-        ax4.set_xlabel('Nadir InGaAs Temperature')
-        ax4.set_ylabel('Counts')
-
-        ax0000.scatter(tmhr[logic_x], data_ssfr1_v0['raw/count_raw'][logic_x, iChan, 3]-data_ssfr1_v0['raw/count_dark-corr'][logic_x, iChan, 3], c=tmhr[logic_x], s=6, cmap='jet', alpha=0.2, zorder=0)
-        #╰──────────────────────────────────────────────────────────────╯#
-        # save figure
-        #╭──────────────────────────────────────────────────────────────╮#
-        fig.subplots_adjust(hspace=0.3, wspace=0.4)
-        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        fig.savefig('%s_dset%d_%3.3d.png' % (_metadata['Function'], idset, iChan), bbox_inches='tight', metadata=_metadata, dpi=150)
-        #╰──────────────────────────────────────────────────────────────╯#
-        plt.show()
-        sys.exit()
-    #╰────────────────────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -945,101 +736,6 @@ def main_process_data_v0(cfg, run=True):
     fdir_out = cfg.common['fdir_out']
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
-
-    # ALP v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_alp = cfg.alp['fnames']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and (len(fnames_alp)==0):
-        pass
-    else:
-        fname_alp_v0 = cdata_alp_v0(
-                date,
-                fnames_alp,
-                fname_h5=fname_h5,
-                fdir_out=fdir_out,
-                run=run
-                )
-        _FNAMES_['%s_alp_v0' % date_s]   = fname_alp_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # HSK v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_hsk = cfg.hsk['fname']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsk['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and (fname_hsk is None):
-        # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing after flight)
-        fname_hsk_v0 = cdata_hsk_from_alp_v0(
-                date,
-                _FNAMES_['%s_alp_v0' % date_s],
-                fname_h5=fname_h5,
-                fdir_out=fdir_out,
-                run=run
-                )
-    else:
-        # * preferred, use P3 housekeeping file, ict > iwg > mts
-        fname_hsk_v0 = cdata_hsk_v0(
-                date,
-                fname_hsk,
-                fname_h5=fname_h5,
-                fdir_out=fdir_out,
-                run=run
-                )
-
-    _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # SSFR v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_ssfr = cfg.ssfr['fnames']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssfr['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and (len(fnames_ssfr) == 0):
-        pass
-    else:
-        fname_ssfr_v0 = cdata_ssfr_v0(
-                date,
-                fnames_ssfr,
-                fname_h5=fname_h5,
-                which_ssfr=cfg.ssfr['which_ssfr'],
-                wvl_s=cfg.ssfr['wvl_s'],
-                wvl_e=cfg.ssfr['wvl_e'],
-                wvl_j=cfg.ssfr['wvl_j'],
-                dark_extend=cfg.ssfr['dark_extend'],
-                light_extend=cfg.ssfr['light_extend'],
-                dark_corr_mode=cfg.ssfr['dark_corr_mode'],
-                fdir_out=fdir_out,
-                run=run
-                )
-        _FNAMES_['%s_ssfr_v0' % date_s] = fname_ssfr_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # SSRR v0: raw data
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_ssrr = cfg.ssrr['fnames']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssrr['aka'].upper(), cfg.common['platform'].upper(), date_s)
-    if run and (len(fnames_ssrr) == 0):
-        pass
-    else:
-        fname_ssrr_v0 = cdata_ssfr_v0(
-                date,
-                fnames_ssrr,
-                fname_h5=fname_h5,
-                which_ssfr=cfg.ssrr['which_ssfr'],
-                wvl_s=cfg.ssrr['wvl_s'],
-                wvl_e=cfg.ssrr['wvl_e'],
-                wvl_j=cfg.ssrr['wvl_j'],
-                dark_extend=cfg.ssrr['dark_extend'],
-                light_extend=cfg.ssrr['light_extend'],
-                dark_corr_mode=cfg.ssrr['dark_corr_mode'],
-                fdir_out=fdir_out,
-                run=run
-                )
-        _FNAMES_['%s_ssrr_v0' % date_s] = fname_ssrr_v0
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
 
     # HSR1 v0: raw data
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -1069,82 +765,23 @@ def main_process_data_v1(cfg, run=True):
 
     main_process_data_v0(cfg, run=False)
 
-    # # ALP v1: time synced with hsk time with time offset applied
-    # #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
-
-    # fname_alp_v1 = cdata_alp_v1(
-    #         date,
-    #         _FNAMES_['%s_alp_v0' % date_s],
-    #         _FNAMES_['%s_hsk_v0' % date_s],
-    #         fname_h5=fname_h5,
-    #         time_offset=cfg.alp['time_offset'],
-    #         fdir_out=fdir_out,
-    #         run=run
-    #         )
-
-    # _FNAMES_['%s_alp_v1' % date_s] = fname_alp_v1
-    # #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # # HSR1 v1: time synced with hsk time with time offset applied
-    # #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsr1['aka'].upper(), cfg.common['platform'].upper(), date_s)
-
-    # fname_hsr1_v1 = cdata_hsr1_v1(
-    #         date,
-    #         _FNAMES_['%s_hsr1_v0' % date_s],
-    #         _FNAMES_['%s_hsk_v0' % date_s],
-    #         fname_h5=fname_h5,
-    #         time_offset=cfg.hsr1['time_offset'],
-    #         fdir_out=fdir_out,
-    #         run=run
-    #         )
-
-    # _FNAMES_['%s_hsr1_v1' % date_s] = fname_hsr1_v1
-    # #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-    # SSFR v1: time synced with hsk time with time offset applied
+    # HSR1 v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssfr['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsr1['aka'].upper(), cfg.common['platform'].upper(), date_s)
 
-    fname_ssfr_v1 = cdata_ssfr_v1(
+    fname_hsr1_v1 = cdata_hsr1_v1(
             date,
-            _FNAMES_['%s_ssfr_v0' % date_s],
+            _FNAMES_['%s_hsr1_v0' % date_s],
             _FNAMES_['%s_hsk_v0' % date_s],
             fname_h5=fname_h5,
-            time_offset=cfg.ssfr['time_offset'],
-            which_ssfr=cfg.ssfr['which_ssfr'],
-            which_ssfr_for_flux=cfg.ssfr['which_ssfr'],
+            time_offset=cfg.hsr1['time_offset'],
             fdir_out=fdir_out,
             run=run
             )
 
-    _FNAMES_['%s_ssfr_v1' % date_s] = fname_ssfr_v1
+    _FNAMES_['%s_hsr1_v1' % date_s] = fname_hsr1_v1
     #╰────────────────────────────────────────────────────────────────────────────╯#
-    # sys.exit()
 
-
-    # SSRR v1: time synced with hsk time with time offset applied
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.ssrr['aka'].upper(), cfg.common['platform'].upper(), date_s)
-
-    fname_ssrr_v1 = cdata_ssfr_v1(
-            date,
-            _FNAMES_['%s_ssrr_v0' % date_s],
-            _FNAMES_['%s_hsk_v0' % date_s],
-            fname_h5=fname_h5,
-            time_offset=cfg.ssrr['time_offset'],
-            which_ssfr=cfg.ssrr['which_ssfr'],
-            which_ssfr_for_flux=cfg.ssfr['which_ssfr'],
-            fdir_out=fdir_out,
-            run=run
-            )
-
-    _FNAMES_['%s_ssrr_v1' % date_s] = fname_ssrr_v1
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-    # sys.exit()
 
 def main_process_data_v2(date, run=True):
 
@@ -1272,13 +909,13 @@ if __name__ == '__main__':
         # step 1
         # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(cfg, run=True)
+        # main_process_data_v0(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
         # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        run_time_offset_check(cfg)
+        # run_time_offset_check(cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
