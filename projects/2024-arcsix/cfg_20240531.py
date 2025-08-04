@@ -8,7 +8,7 @@ operator = 'Vikas Nataraja'
 mission = 'arcsix'
 year = '2024'
 platform = 'p3b'
-comments = '3rd research flight, performed "bowling alley"'
+comments = '3rd research flight, performed bowling alley for surface BRDF characterization'
 
 hsk_tag  = 'hsk'
 alp_tag  = 'alp'

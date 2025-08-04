@@ -179,11 +179,16 @@ def cdata_ang_resp(
 
     for i, mu0 in enumerate(ang_mu0):
         indices = np.where(ang_mu==mu0)[0]
-        if indices.size in [2, 3]:
+        if indices.size >= 2:
             ang_resp0[si_tag][i, :] = np.nanmean(ang_resp_[si_tag][indices, :], axis=0)
             ang_resp0[in_tag][i, :] = np.nanmean(ang_resp_[in_tag][indices, :], axis=0)
             ang_resp_std0[si_tag][i, :] = np.nanstd(ang_resp_[si_tag][indices, :], axis=0)
             ang_resp_std0[in_tag][i, :] = np.nanstd(ang_resp_[in_tag][indices, :], axis=0)
+        else:
+            ang_resp0[si_tag][i, :] = ang_resp_[si_tag][indices[0], :]
+            ang_resp0[in_tag][i, :] = ang_resp_[in_tag][indices[0], :]
+            ang_resp_std0[si_tag][i, :] = np.nan
+            ang_resp_std0[in_tag][i, :] = np.nan
     #\----------------------------------------------------------------------------/#
 
 
@@ -314,7 +319,7 @@ def cdata_ang_resp(
 
         ax1.axvline(wvl_joint, ls='--', color='gray')
 
-        ax1.set_title('%s\n$\\mu$=%.4f (%.2f$^\circ$)' % (os.path.basename(fname_out), ang_mu_all[index], np.rad2deg(np.arccos(ang_mu_all[index]))))
+        ax1.set_title('%s\n$\\mu$=%.4f (%.2f$^\\circ$)' % (os.path.basename(fname_out), ang_mu_all[index], np.rad2deg(np.arccos(ang_mu_all[index]))))
 
         ax1.set_ylim((0.85, 0.95))
         ax1.set_xlabel('Wavelength [nm]')

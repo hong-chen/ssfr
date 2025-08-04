@@ -38,7 +38,6 @@ import matplotlib.gridspec as gridspec
 from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.gridspec import GridSpec
 # import cartopy.crs as ccrs
 # mpl.use('Agg')
 
@@ -440,6 +439,161 @@ def ssfr_ang_cal(fdir):
     # get angles
     #╭────────────────────────────────────────────────────────────────────────────╮#
     angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 50.0, 5.0), np.arange(50.0, 91.0, 10.0)))
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+
+def ssfr_ang_cal_20250627(fdir):
+
+    """
+
+    Notes:
+        angular calibration test for SSFR-B zenith
+
+        only limited angles are taken to check consistency
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 50.0, 5.0), np.arange(50.0, 91.0, 10.0)))
+    # angles_neg = -angles_pos
+    # angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+
+    angles_pos = np.array([0.0, 30.0, 45.0, 60.0, 90.0, 60.0, 45.0, 30.0, 0.0])
+    angles_neg = np.array([-30.0, -45.0, -60.0, -90.0, -60.0, -45.0, -30.0, 0.0])
+    angles = np.concatenate((angles_pos, angles_neg))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+
+def ssfr_ang_cal_20250630(fdir):
+
+    """
+    Notes:
+        angular calibration is done for SSFR-A zenith
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 90.0, 5.0), np.array([90.0, 60.0, 45.0, 30.0])))
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+
+def ssfr_ang_cal_20250707(fdir):
+
+    """
+    Notes:
+        angular calibration is done for SSFR-A zenith
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles_pos = np.array([0.0, 45.0, 60.0, 75.0, 80.0, 85.0, 90.0, 60.0])
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+
+def ssfr_ang_cal_20250731(fdir):
+
+    """
+    Notes:
+        angular calibration is done for SSFR-A nadir
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 90.0, 5.0), np.array([90.0, 60.0])))
     angles_neg = -angles_pos
     angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
     #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -1023,6 +1177,7 @@ def plot_time_series_all(
         plt.clf()
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
+
 # radiance calibrations
 #╭────────────────────────────────────────────────────────────────────────────╮#
 def ssrr_rad_cal(
@@ -1124,7 +1279,7 @@ def ssrr_rad_cal(
                 int_time=int_time,
                 verbose=True,
                 )
-        
+
         # wavelength
         #/----------------------------------------------------------------------------\#
         wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
@@ -1139,53 +1294,22 @@ def ssrr_rad_cal(
         pri_resp_data = np.concatenate((pri_resp[si_tag][logic_si], pri_resp[in_tag][logic_in]))
 
         indices_sort = np.argsort(wvl_data)
-        wvl_      = wvl_data[indices_sort]
-        pri_resp_ = pri_resp_data[indices_sort]
+        wvl      = wvl_data[indices_sort]
+        pri_resp = pri_resp_data[indices_sort]
         #\----------------------------------------------------------------------------/#
 
         # flux to radiance (reflectance panel)
         #/----------------------------------------------------------------------------\#
         # reflectance panel efficiency
-        # effic_refl = 0.97 # 97% reflectance panel efficiency (assumed)
-        fname_panel = '%s/panel/12x12Spectralon_ASDwavs.ascii' % (ssfr.common.fdir_data)
-        if not os.path.exists(fname_panel):
-            msg = '\nError [ssfr_rad_cal]: cannot locate calibration file for panel <%s>.' % fname_panel
-            raise OSError(msg)
-        data_panel = np.loadtxt(fname_panel)
-        wvl_panel = data_panel[:, 0]
-        refl_panel = data_panel[:, 1]
-        pri_resp_rad = {}
-        pri_resp_rad[si_tag] = pri_resp[si_tag] * np.pi / np.interp(wvls[si_tag], wvl_panel, refl_panel)
-        pri_resp_rad[in_tag] = pri_resp[in_tag] * np.pi / np.interp(wvls[in_tag], wvl_panel, refl_panel)
-        pri_resp_rad_ = pri_resp_ * np.pi / np.interp(wvl_, wvl_panel, refl_panel)
+        effic_refl = 0.97 # 97% reflectance panel efficiency (assumed)
+        pri_resp_rad = pri_resp * np.pi / effic_refl
         #\----------------------------------------------------------------------------/#
 
         # brute force filtering for low response
         #/----------------------------------------------------------------------------\#
-        # resp_threshold = 60. # counts / (W m^{-2} nm^{-1} sr^{-1} s)
-        resp_threshold = 10. # counts / (W m^{-2} nm^{-1} sr^{-1} s)
-        pri_resp_rad[si_tag][pri_resp_rad[si_tag] < resp_threshold] = np.nan
-        pri_resp_rad[in_tag][pri_resp_rad[in_tag] < resp_threshold] = np.nan
-        pri_resp_rad_[pri_resp_rad_ < resp_threshold] = np.nan
+        resp_threshold = 60. # counts / (W m^{-2} nm^{-1} sr^{-1} s)
+        pri_resp_rad[pri_resp_rad < resp_threshold] = np.nan
         #\----------------------------------------------------------------------------/#
-
-        # Silicon scaling based on the joint wavelength signals
-        #/----------------------------------------------------------------------------\#
-        if   which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'zen':
-            si_in_diff = 0.9036051272130695
-        elif which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'nad':
-            si_in_diff = 0.9808717432930821
-        elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'zen':
-            si_in_diff = 0.9279473175434759
-        elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'nad':
-            si_in_diff = 0.9887711508106611
-        else:
-            msg = '\nError [ssfr_rad_cal]: <which_ssrr=> does not support <\'%s\'> (only supports <\'lasp|ssrr-a\'> or <\'lasp|ssrr-b\'>).' % which_ssrr
-            raise ValueError(msg)
-        scaling_factor = -(si_in_diff - 1.) * np.exp( 0.015 * (350. - wvl_[wvl_ < wvl_joint])) + si_in_diff
-        pri_resp_rad_[wvl_ < wvl_joint] = pri_resp_rad_[wvl_ < wvl_joint] * scaling_factor 
-        #\----------------------------------------------------------------------------/#
-
 
         # save file
         #/----------------------------------------------------------------------------\#
@@ -1195,19 +1319,8 @@ def ssrr_rad_cal(
             fname_out = 'rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssrr, which_spec, int_time[si_tag], int_time[in_tag])
 
         f = h5py.File(fname_out, 'w')
-        f['wvl']       = wvl_
-        f['pri_resp']  = pri_resp_rad_
-
-        g = f.create_group('raw')
-        
-        g_si = g.create_group('si')
-        g_si['wvl'] = wvls[si_tag]
-        g_si['pri_resp'] = pri_resp_rad[si_tag]
-
-        g_in = g.create_group('in')
-        g_in['wvl'] = wvls[in_tag]
-        g_in['pri_resp'] = pri_resp_rad[in_tag]
-
+        f['wvl']       = wvl
+        f['pri_resp']  = pri_resp_rad
         f.close()
         #\----------------------------------------------------------------------------/#
 
@@ -1255,66 +1368,9 @@ def main_ssrr_rad_cal_all(
         # SSRR-B (regular setup for measuring radiance)
         #╭────────────────────────────────────────────────────────────────────────────╮#
         fdirs_pri = [
-                {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentafterwiggle',
-                 'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
                 # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-060-100_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-120-200_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-240-400_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentafterwiggle'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentwiggleccw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentwigglecw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-060-100_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-090-150_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-120-200_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentafterwiggle'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentwiggleccw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentwigglecw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncal'}, # uncalibrated lamp
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncalccw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncalcw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncaldiag'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncaldiagccw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncaldiagcw'},
-                
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment123testfiberoutin'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-060-100_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-090-150_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-120-200_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment123test'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment123testfiberoutin'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentwiggleccw'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-B_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentwigglecw'},
-                
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz000'}, # uncalibrated lamp
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz030'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz090'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz180'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz270'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz330'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz360'},
-                
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2nadaz000'}, # uncalibrated lamp
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2nadaz030'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2nadaz090'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2nadaz180'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2nadaz270'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2nadaz330'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2nadaz360'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2zenaz000'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2zenaz030'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2zenaz090'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2zenaz180'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2zenaz270'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2zenaz330'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2zenaz360'},
-        ]
+                {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
+                ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
     
     elif 'ssrr-a' in which_ssrr.lower():
@@ -1322,58 +1378,16 @@ def main_ssrr_rad_cal_all(
         # SSRR-A (backup setup for measuring radiance)
         #╭────────────────────────────────────────────────────────────────────────────╮#
         fdirs_pri = [
-                {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentafterwiggle',
-                 'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-A_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
                 # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentazimuthallyrotated'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentnopump'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentwiggle'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-060-100_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-120-200_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-240-400_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-06_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-240-400_in-080-180_postdeploymentwiggle'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentafterwiggle'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentwiggleccw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentwigglecw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-060-100_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-090-150_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-120-200_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentafterwiggle'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentwiggleccw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-09_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentwigglecw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncal'}, # uncalibrated lamp
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncalccw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncalcw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncaldiag'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncaldiagccw'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-13_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentuncaldiagcw'},
-
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-A_zen-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-A_zen-lcx_pri-cal_lamp-1324_si-060-100_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-A_zen-lcx_pri-cal_lamp-1324_si-090-150_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-A_zen-lcx_pri-cal_lamp-1324_si-120-200_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-A_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeployment'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-A_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentwiggleccw'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-06-16_SSRR-A_zen-lcx_pri-cal_lamp-1324_si-180-300_in-080-180_postdeploymentwigglecw'},
-                
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz000'}, # uncalibrated lamp
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz030'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz090'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz180'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz270'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz330'},
-                # {'nad': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-A_nad-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentnad2nadaz360'},
+                {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
+                # {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentnopump'},
+                # {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-A_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeploymentazimuthallyrotated'},
                 ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
     for fdir_pri in fdirs_pri:
-        for spec_tag in ['nad', 'zen']:
-        # for spec_tag in ['nad',]:
-        # for spec_tag in ['zen',]:
+        # for spec_tag in ['nad', 'zen']: # no zenith calibration data is ready for SSRR
+        for spec_tag in ['nad',]:
             fdir_pri0 = fdir_pri[spec_tag]
             print(spec_tag)
             print(fdir_pri0)
@@ -1412,495 +1426,14 @@ def plot_response(
     ax1.set_xlim(350.0, 2200.0)
     ax1.set_ylim(0.0, None)
     ax1.set_xlabel('Wavelength (nm)')
-    ax1.set_ylabel('Response (counts / (W m$^{-2}$ nm$^{-1}$ sr$^{-1}$ $\cdot$ s))')
+    ax1.set_ylabel('Response (counts / (W m$^{-2}$ nm$^{-1}$ sr$^{-1}$ $\\cdot$ s))')
     ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
     ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fontsize=10)
 
     fname_fig = '%s_%s.png' % (which_ssfr, which_lc)
     fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
     plt.close(fig)
-
-def plot_response_lc_wiggle(
-        caldate='2024-08-10',
-        which_ssfr='lasp|ssrr-a',
-        which_lc='nad',
-        fdir='.',
-        ):
-    
-    search_path = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|%s|%s|si-*|in-*.h5' % (which_ssfr, which_lc))
-    fnames = sorted(glob.glob(search_path))
-    if not fnames:
-        raise OSError('No file found for pattern: %s' % search_path)
-
-    target_types = {
-        "postdeployment|": "original",
-        "postdeploymentwigglecw|": "CW",
-        "postdeploymentwiggleccw|": "CCW",
-        "postdeploymentuncal|": "original",
-        "postdeploymentuncalcw|": "CW",
-        "postdeploymentuncalccw|": "CCW",
-        "postdeploymentuncaldiag|": "original",
-        "postdeploymentuncaldiagcw|": "CW",
-        "postdeploymentuncaldiagccw|": "CCW",
-        "postdeploymentwiggle|": "wiggle",
-        "postdeployment123test|": "Repeat",
-        "postdeployment123testfiberoutin|": "Post-swap",
-    }
-    type_linestyles = {
-        "original": "solid",
-        "CW": "dashed",
-        "CCW": "dotted",
-        "wiggle": "dashed",
-        "Repeat": "dashed",
-        "Post-swap": "dotted",
-    }
-
-    remark_titl = ''
-    # remark_titl = '(default distance)'
-    # remark_titl = '(shorter distance)'
-
-    # target_wvls = [450, 550, 650]
-    # colors = ['blue', 'green', 'red']
-    target_wvls = [450, 650, 1050, 1250]
-    colors = ['blue', 'red', 'cyan', 'magenta']
-    # target_wvls = [450, 550,]
-    # colors = ['blue', 'green',]
-
-    # Collect data by type
-    type_data = {k: {"si_times": [], "resp": {w: [] for w in target_wvls}} for k in target_types}
-
-
-    for fname in fnames:
-        base = os.path.basename(fname)
-        if caldate not in base:
-            continue
-        # Determine type
-        type_key = None
-        for k in target_types:
-            if k in base:
-                type_key = k
-                break
-        if type_key is None:
-            continue
-        # Extract silicon integration time without re
-        si_val = np.nan
-        parts = base.split('si-')
-        if len(parts) > 1:
-            si_str = parts[1].split('|')[0]
-            try:
-                si_val = float(si_str)
-            except Exception:
-                si_val = np.nan
-        f = h5py.File(fname, 'r')
-        wvl = f['wvl'][...]
-        resp = f['pri_resp'][...]
-        f.close()
-        type_data[type_key]["si_times"].append(si_val)
-        for twvl in target_wvls:
-            type_data[type_key]["resp"][twvl].append(resp[np.argmin(np.abs(wvl - twvl))])
-
-    # Plot
-    fig2 = plt.figure(figsize=(5, 6))
-    ax2 = fig2.add_subplot(111)
-    handles = []
-    labels = []
-    for i, twvl in enumerate(target_wvls):
-        for k, label in target_types.items():
-            si_times = np.array(type_data[k]["si_times"])
-            if len(si_times) == 0:
-                continue
-            resp_vals = np.array(type_data[k]["resp"][twvl])
-            # Sort by si_times for line plotting
-            sort_idx = np.argsort(si_times)
-            si_times = si_times[sort_idx]
-            resp_vals = resp_vals[sort_idx]
-            linestyle = type_linestyles.get(label, 'solid')
-            line, = ax2.plot(
-                si_times,
-                resp_vals,
-                marker='o',
-                color=colors[i],
-                linestyle=linestyle,
-                label=f"{twvl} nm ({label})"
-            )
-            handles.append(line)
-            labels.append(f"{twvl} nm ({label})")
-
-            print(f"Plotting {twvl} nm for {label}: SI times = {si_times}, Response = {resp_vals}")
-
-    ax2.set_xlabel('Silicon Integration Time (ms)')
-    ax2.set_ylabel('Response (counts / (W m$^{-2}$ nm$^{-1}$ sr$^{-1}$ $\cdot$ s))')
-    # ax2.set_title('%s (%s): Angular Wiggle test %s' % (which_ssfr.upper(), which_lc.upper(), remark_titl))
-    ax2.set_title('%s (%s): Fiber in/out test %s' % (which_ssfr.upper(), which_lc.upper(), remark_titl))
-    ax2.set_xlim(0., None)
-    # ax2.set_ylim(2000, 4500)
-    # Move legend below the panel, use 3 columns
-    ax2.legend(handles=handles, labels=labels, fontsize=10, loc='upper center', bbox_to_anchor=(0.5, -0.18), ncol=3)
-    fig2.tight_layout()
-    fname_fig2 = '%s_%s_vs_si_postwiggle.png' % (which_ssfr, which_lc)
-    fig2.savefig(fname_fig2, bbox_inches='tight', transparent=False, dpi=300)
-    plt.close(fig2)
-
-def plot_response_nonlinearity(
-        which_ssfr='lasp|ssrr-a',
-        which_lc='nad',
-        fdir='.',
-        ):
-    
-    search_path = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|%s|%s|si-*|in-*.h5' % (which_ssfr, which_lc))
-    fnames = sorted(glob.glob(search_path))
-    if not fnames:
-        raise OSError('No file found for pattern: %s' % search_path)
-
-    # target_wvls = [450, 550, 650,]
-    # colors = ['blue', 'green', 'red',]
-    target_wvls = [450, 550, 650, 750, 1050, 1150, 1250,] # Note the int time is for Silicon
-    colors = ['blue', 'green', 'red', 'brown', 'cyan', 'teal', 'magenta',]
-    # target_wvls = [450, 550,]
-    # colors = ['blue', 'green',]
-    # target_wvls = [550,]
-    # colors = ['green',]
-    si_times = []
-    resp_dict = {wvl: [] for wvl in target_wvls}
-    labels = []
-    date_list = []
-    id_list = []
-
-    # Define marker shapes for up to 10 unique dates
-    marker_shapes = ['o', 's', '^', 'D', 'v', 'P', '*', 'X', '<', '>']
-
-    for fname in fnames:
-        base = os.path.basename(fname)
-        try:
-            si_str = base.split('si-')[1].split('|')[0]
-            si_val = float(si_str)
-        except Exception:
-            si_val = np.nan
-        si_times.append(si_val)
-        # Extract date from filename (first part before '_')
-        date_str = base.split('_')[0]
-        id_str = base.split('|')[0].split('_')[-1]
-        if id_str not in id_list:
-            id_list.append(id_str)
-        id_idx = id_list.index(id_str)
-        date_list.append(date_str + ' no.%d' % (id_idx + 1))
-        print(base, date_str + ' no.%d' % (id_idx + 1))
-        f = h5py.File(fname, 'r')
-        wvl = f['wvl'][...]
-        resp = f['pri_resp'][...]
-        f.close()
-        for twvl in target_wvls:
-            resp_dict[twvl].append(resp[np.argmin(np.abs(wvl - twvl))])
-        labels.append(base)
-
-    si_times = np.array(si_times)
-    date_list = np.array(date_list)
-    for twvl in target_wvls:
-        resp_dict[twvl] = np.array(resp_dict[twvl])
-
-    unique_dates = np.unique(date_list)
-    marker_map = {d: marker_shapes[i % len(marker_shapes)] for i, d in enumerate(unique_dates)}
-
-    fig2 = plt.figure(figsize=(6, 5))
-    gs = GridSpec(2, 1, height_ratios=[10, 1.5])
-    ax2 = fig2.add_subplot(gs[0])
-    for i, twvl in enumerate(target_wvls):
-        for d in unique_dates:
-            mask = date_list == d
-            marker = marker_map[d]
-            ax2.scatter(
-                si_times[mask], resp_dict[twvl][mask],
-                color=colors[i], marker=marker, s=50, edgecolor='k', linewidth=0.5
-            )
-            if np.sum(mask) > 1:
-                ax2.plot(si_times[mask], resp_dict[twvl][mask], color=colors[i], alpha=0.5, linewidth=1)
-
-        print(f"\nWavelength: {twvl} nm")
-        for si in np.unique(si_times):
-            mask = si_times == si
-            if np.sum(mask) > 0:
-                vals = resp_dict[twvl][mask]
-                mean_val = np.nanmean(vals)
-                min_val = np.nanmin(vals)
-                max_val = np.nanmax(vals)
-                err_val = (max_val - min_val) / mean_val
-                print(f"  SI={si:.0f} ms: mean={mean_val:.2f}, min={min_val:.2f}, max={max_val:.2f}, err={err_val:.2%}")
-    ax2.set_xlabel('Silicon Integration Time (ms)')
-    ax2.set_ylabel('Response (counts / (W m$^{-2}$ nm$^{-1}$ sr$^{-1}$ $\cdot$ s))')
-    ax2.set_title('%s (%s): Response at %s nm' % (which_ssfr.upper(), which_lc.upper(), ', '.join(str(w) for w in target_wvls)))
-    ax2.set_xlim(0., None)
-    ax2.set_ylim(1750, 4750)
-
-    handles_dates = [
-        plt.Line2D([0], [0], marker=marker_map[d], color='w', label=d, markerfacecolor='gray', markeredgecolor='k', markersize=8)
-        for d in unique_dates
-    ]
-    handles_wvls = [mpatches.Patch(color=colors[i], label=f'{target_wvls[i]} nm') for i in range(len(target_wvls))]
-
-    ax_leg = fig2.add_subplot(gs[1])
-    ax_leg.axis('off')
-
-    legend1 = ax_leg.legend(handles=handles_dates, title='Date', loc='center left', bbox_to_anchor=(0.05, 0.5), fontsize=8, ncol=2)
-    legend2 = ax_leg.legend(handles=handles_wvls, title='Wavelength', loc='center right', bbox_to_anchor=(0.95, 0.5), fontsize=8)
-    ax_leg.add_artist(legend1)
-
-    fig2.tight_layout()
-    fname_fig2 = '%s_%s_vs_si.png' % (which_ssfr, which_lc)
-    fig2.savefig(fname_fig2, bbox_inches='tight', transparent=False, dpi=300)
-    plt.close(fig2)
-
-def plot_response_fiber_rotation(
-        which_ssfr='lasp|ssrr-a',
-        which_lc='nad',
-        fdir='.',
-        ):
-    
-    search_path = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|%s|%s|si-*|in-*.h5' % (which_ssfr, which_lc))
-    fnames = sorted(glob.glob(search_path))
-    if not fnames:
-        raise OSError('No file found for pattern: %s' % search_path)
-
-    # Plot each response relative to the mean for each unique (si, in) integration time set
-    # Use different linestyles for different unique integration times
-
-    si_times = []
-    in_times = []
-    wvl_list = []
-    resp_list = []
-
-    for fname in fnames:
-        base = os.path.basename(fname)
-        if 'az' not in base:
-            continue
-        try:
-            si_str = base.split('si-')[1].split('|')[0]
-            in_str = base.split('in-')[1].split('.')[0]
-            si_val = float(si_str)
-            in_val = float(in_str)
-        except Exception:
-            si_val = np.nan
-            in_val = np.nan
-        si_times.append(si_val)
-        in_times.append(in_val)
-        f = h5py.File(fname, 'r')
-        wvl = f['wvl'][...]
-        resp = f['pri_resp'][...]
-        f.close()
-        wvl_list.append(wvl)
-        resp_list.append(resp)
-
-    si_times = np.array(si_times)
-    in_times = np.array(in_times)
-    wvl_arr = np.array(wvl_list)
-    resp_arr = np.array(resp_list)
-
-    ### Fitting function
-    def fit_func(x, a):
-        return -(a - 1.) * np.exp(0.015*(350. - x)) + a
-
-    # Find all unique (si, in) pairs
-    unique_pairs = np.unique(np.stack([si_times, in_times], axis=1), axis=0)
-
-    # Define linestyles for up to 10 unique integration time sets
-    linestyles = ['solid', 'dashed', 'dotted', 'dashdot', (0, (3, 1, 1, 1)), (0, (5, 2)), (0, (1, 1)), (0, (3, 5, 1, 5)), (0, (5, 1)), (0, (1, 10))]
-    linestyle_map = {}
-    for idx, pair in enumerate(unique_pairs):
-        linestyle_map[tuple(pair)] = linestyles[idx % len(linestyles)]
-
-    fig3, ax3 = plt.subplots(figsize=(10, 6))
-
-    for pair in unique_pairs:
-        mask = (si_times == pair[0]) & (in_times == pair[1])
-        n_case = np.sum(mask)
-        if n_case < 1:
-            continue
-        # Interpolate all responses to a common wavelength grid
-        wvl_common = wvl_list[np.where(mask)[0][0]]
-        resp_interp = []
-        for i in np.where(mask)[0]:
-            resp_interp.append(np.interp(wvl_common, wvl_list[i], resp_list[i]))
-        resp_interp = np.array(resp_interp)
-        mean_vals = np.nanmean(resp_interp, axis=0)
-        # Plot each case relative to the mean
-        for j, i in enumerate(np.where(mask)[0]):
-            rel_val = resp_interp[j] / mean_vals
-            coeff_diff = rel_val[np.where((wvl_common < 950) & (wvl_common >= 850))].mean() / rel_val[np.where((wvl_common > 950) & (wvl_common <= 1050))].mean()
-            print(f"Pair: {pair}, Case {j+1}/{n_case}, Coeff Diff: {coeff_diff:.4f}")
-            out_rel_val = rel_val.copy()
-            out_rel_val[np.where(wvl_common < 950)] /= fit_func(wvl_common[np.where(wvl_common < 950)], coeff_diff)
-            label = f"si={int(pair[0])}, in={int(pair[1])} (case {j+1}/{n_case})"
-            ax3.plot(
-                wvl_common, out_rel_val,
-                linestyle=linestyle_map[tuple(pair)],
-                alpha=0.7,
-                label=label
-            )
-    ax3.set_xlabel('Wavelength (nm)')
-    ax3.set_ylabel('Response / Mean')
-    ax3.set_title('Response Relative to Mean for Each Integration Time Set')
-    ax3.set_xlim(350, 2200)
-    ax3.set_ylim(0.8, 1.2)
-    ax3.legend(fontsize=9, loc='upper right')
-    fig3.tight_layout()
-    fig3.savefig('%s_%s_rel2mean_vs_wvl.png' % (which_ssfr, which_lc), bbox_inches='tight', transparent=False, dpi=300)
-    plt.close(fig3)
-
-    target_wvls = [450, 550, 650, 750, 1050, 1150, 1250,]
-    colors = ['blue', 'green', 'red', 'brown', 'cyan', 'teal', 'magenta',]
-    si_times = []
-    resp_dict = {wvl: [] for wvl in target_wvls}
-    labels = []
-    date_list = []
-    ang_list = []
-    id_list = []
-
-    # Define marker shapes for up to 10 unique entries
-    marker_shapes = ['o', 's', '^', 'D', 'v', 'P', '*', 'X', '<', '>']
-
-    for fname in fnames:
-        base = os.path.basename(fname)
-        if 'az' not in base:
-            continue
-        try:
-            si_str = base.split('si-')[1].split('|')[0]
-            si_val = float(si_str)
-        except Exception:
-            si_val = np.nan
-        si_times.append(si_val)
-        # Extract date from filename (first part before '_')
-        date_str = base.split('_')[0]
-        id_str = base.split('|')[0].split('_')[-1]
-        if id_str not in id_list:
-            id_list.append(id_str)
-        id_idx = id_list.index(id_str)
-        date_list.append(date_str + ' no.%d' % (id_idx + 1))
-        ang_list.append(int(base.split('az')[1].split('|')[0]) if 'az' in base else 'unknown')
-        f = h5py.File(fname, 'r')
-        wvl = f['wvl'][...]
-        resp = f['pri_resp'][...]
-        f.close()
-        for twvl in target_wvls:
-            resp_dict[twvl].append(resp[np.argmin(np.abs(wvl - twvl))])
-        labels.append(base)
-
-    si_times = np.array(si_times)
-    date_list = np.array(date_list)
-    for twvl in target_wvls:
-        resp_dict[twvl] = np.array(resp_dict[twvl])
-
-    unique_dates = np.unique(date_list)
-    marker_map = {d: marker_shapes[i % len(marker_shapes)] for i, d in enumerate(unique_dates)}
-
-    fig2 = plt.figure(figsize=(6, 5))
-    gs = GridSpec(2, 1, height_ratios=[10, 1.5])
-
-    ax2 = fig2.add_subplot(gs[0])
-    for i, twvl in enumerate(target_wvls):
-        for d in unique_dates:
-            mask = date_list == d
-            marker = marker_map[d]
-            ax2.scatter(
-                si_times[mask], resp_dict[twvl][mask],
-                color=colors[i], marker=marker, s=50, edgecolor='k', linewidth=0.5
-            )
-            if np.sum(mask) > 1:
-                ax2.plot(si_times[mask], resp_dict[twvl][mask], color=colors[i], alpha=0.5, linewidth=1)
-        # For each integration time, print mean, std, min, max of response across all unique dates
-        print(f"\nWavelength: {twvl} nm")
-        for si in np.unique(si_times):
-            mask = si_times == si
-            if np.sum(mask) > 0:
-                vals = resp_dict[twvl][mask]
-                mean_val = np.nanmean(vals)
-                min_val = np.nanmin(vals)
-                max_val = np.nanmax(vals)
-                err_val = (max_val - min_val) / mean_val
-                print(f"  SI={si:.0f} ms: mean={mean_val:.2f}, min={min_val:.2f}, max={max_val:.2f}, err={err_val:.2%}")
-    ax2.set_xlabel('Silicon Integration Time (ms)')
-    ax2.set_ylabel('Response (counts / (W m$^{-2}$ nm$^{-1}$ sr$^{-1}$ $\cdot$ s))')
-    ax2.set_title('%s (%s): Response at %s nm' % (which_ssfr.upper(), which_lc.upper(), ', '.join(str(w) for w in target_wvls)))
-    ax2.set_xlim(0., None)
-    ax2.set_ylim(1750, 4750)
-
-    handles_dates = [
-        plt.Line2D([0], [0], marker=marker_map[d], color='w', label=d, markerfacecolor='gray', markeredgecolor='k', markersize=8)
-        for d in unique_dates
-    ]
-    handles_wvls = [mpatches.Patch(color=colors[i], label=f'{target_wvls[i]} nm') for i in range(len(target_wvls))]
-
-    ax_leg = fig2.add_subplot(gs[1])
-    ax_leg.axis('off')
-
-    legend1 = ax_leg.legend(handles=handles_dates, title='Date', loc='center left', bbox_to_anchor=(0.05, 0.5), fontsize=8, ncol=2)
-    legend2 = ax_leg.legend(handles=handles_wvls, title='Wavelength', loc='center right', bbox_to_anchor=(0.95, 0.5), fontsize=8)
-    ax_leg.add_artist(legend1)
-
-    fig2.tight_layout()
-    fname_fig2 = '%s_%s_vs_si.png' % (which_ssfr, which_lc)
-    fig2.savefig(fname_fig2, bbox_inches='tight', transparent=False, dpi=300)
-    plt.close(fig2)
-
-    # For each unique (si, in) integration time set, plot response vs date for all target wavelengths
-    target_wvls = [450, 550,]
-    colors = ['blue', 'green']
-    # target_wvls = [1150, 1250] # note that the integration time is currently for Silicon, not InGaAs
-    # colors = ['teal', 'magenta']
-
-    # print(si_times)
-    # print(in_times)
-    # print(date_list)
-    # print(ang_list)
-    # datenum_to_datedeg = {
-    #     '2025-06-18 no.1': 'no. 1   0 deg',
-    #     '2025-06-18 no.2': 'no. 2   30 deg',
-    #     '2025-06-18 no.3': 'no. 3   90 deg',
-    #     '2025-06-18 no.4': 'no. 4   180 deg',
-    #     '2025-06-18 no.5': 'no. 5   270 deg',
-    #     '2025-06-18 no.6': 'no. 6   330 deg',
-    #     '2025-06-18 no.7': 'no. 7   360 deg',
-    # }
-    datenum_to_datedeg = {
-        date: f'{date.split(" ")[1]} {ang} deg' for iang, (date, ang) in enumerate(zip(date_list, ang_list))
-    }
-
-    date_list = np.array([datenum_to_datedeg.get(d, d) for d in date_list])
-
-    for pair in unique_pairs:
-        mask_pair = (si_times == pair[0]) & (in_times == pair[1])
-        if np.sum(mask_pair) < 1:
-            continue
-        fig_pair = plt.figure(figsize=(6, 4.5))
-        gs_pair = GridSpec(1, 1)
-        ax_pair = fig_pair.add_subplot(gs_pair[0])
-
-        unique_dates_pair = np.unique(date_list)
-        for i, twvl in enumerate(target_wvls):
-            yvals = []
-            for d in unique_dates_pair:
-                mask_date = (date_list == d) & mask_pair
-                vals_d = resp_dict[twvl][mask_date]
-                if len(vals_d) > 0:
-                    mean_val = np.nanmean(vals_d)
-                    yvals.append(mean_val)
-                else:
-                    yvals.append(np.nan)
-            ax_pair.plot(
-                np.arange(len(unique_dates_pair)), yvals,
-                marker='o', color=colors[i], label=f'{twvl} nm'
-            )
-
-        ax_pair.set_xticks(np.arange(len(unique_dates_pair)))
-        ax_pair.set_xticklabels(unique_dates_pair, rotation=45, ha='right')
-        ax_pair.set_ylabel('Response (counts / (W m$^{-2}$ nm$^{-1}$ sr$^{-1}$ $\cdot$ s))')
-        ax_pair.set_title('%s (%s): Response vs Azimuth angle (si=%d, in=%d)' % (
-            which_ssfr.upper(), which_lc.upper(), int(pair[0]), int(pair[1])))
-        ax_pair.legend(fontsize=9, loc='upper right')
-
-        fig_pair.tight_layout()
-        fname_fig_pair = '%s_%s_vs_date_si%d_in%d.png' % (
-            which_ssfr, which_lc, int(pair[0]), int(pair[1]))
-        fig_pair.savefig(fname_fig_pair, bbox_inches='tight', transparent=False, dpi=300)
-        plt.close(fig_pair)
+#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 if __name__ == '__main__':
@@ -1923,7 +1456,7 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
     # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
     # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
 
@@ -1936,29 +1469,33 @@ if __name__ == '__main__':
     #╭────────────────────────────────────────────────────────────────────────────╮#
     # fdir = 'data/arcsix/cal/ang-cal/2025-03-05_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
     # ssfr_ang_cal(fdir)
+
+    # fdir = 'data/arcsix/cal/ang-cal/2025-06-27_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal_20250627(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # post-mission SSRR calibration
+    # angular calibrations(SSFR-A, zen-lc4,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
-    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
-    plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-a', which_lc='zen', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-b', which_lc='zen', fdir='.',)
+    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal_20250630(fdir)
 
-    # Nonlinearity test
-    # plot_response_nonlinearity(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.')
-    # plot_response_nonlinearity(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.')
+    # for vaa in np.arange(0.0, 181.0, 30.0):
+    #     fdir = 'data/arcsix/cal/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
+    #     ssfr_ang_cal_20250707(fdir)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # wiggle test
-    # plot_response_lc_wiggle(caldate='2025-06-13', which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.')
-    # plot_response_lc_wiggle(caldate='2025-06-13', which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.')
+    # angular calibrations(SSFR-A, nad-lc6,  post)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fdir = 'data/arcsix/cal/ang-cal/2025-07-31_SSFR-A_nad-lc6_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal_20250731(fdir)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # Fiber rotation test
-    # plot_response_fiber_rotation(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.')
-    # plot_response_fiber_rotation(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.')
-    # plot_response_fiber_rotation(which_ssfr='lasp|ssrr-b', which_lc='zen', fdir='.')
+    # post-mission SSRR calibration (nadir)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
+    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
+    # plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
+    # plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     pass
