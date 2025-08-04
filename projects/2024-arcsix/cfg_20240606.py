@@ -43,8 +43,7 @@ fdir_out = f'data/{mission}/processed'
 #╭──────────────────────────────────────────────────────────────╮#
 # data directory
 #╭────────────────────────────────────────────────╮#
-# fdir_hsk = '%s/aux/hsk' % (fdir_data)
-fdir_hsk = f'{fdir_data}/aux'
+fdir_hsk = f'{fdir_data}/hsk/aux'
 fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{alp_tag}')[-1]
 fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{hsr1_tag}')[-1]
 fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{ssfr_tag}')[-1]
@@ -79,6 +78,15 @@ fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.uppe
 
 # calibrations
 #╭────────────────────────────────────────────────╮#
+fname_ssfr_rad_cal_zen = None
+fname_ssfr_rad_cal_zen = None
+fname_ssfr_ang_cal_zen = None
+fname_ssfr_ang_cal_zen = None
+
+fname_ssrr_rad_cal_zen = None
+fname_ssrr_rad_cal_zen = None
+fname_ssrr_ang_cal_zen = None
+fname_ssrr_ang_cal_zen = None
 #╰────────────────────────────────────────────────╯#
 #╰──────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
