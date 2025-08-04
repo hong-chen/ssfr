@@ -782,7 +782,6 @@ def main_process_data_v1(cfg, run=True):
     _FNAMES_['%s_hsr1_v1' % date_s] = fname_hsr1_v1
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-
 def main_process_data_v2(date, run=True):
 
     """

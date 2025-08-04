@@ -46,11 +46,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import ssfr
 
 
-# parameters
-#╭────────────────────────────────────────────────────────────────────────────╮#
-_FNAMES_ = {}
-#╰────────────────────────────────────────────────────────────────────────────╯#
-
 _ALP_TIME_OFFSET_ = {
         '20240517':   5.55,
         '20240521': -17.94,
@@ -303,8 +298,8 @@ def run_time_offset_check(cfg):
 
     date = cfg.common['date']
     date_s = date.strftime('%Y%m%d')
-    data_hsk = ssfr.util.load_h5(_FNAMES_['%s_hsk_v0' % date_s])
-    data_alp = ssfr.util.load_h5(_FNAMES_['%s_alp_v0' % date_s])
+    data_hsk = ssfr.util.load_h5(cfg.hsk['fname_v0'])
+    data_alp = ssfr.util.load_h5(cfg.alp['fname_v0'])
 
     # _offset_x_range_ = [-6000.0, 6000.0]
     _offset_x_range_ = [-600.0, 600.0]
@@ -383,7 +378,7 @@ def main_process_data_v0(cfg, run=True):
     # ALP v0: raw data
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fnames_alp = cfg.alp['fnames']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    fname_h5 = cfg.alp['fname_v0']
     if run and (len(fnames_alp)==0):
         pass
     else:
@@ -394,19 +389,17 @@ def main_process_data_v0(cfg, run=True):
                 fdir_out=fdir_out,
                 run=run
                 )
-        _FNAMES_['%s_alp_v0' % date_s]   = fname_alp_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # HSK v0: raw data
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_hsk = cfg.hsk['fname']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsk['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    fname_h5 = cfg.hsk['fname_v0']
     if run and (fname_hsk is None):
         # * not preferred, use ALP lon/lat if P3 housekeeping file is not available (e.g., for immediate data processing after flight)
         fname_hsk_v0 = cdata_hsk_from_alp_v0(
                 date,
-                _FNAMES_['%s_alp_v0' % date_s],
                 fname_h5=fname_h5,
                 fdir_out=fdir_out,
                 run=run
@@ -420,8 +413,6 @@ def main_process_data_v0(cfg, run=True):
                 fdir_out=fdir_out,
                 run=run
                 )
-
-    _FNAMES_['%s_hsk_v0' % date_s] = fname_hsk_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main_process_data_v1(cfg, run=True):
@@ -437,19 +428,17 @@ def main_process_data_v1(cfg, run=True):
 
     # ALP v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.alp['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    fname_h5 = cfg.alp['fname_v1']
 
     fname_alp_v1 = cdata_alp_v1(
             date,
-            _FNAMES_['%s_alp_v0' % date_s],
-            _FNAMES_['%s_hsk_v0' % date_s],
+            cfg.alp['fname_v0'],
+            cfg.hsk['fname_v0'],
             fname_h5=fname_h5,
             time_offset=cfg.alp['time_offset'],
             fdir_out=fdir_out,
             run=run
             )
-
-    _FNAMES_['%s_alp_v1' % date_s] = fname_alp_v1
     #╰────────────────────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
