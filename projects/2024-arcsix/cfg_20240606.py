@@ -160,7 +160,7 @@ ssfr = {
 
         # 'fname_rad_cal': fname_rad_cal_ssfr,
 
-        'which_ssfr': 'lasp|%s' % ssfr_tag.lower(),
+        'which_ssfr': f'lasp|{ssfr_tag.lower()}'
 
         # wavelength setting
         'wvl_s': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
@@ -200,7 +200,7 @@ ssrr = {
 
         'fname_ssrr_rad_cal': None,
 
-        'which_ssfr': 'lasp|%s' % ssrr_tag.lower(),
+        'which_ssfr': f'lasp|{ssrr_tag.lower()}'
 
         # wavelength setting
         'wvl_s': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
