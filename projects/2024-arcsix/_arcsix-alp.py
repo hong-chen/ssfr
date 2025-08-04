@@ -424,8 +424,6 @@ def main_process_data_v1(cfg, run=True):
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    main_process_data_v0(cfg, run=False)
-
     # ALP v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_h5 = cfg.alp['fname_v1']

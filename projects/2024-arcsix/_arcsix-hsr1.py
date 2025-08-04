@@ -46,42 +46,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import ssfr
 
 
-# parameters
-#╭────────────────────────────────────────────────────────────────────────────╮#
-_FNAMES_ = {}
-#╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-_ALP_TIME_OFFSET_ = {
-        '20240517':   5.55,
-        '20240521': -17.94,
-        '20240524': -18.39,
-        '20240528': -17.19,
-        '20240530': -17.41,
-        '20240531': -17.41,
-        '20240603': -17.41,
-        '20240605': -17.58,
-        '20240606': -18.08,
-        '20240607': -17.45,
-        '20240610': -17.45,
-        '20240611': -17.52,
-        '20240613': -17.85,
-        '20240708': -17.85,
-        '20240709': -17.85,
-        '20240722': -17.85,
-        '20240724': -17.85,
-        '20240725': -17.89,
-        '20240726': -17.89,
-        '20240729': -18.22,
-        '20240730': -17.43,
-        '20240801': -17.74,
-        '20240802': -17.97,
-        '20240807': -17.67,
-        '20240808': -18.04,
-        '20240809': -18.01,
-        '20240815': -18.10,
-        '20240816': -18.10,
-        }
 _HSR1_TIME_OFFSET_ = {
         '20240517': 0.0,
         '20240521': 0.0,
@@ -111,68 +75,6 @@ _HSR1_TIME_OFFSET_ = {
         '20240809': 0.0,
         '20240815': 0.0,
         '20240816': 0.0,
-        }
-
-_SSFR1_TIME_OFFSET_ = {
-        '20240517': 185.0,
-        '20240521': 182.0,
-        '20240524': -145.75,
-        '20240528': -156.26,
-        '20240530': -158.04,
-        '20240531': -161.38,
-        '20240603': -170.42,
-        '20240605': -176.88,
-        '20240606': -180.41,
-        '20240607': -181.44,
-        '20240610': -188.70,
-        '20240611': -190.69,
-        '20240613': -196.06,
-        '20240708': -196.06,
-        '20240709': -196.06,
-        '20240722': -196.06,
-        '20240724': -196.06,
-        '20240725': -299.86,
-        '20240726': -299.86,
-        '20240729': -307.87,
-        '20240730': -307.64,
-        '20240801': -315.90,
-        '20240802': -317.40,
-        '20240807': -328.88,
-        '20240808': -331.98,
-        '20240809': -333.53,
-        '20240815': -353.13,
-        '20240816': -353.13,
-        }
-
-_SSFR2_TIME_OFFSET_ = {
-        '20240517': 115.0,
-        '20240521': -6.0,
-        '20240524': -208.22,
-        '20240528': -222.66,
-        '20240530': -229.45,
-        '20240531': -227.00,
-        '20240603': -241.66,
-        '20240605': -250.48,
-        '20240606': -256.90,
-        '20240607': -255.45,
-        '20240610': -261.64,
-        '20240611': -271.93,
-        '20240613': -273.59,
-        '20240708': -273.59,
-        '20240709': -273.59,
-        '20240722': -273.59,
-        '20240724': -273.59, #? inaccurate
-        '20240725': -397.91,
-        '20240726': -397.91,
-        '20240729': -408.39,
-        '20240730': -408.13,
-        '20240801': -416.93,
-        '20240802': -419.59,
-        '20240807': -434.47,
-        '20240808': -437.18,
-        '20240809': -439.71,
-        '20240815': -457.82,
-        '20240816': -457.82,
         }
 
 
@@ -613,8 +515,8 @@ def run_time_offset_check(cfg):
 
     date = cfg.common['date']
     date_s = date.strftime('%Y%m%d')
-    data_hsk = ssfr.util.load_h5(_FNAMES_['%s_hsk_v0' % date_s])
-    data_hsr1_v0 = ssfr.util.load_h5(_FNAMES_['%s_hsr1_v0' % date_s])
+    data_hsk = ssfr.util.load_h5(cfg.hsk['fname_v0'])
+    data_hsr1_v0 = ssfr.util.load_h5(cfg.hsr1['fname_v0'])
 
     # data_hsr1_v0['tot/jday'] += 1.0
     # data_hsr1_v0['dif/jday'] += 1.0
@@ -740,7 +642,7 @@ def main_process_data_v0(cfg, run=True):
     # HSR1 v0: raw data
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fnames_hsr1 = cfg.hsr1['fnames']
-    fname_h5 = '%s/%s-%s_%s_%s_v0.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsr1['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    fname_h5 = cfg.hsr1['fname_v0']
     if run and len(fnames_hsr1) == 0:
         pass
     else:
@@ -751,7 +653,6 @@ def main_process_data_v0(cfg, run=True):
                 fdir_out=fdir_out,
                 run=run
                 )
-        _FNAMES_['%s_hsr1_v0' % date_s]  = fname_hsr1_v0
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main_process_data_v1(cfg, run=True):
@@ -763,26 +664,22 @@ def main_process_data_v1(cfg, run=True):
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    main_process_data_v0(cfg, run=False)
-
     # HSR1 v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_h5 = '%s/%s-%s_%s_%s_v1.h5' % (fdir_out, cfg.common['mission'].upper(), cfg.hsr1['aka'].upper(), cfg.common['platform'].upper(), date_s)
+    fname_h5 = cfg.hsr1['fname_v1']
 
     fname_hsr1_v1 = cdata_hsr1_v1(
             date,
-            _FNAMES_['%s_hsr1_v0' % date_s],
-            _FNAMES_['%s_hsk_v0' % date_s],
+            cfg.hsr1['fname_v0'],
+            cfg.hsk['fname_v0'],
             fname_h5=fname_h5,
             time_offset=cfg.hsr1['time_offset'],
             fdir_out=fdir_out,
             run=run
             )
-
-    _FNAMES_['%s_hsr1_v1' % date_s] = fname_hsr1_v1
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-def main_process_data_v2(date, run=True):
+def main_process_data_v2(cfg, run=True):
 
     """
     v0: raw data directly read out from the data files
@@ -790,81 +687,26 @@ def main_process_data_v2(date, run=True):
     v2: attitude corrected data
     """
 
-    date_s = date.strftime('%Y%m%d')
+    date = cfg.common['date']
+    date_s = cfg.common['date_s']
 
     fdir_out = './'
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
-
-    main_process_data_v0(cfg, run=False)
-    main_process_data_v1(cfg, run=False)
 
     # HSR1 v2
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # * based on ALP v1
-    # fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
-    #         fdir_out=fdir_out, run=run)
-    # fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_alp_v1' % date_s],
-    #         fdir_out=fdir_out, run=True)
-
-    # * based on HSK v0
-    fname_hsr1_v2 = cdata_hsr1_v2(date, _FNAMES_['%s_hsr1_v1' % date_s], _FNAMES_['%s_hsk_v0' % date_s],
-            fdir_out=fdir_out, run=run)
+    # based on HSK v0
+    fname_h5 = cfg.hsr1['fname_v2']
+    fname_hsr1_v2 = cdata_hsr1_v2(
+            date,
+            cfg.hsr1['fname_v1'],
+            cfg.hsk['fname_v0'],
+            fname_h5=fname_h5,
+            fdir_out=fdir_out,
+            run=run
+            )
     #╰────────────────────────────────────────────────────────────────────────────╯#
-    _FNAMES_['%s_hsr1_v2' % date_s] = fname_hsr1_v2
-
-
-    # SSFR v2
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    if _WHICH_SSFR_ == _SSFR1_:
-        _vname_ssfr_v1_ = '%s_ssfr1_v1' % date_s
-        _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
-    else:
-        _vname_ssfr_v1_ = '%s_ssfr2_v1' % date_s
-        _vname_ssfr_v2_ = '%s_ssfr2_v2' % date_s
-
-    fname_ssfr_v2 = cdata_ssfr_v2(date, _FNAMES_[_vname_ssfr_v1_], _FNAMES_['%s_alp_v1' % date_s], _FNAMES_['%s_hsr1_v2' % date_s],
-            fdir_out=fdir_out, run=run, run_aux=True)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-    _FNAMES_[_vname_ssfr_v2_] = fname_ssfr_v2
-
-def main_process_data_archive(date, run=True):
-
-    """
-    ra: in-field data to be uploaded to https://www-air.larc.nasa.gov/cgi-bin/ArcView/arcsix
-    """
-
-    date_s = date.strftime('%Y%m%d')
-
-    fdir_out = './'
-    if not os.path.exists(fdir_out):
-        os.makedirs(fdir_out)
-
-    main_process_data_v0(date, run=False)
-    main_process_data_v1(date, run=False)
-    main_process_data_v2(date, run=False)
-
-    # HSR1 RA
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_hsr1_ra = cdata_hsr1_archive(date, _FNAMES_['%s_hsr1_v2' % date_s],
-            fdir_out=fdir_out, run=run)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-    _FNAMES_['%s_hsr1_ra' % date_s] = fname_hsr1_ra
-
-
-    # SSFR RA
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    if _WHICH_SSFR_ == _SSFR1_:
-        _vname_ssfr_v2_ = '%s_ssfr1_v2' % date_s
-        _vname_ssfr_ra_ = '%s_ssfr1_ra' % date_s
-    else:
-        _vname_ssfr_v2_ = '%s_ssfr2_v2' % date_s
-        _vname_ssfr_ra_ = '%s_ssfr2_ra' % date_s
-
-    fname_ssfr_ra = cdata_ssfr_archive(date, _FNAMES_[_vname_ssfr_v2_],
-            fdir_out=fdir_out, run=run)
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-    _FNAMES_[_vname_ssfr_ra_] = fname_ssfr_ra
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -908,13 +750,13 @@ if __name__ == '__main__':
         # step 1
         # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(cfg, run=True)
+        main_process_data_v0(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
         # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # run_time_offset_check(cfg)
+        run_time_offset_check(cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
@@ -925,12 +767,7 @@ if __name__ == '__main__':
 
         # step 4
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v2(cfg, run=True)
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
-        # step 5
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_archive(date, run=True)
+        main_process_data_v2(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         pass
