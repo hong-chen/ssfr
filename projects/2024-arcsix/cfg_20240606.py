@@ -3,7 +3,7 @@ import ssfr
 
 # parameters that need frequent change
 #╭────────────────────────────────────────────────────────────────────────────╮#
-date = datetime.datetime(2024, 6, 6); date_s = date.strftime('%Y%m%d'); date_s_ = date.strftime('%Y-%m-%d')
+date = datetime.datetime(2024, 6, 6)
 operator = 'Vikas Nataraja, Jeffery Drouet'
 mission = 'arcsix'
 year = '2024'
@@ -41,6 +41,12 @@ fdir_out = f'data/{mission}/processed'
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
+# date
+#╭────────────────────────────────────────────────╮#
+date_s = date.strftime('%Y%m%d')
+date_s_ = date.strftime('%Y-%m-%d')
+#╰────────────────────────────────────────────────╯#
+
 # data directory
 #╭────────────────────────────────────────────────╮#
 fdir_hsk = f'{fdir_data}/aux/hsk'

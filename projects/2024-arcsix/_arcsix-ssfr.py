@@ -1174,6 +1174,7 @@ def main_process_data_v2(cfg, run=True):
     # SSFR v2
     #╭────────────────────────────────────────────────────────────────────────────╮#
     fname_h5 = cfg.ssfr['fname_v2']
+
     fname_ssfr_v2 = cdata_ssfr_v2(
             date,
             cfg.ssfr['fname_v1'],
