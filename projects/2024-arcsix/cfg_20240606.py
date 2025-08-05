@@ -79,14 +79,14 @@ fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.uppe
 # calibrations
 #╭────────────────────────────────────────────────╮#
 fname_ssfr_rad_cal_zen = None
-fname_ssfr_rad_cal_zen = None
+fname_ssfr_rad_cal_nad = None
 fname_ssfr_ang_cal_zen = None
-fname_ssfr_ang_cal_zen = None
+fname_ssfr_ang_cal_nad = None
 
 fname_ssrr_rad_cal_zen = None
-fname_ssrr_rad_cal_zen = None
+fname_ssrr_rad_cal_nad = None
 fname_ssrr_ang_cal_zen = None
-fname_ssrr_ang_cal_zen = None
+fname_ssrr_ang_cal_nad = None
 #╰────────────────────────────────────────────────╯#
 #╰──────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
