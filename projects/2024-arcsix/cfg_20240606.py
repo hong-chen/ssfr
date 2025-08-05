@@ -3,7 +3,7 @@ import ssfr
 
 # parameters that need frequent change
 #╭────────────────────────────────────────────────────────────────────────────╮#
-date = datetime.datetime(2024, 6, 6); date_s = date.strftime('%Y%m%d'); date_s_ = date.strftime('%Y-%m-%d')
+date = datetime.datetime(2024, 6, 6)
 operator = 'Vikas Nataraja, Jeffery Drouet'
 mission = 'arcsix'
 year = '2024'
@@ -41,19 +41,24 @@ fdir_out = f'data/{mission}/processed'
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
+# date
+#╭────────────────────────────────────────────────╮#
+date_s = date.strftime('%Y%m%d')
+date_s_ = date.strftime('%Y-%m-%d')
+#╰────────────────────────────────────────────────╯#
+
 # data directory
 #╭────────────────────────────────────────────────╮#
-# fdir_hsk = '%s/aux/hsk' % (fdir_data)
-fdir_hsk = f'{fdir_data}/aux'
-fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04}*{date.month:02}*{date.day:02}*raw?{alp_tag}')[-1]
-fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04}*{date.month:02}*{date.day:02}*raw?{hsr1_tag}')[-1]
-fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04}*{date.month:02}*{date.day:02}*raw?{ssfr_tag}')[-1]
-fdir_ssrr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04}*{date.month:02}*{date.day:02}*raw?{ssrr_tag}')[-1]
+fdir_hsk = f'{fdir_data}/aux/hsk'
+fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{alp_tag}')[-1]
+fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{hsr1_tag}')[-1]
+fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{ssfr_tag}')[-1]
+fdir_ssrr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{ssrr_tag}')[-1]
 #╰────────────────────────────────────────────────╯#
 
 # data files
 #╭────────────────────────────────────────────────╮#
-fname_hsk = ssfr.util.get_all_files(fdir_hsk, pattern=f'*{date.year:04}*{date.month:02}*{date.day:02}*.???')[-1]
+fname_hsk = ssfr.util.get_all_files(fdir_hsk, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*.???')[-1]
 fnames_alp = ssfr.util.get_all_files(fdir_alp, pattern='*.plt3')
 fnames_hsr1 = ssfr.util.get_all_files(fdir_hsr1, pattern='*.txt')
 fnames_ssfr = ssfr.util.get_all_files(fdir_ssfr, pattern='*.SKS')
@@ -79,6 +84,15 @@ fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.uppe
 
 # calibrations
 #╭────────────────────────────────────────────────╮#
+fname_ssfr_rad_cal_zen = None
+fname_ssfr_rad_cal_nad = None
+fname_ssfr_ang_cal_zen = None
+fname_ssfr_ang_cal_nad = None
+
+fname_ssrr_rad_cal_zen = None
+fname_ssrr_rad_cal_nad = None
+fname_ssrr_ang_cal_zen = None
+fname_ssrr_ang_cal_nad = None
 #╰────────────────────────────────────────────────╯#
 #╰──────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -160,11 +174,11 @@ ssfr = {
 
         # 'fname_rad_cal': fname_rad_cal_ssfr,
 
-        'which_ssfr': 'lasp|%s' % ssfr_tag.lower(),
+        'which_ssfr': f'lasp|{ssfr_tag.lower()}',
 
         # wavelength setting
         'wvl_s': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
-        'wvl_e': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
+        'wvl_e': 2200.0, # ending/last wavelength [nm] of the selected wavelength range
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
@@ -200,11 +214,11 @@ ssrr = {
 
         'fname_ssrr_rad_cal': None,
 
-        'which_ssfr': 'lasp|%s' % ssrr_tag.lower(),
+        'which_ssfr': f'lasp|{ssrr_tag.lower()}',
 
         # wavelength setting
         'wvl_s': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
-        'wvl_e': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
+        'wvl_e': 2200.0, # ending/last wavelength [nm] of the selected wavelength range
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
