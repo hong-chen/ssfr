@@ -43,7 +43,7 @@ fdir_out = f'data/{mission}/processed'
 #╭──────────────────────────────────────────────────────────────╮#
 # data directory
 #╭────────────────────────────────────────────────╮#
-fdir_hsk = f'{fdir_data}/hsk/aux'
+fdir_hsk = f'{fdir_data}/aux/hsk'
 fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{alp_tag}')[-1]
 fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{hsr1_tag}')[-1]
 fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{ssfr_tag}')[-1]
@@ -172,7 +172,7 @@ ssfr = {
 
         # wavelength setting
         'wvl_s': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
-        'wvl_e': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
+        'wvl_e': 2200.0, # ending/last wavelength [nm] of the selected wavelength range
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
@@ -212,7 +212,7 @@ ssrr = {
 
         # wavelength setting
         'wvl_s': 350.0,  # beginning/first wavelength [nm] of the selected wavelength range
-        'wvl_e': 2000.0, # ending/last wavelength [nm] of the selected wavelength range
+        'wvl_e': 2200.0, # ending/last wavelength [nm] of the selected wavelength range
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]

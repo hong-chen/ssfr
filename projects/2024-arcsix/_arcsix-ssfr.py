@@ -466,7 +466,7 @@ def cdata_ssfr_v2(
             data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][:, :424]
             data_ssfr_v1['v0/spec_zen'] = data_ssfr_v1['v0/spec_zen'][:, :424]
             data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:424]
-        ╰────────────────────────────────────────────────────────────────────────────╯#
+        # ╰────────────────────────────────────────────────────────────────────────────╯#
 
         fname_aux = fname_h5.replace('_v2.h5', '-aux_v2.h5')
 
@@ -1228,7 +1228,7 @@ if __name__ == '__main__':
         # step 1
         # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v0(cfg, run=True)
+        main_process_data_v0(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
@@ -1240,7 +1240,7 @@ if __name__ == '__main__':
         # step 3
         # apply time offsets to sync data to aircraft housekeeping file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # main_process_data_v1(cfg, run=True)
+        main_process_data_v1(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4
