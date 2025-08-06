@@ -99,6 +99,7 @@ def cal_ang_resp(
 
 def cdata_ang_resp(
         fnames,
+        fdir_out=None,
         filename_tag=None,
         which_ssfr='lasp|ssfr-a',
         which_lc='zen',
@@ -255,6 +256,12 @@ def cdata_ang_resp(
         fname_out = '%s|ang-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssfr, which_lc, int_time[si_tag], int_time[in_tag])
     else:
         fname_out = 'ang-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssfr, which_lc, int_time[si_tag], int_time[in_tag])
+
+    # add output directory
+    if fdir_out is not None:
+        if not os.path.exists(fdir_out):
+            os.makedirs(fdir_out)
+        fname_out = os.path.join(fdir_out, fname_out)
 
     info = 'Light Collector: %s\nJoint Wavelength: %.4fnm\nStart Wavelength: %.4fnm\nEnd Wavelength: %.4fnm\nIntegration Time for Silicon Channel: %dms\nIntegration Time for InGaAs Channel: %dms\nProcessed Files:\n' % (which_lc.title(), wvl_joint, wvl_start, wvl_end, int_time[si_tag], int_time[in_tag])
     for key in fnames.keys():
