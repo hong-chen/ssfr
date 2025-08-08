@@ -619,6 +619,75 @@ def ssfr_ang_cal_20250731(fdir):
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
+def ssfr_ang_cal_20250804(fdir, fdir_out=None, decipher_vaa=False):
+
+    """
+    Process angular calibration data for SSFR-A nadir on 2025-08-04.
+
+    Args:
+    ----
+        - fdir (str): Directory containing the calibration data files.
+        - fdir_out (str): Directory where the processed data will be saved.
+        - decipher_vaa (bool): If True, attempts to extract the VAA (Viewing Azimuth Angle) from the directory name.
+
+    Returns:
+    -------
+        - None: The function processes the data and saves the results to file, but does not return any value.
+
+    Notes:
+    -----
+        angular calibration is done for SSFR-A nadir
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    vaa = 0
+    if decipher_vaa:  # decipher vaa from fdir name
+        # example fdir name: 2024-03-19_SSFR-A_zen-lc4_ang-cal_vaa0030_lamp-507_si-080-120_in-250-350
+        # we want to extract '0030' from the fdir name
+        # assuming 'vaa' is always followed by a hyphen and then a four-digit number
+        # and that the number is always four digits long
+        main_string = fdir
+        partial_match = 'vaa'
+
+        index = main_string.find(partial_match)
+        if index != -1:  # If the partial match is found
+            start_index = index + len(partial_match)
+            end_index = start_index + 4 # vaa should be 4 character string
+            vaa_tag = main_string[start_index:end_index]
+
+        vaa = int(vaa_tag) # string to int
+        msg = '\nMessage [ssfr_ang_cal_20250804]: deciphered vaa = %d from fdir name ...' % (vaa)
+        print(msg)
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles = np.array([0, 45, 60, 75, 80, 85, 90, 60, 0, -45, -60, -75, -80, -85, -90, -60, 0])
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s|VAA%s' % (tags[0], tags[4], date_today_s, dset_tag, vaa_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, fdir_out=fdir_out, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
 def main_ssfr_rad_cal(
         which_ssfr='lasp|ssfr-a',
         ):
@@ -1372,7 +1441,7 @@ def main_ssrr_rad_cal_all(
                 {'nad': '/Volumes/argus/field/arcsix/cal/rad-cal/2025-06-03_SSRR-B_nad-lcx_pri-cal_lamp-1324_si-030-050_in-080-180_postdeployment'},
                 ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
-    
+
     elif 'ssrr-a' in which_ssrr.lower():
 
         # SSRR-A (backup setup for measuring radiance)
@@ -1476,18 +1545,26 @@ if __name__ == '__main__':
 
     # angular calibrations(SSFR-A, zen-lc4,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # fdir = 'data/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
     # ssfr_ang_cal_20250630(fdir)
 
     # for vaa in np.arange(0.0, 181.0, 30.0):
-    #     fdir = 'data/arcsix/cal/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
+    #     fdir = 'data/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-all_lamp-507_si-080-120_in-250-350_post/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
     #     ssfr_ang_cal_20250707(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # angular calibrations(SSFR-A, nad-lc6,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fdir = 'data/arcsix/cal/ang-cal/2025-07-31_SSFR-A_nad-lc6_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
-    # ssfr_ang_cal_20250731(fdir)
+
+    #TODO: replace hardcoded paths with a more flexible approach from the command line or config file
+    main_fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/'
+    fdir_out = 'processed/2025-08-04/'
+
+    fdirs = os.listdir(main_fdir)
+    for subdir in fdirs:
+        fdir = os.path.join(main_fdir, subdir)
+        # fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment'
+        ssfr_ang_cal_20250804(fdir=fdir, fdir_out=fdir_out, decipher_vaa=True)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # post-mission SSRR calibration (nadir)

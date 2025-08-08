@@ -772,7 +772,7 @@ if __name__ == '__main__':
             if (not os.path.exists(fdir_out)):
                 os.makedirs(fdir_out)
 
-            if 'ssfr-a'  in fdir_inp.lower():
+            if 'ssfr-a' in fdir_inp.lower():
                 which_ssfr = 'ssfr-a'
             elif 'ssfr-b' in fdir_inp.lower():
                 which_ssfr = 'ssfr-b'
