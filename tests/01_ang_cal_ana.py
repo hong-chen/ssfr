@@ -132,32 +132,76 @@ def fig_cos_resp(fname, fdir_out, wvl0=555.0):
 
     try:
         cos_resp = f['ang_resp'][...]
-    except:
+
+    except Exception:
         cos_resp = f['cos_resp'][...]
 
-    if '|nad|' in fname:
-        try:
-            wvl_ = f['raw/nad|si/wvl'][...]
-            cos_resp_ = f['raw/nad|si/ang_resp'][...]
-            cos_resp0 = f['raw/nad|si/ang_resp0'][...]
-            cos_resp_std0 = f['raw/nad|si/ang_resp_std0'][...]
-        except:
-            wvl_ = f['raw/nad|si/wvl'][...]
-            cos_resp_ = f['raw/nad|si/cos_resp'][...]
-            cos_resp0 = f['raw/nad|si/cos_resp0'][...]
-            cos_resp_std0 = f['raw/nad|si/cos_resp_std0'][...]
+    # determine joinder wavelength from file attributes (default to 950nm if not found)
+    try:
+        wvl_joint = f.attrs.get('joint_wavelength_nm', 950.0)
+    except Exception:
+        wvl_joint = 950.0
 
-    elif '|zen|' in fname:
+    # select appropriate channel based on wavelength
+    if wvl0 <= wvl_joint:
+        channel = 'si'  # Silicon channel for wavelengths <= joinder wavelength
+    else:
+        channel = 'in'  # InGaAs channel for wavelengths > joinder wavelength
+
+    # nadir
+    if '|nad|' in fname:
+        direction_channel_tag = f'nad|{channel}' # one of ['nad|si', 'nad|in']
         try:
-            wvl_ = f['raw/zen|si/wvl'][...]
-            cos_resp_ = f['raw/zen|si/ang_resp'][...]
-            cos_resp0 = f['raw/zen|si/ang_resp0'][...]
-            cos_resp_std0 = f['raw/zen|si/ang_resp_std0'][...]
-        except:
-            wvl_ = f['raw/zen|si/wvl'][...]
-            cos_resp_ = f['raw/zen|si/cos_resp'][...]
-            cos_resp0 = f['raw/zen|si/cos_resp0'][...]
-            cos_resp_std0 = f['raw/zen|si/cos_resp_std0'][...]
+            wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+            cos_resp_ = f[f'raw/{direction_channel_tag}/ang_resp'][...]
+            cos_resp0 = f[f'raw/{direction_channel_tag}/ang_resp0'][...]
+            cos_resp_std0 = f[f'raw/{direction_channel_tag}/ang_resp_std0'][...]
+
+        except Exception:
+            # Fallback to old naming convention
+            try:
+                wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                cos_resp_ = f[f'raw/{direction_channel_tag}/cos_resp'][...]
+                cos_resp0 = f[f'raw/{direction_channel_tag}/cos_resp0'][...]
+                cos_resp_std0 = f[f'raw/{direction_channel_tag}/cos_resp_std0'][...]
+
+            except Exception as e2:
+                print(f"Error reading nadir {channel} channel data: {e2}")
+                f.close()
+                return
+
+    # zenith
+    elif '|zen|' in fname:
+        direction_channel_tag = f'zen|{channel}' # one of ['zen|si', 'zen|in']
+        try:
+            wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+            cos_resp_ = f[f'raw/{direction_channel_tag}/ang_resp'][...]
+            cos_resp0 = f[f'raw/{direction_channel_tag}/ang_resp0'][...]
+            cos_resp_std0 = f[f'raw/{direction_channel_tag}/ang_resp_std0'][...]
+
+        except Exception:
+            # Fallback to old naming convention
+            try:
+                wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                cos_resp_ = f[f'raw/{direction_channel_tag}/cos_resp'][...]
+                cos_resp0 = f[f'raw/{direction_channel_tag}/cos_resp0'][...]
+                cos_resp_std0 = f[f'raw/{direction_channel_tag}/cos_resp_std0'][...]
+
+            except Exception as e2:
+                print(f"Error reading zenith {channel} channel data: {e2}")
+                f.close()
+                return
+
+    # check if requested wavelength is within the available range and check if channel is in Si or InGaAs
+    wvl_min, wvl_max = wvl_.min(), wvl_.max()
+    if wvl0 < wvl_min or wvl0 > wvl_max:
+        print(f"Warning: Requested wavelength {wvl0}nm is outside the {channel.upper()} channel range [{wvl_min:.1f}-{wvl_max:.1f}nm]")
+        print(f"Joint wavelength: {wvl_joint}nm")
+        if wvl0 > wvl_joint:
+            print("Try using the InGaAs channel for wavelengths > 950nm")
+        else:
+            print("Try using the Silicon channel for wavelengths <= 950nm")
+
     f.close()
 
     # figure
@@ -168,13 +212,18 @@ def fig_cos_resp(fname, fdir_out, wvl0=555.0):
         plt.close('all')
         plt.rcParams.update({'font.size': fontsize})
         fig = plt.figure(figsize=(18, 10))
-        fig.suptitle('Cosine Response (%d nm)' % (wvl0), fontsize=fontsize+4)
+        fig.suptitle('Cosine Response (%d nm, %s channel)' % (wvl0, channel.upper()), fontsize=fontsize+4)
         # plot
         #/--------------------------------------------------------------\#
         ax1 = fig.add_subplot(111)
         # ax1.scatter(mu, cos_resp[:, np.argmin(np.abs(wvl-wvl0))], s=6, c='k', lw=0.0, alpha=0.2)
-        ax1.plot(mu_[ang_>=0.0]  , cos_resp_[ang_>=0.0, np.argmin(np.abs(wvl_-wvl0))]  , marker='o', markersize=10, color='r', lw=2.0, alpha=0.6)
-        ax1.plot(mu_[ang_<0.0]  , cos_resp_[ang_<0.0, np.argmin(np.abs(wvl_-wvl0))]  , marker='o', markersize=10, color='b', lw=2.0, alpha=0.6)
+
+        # find the closest wavelength index but also print actual vs requested wavelength used
+        wvl_idx = np.argmin(np.abs(wvl_-wvl0))
+        actual_wvl = wvl_[wvl_idx]
+
+        ax1.plot(mu_[ang_ >= 0.0], cos_resp_[ang_ >= 0.0, wvl_idx], marker='o', markersize=10, color='r', lw=2.0, alpha=0.6)
+        ax1.plot(mu_[ang_ < 0.0], cos_resp_[ang_ < 0.0, wvl_idx], marker='o', markersize=10, color='b', lw=2.0, alpha=0.6)
 
         # angle_offset = -2.5
         angle_offset = 0.0
@@ -188,7 +237,7 @@ def fig_cos_resp(fname, fdir_out, wvl0=555.0):
         ax1.set_ylim((0.0, 1.1))
         ax1.set_xlabel('$cos(\\theta)$')
         ax1.set_ylabel('Response')
-        ax1.set_title('%s' % (title), fontsize=fontsize)
+        ax1.set_title('%s (Actual: %.1f nm)' % (title, actual_wvl), fontsize=fontsize)
 
         patches_legend = [
                           # mpatches.Patch(color='black' , label='Average&Interpolated'), \
@@ -217,12 +266,51 @@ def fig_cos_resp(fname, fdir_out, wvl0=555.0):
         # sys.exit()
     #\----------------------------------------------------------------------------/#
 
+
+def print_wavelength_info(fname):
+    """
+    Print wavelength information for both channels in a calibration file.
+
+    Args:
+    ----
+        fname (str): Path to the HDF5 calibration file
+    """
+    try:
+        with h5py.File(fname, 'r') as f:
+            # Get joint wavelength
+            try:
+                wvl_joint = f.attrs.get('joint_wavelength_nm', 950.0)
+            except Exception:
+                wvl_joint = 950.0
+
+            print(f"\nWavelength information for: {os.path.basename(fname)}")
+            print(f"Joint wavelength: {wvl_joint} nm")
+            print("-" * 60)
+
+            # Check available channels
+            for lc in ['zen', 'nad']:
+                for channel in ['si', 'in']:
+                    path = f'raw/{lc}|{channel}'
+                    if path in f:
+                        wvl = f[f'{path}/wvl'][...]
+                        channel_name = "Silicon" if channel == 'si' else "InGaAs"
+                        print(f"{lc.upper()} {channel_name:7s}: {wvl.min():6.1f} - {wvl.max():6.1f} nm ({len(wvl):3d} channels)")
+
+            print("\nRecommended usage:")
+            print(f"- Use wavelengths ≤ {wvl_joint} nm for Silicon channel")
+            print(f"- Use wavelengths > {wvl_joint} nm for InGaAs channel")
+
+    except Exception as e:
+        print(f"Error reading wavelength info from {fname}: {e}")
+
+
 if __name__ == '__main__':
     # parse arguments
     parser = argparse.ArgumentParser(description='SSFR Angular Calibration Analysis')
     parser.add_argument('--fdir', type=str, help='Directory containing the processed calibration data files (.h5).')
     parser.add_argument('--fdir_out', type=str, default='./', help='Directory where the processed data will be saved.')
     parser.add_argument('--wvl', type=float, default=555.0, help='Wavelength (in nm) for cosine response plot.')
+    parser.add_argument('--info', action='store_true', help='Print wavelength information for calibration files.')
     args = parser.parse_args()
 
     # fig_belana_darks_si()
@@ -231,7 +319,16 @@ if __name__ == '__main__':
     # fnames = sorted(glob.glob('processed/2025-08-04/2025-08-04*.h5'))
     # fdir_out = 'plots/2025-08-04/'
     fnames = sorted(glob.glob(os.path.join(args.fdir, '*.h5')))
-    for fname in fnames:
-        fig_cos_resp(fname, fdir_out=args.fdir_out, wvl0=args.wvl)
 
-    print('Plots visualized for {} nm and saved in {}'.format(args.wvl, args.fdir_out))
+    if args.info:
+        # Print wavelength information for all files
+        print("WAVELENGTH INFORMATION FOR CALIBRATION FILES")
+        print("=" * 80)
+        for fname in fnames:
+            print_wavelength_info(fname)
+    else:
+        # Generate plots
+        for fname in fnames:
+            fig_cos_resp(fname, fdir_out=args.fdir_out, wvl0=args.wvl)
+
+        print('Plots visualized for {} nm and saved in {}'.format(args.wvl, args.fdir_out))
