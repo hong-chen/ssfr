@@ -619,7 +619,7 @@ def ssfr_ang_cal_20250731(fdir):
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
-def ssfr_ang_cal_20250804(fdir, fdir_out=None, decipher_vaa=False):
+def ssfr_ang_cal_20250804(fdir, fdir_out=None, decipher_vaa=False, calibrated_by='Ken Hirata', processed_by='Ken Hirata'):
 
     """
     Process angular calibration data for SSFR-A nadir on 2025-08-04.
@@ -629,6 +629,8 @@ def ssfr_ang_cal_20250804(fdir, fdir_out=None, decipher_vaa=False):
         - fdir (str): Directory containing the calibration data files.
         - fdir_out (str): Directory where the processed data will be saved.
         - decipher_vaa (bool): If True, attempts to extract the VAA (Viewing Azimuth Angle) from the directory name.
+        - calibrated_by (str): Names of the person who calibrated the data.
+        - processed_by (str): Names of the person who processed the data.
 
     Returns:
     -------
@@ -685,7 +687,8 @@ def ssfr_ang_cal_20250804(fdir, fdir_out=None, decipher_vaa=False):
 
         filename_tag = '%s|%s|%s|%s|VAA%s' % (tags[0], tags[4], date_today_s, dset_tag, vaa_tag)
 
-        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, fdir_out=fdir_out, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, fdir_out=fdir_out, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time,
+                                calibrated_by=calibrated_by, processed_by=processed_by)
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def main_ssfr_rad_cal(
@@ -1560,11 +1563,14 @@ if __name__ == '__main__':
     main_fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/'
     fdir_out = 'processed/2025-08-04/'
 
+    calibrated_by = 'Ken Hirata, Yu-Wen Chen, Vikas Nataraja'
+    processed_by = 'Vikas Nataraja'
+
     fdirs = os.listdir(main_fdir)
     for subdir in fdirs:
         fdir = os.path.join(main_fdir, subdir)
         # fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment'
-        ssfr_ang_cal_20250804(fdir=fdir, fdir_out=fdir_out, decipher_vaa=True)
+        ssfr_ang_cal_20250804(fdir=fdir, fdir_out=fdir_out, decipher_vaa=True, calibrated_by=calibrated_by, processed_by=processed_by)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # post-mission SSRR calibration (nadir)

@@ -107,6 +107,8 @@ def cdata_ang_resp(
         wvl_joint=950.0,
         wvl_range=[350.0, 2200.0],
         int_time={'si':60, 'in':300},
+        calibrated_by='Yu-Wen Chen, Ken Hirata',
+        processed_by='Ken Hirata',
         verbose=True
         ):
 
@@ -344,13 +346,15 @@ def cdata_ang_resp(
     f.attrs['title'] = 'SSFR Angular Response Calibration Data'
     f.attrs['instrument'] = which_ssfr
     f.attrs['light_collector'] = which_lc
-    f.attrs['creation_date'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     f.attrs['joint_wavelength_nm'] = wvl_joint
     f.attrs['wavelength_range_nm'] = [wvl_start, wvl_end]
     f.attrs['integration_time_si_ms'] = int_time[si_tag]
     f.attrs['integration_time_in_ms'] = int_time[in_tag]
     f.attrs['polynomial_order'] = order
     f.attrs['description'] = 'Angular response calibration data for SSFR spectrometer including raw measurements and processed products'
+    f.attrs['processing_team'] = processed_by
+    f.attrs['calibration_team'] = calibrated_by
+    f.attrs['created_on'] = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
 
     # Raw data group with comprehensive metadata
     g = f.create_group('raw')
