@@ -110,6 +110,71 @@ def cdata_ang_resp(
         verbose=True
         ):
 
+    """
+    Process angular response calibration data for SSFR spectrometers.
+    This function processes raw angular response measurements from SSFR (Solar Spectral
+    Flux Radiometer) instruments to generate calibrated angular response functions. It
+    combines data from both Silicon (Si) and InGaAs (In) detector channels, performs
+    interpolation, and fits polynomial models to the spectral response.
+
+    Args:
+    ----
+        fnames (dict): Dictionary mapping file paths to measurement angles in degrees.
+                        Format: {'/path/to/file.h5': angle_in_degrees}
+        fdir_out (str, optional): Output directory path. If None, saves to current directory.
+        filename_tag (str, optional): Prefix tag for output filename. If None, no prefix added.
+        which_ssfr (str): SSFR instrument identifier. Supports 'nasa|ssfr-6', 'lasp|ssfr-a',
+                            or 'lasp|ssfr-b'. Default is 'lasp|ssfr-a'.
+        which_lc (str): Light collector specification. Accepts 'zenith'/'zen'/'z' or
+                        'nadir'/'nad'/'n'. Default is 'zen'.
+        Nchan (int): Number of spectral channels. Default is 256.
+        wvl_joint (float): Joint wavelength in nm separating Si and InGaAs channels.
+                            Default is 950.0 nm.
+        wvl_range (list): Two-element list [start_wvl, end_wvl] defining wavelength range
+                            in nm. Default is [350.0, 2200.0].
+        int_time (dict): Integration times in ms for each channel. Format: {'si': ms, 'in': ms}.
+                        Default is {'si': 60, 'in': 300}.
+        verbose (bool): If True, prints processing information. Default is True.
+
+    Returns:
+    -------
+        str: Path to the output HDF5 file containing processed angular response data.
+
+    Output HDF5 File Structure:
+        Global Attributes:
+            - title: File description
+            - instrument: SSFR instrument identifier
+            - light_collector: Light collector type
+            - creation_date: Processing timestamp
+            - joint_wavelength_nm: Wavelength separating Si/InGaAs channels
+            - wavelength_range_nm: Processing wavelength range
+            - integration_time_si_ms/integration_time_in_ms: Channel integration times
+            - polynomial_order: Order of fitted polynomials
+            - description: File content description
+        Datasets:
+            /wvl: Combined wavelength array from both channels [nm]
+            /mu: Interpolated cosine grid (1001 points from 0 to 1)
+            /ang_resp: Angular response on interpolated grid (mu, wavelength)
+            /ang_resp_int: Hemispherically integrated angular response (wavelength,)
+            /poly_coef: Polynomial coefficients for response vs wavelength (mu, order+1)
+            /info: Human-readable processing information string
+        /raw/ Group - Raw measurement data:
+            /raw/ang: Original measurement angles [degrees]
+            /raw/mu: Cosine of measurement angles
+            /raw/mu0: Unique cosine values after averaging
+            /raw/{si_tag|in_tag}/ Subgroups for each channel:
+                /raw/{channel}/wvl: Channel wavelength array [nm]
+                /raw/{channel}/ang_resp: Raw angular response (angle, wavelength)
+                /raw/{channel}/ang_resp0: Averaged response for unique angles
+                /raw/{channel}/ang_resp_std0: Standard deviation of averaged response
+    Notes:
+        - Angular response is normalized to nadir (0 degrees) response
+        - Data from duplicate angle measurements are averaged
+        - Polynomial fitting uses wavelengths between 400-2000 nm with 4th order
+        - Si channel covers wavelengths up to wvl_joint, InGaAs covers above wvl_joint
+        - All angular response values are dimensionless ratios
+    """
+
     # check SSFR spectrometer
     #/----------------------------------------------------------------------------\#
     which_ssfr = which_ssfr.lower()
@@ -271,26 +336,121 @@ def cdata_ang_resp(
     if verbose:
         print(info)
 
+    # create HDF5 file and add metadata
+    #/----------------------------------------------------------------------------\#
     f = h5py.File(fname_out, 'w')
 
-    g = f.create_group('raw')
-    g['ang'] = angles
-    g['mu']  = ang_mu
-    g['mu0'] = ang_mu0
+    # Add global attributes for file metadata
+    f.attrs['title'] = 'SSFR Angular Response Calibration Data'
+    f.attrs['instrument'] = which_ssfr
+    f.attrs['light_collector'] = which_lc
+    f.attrs['creation_date'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    f.attrs['joint_wavelength_nm'] = wvl_joint
+    f.attrs['wavelength_range_nm'] = [wvl_start, wvl_end]
+    f.attrs['integration_time_si_ms'] = int_time[si_tag]
+    f.attrs['integration_time_in_ms'] = int_time[in_tag]
+    f.attrs['polynomial_order'] = order
+    f.attrs['description'] = 'Angular response calibration data for SSFR spectrometer including raw measurements and processed products'
 
+    # Raw data group with comprehensive metadata
+    g = f.create_group('raw')
+    g.attrs['description'] = 'Raw angular response measurements and associated angles'
+
+    # Raw angles and cosines
+    ang_dset = g.create_dataset('ang', data=angles)
+    ang_dset.attrs['description'] = 'Measurement angles for angular response calibration'
+    ang_dset.attrs['units'] = 'degrees'
+    ang_dset.attrs['long_name'] = 'Incident angles relative to instrument normal'
+
+    mu_dset = g.create_dataset('mu', data=ang_mu)
+    mu_dset.attrs['description'] = 'Cosine of measurement angles (mu = cos(theta))'
+    mu_dset.attrs['units'] = 'dimensionless'
+    mu_dset.attrs['long_name'] = 'Cosine of incident angles'
+    mu_dset.attrs['valid_range'] = [0.0, 1.0]
+
+    mu0_dset = g.create_dataset('mu0', data=ang_mu0)
+    mu0_dset.attrs['description'] = 'Unique cosine values after averaging duplicate measurements'
+    mu0_dset.attrs['units'] = 'dimensionless'
+    mu0_dset.attrs['long_name'] = 'Unique cosine of incident angles'
+    mu0_dset.attrs['valid_range'] = [0.0, 1.0]
+
+    # Raw spectral data for each channel
     for spec_tag in ang_resp_.keys():
         g_ = g.create_group(spec_tag)
-        g_['wvl'] = wvls[spec_tag]
-        g_['ang_resp'] = ang_resp_[spec_tag]
-        g_['ang_resp0'] = ang_resp0[spec_tag]
-        g_['ang_resp_std0'] = ang_resp_std0[spec_tag]
+        g_.attrs['description'] = f'Raw data for {spec_tag} spectrometer channel'
+        g_.attrs['integration_time_ms'] = int_time[spec_tag]
 
-    f['wvl']          = wvl
-    f['mu']           = ang_mu_all
-    f['ang_resp']     = ang_resp
-    f['ang_resp_int'] = ang_resp_int
-    f['poly_coef']    = coef
-    f['info']         = info
+        wvl_dset = g_.create_dataset('wvl', data=wvls[spec_tag])
+        wvl_dset.attrs['description'] = f'Wavelength array for {spec_tag} channel'
+        wvl_dset.attrs['units'] = 'nm'
+        wvl_dset.attrs['long_name'] = 'Wavelength'
+        wvl_dset.attrs['standard_name'] = 'radiation_wavelength'
+
+        resp_dset = g_.create_dataset('ang_resp', data=ang_resp_[spec_tag])
+        resp_dset.attrs['description'] = 'Raw angular response normalized to nadir (0 degrees)'
+        resp_dset.attrs['units'] = 'dimensionless'
+        resp_dset.attrs['long_name'] = 'Angular response function'
+        resp_dset.attrs['dimensions'] = '(angle, wavelength)'
+        resp_dset.attrs['normalization'] = 'Normalized to response at 0 degrees'
+
+        resp0_dset = g_.create_dataset('ang_resp0', data=ang_resp0[spec_tag])
+        resp0_dset.attrs['description'] = 'Angular response averaged over duplicate angle measurements'
+        resp0_dset.attrs['units'] = 'dimensionless'
+        resp0_dset.attrs['long_name'] = 'Averaged angular response function'
+        resp0_dset.attrs['dimensions'] = '(unique_angle, wavelength)'
+        resp0_dset.attrs['normalization'] = 'Normalized to response at 0 degrees'
+
+        std_dset = g_.create_dataset('ang_resp_std0', data=ang_resp_std0[spec_tag])
+        std_dset.attrs['description'] = 'Standard deviation of angular response for duplicate measurements'
+        std_dset.attrs['units'] = 'dimensionless'
+        std_dset.attrs['long_name'] = 'Angular response standard deviation'
+        std_dset.attrs['dimensions'] = '(unique_angle, wavelength)'
+
+    # Processed data with enhanced metadata
+    wvl_dset = f.create_dataset('wvl', data=wvl)
+    wvl_dset.attrs['description'] = 'Combined wavelength array from both Si and InGaAs channels'
+    wvl_dset.attrs['units'] = 'nm'
+    wvl_dset.attrs['long_name'] = 'Wavelength'
+    wvl_dset.attrs['standard_name'] = 'radiation_wavelength'
+    wvl_dset.attrs['joint_wavelength_nm'] = wvl_joint
+    wvl_dset.attrs['wavelength_range_nm'] = [wvl.min(), wvl.max()]
+
+    mu_all_dset = f.create_dataset('mu', data=ang_mu_all)
+    mu_all_dset.attrs['description'] = 'Interpolated cosine grid from 0 to 1 with 1001 points'
+    mu_all_dset.attrs['units'] = 'dimensionless'
+    mu_all_dset.attrs['long_name'] = 'Cosine of incident angles (interpolated grid)'
+    mu_all_dset.attrs['valid_range'] = [0.0, 1.0]
+    mu_all_dset.attrs['grid_points'] = ang_mu_all.size
+
+    ang_resp_dset = f.create_dataset('ang_resp', data=ang_resp)
+    ang_resp_dset.attrs['description'] = 'Angular response interpolated onto regular cosine grid'
+    ang_resp_dset.attrs['units'] = 'dimensionless'
+    ang_resp_dset.attrs['long_name'] = 'Angular response function (interpolated)'
+    ang_resp_dset.attrs['dimensions'] = '(cosine_angle, wavelength)'
+    ang_resp_dset.attrs['normalization'] = 'Normalized to response at 0 degrees (mu=1)'
+    ang_resp_dset.attrs['interpolation_method'] = 'linear'
+
+    ang_resp_int_dset = f.create_dataset('ang_resp_int', data=ang_resp_int)
+    ang_resp_int_dset.attrs['description'] = 'Integrated angular response over all angles (hemispherical integral)'
+    ang_resp_int_dset.attrs['units'] = 'dimensionless'
+    ang_resp_int_dset.attrs['long_name'] = 'Hemispherically integrated angular response'
+    ang_resp_int_dset.attrs['dimensions'] = '(wavelength,)'
+    ang_resp_int_dset.attrs['integration_method'] = 'trapezoidal'
+    ang_resp_int_dset.attrs['integration_variable'] = 'cosine of zenith angle'
+
+    poly_dset = f.create_dataset('poly_coef', data=coef)
+    poly_dset.attrs['description'] = f'Polynomial coefficients (order {order}) for angular response vs wavelength'
+    poly_dset.attrs['units'] = 'various'
+    poly_dset.attrs['long_name'] = 'Polynomial coefficients for angular response'
+    poly_dset.attrs['dimensions'] = '(cosine_angle, polynomial_coefficient)'
+    poly_dset.attrs['polynomial_order'] = order
+    poly_dset.attrs['wavelength_fit_range_nm'] = [400.0, 2000.0]
+    poly_dset.attrs['coefficient_order'] = 'highest to lowest order (numpy polyfit convention)'
+
+    info_dset = f.create_dataset('info', data=info)
+    info_dset.attrs['description'] = 'Human-readable processing information and file manifest'
+    info_dset.attrs['content'] = 'Processing parameters and list of input files'
+
     f.close()
     #\----------------------------------------------------------------------------/#
 
