@@ -1545,17 +1545,18 @@ if __name__ == '__main__':
 
     # angular calibrations(SSFR-A, zen-lc4,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # fdir = 'data/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
     # ssfr_ang_cal_20250630(fdir)
 
     # for vaa in np.arange(0.0, 181.0, 30.0):
-    #     fdir = 'data/arcsix/cal/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
+    #     fdir = 'data/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-all_lamp-507_si-080-120_in-250-350_post/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
     #     ssfr_ang_cal_20250707(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # angular calibrations(SSFR-A, nad-lc6,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
 
+    #TODO: replace hardcoded paths with a more flexible approach from the command line or config file
     main_fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/'
     fdir_out = 'processed/2025-08-04/'
 
@@ -1563,7 +1564,7 @@ if __name__ == '__main__':
     for subdir in fdirs:
         fdir = os.path.join(main_fdir, subdir)
         # fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment'
-        ssfr_ang_cal_20250804(fdir=fdir, decipher_vaa=True)
+        ssfr_ang_cal_20250804(fdir=fdir, fdir_out=fdir_out, decipher_vaa=True)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # post-mission SSRR calibration (nadir)
