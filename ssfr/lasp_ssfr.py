@@ -195,6 +195,162 @@ def read_ssfr_raw(
 
 
 class read_ssfr:
+    """
+    A class for reading and processing CU LASP Solar Spectral Flux Radiometer (SSFR) data files.
+
+    This class handles the reading, processing, and dark correction of SSFR data files containing
+    spectral measurements from zenith and nadir viewing directions with silicon (Si) and indium
+    gallium arsenide (InGaAs) detectors.
+
+    Parameters
+    ----------
+    fnames : list
+        List of SSFR file paths to read and process
+    Ndata : int, optional
+        Pre-allocated number of data records per file (default: 2000)
+    which_time : str, optional
+        Time source to use, either 'arinc' or 'crio' (default: 'arinc')
+    process : bool, optional
+        Whether to perform data processing including dark correction (default: True)
+    dark_corr_mode : str, optional
+        Dark correction mode, either 'interp' or 'mean' (default: 'interp')
+    dark_fallback : bool, optional
+        Use fallback dark correction when no darks available (default: True)
+    dark_extend : int, optional
+        Number of dark measurements to extend for interpolation (default: 1)
+    light_extend : int, optional
+        Number of light measurements to extend for interpolation (default: 1)
+    which_ssfr : str, optional
+        SSFR instrument identifier for wavelength calibration (default: None)
+    wvl_s : float, optional
+        Starting wavelength for spectral range (default: from ssfr.common)
+    wvl_e : float, optional
+        Ending wavelength for spectral range (default: from ssfr.common)
+    wvl_j : float, optional
+        Junction wavelength between Si and InGaAs detectors (default: from ssfr.common)
+    verbose : bool, optional
+        Enable verbose output (default: from ssfr.common)
+
+    Attributes
+    ----------
+    ID : str
+        Instrument identifier ('CU LASP SSFR')
+    Nchan : int
+        Number of spectral channels (256)
+    Ntemp : int
+        Number of temperature sensors (11)
+    Nspec : int
+        Number of spectrometers (4)
+    spec_info : dict
+        Mapping of spectrometer indices to descriptions:
+        {0: 'zen|si', 1: 'zen|in', 2: 'nad|si', 3: 'nad|in'}
+    count_base : int
+        Minimum count value (-32768)
+    count_ceil : int
+        Maximum count value (32768)
+
+    Data Structure
+    --------------
+    After initialization, the object contains the following data structures:
+
+    data_raw : dict
+        Raw and processed measurement data containing:
+
+        info : dict
+            - ssfr_tag : str, instrument identifier
+            - fnames : list, input file names
+            - comment : list, file comments
+            - Ndata : int, total number of data records
+
+        count_raw : ndarray, shape (N, 256, 4)
+            Raw spectral counts [DN]
+        count_dark-corr : ndarray, shape (N, 256, 4)
+            Dark-corrected spectral counts [DN]
+        count_per_ms_dark-corr : ndarray, shape (N, 256, 4)
+            Dark-corrected counts normalized by integration time [DN/ms]
+
+        shutter : ndarray, shape (N,)
+            Shutter status (0=open, 1=closed)
+        shutter_dark-corr : ndarray, shape (N,)
+            Processed shutter status after dark correction
+
+        int_time : ndarray, shape (N, 4)
+            Integration times for each spectrometer [ms]
+
+        temp : ndarray, shape (N, 11)
+            Temperature measurements [°C]
+
+        saturation : ndarray, shape (N, 256, 4)
+            Saturation flags (0=normal, 1=saturated)
+
+        jday_a : ndarray, shape (N,)
+            Julian day from ARINC time system
+        jday_c : ndarray, shape (N,)
+            Julian day from cRIO time system
+        jday : ndarray, shape (N,)
+            Selected julian day time
+        tmhr : ndarray, shape (N,)
+            Time in hours from start of day
+
+        qual_flag : ndarray, shape (N,)
+            Data quality flags
+
+        dset_num : ndarray, shape (N,)
+            Dataset number based on integration time grouping
+
+        wvl_zen_si, wvl_zen_in, wvl_nad_si, wvl_nad_in : ndarray, shape (256,)
+            Wavelength arrays for each spectrometer [nm]
+
+    data_spec : dict (created if wvl_join is called)
+        Processed spectral data with wavelength joining:
+
+        wvl_zen : ndarray
+            Combined zenith wavelength array [nm]
+        cnt_zen : ndarray, shape (N, Nwvl_zen)
+            Combined zenith spectral counts [DN/ms]
+        sat_zen : ndarray, shape (N, Nwvl_zen)
+            Combined zenith saturation flags
+
+        wvl_nad : ndarray
+            Combined nadir wavelength array [nm]
+        cnt_nad : ndarray, shape (N, Nwvl_nad)
+            Combined nadir spectral counts [DN/ms]
+        sat_nad : ndarray, shape (N, Nwvl_nad)
+            Combined nadir saturation flags
+
+    dset_info : dict
+        Information about different integration time datasets
+
+    shutter_mode : dict
+        Mapping of shutter status codes to descriptions
+
+    Methods
+    -------
+    dset_check()
+        Check and categorize data by integration time settings
+    dark_corr(dark_corr_mode='interp', dark_extend=1, light_extend=1,
+              fill_value=np.nan, dark_fallback=True, temp_threshold=25.0)
+        Perform dark current correction on spectral data
+    wvl_join(which_ssfr, wvl_start=350.0, wvl_end=2200.0, wvl_join=950.0)
+        Join Si and InGaAs spectrometer data at specified wavelength
+
+    Notes
+    -----
+    The SSFR instrument measures solar spectral irradiance using four spectrometers:
+    - Zenith Si: zenith-viewing silicon detector (350-1000 nm)
+    - Zenith InGaAs: zenith-viewing indium gallium arsenide detector (950-2200 nm)
+    - Nadir Si: nadir-viewing silicon detector (350-1000 nm)
+    - Nadir InGaAs: nadir-viewing indium gallium arsenide detector (950-2200 nm)
+
+    Shutter status codes:
+    - 0: open (light measurements)
+    - 1: closed (dark measurements)
+    - -10: interpolation at beginning
+    - -11: interpolation at end
+    - -20: fallback correction
+    - 10: excluded data
+    - 99: unknown/inconsistent status
+    """
 
     ID = 'CU LASP SSFR'
     Nchan = 256
