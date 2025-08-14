@@ -405,6 +405,8 @@ def fig_azimuthal(fnames, fdir_out=None, vza_point=60., wvl0=555.0):
         ax1.plot( vaas, response_vaas[0], marker='o', markersize=10, color='r', lw=2.0, alpha=0.6)
         ax1.plot(-vaas, response_vaas[1], marker='o', markersize=10, color='b', lw=2.0, alpha=0.6)
 
+        ax1.set_xlim((-180.0, 180.0))
+        ax1.set_xticks(np.arange(-180, 181, 60))
         ax1.set_xlabel('VAA (deg)')
         ax1.set_ylabel('Response')
 
@@ -491,7 +493,8 @@ if __name__ == '__main__':
             fname = '2025-08-13*ang-resp*si-120|in-350.h5'
             fdir_out = './'
             wvl = 555.0
-            azimuthal = False
+            # azimuthal = False
+            azimuthal = True
             info = False
         args = Args()
 
