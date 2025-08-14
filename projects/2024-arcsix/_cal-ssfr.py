@@ -1589,6 +1589,12 @@ if __name__ == '__main__':
     # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad')
 
 
+    # angular calibrations(SSFR-A, zen-lc4,  pre)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fdir = 'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350'
+    # ssfr_ang_cal(fdir)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
     # angular calibrations(SSFR-B, zen-lc4,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
     # fdir = 'data/arcsix/cal/ang-cal/2025-03-05_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
@@ -1600,16 +1606,22 @@ if __name__ == '__main__':
 
     # angular calibrations(SSFR-A, zen-lc4,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fdir = 'data/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
+    ### Before re-surgery (replaced baffle from LC1)
+    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
     # ssfr_ang_cal_20250630(fdir)
 
     # for vaa in np.arange(0.0, 181.0, 30.0):
-    #     fdir = 'data/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-all_lamp-507_si-080-120_in-250-350_post/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
+    #     fdir = 'data/arcsix/cal/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-all_lamp-507_si-080-120_in-250-350_post/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
     #     ssfr_ang_cal_20250707(fdir)
 
-    for vaa in np.arange(30.0, 181.0, 30.0):
-        fdir = 'data/arcsix/cal/2025-08-13_SSFR-A_zen-lc4_ang-cal-vaa%04d_lamp-507_si-080-120_in-250-350_postdeployment.resurgery' % vaa
-        ssfr_ang_cal_20250813(fdir, decipher_vaa=True)
+    ### After re-surgery (original baffle)
+    fdir = 'data/arcsix/cal/ang-cal/2025-08-13_SSFR-A_zen-lc4_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment.resurgery.original'
+    ssfr_ang_cal_20250731(fdir)
+
+    # # for vaa in np.arange(0.0, 181.0, 30.0):
+    # for vaa in np.arange(30.0, 181.0, 30.0):
+    #     fdir = 'data/arcsix/cal/2025-08-13_SSFR-A_zen-lc4_ang-cal-vaa%04d_lamp-507_si-080-120_in-250-350_postdeployment.resurgery' % vaa
+    #     ssfr_ang_cal_20250813(fdir, decipher_vaa=True)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # angular calibrations(SSFR-A, nad-lc6,  post)
