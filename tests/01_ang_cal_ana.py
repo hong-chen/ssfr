@@ -120,7 +120,7 @@ def fig_alvin_darks_si():
 
 
 
-def fig_cos_resp(fname, fdir_out, wvl0=555.0):
+def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
 
     f = h5py.File(fname, 'r')
     mu = f['mu'][...]
@@ -305,21 +305,37 @@ def print_wavelength_info(fname):
 
 
 if __name__ == '__main__':
-    # parse arguments
-    parser = argparse.ArgumentParser(description='SSFR Angular Calibration Analysis')
-    parser.add_argument('--fdir', type=str, help='Directory containing the processed calibration data files (.h5).')
-    parser.add_argument('--fdir_out', type=str, default='./', help='Directory where the processed data will be saved.')
-    parser.add_argument('--wvl', type=float, default=555.0, help='Wavelength (in nm) for cosine response plot.')
-    parser.add_argument('--info', action='store_true', help='Print wavelength information for calibration files.')
-    args = parser.parse_args()
+    if len(sys.argv) > 1:
+        # parse arguments only when there is a command line input
+        parser = argparse.ArgumentParser(description='SSFR Angular Calibration Analysis')
+        parser.add_argument('--fdir', type=str, help='Directory containing the processed calibration data files (.h5).')
+        parser.add_argument('--fname', type=str, help='Name of the processed calibration data file(s) (.h5).')
+        parser.add_argument('--fdir_out', type=str, default='./', help='Directory where the processed data will be saved.')
+        parser.add_argument('--wvl', type=float, default=555.0, help='Wavelength (in nm) for cosine response plot.')
+        parser.add_argument('--info', action='store_true', help='Print wavelength information for calibration files.')
+        args = parser.parse_args()
+
+    else:
+        class Args:
+            # fdir = './'
+            fdir = '../projects/2024-arcsix/'
+            fname = '*ang-resp*si-120|in-350.h5'
+            fdir_out = './'
+            wvl = 555.0
+            info = False
+        args = Args()
 
     # fig_belana_darks_si()
     # fig_alvin_darks_si()
 
     # fnames = sorted(glob.glob('processed/2025-08-04/2025-08-04*.h5'))
     # fdir_out = 'plots/2025-08-04/'
-    fnames = sorted(glob.glob(os.path.join(args.fdir, '*.h5')))
-
+    if args.fname:
+        print(os.path.join(args.fdir, args.fname))
+        fnames = sorted(glob.glob(os.path.join(args.fdir, args.fname)))
+    else:
+        fnames = sorted(glob.glob(os.path.join(args.fdir, '*.h5')))
+    
     if args.info:
         # Print wavelength information for all files
         print("WAVELENGTH INFORMATION FOR CALIBRATION FILES")
