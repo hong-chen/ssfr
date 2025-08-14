@@ -283,10 +283,84 @@ def cdata_rad_resp(
         wvl_range=[350.0, 2200.0],
         int_time={'si':80.0, 'in':250.0},
         verbose=True,
+        fdir_out=None,
         ):
 
+    """
+    Calculate and process radiometric response calibration data for SSFR spectrometers.
+
+    This function processes primary, transfer, and secondary calibration files to generate
+    radiometric response data, combining silicon (si) and indium gallium arsenide (in)
+    detector data across specified wavelength ranges.
+
+    Parameters
+    ----------
+    fnames_pri : list or None
+        Primary calibration filenames. Required parameter.
+    fnames_tra : list or None
+        Transfer calibration filenames. Required parameter.
+    fnames_sec : list or None, optional
+        Secondary/field calibration filenames. If None, transfer files are used.
+    filename_tag : str or None, optional
+        Tag to prepend to output filename.
+    which_ssfr : str, default 'lasp|ssfr-a'
+        SSFR spectrometer identifier. Format: 'lab|instrument'
+        (e.g., 'lasp|ssfr-a', 'lasp|ssfr-b', 'nasa|ssfr-6').
+    which_lc : str, default 'zen'
+        Light collector orientation. Options: 'zenith'/'zen'/'z' or 'nadir'/'nad'/'n'.
+    spec_reverse : bool, default False
+        Whether to reverse spectrometer assignment for light collector.
+    which_lamp : str, default 'f-1324'
+        Calibration lamp identifier.
+    wvl_joint : float, default 950.0
+        Wavelength (nm) where si and in detector data are joined.
+    wvl_range : list, default [350.0, 2200.0]
+        Wavelength range [start, end] in nm for output data.
+    int_time : dict, default {'si':80.0, 'in':250.0}
+        Integration times in milliseconds for si and in detectors.
+    verbose : bool, default True
+        Enable verbose output during processing.
+    fdir_out : str or None, optional
+        Output directory path. If None, saves to current directory.
+
+    Returns
+    -------
+    str
+        Path to the saved HDF5 calibration file.
+
+    Raises
+    ------
+    ValueError
+        If unsupported SSFR spectrometer or light collector specified.
+    OSError
+        If primary or transfer calibration files are not provided.
+
+    Notes
+    -----
+    Output HDF5 file structure:
+
+    Root level datasets:
+    - wvl : Combined wavelength array (nm) from si and in detectors, sorted
+    - pri_resp : Primary radiometric response (units depend on calibration)
+    - transfer : Transfer radiometric response
+    - sec_resp : Secondary/field radiometric response
+
+    Raw data group (/raw/):
+    - si/wvl : Silicon detector wavelengths (nm)
+    - si/pri_resp : Silicon detector primary response
+    - si/transfer : Silicon detector transfer response
+    - si/sec_resp : Silicon detector secondary response
+    - in/wvl : InGaAs detector wavelengths (nm)
+    - in/pri_resp : InGaAs detector primary response
+    - in/transfer : InGaAs detector transfer response
+    - in/sec_resp : InGaAs detector secondary response
+
+    The combined datasets join si data (wavelength <= wvl_joint) with
+    in data (wavelength > wvl_joint) within the specified wvl_range.
+    """
+
     # check SSFR spectrometer
-    #╭────────────────────────────────────────────────────────────────────────────╮#
+    #╭─────────────────────────────────────────────────────────────────────────╮#
     which_ssfr = which_ssfr.lower()
     which_lab  = which_ssfr.split('|')[0]
     if which_lab == 'nasa':
@@ -416,26 +490,156 @@ def cdata_rad_resp(
     else:
         fname_out = 'rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssfr, which_spec, int_time[si_tag], int_time[in_tag])
 
-    f = h5py.File(fname_out, 'w')
-    f['wvl']       = wvl_
-    f['pri_resp']  = pri_resp_
-    f['transfer']  = transfer_
-    f['sec_resp']  = sec_resp_
+    # add fdir_out
+    if fdir_out is not None:
+        if not os.path.exists(fdir_out): # first create the dir
+            os.makedirs(fdir_out)
 
-    # raw data
+        fname_out = os.path.join(fdir_out, fname_out) # and change fname_out to be in fdir_out
+
+    f = h5py.File(fname_out, 'w')
+
+    # File-level attributes
+    #╭────────────────────────────────────────────────╮#
+    f.attrs['title'] = 'SSFR Radiometric Response Calibration Data'
+    f.attrs['instrument'] = which_ssfr.upper()
+    f.attrs['light_collector'] = which_lc.upper()
+    f.attrs['calibration_lamp'] = which_lamp.upper()
+    f.attrs['spectral_reverse'] = spec_reverse
+    f.attrs['wavelength_joint'] = wvl_joint
+    f.attrs['wavelength_range'] = wvl_range
+    f.attrs['integration_time_si'] = int_time[si_tag]
+    f.attrs['integration_time_in'] = int_time[in_tag]
+    f.attrs['creation_date'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
+    f.attrs['processing_software'] = 'SSFR Python Package'
+    f.attrs['data_version'] = '1.0'
+    f.attrs['conventions'] = 'CF-1.8'
+    f.attrs['comment'] = 'Radiometric response calibration combining Si (≤%.1f nm) and InGaAs (>%.1f nm) detectors' % (wvl_joint, wvl_joint)
+    #╰────────────────────────────────────────────────╯#
+
+    # Combined (processed) datasets with full metadata
+    #╭────────────────────────────────────────────────╮#
+    # Wavelength
+    wvl_dset = f.create_dataset('wvl', data=wvl_, compression='gzip', compression_opts=9)
+    wvl_dset.attrs['long_name'] = 'Wavelength'
+    wvl_dset.attrs['standard_name'] = 'wavelength'
+    wvl_dset.attrs['units'] = 'nm'
+    wvl_dset.attrs['description'] = 'Combined wavelength array from Si and InGaAs detectors, sorted ascending'
+    wvl_dset.attrs['valid_range'] = [wvl_.min(), wvl_.max()]
+    wvl_dset.attrs['detector_transition'] = wvl_joint
+    wvl_dset.attrs['comment'] = 'Wavelengths ≤%.1f nm from Si detector, >%.1f nm from InGaAs detector' % (wvl_joint, wvl_joint)
+
+    # Primary response
+    pri_dset = f.create_dataset('pri_resp', data=pri_resp_, compression='gzip', compression_opts=9)
+    pri_dset.attrs['long_name'] = 'Primary Radiometric Response'
+    pri_dset.attrs['units'] = 'counts (W m^-2 nm^-1 s)^-1'
+    pri_dset.attrs['description'] = 'Instrument response to calibrated primary standard lamp'
+    pri_dset.attrs['calibration_lamp'] = which_lamp.upper()
+    pri_dset.attrs['integration_time_si'] = int_time[si_tag]
+    pri_dset.attrs['integration_time_in'] = int_time[in_tag]
+    pri_dset.attrs['valid_min'] = 0.0
+    pri_dset.attrs['comment'] = 'Primary calibration response normalized by integration time and lamp radiance'
+
+    # Transfer response
+    tra_dset = f.create_dataset('transfer', data=transfer_, compression='gzip', compression_opts=9)
+    tra_dset.attrs['long_name'] = 'Transfer Radiometric Response'
+    tra_dset.attrs['units'] = 'counts (W m^-2 nm^-1 s)^-1'
+    tra_dset.attrs['description'] = 'Instrument response to transfer standard relative to primary standard'
+    tra_dset.attrs['method'] = 'Transfer response calculated using primary response as reference'
+    tra_dset.attrs['valid_min'] = 0.0
+    tra_dset.attrs['comment'] = 'Transfer calibration enables field calibrations using secondary standards'
+
+    # Secondary response
+    sec_dset = f.create_dataset('sec_resp', data=sec_resp_, compression='gzip', compression_opts=9)
+    sec_dset.attrs['long_name'] = 'Secondary/Field Radiometric Response'
+    sec_dset.attrs['units'] = 'counts (W m^-2 nm^-1 s)^-1'
+    sec_dset.attrs['description'] = 'Secondary calibration response using transfer standard as reference'
+    sec_dset.attrs['method'] = 'Secondary response calculated using transfer response as reference'
+    sec_dset.attrs['valid_min'] = 0.0
+    sec_dset.attrs['comment'] = 'Field calibration response for deployment validation'
+    #╰────────────────────────────────────────────────╯#
+
+    # Raw data groups with full metadata
     #╭────────────────────────────────────────────────╮#
     g = f.create_group('raw')
-    g_si = g.create_group('si')
-    g_si['wvl'] = wvls[si_tag]
-    g_si['pri_resp'] = pri_resp[si_tag]
-    g_si['transfer'] = transfer[si_tag]
-    g_si['sec_resp'] = sec_resp[si_tag]
+    g.attrs['description'] = 'Raw detector data before wavelength combination'
+    g.attrs['comment'] = 'Separate Si and InGaAs detector responses before merging'
 
+    # Silicon detector group
+    g_si = g.create_group('si')
+    g_si.attrs['long_name'] = 'Silicon Detector Data'
+    g_si.attrs['wavelength_range'] = [wvls[si_tag].min(), wvls[si_tag].max()]
+    g_si.attrs['integration_time'] = int_time[si_tag]
+    g_si.attrs['typical_range'] = '350-950 nm'
+    g_si.attrs['comment'] = 'Raw silicon detector calibration data'
+
+    # Si wavelength
+    si_wvl = g_si.create_dataset('wvl', data=wvls[si_tag], compression='gzip', compression_opts=9)
+    si_wvl.attrs['long_name'] = 'Silicon Detector Wavelength'
+    si_wvl.attrs['standard_name'] = 'wavelength'
+    si_wvl.attrs['units'] = 'nm'
+    si_wvl.attrs['description'] = 'Wavelength'
+    si_wvl.attrs['valid_range'] = [wvls[si_tag].min(), wvls[si_tag].max()]
+
+    # Si primary response
+    si_pri = g_si.create_dataset('pri_resp', data=pri_resp[si_tag], compression='gzip', compression_opts=9)
+    si_pri.attrs['long_name'] = 'Silicon Detector Primary Response'
+    si_pri.attrs['units'] = 'counts (W m^-2 nm^-1 s)^-1'
+    si_pri.attrs['description'] = 'Silicon detector response to primary calibration lamp'
+    si_pri.attrs['integration_time'] = int_time[si_tag]
+    si_pri.attrs['valid_min'] = 0.0
+
+    # Si transfer response
+    si_tra = g_si.create_dataset('transfer', data=transfer[si_tag], compression='gzip', compression_opts=9)
+    si_tra.attrs['long_name'] = 'Silicon Detector Transfer Response'
+    si_tra.attrs['units'] = 'counts (W m^-2 nm^-1 s)^-1'
+    si_tra.attrs['description'] = 'Silicon detector transfer calibration response'
+    si_tra.attrs['valid_min'] = 0.0
+
+    # Si secondary response
+    si_sec = g_si.create_dataset('sec_resp', data=sec_resp[si_tag], compression='gzip', compression_opts=9)
+    si_sec.attrs['long_name'] = 'Silicon Detector Secondary Response'
+    si_sec.attrs['units'] = 'counts (W m^-2 nm^-1 s)^-1'
+    si_sec.attrs['description'] = 'Silicon detector secondary calibration response'
+    si_sec.attrs['valid_min'] = 0.0
+
+    # InGaAs detector group
     g_in = g.create_group('in')
-    g_in['wvl'] = wvls[in_tag]
-    g_in['pri_resp'] = pri_resp[in_tag]
-    g_in['transfer'] = transfer[in_tag]
-    g_in['sec_resp'] = sec_resp[in_tag]
+    g_in.attrs['long_name'] = 'InGaAs Detector Data'
+    g_in.attrs['wavelength_range'] = [wvls[in_tag].min(), wvls[in_tag].max()]
+    g_in.attrs['integration_time'] = int_time[in_tag]
+    g_in.attrs['typical_range'] = '950-2200 nm'
+    g_in.attrs['comment'] = 'Raw InGaAs detector calibration data'
+
+    # InGaAs wavelength
+    in_wvl = g_in.create_dataset('wvl', data=wvls[in_tag], compression='gzip', compression_opts=9)
+    in_wvl.attrs['long_name'] = 'InGaAs Detector Wavelength'
+    in_wvl.attrs['standard_name'] = 'wavelength'
+    in_wvl.attrs['units'] = 'nm'
+    in_wvl.attrs['description'] = 'Wavelength'
+    in_wvl.attrs['valid_range'] = [wvls[in_tag].min(), wvls[in_tag].max()]
+
+    # InGaAs primary response
+    in_pri = g_in.create_dataset('pri_resp', data=pri_resp[in_tag], compression='gzip', compression_opts=9)
+    in_pri.attrs['long_name'] = 'InGaAs Detector Primary Response'
+    in_pri.attrs['units'] = 'counts (W m^-2 nm^-1 s)^-1'
+    in_pri.attrs['description'] = 'InGaAs detector response to primary calibration lamp'
+    in_pri.attrs['integration_time'] = int_time[in_tag]
+    in_pri.attrs['valid_min'] = 0.0
+
+    # InGaAs transfer response
+    in_tra = g_in.create_dataset('transfer', data=transfer[in_tag], compression='gzip', compression_opts=9)
+    in_tra.attrs['long_name'] = 'InGaAs Detector Transfer Response'
+    in_tra.attrs['units'] = 'counts (W m^-2 nm^-1 s)^-1'
+    in_tra.attrs['description'] = 'InGaAs detector transfer calibration response'
+    in_tra.attrs['valid_min'] = 0.0
+
+    # InGaAs secondary response
+    in_sec = g_in.create_dataset('sec_resp', data=sec_resp[in_tag], compression='gzip', compression_opts=9)
+    in_sec.attrs['long_name'] = 'InGaAs Detector Secondary Response'
+    in_sec.attrs['units'] = 'counts (W m^-2 nm^-1 s)^-1'
+    in_sec.attrs['description'] = 'InGaAs detector secondary calibration response'
+    in_sec.attrs['valid_min'] = 0.0
     #╰────────────────────────────────────────────────╯#
 
     f.close()
