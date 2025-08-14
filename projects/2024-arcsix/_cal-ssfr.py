@@ -346,7 +346,33 @@ def ssfr_rad_cal(
         fdir_tra,
         fdir_sec=None,
         spec_reverse=False,
+        fdir_out=None,
         ):
+    """
+    Perform radiometric calibration for SSFR (Solar Spectral Flux Radiometer) data.
+    This function processes SSFR calibration data from primary, transfer, and secondary
+    calibration measurements to generate radiometric response calibration files.
+    Args:
+        fdir_pri (str): Directory path containing primary calibration files (.SKS format)
+        fdir_tra (str): Directory path containing transfer calibration files (.SKS format)
+        fdir_sec (str, optional): Directory path containing secondary calibration files.
+                                    If None, uses fdir_tra directory. Defaults to None.
+        spec_reverse (bool, optional): Flag to reverse spectral order. Defaults to False.
+        fdir_out (str, optional): Output directory for calibration results.
+                                    If None, uses default output location. Defaults to None.
+    Returns:
+        None: Function performs calibration processing and saves results to files.
+                Does not return any values.
+    Raises:
+        Warning: Issues warnings if multiple .SKS files are found in any directory,
+                indicating which file was selected for processing.
+    Note:
+        - Expects .SKS files in the specified directories
+        - Processes all datasets found in the primary calibration file
+        - Generates calibration tags based on directory naming conventions
+        - Calls ssfr.cal.cdata_rad_resp() for the actual calibration computation
+    """
+
 
     # get calibration files of primary
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -416,7 +442,7 @@ def ssfr_rad_cal(
 
         filename_tag = '%s|%s_processed-for-arcsix' % (cal_tag, date_today_s)
 
-        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=tags_pri[4], filename_tag=filename_tag, verbose=True, spec_reverse=spec_reverse)
+        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=tags_pri[4], filename_tag=filename_tag, verbose=True, spec_reverse=spec_reverse, fdir_out=fdir_out)
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 # angular calibrations
@@ -958,8 +984,10 @@ def field_calibration_check(
 
 
 def main_ssfr_rad_cal_all(
-        which_ssfr='lasp|ssfr-a',
-        ):
+    which_lc='zen',
+    which_ssfr='lasp|ssfr-a',
+    fdir_out=None
+    ):
 
     """
     Notes:
@@ -1050,7 +1078,7 @@ def main_ssfr_rad_cal_all(
 
     # radiometric calibration
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fdir_cal = '%s/rad-cal' % _FDIR_CAL_
+    # fdir_cal = '%s/rad-cal' % _FDIR_CAL_
 
     # primary calibrations (pre-mission)
     #╭──────────────────────────────────────────────────────────────╮#
@@ -1082,32 +1110,35 @@ def main_ssfr_rad_cal_all(
         # SSFR-A (regular setup for measuring irradiance)
         #╭────────────────────────────────────────────────────────────────────────────╮#
         fdirs_pri = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+                {'zen': 'data/rad-cal/2025-08-12/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',},
+                {'zen': 'data/rad-cal/2025-08-12/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgeryfiber180',},
+                {'zen': 'data/rad-cal/2025-08-12/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-160-240_in-250-350_postdeploymentresurgery',}
+                #  'nad': 'data/rad-cal/2025-08-12/data/rad-cal/2025-08-12/2025-08-12_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery'},
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post0',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 ]
 
         fdirs_tra = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
+                {'zen': 'data/rad-cal/2025-08-12/2025-08-12_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_postdeploymentresurgery',}
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
                 ]
 
-        fdirs_sec = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
-                {'zen': 'data/arcsix/cal/rad-cal/2024-05-27_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-05-26_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'zen': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
-                 'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
-                ]
-        #╰────────────────────────────────────────────────────────────────────────────╯#
+        fdirs_sec = fdirs_tra
+        # fdirs_sec = [
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',}
+        #         # #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-05-27_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',}
+        #         # #  'nad': 'data/arcsix/cal/rad-cal/2024-05-26_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',}
+        #         # #  'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',}
+        #         # #  'nad': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',}
+        #         #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+        #         ]
+        # #╰────────────────────────────────────────────────────────────────────────────╯#
 
     elif 'ssfr-b' in which_ssfr.lower():
 
@@ -1115,55 +1146,55 @@ def main_ssfr_rad_cal_all(
         # SSFR-B (backup setup for measuring irradiance)
         #╭────────────────────────────────────────────────────────────────────────────╮#
         fdirs_pri = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+                {'zen': 'data/rad-cal/2025-08-12/2025-08-12_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',},
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 ]
 
         fdirs_tra = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350'},
+                {'zen': 'data/rad-cal/2025-08-12/2025-08-12_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_postdeploymentresurgery',}
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350'},
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
                 ]
 
         fdirs_sec = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350'},
-                {'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'nad': 'data/arcsix/cal/rad-cal/2024-07-23_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'zen': 'data/arcsix/cal/rad-cal/2024-07-26_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'nad': 'data/arcsix/cal/rad-cal/2024-07-31_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'zen': 'data/arcsix/cal/rad-cal/2024-07-31_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'zen': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'zen': 'data/arcsix/cal/rad-cal/2024-08-05_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'nad': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'zen': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik1'},
-                {'nad': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'zen': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik2'},
-                {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
-                 'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350'},
+                # {'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                #  'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                # {'nad': 'data/arcsix/cal/rad-cal/2024-07-23_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                #  'zen': 'data/arcsix/cal/rad-cal/2024-07-26_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                # {'nad': 'data/arcsix/cal/rad-cal/2024-07-31_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                #  'zen': 'data/arcsix/cal/rad-cal/2024-07-31_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                # {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                #  'zen': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                # {'nad': 'data/arcsix/cal/rad-cal/2024-08-04_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                #  'zen': 'data/arcsix/cal/rad-cal/2024-08-05_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                # {'nad': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                #  'zen': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik1'},
+                # {'nad': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                #  'zen': 'data/arcsix/cal/rad-cal/2024-08-10_SSFR-B_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik2'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
+                #  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
                 ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
     for fdir_pri in fdirs_pri:
         for fdir_tra in fdirs_tra:
             for fdir_sec in fdirs_sec:
-                for spec_tag in fdir_sec.keys():
-                    fdir_pri0 = fdir_pri[spec_tag]
-                    fdir_tra0 = fdir_tra[spec_tag]
-                    fdir_sec0 = fdir_sec[spec_tag]
+                fdir_pri0 = fdir_pri[which_lc]
+                fdir_tra0 = fdir_tra[which_lc]
+                fdir_sec0 = fdir_sec[which_lc]
 
-                    print(spec_tag)
-                    print(fdir_pri0)
-                    print(fdir_tra0)
-                    print(fdir_sec0)
-                    ssfr_rad_cal(fdir_pri0, fdir_tra0, fdir_sec=fdir_sec0, spec_reverse=False)
+                # print(spec_tag)
+                print(fdir_pri0)
+                print(fdir_tra0)
+                print(fdir_sec0)
+                ssfr_rad_cal(fdir_pri0, fdir_tra0, fdir_sec=fdir_sec0, spec_reverse=False, fdir_out=fdir_out)
     return
+
 
 def plot_time_series_all(
         which_ssfr='lasp|ssfr-a',
@@ -1528,12 +1559,14 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
+    fdir_out = 'processed/2025-08-12/'
+
+    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a', which_lc='zen', fdir_out=fdir_out)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
     # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
 
-    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
-    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen')
+    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b', which_lc='zen', fdir_out=fdir_out)
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen')
     # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad')
 
 
@@ -1560,17 +1593,17 @@ if __name__ == '__main__':
     #╭────────────────────────────────────────────────────────────────────────────╮#
 
     #TODO: replace hardcoded paths with a more flexible approach from the command line or config file
-    main_fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/'
-    fdir_out = 'processed/2025-08-04/'
+    # main_fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/'
+    # fdir_out = 'processed/2025-08-04/'
 
-    calibrated_by = 'Ken Hirata, Yu-Wen Chen, Vikas Nataraja'
-    processed_by = 'Vikas Nataraja'
+    # calibrated_by = 'Ken Hirata, Yu-Wen Chen, Vikas Nataraja'
+    # processed_by = 'Vikas Nataraja'
 
-    fdirs = os.listdir(main_fdir)
-    for subdir in fdirs:
-        fdir = os.path.join(main_fdir, subdir)
-        # fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment'
-        ssfr_ang_cal_20250804(fdir=fdir, fdir_out=fdir_out, decipher_vaa=True, calibrated_by=calibrated_by, processed_by=processed_by)
+    # fdirs = os.listdir(main_fdir)
+    # for subdir in fdirs:
+    #     fdir = os.path.join(main_fdir, subdir)
+    #     # fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment'
+    #     ssfr_ang_cal_20250804(fdir=fdir, fdir_out=fdir_out, decipher_vaa=True, calibrated_by=calibrated_by, processed_by=processed_by)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # post-mission SSRR calibration (nadir)
