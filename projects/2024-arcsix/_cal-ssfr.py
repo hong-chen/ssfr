@@ -1555,16 +1555,18 @@ if __name__ == '__main__':
 
     # angular calibrations(SSFR-A, nad-lc6,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
+    fdir = 'data/arcsix/cal/ang-cal/2025-07-31_SSFR-A_nad-lc6_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    ssfr_ang_cal_20250731(fdir)
 
-    #TODO: replace hardcoded paths with a more flexible approach from the command line or config file
-    main_fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/'
-    fdir_out = 'processed/2025-08-04/'
+    # #TODO: replace hardcoded paths with a more flexible approach from the command line or config file
+    # main_fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/'
+    # fdir_out = 'processed/2025-08-04/'
 
-    fdirs = os.listdir(main_fdir)
-    for subdir in fdirs:
-        fdir = os.path.join(main_fdir, subdir)
-        # fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment'
-        ssfr_ang_cal_20250804(fdir=fdir, fdir_out=fdir_out, decipher_vaa=True)
+    # fdirs = os.listdir(main_fdir)
+    # for subdir in fdirs:
+    #     fdir = os.path.join(main_fdir, subdir)
+    #     # fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment'
+    #     ssfr_ang_cal_20250804(fdir=fdir, fdir_out=fdir_out, decipher_vaa=True)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # post-mission SSRR calibration (nadir)
