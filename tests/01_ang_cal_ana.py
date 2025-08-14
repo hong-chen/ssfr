@@ -266,6 +266,173 @@ def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
         # sys.exit()
     #\----------------------------------------------------------------------------/#
 
+def fig_azimuthal(fnames, fdir_out=None, vza_point=60., wvl0=555.0):
+    
+    vaas = []
+    response_vaas = [[], []]
+    actual_vza_vaas = [[], []]
+    actual_wvl_vaas = []
+    fnames_vaas = []
+
+    for fname in fnames:
+        fname_lower = fname.lower()
+        vaa_number = None
+        if 'vaa' in fname_lower:
+            idx = fname_lower.find('vaa')
+            num_start = idx + 3
+            num_end = num_start
+            while num_end < len(fname_lower) and fname_lower[num_end].isdigit():
+                num_end += 1
+            if num_end > num_start:
+                vaa_number = int(fname_lower[num_start:num_end])
+
+        if vaa_number is None:
+            print(f"Warning: No VAA number found in filename '{fname}'. Skipping this file.")
+            continue
+
+        vaas.append(vaa_number)
+        fnames_vaas.append(fname[:idx] + fname[num_end + 1:])
+
+        f = h5py.File(fname, 'r')
+        mu = f['mu'][...]
+        wvl = f['wvl'][...]
+
+        ang_ = f['raw/ang'][...]
+        mu_  = f['raw/mu'][...]
+        mu0  = f['raw/mu0'][...]
+
+        try:
+            cos_resp = f['ang_resp'][...]
+
+        except Exception:
+            cos_resp = f['cos_resp'][...]
+
+        # determine joinder wavelength from file attributes (default to 950nm if not found)
+        try:
+            wvl_joint = f.attrs.get('joint_wavelength_nm', 950.0)
+        except Exception:
+            wvl_joint = 950.0
+
+        # select appropriate channel based on wavelength
+        if wvl0 <= wvl_joint:
+            channel = 'si'  # Silicon channel for wavelengths <= joinder wavelength
+        else:
+            channel = 'in'  # InGaAs channel for wavelengths > joinder wavelength
+
+        # nadir
+        if '|nad|' in fname:
+            direction_channel_tag = f'nad|{channel}' # one of ['nad|si', 'nad|in']
+            try:
+                wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                cos_resp_ = f[f'raw/{direction_channel_tag}/ang_resp'][...]
+                cos_resp0 = f[f'raw/{direction_channel_tag}/ang_resp0'][...]
+                cos_resp_std0 = f[f'raw/{direction_channel_tag}/ang_resp_std0'][...]
+
+            except Exception:
+                # Fallback to old naming convention
+                try:
+                    wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                    cos_resp_ = f[f'raw/{direction_channel_tag}/cos_resp'][...]
+                    cos_resp0 = f[f'raw/{direction_channel_tag}/cos_resp0'][...]
+                    cos_resp_std0 = f[f'raw/{direction_channel_tag}/cos_resp_std0'][...]
+
+                except Exception as e2:
+                    print(f"Error reading nadir {channel} channel data: {e2}")
+                    f.close()
+                    return
+
+        # zenith
+        elif '|zen|' in fname:
+            direction_channel_tag = f'zen|{channel}' # one of ['zen|si', 'zen|in']
+            try:
+                wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                cos_resp_ = f[f'raw/{direction_channel_tag}/ang_resp'][...]
+                cos_resp0 = f[f'raw/{direction_channel_tag}/ang_resp0'][...]
+                cos_resp_std0 = f[f'raw/{direction_channel_tag}/ang_resp_std0'][...]
+
+            except Exception:
+                # Fallback to old naming convention
+                try:
+                    wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                    cos_resp_ = f[f'raw/{direction_channel_tag}/cos_resp'][...]
+                    cos_resp0 = f[f'raw/{direction_channel_tag}/cos_resp0'][...]
+                    cos_resp_std0 = f[f'raw/{direction_channel_tag}/cos_resp_std0'][...]
+
+                except Exception as e2:
+                    print(f"Error reading zenith {channel} channel data: {e2}")
+                    f.close()
+                    return
+
+        # check if requested wavelength is within the available range and check if channel is in Si or InGaAs
+        wvl_min, wvl_max = wvl_.min(), wvl_.max()
+        if wvl0 < wvl_min or wvl0 > wvl_max:
+            print(f"Warning: Requested wavelength {wvl0}nm is outside the {channel.upper()} channel range [{wvl_min:.1f}-{wvl_max:.1f}nm]")
+            print(f"Joint wavelength: {wvl_joint}nm")
+            if wvl0 > wvl_joint:
+                print("Try using the InGaAs channel for wavelengths > 950nm")
+            else:
+                print("Try using the Silicon channel for wavelengths <= 950nm")
+
+        f.close()
+
+        wvl_idx = np.argmin(np.abs(wvl_-wvl0))
+        actual_wvl = wvl_[wvl_idx]
+
+        ang_idx1 = np.argmin(np.abs(ang_ - vza_point))
+        ang_idx2 = np.argmin(np.abs(ang_ + vza_point))
+        actual_vza1 = ang_[ang_idx1]
+        actual_vza2 = ang_[ang_idx2]
+
+        response_vaas[0].append(cos_resp_[ang_idx1, wvl_idx])
+        response_vaas[1].append(cos_resp_[ang_idx2, wvl_idx])
+        actual_vza_vaas[0].append(actual_vza1)
+        actual_vza_vaas[1].append(actual_vza2)
+        actual_wvl_vaas.append(actual_wvl)
+
+    if True:
+        fontsize = 18
+        plt.close('all')
+        plt.rcParams.update({'font.size': fontsize})
+        fig = plt.figure(figsize=(10, 8))
+        wvl_actual = np.mean(np.array(actual_wvl_vaas))
+        vza_actual = np.mean(np.array(actual_vza_vaas[0] + [-vza_ for vza_ in actual_vza_vaas[1]]))
+        fig.suptitle('Azimuthal Response (%.1f nm, %s, VZA %d deg)' % (wvl_actual, channel.upper(), vza_actual), fontsize=fontsize + 2)
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+
+        vaas = np.array(vaas)
+        ax1.plot( vaas, response_vaas[0], marker='o', markersize=10, color='r', lw=2.0, alpha=0.6)
+        ax1.plot(-vaas, response_vaas[1], marker='o', markersize=10, color='b', lw=2.0, alpha=0.6)
+
+        ax1.set_xlabel('VAA (deg)')
+        ax1.set_ylabel('Response')
+
+        patches_legend = [
+                          # mpatches.Patch(color='black' , label='Average&Interpolated'), \
+                          mpatches.Patch(color='red'   , label='Pos. Angles (C.C.W.)'), \
+                          mpatches.Patch(color='blue'  , label='Neg. Angles (C.W.)'), \
+                          # mpatches.Patch(color='green' , label='Average&Std.'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='lower right', fontsize=16)
+        # ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
+        #\--------------------------------------------------------------/#
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fname = fnames_vaas[0] + '_wvl-{}_vza-{}_azimuthal_resp.h5'.format(int(wvl0), int(vza_point))
+        fname_png = os.path.basename(fname).replace('.h5', '.png')
+        if fdir_out is not None:
+            if not os.path.exists(fdir_out):
+                os.makedirs(fdir_out)
+            fname_png = os.path.join(fdir_out, fname_png)
+
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig(fname_png, bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        # plt.show()
+        # sys.exit()
 
 def print_wavelength_info(fname):
     """
@@ -312,6 +479,7 @@ if __name__ == '__main__':
         parser.add_argument('--fname', type=str, help='Name of the processed calibration data file(s) (.h5).')
         parser.add_argument('--fdir_out', type=str, default='./', help='Directory where the processed data will be saved.')
         parser.add_argument('--wvl', type=float, default=555.0, help='Wavelength (in nm) for cosine response plot.')
+        parser.add_argument('--azimuthal', action='store_true', help='Whether to show azimuthal plots.')
         parser.add_argument('--info', action='store_true', help='Print wavelength information for calibration files.')
         args = parser.parse_args()
 
@@ -323,6 +491,7 @@ if __name__ == '__main__':
             fname = '2025-08-13*ang-resp*si-120|in-350.h5'
             fdir_out = './'
             wvl = 555.0
+            azimuthal = False
             info = False
         args = Args()
 
@@ -347,5 +516,8 @@ if __name__ == '__main__':
         # Generate plots
         for fname in fnames:
             fig_cos_resp(fname, fdir_out=args.fdir_out, wvl0=args.wvl)
+        
+        if args.azimuthal:
+            fig_azimuthal(fnames, fdir_out=args.fdir_out, vza_point=60.0, wvl0=args.wvl)
 
         print('Plots visualized for {} nm and saved in {}'.format(args.wvl, args.fdir_out))
