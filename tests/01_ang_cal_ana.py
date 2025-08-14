@@ -319,7 +319,8 @@ if __name__ == '__main__':
         class Args:
             # fdir = './'
             fdir = '../projects/2024-arcsix/'
-            fname = '*ang-resp*si-120|in-350.h5'
+            # fname = '*ang-resp*si-120|in-350.h5'
+            fname = '2025-08-13*ang-resp*si-120|in-350.h5'
             fdir_out = './'
             wvl = 555.0
             info = False

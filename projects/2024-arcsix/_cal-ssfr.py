@@ -688,6 +688,61 @@ def ssfr_ang_cal_20250804(fdir, fdir_out=None, decipher_vaa=False):
         ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, fdir_out=fdir_out, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
+def ssfr_ang_cal_20250813(fdir, decipher_vaa=False):
+
+    """
+    Notes:
+        angular calibration for SSFR-A zenith primarily intended for the azimuthal dependence test.
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+    
+    vaa = 0
+    if decipher_vaa:
+        main_string = fdir
+        partial_match = 'vaa'
+
+        index = main_string.find(partial_match)
+        if index != -1:  # If the partial match is found
+            start_index = index + len(partial_match)
+            end_index = start_index + 4 # vaa should be 4 character string
+            vaa_tag = main_string[start_index:end_index]
+
+        vaa = int(vaa_tag) # string to int
+        msg = '\nMessage [ssfr_ang_cal_20250813]: deciphered vaa = %d from fdir name ...' % (vaa)
+        print(msg)
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles = np.array([0.0, 60.0, -60.0])
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    fnames  = {
+            fnames_[i]: angles[i] for i in range(angles.size)
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        if decipher_vaa:
+            filename_tag = '%s|%s|%s|%s|VAA%s' % (tags[0], tags[4], date_today_s, dset_tag, vaa_tag)
+        else:
+            filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
+
 def main_ssfr_rad_cal(
         which_ssfr='lasp|ssfr-a',
         ):
@@ -1551,21 +1606,25 @@ if __name__ == '__main__':
     # for vaa in np.arange(0.0, 181.0, 30.0):
     #     fdir = 'data/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-all_lamp-507_si-080-120_in-250-350_post/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
     #     ssfr_ang_cal_20250707(fdir)
+
+    for vaa in np.arange(30.0, 181.0, 30.0):
+        fdir = 'data/arcsix/cal/2025-08-13_SSFR-A_zen-lc4_ang-cal-vaa%04d_lamp-507_si-080-120_in-250-350_postdeployment.resurgery' % vaa
+        ssfr_ang_cal_20250813(fdir, decipher_vaa=True)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # angular calibrations(SSFR-A, nad-lc6,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fdir = 'data/arcsix/cal/ang-cal/2025-07-31_SSFR-A_nad-lc6_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
-    ssfr_ang_cal_20250731(fdir)
+    # fdir = 'data/arcsix/cal/ang-cal/2025-07-31_SSFR-A_nad-lc6_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal_20250731(fdir)
 
     # #TODO: replace hardcoded paths with a more flexible approach from the command line or config file
-    # main_fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/'
+    # main_fdir = 'data/arcsix/cal/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/'
     # fdir_out = 'processed/2025-08-04/'
 
     # fdirs = os.listdir(main_fdir)
     # for subdir in fdirs:
     #     fdir = os.path.join(main_fdir, subdir)
-    #     # fdir = 'data/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment'
+    #     # fdir = 'data/arcsix/cal/ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal/2025-08-04_SSFR-A_nad-lc6_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment'
     #     ssfr_ang_cal_20250804(fdir=fdir, fdir_out=fdir_out, decipher_vaa=True)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
