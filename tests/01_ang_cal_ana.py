@@ -224,6 +224,7 @@ def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
 
         ax1.plot(mu_[ang_ >= 0.0], cos_resp_[ang_ >= 0.0, wvl_idx], marker='o', markersize=10, color='r', lw=2.0, alpha=0.6)
         ax1.plot(mu_[ang_ < 0.0], cos_resp_[ang_ < 0.0, wvl_idx], marker='o', markersize=10, color='b', lw=2.0, alpha=0.6)
+        ax1.plot(mu0, cos_resp0[:, wvl_idx], marker='o', markersize=10, color='k', lw=4.0, linestyle='dashed')
 
         # angle_offset = -2.5
         angle_offset = 0.0
@@ -402,8 +403,8 @@ def fig_azimuthal(fnames, fdir_out=None, vza_point=60., wvl0=555.0):
         ax1 = fig.add_subplot(111)
 
         vaas = np.array(vaas)
-        ax1.plot( vaas, response_vaas[0], marker='o', markersize=10, color='r', lw=2.0, alpha=0.6)
-        ax1.plot(-vaas, response_vaas[1], marker='o', markersize=10, color='b', lw=2.0, alpha=0.6)
+        ax1.plot(vaas, response_vaas[0], marker='o', markersize=10, color='r', lw=2.0, alpha=0.6)
+        ax1.plot(vaas - 180., response_vaas[1], marker='o', markersize=10, color='b', lw=2.0, alpha=0.6)
 
         ax1.set_xlim((-180.0, 180.0))
         ax1.set_xticks(np.arange(-180, 181, 60))
@@ -490,11 +491,13 @@ if __name__ == '__main__':
             # fdir = './'
             fdir = '../projects/2024-arcsix/'
             # fname = '*ang-resp*si-120|in-350.h5'
+            # fname = '2024-03-15*ang-resp*si-120|in-350.h5'
+            # fname = '2025-06-30*ang-resp*si-120|in-350.h5'
             fname = '2025-08-13*ang-resp*si-120|in-350.h5'
             fdir_out = './'
             wvl = 555.0
-            # azimuthal = False
-            azimuthal = True
+            azimuthal = False
+            # azimuthal = True
             info = False
         args = Args()
 
