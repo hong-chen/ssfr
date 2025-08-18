@@ -12,7 +12,7 @@ comments = '11th research flight, performed cloud wall'
 
 hsk_tag  = 'hsk'
 alp_tag  = 'alp'
-hsr1_tag = 'hsr1-b'
+hsr1_tag = 'hsr1-a'
 ssfr_tag = 'ssfr-b'
 ssrr_tag = 'ssfr-a'
 
