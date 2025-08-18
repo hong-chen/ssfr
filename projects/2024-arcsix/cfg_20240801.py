@@ -8,7 +8,7 @@ operator = 'Ken Hirata'
 mission = 'arcsix'
 year = '2024'
 platform = 'p3b'
-comments = '14th research flight, performed cloud wall'
+comments = '14th research flight, clear-sky flight'
 
 hsk_tag  = 'hsk'
 alp_tag  = 'alp'
@@ -32,12 +32,10 @@ alp_ang_rol_offset = 0.0
 hsr1_ang_pit_offset = 0.0
 hsr1_ang_rol_offset = 0.0
 
-# fdir_data = '/Volumes/argus/field/%s/%s/%s' % (mission, year, platform)
-# fdir_cal = '/Volumes/argus/field/%s/cal' % mission
-# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
 fdir_data = f'data/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
 fdir_out = f'data/{mission}/processed'
+# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
