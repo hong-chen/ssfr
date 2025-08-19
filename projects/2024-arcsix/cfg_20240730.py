@@ -48,15 +48,15 @@ date_s_ = date.strftime('%Y-%m-%d')
 # data directory
 #╭────────────────────────────────────────────────╮#
 fdir_hsk = f'{fdir_data}/aux/hsk'
-fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{alp_tag}')[-1]
-fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{hsr1_tag}')[-1]
-fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{ssfr_tag}')[-1]
-fdir_ssrr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{ssrr_tag}')[-1]
+fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*raw?{alp_tag}')[-1]
+fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*raw?{hsr1_tag}')[-1]
+fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*raw?{ssfr_tag}')[-1]
+fdir_ssrr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*raw?{ssrr_tag}')[-1]
 #╰────────────────────────────────────────────────╯#
 
 # data files
 #╭────────────────────────────────────────────────╮#
-fname_hsk = ssfr.util.get_all_files(fdir_hsk, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*.???')[-1]
+fname_hsk = ssfr.util.get_all_files(fdir_hsk, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*.???')[-1]
 fnames_alp = ssfr.util.get_all_files(fdir_alp, pattern='*.plt3')
 fnames_hsr1 = ssfr.util.get_all_files(fdir_hsr1, pattern='*.txt')
 fnames_ssfr = ssfr.util.get_all_files(fdir_ssfr, pattern='*.SKS')
