@@ -244,6 +244,13 @@ def cdata_ssfr_v1(
 
                 # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
                 fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
+                if len(fnames_cal_zen) == 0:
+                    msg = '\nWarnings [cdata_ssfr_v1]: No zenith calibration file found for <%s> ...' % (int_time_tag_zen)
+                    warnings.warn(msg)
+                    int_time_tag_zen = 'si-080|in-250'  # default integration time tag for zenith calibration
+                    msg = '\nMessage [cdata_ssfr_v1]: Using the zenith calibration file for <%s> ...' % (int_time_tag_zen)
+                    print(msg)
+                    fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
                 jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
                 for i in range(jday_cal_zen.size):
                     dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
@@ -257,6 +264,13 @@ def cdata_ssfr_v1(
 
                 # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
                 fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
+                if len(fnames_cal_nad) == 0:
+                    msg = '\nWarnings [cdata_ssfr_v1]: No nadir calibration file found for <%s> ...' % (int_time_tag_nad)
+                    warnings.warn(msg)
+                    int_time_tag_nad = 'si-080|in-250'  # default integration time tag for nadir calibration
+                    msg = '\nMessage [cdata_ssfr_v1]: Using the nadir calibration file for <%s> ...' % (int_time_tag_nad)
+                    print(msg)
+                    fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
                 jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
                 for i in range(jday_cal_nad.size):
                     dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
@@ -1195,25 +1209,28 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             # datetime.datetime(2024, 5, 28),
-             # datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
-             # datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
-             # datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
-             # datetime.datetime(2024, 6, 5),
-             datetime.datetime(2024, 6, 6),
-             # datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
-             # datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
-             # datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
-             # datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
-             # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
-             # datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
-             # datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
-             # datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
-             # datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
+             datetime.datetime(2024, 5, 24), #
+            #  datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
+            #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
+            #  datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
+            #  datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
+            #  datetime.datetime(2024, 6, 5),  # ARCSIX-1 science flight #5
+            #  datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6
+            #  datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
+            #  datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
+            #  datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
+            #  datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 7, 22), #
+            #  datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
+            #  datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
+            #  datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
+            #  datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+            #  datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
+            #  datetime.datetime(2024, 8, 16), # 
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -1246,7 +1263,7 @@ if __name__ == '__main__':
 
         # step 4
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v2(cfg, run=True)
+        # main_process_data_v2(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         pass
