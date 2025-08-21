@@ -28,8 +28,8 @@ def cal_rad_resp(
         spec_reverse=False,
         which_lamp='f-1324',
         int_time={'si':80.0, 'in':250.0},
-        dark_extend=5,
-        light_extend=5,
+        dark_extend=2,
+        light_extend=2,
         verbose=True,
         ):
 
