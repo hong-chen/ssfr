@@ -204,11 +204,8 @@ def cal_rad_resp(
         shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_si], ssfr0.data_raw['shutter'][logic_si], ssfr0.data_raw['count_raw'][logic_si, :, index_si], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
         logic  = (shutter==0)
         logic_nan = (np.sum(np.isnan(counts), axis=-1)) > 0
-        print(logic_nan.sum())
         spectra_si     = np.nanmean(counts[logic, :], axis=0)
         spectra_si_std = np.nanstd(counts[logic, :], axis=0)
-        msg = '\nMessage [cal_rad_resp]: '
-        print(msg)
 
         shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_in], ssfr0.data_raw['shutter'][logic_in], ssfr0.data_raw['count_raw'][logic_in, :, index_in], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
         logic  = (shutter==0)
