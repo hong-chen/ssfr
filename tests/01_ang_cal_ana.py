@@ -267,6 +267,230 @@ def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
         # sys.exit()
     #\----------------------------------------------------------------------------/#
 
+def fig_cos_resp_spectral(fname, fdir_out=None, ang0=60.0):
+
+    f = h5py.File(fname, 'r')
+    mu = f['mu'][...]
+    wvl = f['wvl'][...]
+
+    ang_ = f['raw/ang'][...]
+    mu_  = f['raw/mu'][...]
+    mu0  = f['raw/mu0'][...]
+
+    try:
+        cos_resp = f['ang_resp'][...]
+    except Exception:
+        try:
+            cos_resp = f['cos_resp'][...]
+        except Exception as e2:
+            print(f"Error reading data: {e2}")
+            f.close()
+            return
+
+    # determine joinder wavelength from file attributes (default to 950nm if not found)
+    try:
+        wvl_joint = f.attrs.get('joint_wavelength_nm', 950.0)
+    except Exception:
+        wvl_joint = 950.0
+
+    # select appropriate channel based on wavelength
+    # if wvl0 <= wvl_joint:
+    #     channel = 'si'  # Silicon channel for wavelengths <= joinder wavelength
+    # else:
+    #     channel = 'in'  # InGaAs channel for wavelengths > joinder wavelength
+
+    wvl_all = []
+    cos_resp_all = []
+    cos_resp0all = []
+    cos_resp_std0all = []
+
+    try:
+        wvl_data = f['wvl'][...]
+        ang_resp_data = f['ang_resp'][...]
+    except Exception:
+        wvl_data = f['wvl'][...]
+        ang_resp_data = f['cos_resp'][...]
+
+    # nadir
+    if '|nad|' in fname:
+        for channel in ['si', 'in']:
+            direction_channel_tag = f'nad|{channel}' # one of ['nad|si', 'nad|in']
+            try:
+                wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                cos_resp_ = f[f'raw/{direction_channel_tag}/ang_resp'][...]
+                cos_resp0 = f[f'raw/{direction_channel_tag}/ang_resp0'][...]
+                cos_resp_std0 = f[f'raw/{direction_channel_tag}/ang_resp_std0'][...]
+                wvl_all.append(wvl_)
+                cos_resp_all.append(cos_resp_)
+                cos_resp0all.append(cos_resp0)
+                cos_resp_std0all.append(cos_resp_std0)
+
+            except Exception:
+                # Fallback to old naming convention
+                try:
+                    wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                    cos_resp_ = f[f'raw/{direction_channel_tag}/cos_resp'][...]
+                    cos_resp0 = f[f'raw/{direction_channel_tag}/cos_resp0'][...]
+                    cos_resp_std0 = f[f'raw/{direction_channel_tag}/cos_resp_std0'][...]
+                    wvl_all.append(wvl_)
+                    cos_resp_all.append(cos_resp_)
+                    cos_resp0all.append(cos_resp0)
+                    cos_resp_std0all.append(cos_resp_std0)
+
+                except Exception as e2:
+                    print(f"Error reading nadir {channel} channel data: {e2}")
+                    f.close()
+                    return
+
+    # zenith
+    elif '|zen|' in fname:
+        for channel in ['si', 'in']:
+            direction_channel_tag = f'zen|{channel}' # one of ['zen|si', 'zen|in']
+            try:
+                wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                cos_resp_ = f[f'raw/{direction_channel_tag}/ang_resp'][...]
+                cos_resp0 = f[f'raw/{direction_channel_tag}/ang_resp0'][...]
+                cos_resp_std0 = f[f'raw/{direction_channel_tag}/ang_resp_std0'][...]
+                wvl_all.append(wvl_)
+                cos_resp_all.append(cos_resp_)
+                cos_resp0all.append(cos_resp0)
+                cos_resp_std0all.append(cos_resp_std0)
+
+            except Exception:
+                # Fallback to old naming convention
+                try:
+                    wvl_ = f[f'raw/{direction_channel_tag}/wvl'][...]
+                    cos_resp_ = f[f'raw/{direction_channel_tag}/cos_resp'][...]
+                    cos_resp0 = f[f'raw/{direction_channel_tag}/cos_resp0'][...]
+                    cos_resp_std0 = f[f'raw/{direction_channel_tag}/cos_resp_std0'][...]
+                    wvl_all.append(wvl_)
+                    cos_resp_all.append(cos_resp_)
+                    cos_resp0all.append(cos_resp0)
+                    cos_resp_std0all.append(cos_resp_std0)
+
+                except Exception as e2:
+                    print(f"Error reading zenith {channel} channel data: {e2}")
+                    f.close()
+                    return
+
+    # check if requested wavelength is within the available range and check if channel is in Si or InGaAs
+    # wvl_min, wvl_max = wvl_.min(), wvl_.max()
+    # if wvl0 < wvl_min or wvl0 > wvl_max:
+    #     print(f"Warning: Requested wavelength {wvl0}nm is outside the {channel.upper()} channel range [{wvl_min:.1f}-{wvl_max:.1f}nm]")
+    #     print(f"Joint wavelength: {wvl_joint}nm")
+    #     if wvl0 > wvl_joint:
+    #         print("Try using the InGaAs channel for wavelengths > 950nm")
+    #     else:
+    #         print("Try using the Silicon channel for wavelengths <= 950nm")
+
+    # which_ssfr = fname.split('|')[5] + '|' + fname.split('|')[6]
+    # which_ssfr = which_ssfr.lower()
+    # which_lab  = which_ssfr.split('|')[0]
+    # if which_lab == 'nasa':
+    #     import ssfr.nasa_ssfr as ssfr_toolbox
+    # elif which_lab == 'lasp':
+    #     import ssfr.lasp_ssfr as ssfr_toolbox
+    # else:
+    #     msg = '\nError [cal_ang_resp]: <which_ssfr=> does not support <\'%s\'> (only supports <\'nasa|ssfr-6\'> or <\'lasp|ssfr-a\'> or <\'lasp|ssfr-b\'>).' % which_ssfr
+    #     raise ValueError(msg)
+
+    # which_lc = which_ssfr.split('|')[7]
+    # si_tag = '%s|si' % which_lc
+    # in_tag = '%s|in' % which_lc
+    
+    # wvls = ssfr_toolbox.get_ssfr_wvl(which_ssfr)
+
+    # wvl_start = 350.
+    # wvl_end   = 2200.
+    # logic_si  = (wvls[si_tag] >= wvl_start)  & (wvls[si_tag] <= wvl_joint)
+    # logic_in  = (wvls[in_tag] >  wvl_joint)  & (wvls[in_tag] <= wvl_end)
+
+    # wvl_data      = np.concatenate((wvls[si_tag][logic_si], wvls[in_tag][logic_in]))
+    # ang_resp_data = np.concatenate((ang_resp_all[si_tag][:, logic_si], ang_resp_all[in_tag][:, logic_in]), axis=1)
+
+    ang_idx = np.argmin(np.abs(mu-np.cos(np.radians(ang0))))
+    indices_sort = np.argsort(wvl_data)
+    wvl          = wvl_data[indices_sort]
+    ang_resp = ang_resp_data[ang_idx, indices_sort]
+
+    logic = (wvl>=400.0) & (wvl<=2000.0)
+    order = 4
+    coef = np.polyfit(wvl[logic], ang_resp[logic], order)
+    print(ang_resp)
+    print(coef)
+
+    f.close()
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        fontsize = 20
+        title = os.path.basename(fname).replace('.h5', '').upper()
+        plt.close('all')
+        plt.rcParams.update({'font.size': fontsize})
+        fig = plt.figure(figsize=(18, 10))
+        fig.suptitle('Cosine Response (%d deg)' % (ang0), fontsize=fontsize+4)
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # ax1.scatter(mu, cos_resp[:, np.argmin(np.abs(wvl-wvl0))], s=6, c='k', lw=0.0, alpha=0.2)
+
+        # find the closest wavelength index but also print actual vs requested wavelength used
+        # wvl_idx = np.argmin(np.abs(wvl_-wvl0))
+        # actual_wvl = wvl_[wvl_idx]
+        ang_idx = np.argmin(np.abs(ang_-ang0))
+        actual_ang = ang_[ang_idx]
+
+        for ich, channel in enumerate(['si', 'in']):
+            wvl_ = wvl_all[ich]
+            cos_resp_ = cos_resp_all[ich]
+            cos_resp0 = cos_resp0all[ich]
+            cos_resp_std0 = cos_resp_std0all[ich]
+            # ax1.plot(wvl_, cos_resp_[ang_idx, :], marker='o', markersize=10, color='r', lw=2.0, alpha=0.6)
+            # ax1.plot(wvl_, cos_resp_[ang_idx, :], marker='o', markersize=10, color='b', lw=2.0, alpha=0.6)
+            ax1.plot(wvl_, cos_resp0[ang_idx, :], marker='o', markersize=8, color=['cyan', 'magenta'][ich], lw=2.0)
+
+        p0 = np.poly1d(coef[:])
+        ax1.plot(wvl, p0(wvl), color='black', ls='--', lw=2.0)
+
+        ax1.axhline(np.cos(np.radians(ang0)), color='gray', ls='--')
+        # ax1.plot([0.0, 1.0], [0.0, 1.0], color='gray', ls='--')
+        # ax1.set_xlim((0.0, 1.0))
+        ax1.set_ylim((0.0, 1.1))
+        ax1.set_xlabel('$\lambda$ (nm)')
+        ax1.set_ylabel('Response')
+        ax1.set_title('%s (Actual: %.1f deg)' % (title, actual_ang), fontsize=fontsize)
+
+        patches_legend = [
+                          # mpatches.Patch(color='black' , label='Average&Interpolated'), \
+                          mpatches.Patch(color='cyan'  , label='Si'), \
+                          mpatches.Patch(color='magenta', label='In'), \
+                        #   mpatches.Patch(color='green' , label='Average&Std.'), \
+                          mpatches.Patch(color='black' , label='fitted response'), \
+                          mpatches.Patch(color='gray'  , label='cos(%.1f deg)' % (actual_ang)),
+                         ]
+        ax1.legend(handles=patches_legend, loc='lower right', fontsize=16)
+        # ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
+        #\--------------------------------------------------------------/#
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fname = os.path.splitext(fname)[0] + '_ang-{}_cos_resp.h5'.format(int(ang0))
+        fname_png = os.path.basename(fname).replace('.h5', '.png')
+        if fdir_out is not None:
+            if not os.path.exists(fdir_out):
+                os.makedirs(fdir_out)
+            fname_png = os.path.join(fdir_out, fname_png)
+
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig(fname_png, bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+        # plt.show()
+        # sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+
 def fig_azimuthal(fnames, fdir_out=None, vza_point=60., wvl0=555.0):
     
     vaas = []
@@ -489,11 +713,13 @@ if __name__ == '__main__':
     else:
         class Args:
             # fdir = './'
-            fdir = '../projects/2024-arcsix/'
+            fdir = '/Volumes/argus/field/arcsix/cal/ang-cal/'
+            # fdir = '../projects/2024-arcsix/'
             # fname = '*ang-resp*si-120|in-350.h5'
             # fname = '2024-03-15*ang-resp*si-120|in-350.h5'
             # fname = '2025-06-30*ang-resp*si-120|in-350.h5'
-            fname = '2025-08-13*ang-resp*si-120|in-350.h5'
+            # fname = '2025-08-13*ang-resp*si-120|in-350.h5'
+            fname = '*|vaa-180|*|si-120|in-350.h5'
             fdir_out = './'
             wvl = 555.0
             azimuthal = False
@@ -522,6 +748,7 @@ if __name__ == '__main__':
         # Generate plots
         for fname in fnames:
             fig_cos_resp(fname, fdir_out=args.fdir_out, wvl0=args.wvl)
+            fig_cos_resp_spectral(fname, fdir_out=args.fdir_out)
         
         if args.azimuthal:
             fig_azimuthal(fnames, fdir_out=args.fdir_out, vza_point=60.0, wvl0=args.wvl)
