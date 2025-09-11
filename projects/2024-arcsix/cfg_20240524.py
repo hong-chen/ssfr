@@ -180,7 +180,7 @@ ssfr = {
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
-        'time_offset': 0.0,
+        'time_offset': ssfr_time_offset,
 
         # number of data points to be excluded at the beginning and end of a dark cycle (due to slow shutter closing/opening glitch)
         'dark_extend': 1,
@@ -220,7 +220,7 @@ ssrr = {
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
-        'time_offset': 0.0,
+        'time_offset': ssrr_time_offset,
 
         # number of data points to be excluded at the beginning and end of a dark cycle (due to slow shutter closing/opening glitch)
         'dark_extend': 1,
