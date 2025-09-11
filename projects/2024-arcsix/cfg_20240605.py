@@ -24,8 +24,8 @@ ssrr_aka = 'ssrr'
 
 alp_time_offset  = -17.58
 hsr1_time_offset = 0.0
-ssfr_time_offset = -156.26
-ssrr_time_offset = -222.66
+ssfr_time_offset = -176.88
+ssrr_time_offset = -250.48
 
 alp_ang_pit_offset = 0.0
 alp_ang_rol_offset = 0.0
@@ -34,8 +34,14 @@ hsr1_ang_rol_offset = 0.0
 
 fdir_data = f'data/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
+# fdir_cal = '/Users/kehi6101/Downloads/ssfr_test/%s/cal0' % mission
+# fdir_cal = '/Users/kehi6101/Downloads/ssfr_test/%s/cal1' % mission
+# fdir_cal = '/Users/kehi6101/Downloads/ssfr_test/%s/cal2' % mission
 fdir_out = f'data/{mission}/processed'
 # fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
+# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed0' % mission
+# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed1' % mission
+# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed2' % mission
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
@@ -180,7 +186,7 @@ ssfr = {
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
-        'time_offset': 0.0,
+        'time_offset': ssfr_time_offset,
 
         # number of data points to be excluded at the beginning and end of a dark cycle (due to slow shutter closing/opening glitch)
         'dark_extend': 1,
@@ -220,7 +226,7 @@ ssrr = {
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
-        'time_offset': 0.0,
+        'time_offset': ssrr_time_offset,
 
         # number of data points to be excluded at the beginning and end of a dark cycle (due to slow shutter closing/opening glitch)
         'dark_extend': 1,
