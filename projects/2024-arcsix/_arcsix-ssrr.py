@@ -243,16 +243,7 @@ def cdata_ssfr_v1(
                 int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
 
                 # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                if len(fnames_cal_zen) == 0:
-                    msg = '\nWarnings [cdata_ssfr_v1]: No zenith calibration file found for <%s> ...' % (int_time_tag_zen)
-                    warnings.warn(msg)
-                    int_time_tag_zen = 'si-080|in-250'  # default integration time tag for zenith calibration
-                    msg = '\nMessage [cdata_ssfr_v1]: Using the zenith calibration file for <%s> ...' % (int_time_tag_zen)
-                    print(msg)
-                    # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                    fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
+                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
                 jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
                 for i in range(jday_cal_zen.size):
                     dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
@@ -265,16 +256,7 @@ def cdata_ssfr_v1(
                 print(msg)
 
                 # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                if len(fnames_cal_nad) == 0:
-                    msg = '\nWarnings [cdata_ssfr_v1]: No nadir calibration file found for <%s> ...' % (int_time_tag_nad)
-                    warnings.warn(msg)
-                    int_time_tag_nad = 'si-080|in-250'  # default integration time tag for nadir calibration
-                    msg = '\nMessage [cdata_ssfr_v1]: Using the nadir calibration file for <%s> ...' % (int_time_tag_nad)
-                    print(msg)
-                    # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                    fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
+                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
                 jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
                 for i in range(jday_cal_nad.size):
                     dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
@@ -301,10 +283,19 @@ def cdata_ssfr_v1(
 
                 jday_today = ssfr.util.dtime_to_jday(date)
 
-                int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
-                int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
+                # int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
+                int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0]*6, data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
+                # int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
+                int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2]*6, data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
 
-                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*zen*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_zen)), key=os.path.getmtime)
+                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment*|*%s*zen*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_zen)), key=os.path.getmtime)
+                if len(fnames_cal_zen) == 0:
+                    msg = '\nWarnings [cdata_ssfr_v1]: No zenith calibration file found for <%s> ...' % (int_time_tag_zen)
+                    warnings.warn(msg)
+                    int_time_tag_zen = 'si-180|in-080'  # default integration time tag for zenith calibration
+                    msg = '\nMessage [cdata_ssfr_v1]: Using the zenith calibration file for <%s> ...' % (int_time_tag_zen)
+                    print(msg)
+                    fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment*|*%s*zen*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_zen)), key=os.path.getmtime)
                 jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
                 for i in range(jday_cal_zen.size):
                     dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[1].split('_')[0]
@@ -316,7 +307,14 @@ def cdata_ssfr_v1(
                 msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s zenith radince ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
                 print(msg)
 
-                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*nad*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_nad)), key=os.path.getmtime)
+                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment*|*%s*nad*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_nad)), key=os.path.getmtime)
+                if len(fnames_cal_nad) == 0:
+                    msg = '\nWarnings [cdata_ssfr_v1]: No nadir calibration file found for <%s> ...' % (int_time_tag_nad)
+                    warnings.warn(msg)
+                    int_time_tag_nad = 'si-180|in-080'  # default integration time tag for nadir calibration
+                    msg = '\nMessage [cdata_ssfr_v1]: Using the nadir calibration file for <%s> ...' % (int_time_tag_nad)
+                    print(msg)
+                    fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment*|*%s*nad*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_nad)), key=os.path.getmtime)
                 jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
                 for i in range(jday_cal_nad.size):
                     dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[1].split('_')[0]
@@ -358,14 +356,14 @@ def cdata_ssfr_v1(
 
                 ### (tentative solution) Force the lower integration time data to be NaN
                 #╭──────────────────────────────────────────────────────────────╮#
-                idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 0] for i in np.unique(dset_num)])
-                if idset != idset_zen_max_int:
-                    for i in range(wvl_zen.size):
-                        spec_zen[logic_dset, :] = np.nan
-                idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 2] for i in np.unique(dset_num)])
-                if idset != idset_zen_max_int:
-                    for i in range(wvl_zen.size):
-                        spec_nad[logic_dset, :] = np.nan
+                # idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 0] for i in np.unique(dset_num)])
+                # if idset != idset_zen_max_int:
+                #     for i in range(wvl_zen.size):
+                #         spec_zen[logic_dset, :] = np.nan
+                # idset_zen_max_int = np.argmax([data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num'] == i][0, 2] for i in np.unique(dset_num)])
+                # if idset != idset_zen_max_int:
+                #     for i in range(wvl_zen.size):
+                #         spec_nad[logic_dset, :] = np.nan
                 #╰──────────────────────────────────────────────────────────────╯#
 
 
@@ -432,207 +430,6 @@ def cdata_ssfr_v1(
         f['time_offset'] = time_offset
         f['tmhr_ori'] = data_hsk['tmhr'] - time_offset/3600.0
         f['jday_ori'] = data_hsk['jday'] - time_offset/86400.0
-
-        f.close()
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
-    return fname_h5
-
-def cdata_ssfr_v2(
-        date,
-        fname_ssfr_v1,
-        fname_alp_v1,
-        fname_hsr1_v2,
-        fname_h5='SSFR_v2.h5',
-        fdir_out='./',
-        ang_pit_offset=0.0,
-        ang_rol_offset=0.0,
-        run=True,
-        run_aux=True,
-        ):
-
-    """
-    version 2: apply cosine correction to correct for non-linear angular resposne
-               diffuse radiation: use cosine response integrated over the entire angular space
-               direct radiation: use cosine response over the entire angular space measured in the lab
-
-               diffuse and direct seperation is guided by the diffuse ratio measured by HSR1
-    """
-
-    def func_diff_ratio(x, a, b, c):
-
-        return a * (x/500.0)**(b) + c
-
-    def fit_diff_ratio(wavelength, ratio):
-
-        popt, pcov = curve_fit(func_diff_ratio, wavelength, ratio, maxfev=1000000, bounds=(np.array([0.0, -np.inf, 0.0]), np.array([np.inf, 0.0, np.inf])))
-
-        return popt, pcov
-
-    date_s = date.strftime('%Y%m%d')
-
-    if run:
-
-        data_ssfr_v1 = ssfr.util.load_h5(fname_ssfr_v1)
-
-        # temporary fix to bypass the attitude correction for SSFR-B
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        if data_ssfr_v1['zen/wvl'].size > 424:
-            data_ssfr_v1['zen/toa0'] = data_ssfr_v1['zen/toa0'][:424]
-            data_ssfr_v1['zen/wvl'] = data_ssfr_v1['zen/wvl'][:424]
-            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][:, :424]
-            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][:, :424]
-            data_ssfr_v1['v0/spec_zen'] = data_ssfr_v1['v0/spec_zen'][:, :424]
-            data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:424]
-        # ╰────────────────────────────────────────────────────────────────────────────╯#
-
-        fname_aux = fname_h5.replace('_v2.h5', '-aux_v2.h5')
-
-        if run_aux:
-
-            # calculate diffuse/global ratio from HSR1 data
-            #╭────────────────────────────────────────────────────────────────────────────╮#
-            data_hsr1_v2 = ssfr.util.load_h5(fname_hsr1_v2)
-
-            f_ = h5py.File(fname_aux, 'w')
-
-            wvl_ssfr_zen = data_ssfr_v1['zen/wvl']
-            wvl_hsr1     = data_hsr1_v2['tot/wvl']
-
-            Nt, Nwvl = data_ssfr_v1['zen/flux'].shape
-
-            diff_ratio = np.zeros((Nt, Nwvl), dtype=np.float64)
-            diff_ratio[...] = np.nan
-
-            poly_coefs = np.zeros((Nt, 3), dtype=np.float64)
-            poly_coefs[...] = np.nan
-
-            qual_flag = np.repeat(0, Nt)
-
-            # do spectral fit based on 400 nm - 750 nm observations
-            #╭──────────────────────────────────────────────────────────────╮#
-            for i in tqdm(range(Nt)):
-
-                diff_ratio0_hsr1 = data_hsr1_v2['dif/flux'][i, :] / data_hsr1_v2['tot/flux'][i, :]
-                logic_valid = (~np.isnan(diff_ratio0_hsr1)) & (diff_ratio0_hsr1>=0.0) & (diff_ratio0_hsr1<=1.0) & (wvl_hsr1>=400.0) & (wvl_hsr1<=750.0)
-                if logic_valid.sum() > 20:
-
-                    x = data_hsr1_v2['tot/wvl'][logic_valid]
-                    y = diff_ratio0_hsr1[logic_valid]
-                    popt, pcov = fit_diff_ratio(x, y)
-
-                    diff_ratio[i, :] = func_diff_ratio(wvl_ssfr_zen, *popt)
-                    poly_coefs[i, :] = popt
-
-                    qual_flag[i] = 1
-
-            diff_ratio[diff_ratio<0.0] = 0.0
-            diff_ratio[diff_ratio>1.0] = 1.0
-            #╰──────────────────────────────────────────────────────────────╯#
-
-            # fill in nan values in time space
-            #╭──────────────────────────────────────────────────────────────╮#
-            for i in range(Nwvl):
-
-                logic_nan   = np.isnan(diff_ratio[:, i])
-                logic_valid = ~logic_nan
-                f_interp = interpolate.interp1d(data_ssfr_v1['tmhr'][logic_valid], diff_ratio[:, i][logic_valid], bounds_error=None, fill_value='extrapolate')
-                diff_ratio[logic_nan, i] = f_interp(data_ssfr_v1['tmhr'][logic_nan])
-
-            diff_ratio[diff_ratio<0.0] = 0.0
-            diff_ratio[diff_ratio>1.0] = 1.0
-            #╰──────────────────────────────────────────────────────────────╯#
-
-            # save data
-            #╭──────────────────────────────────────────────────────────────╮#
-            f_.create_dataset('diff_ratio', data=diff_ratio  , compression='gzip', compression_opts=9, chunks=True)
-            g_ = f_.create_group('diff_ratio_aux')
-            g_.create_dataset('wvl'       , data=wvl_ssfr_zen, compression='gzip', compression_opts=9, chunks=True)
-            g_.create_dataset('coef'      , data=poly_coefs  , compression='gzip', compression_opts=9, chunks=True)
-            g_.create_dataset('qual_flag' , data=qual_flag   , compression='gzip', compression_opts=9, chunks=True)
-            #╰──────────────────────────────────────────────────────────────╯#
-            #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-            # alp
-            #╭────────────────────────────────────────────────────────────────────────────╮#
-            data_alp_v1  = ssfr.util.load_h5(fname_alp_v1)
-            for key in data_alp_v1.keys():
-                try:
-                    f_.create_dataset(key, data=data_alp_v1[key], compression='gzip', compression_opts=9, chunks=True)
-                except TypeError as error:
-                    print(error)
-                    f_[key] = data_alp_v1[key]
-            f_.close()
-            #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-        data_aux = ssfr.util.load_h5(fname_aux)
-
-        # diffuse ratio
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        diff_ratio = data_aux['diff_ratio']
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
-        # angles
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        angles = {}
-        angles['sza'] = data_aux['sza']
-        angles['saa'] = data_aux['saa']
-        angles['ang_pit']   = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
-        angles['ang_rol']   = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
-        angles['ang_hed']   = data_aux['ang_hed']
-        angles['ang_pit_m'] = data_aux['ang_pit_m']
-        angles['ang_rol_m'] = data_aux['ang_rol_m']
-        angles['ang_pit_offset'] = ang_pit_offset
-        angles['ang_rol_offset'] = ang_rol_offset
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-        # select calibration file for attitude correction
-        # angular response is relative change, thus irrelavant to integration time (ideally)
-        # and is intrinsic property of light collector, thus fixed to use SSFR-A with larger
-        # integration time for consistency and simplicity, will revisit this after mission
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        dset_s = 'dset1'
-        fdir_cal = '%s/ang-cal' % cfg.fdir_cal #_FDIR_CAL_
-        fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*zen*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
-        fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*nad*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-        # calculate attitude correction factors
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        fnames_cal = {
-                'zen': fname_cal_zen,
-                'nad': fname_cal_nad,
-                }
-        factors = ssfr.corr.att_corr(fnames_cal, angles, diff_ratio=diff_ratio)
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
-        # save data
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        f = h5py.File(fname_h5, 'w')
-        for key in ['tmhr', 'jday', 'lon', 'lat', 'alt']:
-            f.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
-
-        g1 = f.create_group('att_corr')
-        g1.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
-        g1.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
-        for key in ['sza', 'saa', 'ang_pit_s', 'ang_rol_s', 'ang_hed', 'ang_pit_m', 'ang_rol_m']:
-            g1.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
-
-        # apply attitude correction
-        #╭──────────────────────────────────────────────────────────────╮#
-        g2 = f.create_group('zen')
-        g2.create_dataset('flux', data=data_ssfr_v1['zen/flux']*factors['zen'], compression='gzip', compression_opts=9, chunks=True)
-        g2.create_dataset('wvl' , data=data_ssfr_v1['zen/wvl']                , compression='gzip', compression_opts=9, chunks=True)
-        g2.create_dataset('toa0', data=data_ssfr_v1['zen/toa0']               , compression='gzip', compression_opts=9, chunks=True)
-
-        g3 = f.create_group('nad')
-        g3.create_dataset('flux', data=data_ssfr_v1['nad/flux']*factors['nad'], compression='gzip', compression_opts=9, chunks=True)
-        g3.create_dataset('wvl' , data=data_ssfr_v1['nad/wvl']                , compression='gzip', compression_opts=9, chunks=True)
-        #╰──────────────────────────────────────────────────────────────╯#
 
         f.close()
         #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -903,8 +700,8 @@ def run_time_offset_check(cfg):
 
     date = cfg.common['date']
     date_s = date.strftime('%Y%m%d')
-    data_hsr1_v0 = ssfr.util.load_h5(cfg.hsr1['fname_v0'])
     data_ssfr_v0 = ssfr.util.load_h5(cfg.ssfr['fname_v0'])
+    data_ssrr_v0 = ssfr.util.load_h5(cfg.ssrr['fname_v0'])
 
     # data_hsr1_v0['tot/jday'] += 1.0
     # data_hsr1_v0['dif/jday'] += 1.0
@@ -913,17 +710,17 @@ def run_time_offset_check(cfg):
     _offset_x_range_ = [-600.0, 600.0]
 
 
-    # SSFR vs HSR1
+    # SSRR vs SSFR
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    index_wvl_hsr1 = np.argmin(np.abs(745.0-data_hsr1_v0['tot/wvl']))
-    data_y0 = data_hsr1_v0['tot/flux'][:, index_wvl_hsr1]
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr_v0['spec/wvl_nad']))
+    data_y0 = data_ssfr_v0['spec/cnt_nad'][:, index_wvl_ssfr]
 
-    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr_v0['spec/wvl_zen']))
-    data_y1 = data_ssfr_v0['spec/cnt_zen'][:, index_wvl_ssfr]
+    index_wvl_ssrr = np.argmin(np.abs(745.0-data_ssrr_v0['spec/wvl_nad']))
+    data_y1 = data_ssrr_v0['spec/cnt_nad'][:, index_wvl_ssrr]
     data_offset = {
-            'x0': data_hsr1_v0['tot/jday']*86400.0,
+            'x0': data_ssfr_v0['raw/jday']*86400.0,
             'y0': data_y0,
-            'x1': data_ssfr_v0['raw/jday']*86400.0,
+            'x1': data_ssrr_v0['raw/jday']*86400.0,
             'y1': data_y1,
             }
     ssfr.vis.find_offset_bokeh(
@@ -932,9 +729,10 @@ def run_time_offset_check(cfg):
             offset_y_range=[-10, 10],
             x_reset=True,
             y_reset=True,
-            description='SSFR Zenith Count vs. HSR1 Total (745nm)',
-            fname_html='ssfr_offset_check_%s.html' % (date_s))
+            description='SSRR Nadir Count vs. SSFR Nadir (745nm)',
+            fname_html='ssrr_offset_check_%s.html' % (date_s))
     #╰────────────────────────────────────────────────────────────────────────────╯#
+
 
     return
 
@@ -1125,24 +923,24 @@ def main_process_data_v0(cfg, run=True):
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    # SSFR v0: raw data
+    # SSRR v0: raw data
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fnames_ssfr = cfg.ssfr['fnames']
-    fname_h5 = cfg.ssfr['fname_v0']
-    if run and (len(fnames_ssfr) == 0):
+    fnames_ssrr = cfg.ssrr['fnames']
+    fname_h5 = cfg.ssrr['fname_v0']
+    if run and (len(fnames_ssrr) == 0):
         pass
     else:
-        fname_ssfr_v0 = cdata_ssfr_v0(
+        fname_ssrr_v0 = cdata_ssfr_v0(
                 date,
-                fnames_ssfr,
+                fnames_ssrr,
                 fname_h5=fname_h5,
-                which_ssfr=cfg.ssfr['which_ssfr'],
-                wvl_s=cfg.ssfr['wvl_s'],
-                wvl_e=cfg.ssfr['wvl_e'],
-                wvl_j=cfg.ssfr['wvl_j'],
-                dark_extend=cfg.ssfr['dark_extend'],
-                light_extend=cfg.ssfr['light_extend'],
-                dark_corr_mode=cfg.ssfr['dark_corr_mode'],
+                which_ssfr=cfg.ssrr['which_ssfr'],
+                wvl_s=cfg.ssrr['wvl_s'],
+                wvl_e=cfg.ssrr['wvl_e'],
+                wvl_j=cfg.ssrr['wvl_j'],
+                dark_extend=cfg.ssrr['dark_extend'],
+                light_extend=cfg.ssrr['light_extend'],
+                dark_corr_mode=cfg.ssrr['dark_corr_mode'],
                 fdir_out=fdir_out,
                 run=run
                 )
@@ -1157,54 +955,22 @@ def main_process_data_v1(cfg, run=True):
     if not os.path.exists(fdir_out):
         os.makedirs(fdir_out)
 
-    # SSFR v1: time synced with hsk time with time offset applied
+    # SSRR v1: time synced with hsk time with time offset applied
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_h5 = cfg.ssfr['fname_v1']
+    fname_h5 = cfg.ssrr['fname_v1']
 
-    fname_ssfr_v1 = cdata_ssfr_v1(
+    fname_ssrr_v1 = cdata_ssfr_v1(
             date,
-            cfg.ssfr['fname_v0'],
+            cfg.ssrr['fname_v0'],
             cfg.hsk['fname_v0'],
             fname_h5=fname_h5,
-            time_offset=cfg.ssfr['time_offset'],
-            which_ssfr=cfg.ssfr['which_ssfr'],
+            time_offset=cfg.ssrr['time_offset'],
+            which_ssfr=cfg.ssrr['which_ssfr'],
             which_ssfr_for_flux=cfg.ssfr['which_ssfr'],
             fdir_out=fdir_out,
             run=run
             )
     #╰────────────────────────────────────────────────────────────────────────────╯#
-
-def main_process_data_v2(cfg, run=True):
-
-    """
-    v0: raw data directly read out from the data files
-    v1: data collocated/synced to aircraft nav
-    v2: attitude corrected data
-    """
-
-    date = cfg.common['date']
-    date_s = cfg.common['date_s']
-
-    fdir_out = './'
-    if not os.path.exists(fdir_out):
-        os.makedirs(fdir_out)
-
-    # SSFR v2
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_h5 = cfg.ssfr['fname_v2']
-
-    fname_ssfr_v2 = cdata_ssfr_v2(
-            date,
-            cfg.ssfr['fname_v1'],
-            cfg.alp['fname_v1'],
-            cfg.hsr1['fname_v2'],
-            fname_h5=fname_h5,
-            fdir_out=fdir_out,
-            run=run,
-            run_aux=True
-            )
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-#╰────────────────────────────────────────────────────────────────────────────╯#
 
 
 if __name__ == '__main__':
@@ -1263,11 +1029,6 @@ if __name__ == '__main__':
         # apply time offsets to sync data to aircraft housekeeping file
         #╭────────────────────────────────────────────────────────────────────────────╮#
         main_process_data_v1(cfg, run=True)
-        #╰────────────────────────────────────────────────────────────────────────────╯#
-
-        # step 4
-        #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v2(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         pass
