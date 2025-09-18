@@ -110,20 +110,20 @@ def cal_solar_angles(julian_day, longitude, latitude, altitude, verbose=ssfr.com
             sza[i] = sza_i
 
             saa_i = pysolar.solar.get_azimuth(latitude[i], longitude[i], dtime_i, elevation=altitude[i])
-            if saa_i >= 0.0:
-                if 0.0<=saa_i<=180.0:
-                    saa_i = 180.0 - saa_i
-                elif 180.0<saa_i<=360.0:
-                    saa_i = 540.0 - saa_i
-                else:
-                    saa_i = np.nan
-            elif saa_i < 0.0:
-                if -180.0<=saa_i<0.0:
-                    saa_i = -saa_i + 180.0
-                elif -360.0<=saa_i<-180.0:
-                    saa_i = -saa_i - 180.0
-                else:
-                    saa_i = np.nan
+            # if saa_i >= 0.0:
+            #     if 0.0<=saa_i<=180.0:
+            #         saa_i = 180.0 - saa_i
+            #     elif 180.0<saa_i<=360.0:
+            #         saa_i = 540.0 - saa_i
+            #     else:
+            #         saa_i = np.nan
+            # elif saa_i < 0.0:
+            #     if -180.0<=saa_i<0.0:
+            #         saa_i = -saa_i + 180.0
+            #     elif -360.0<=saa_i<-180.0:
+            #         saa_i = -saa_i - 180.0
+            #     else:
+            #         saa_i = np.nan
             saa[i] = saa_i
 
         except Exception as error:

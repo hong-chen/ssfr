@@ -1213,13 +1213,13 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             datetime.datetime(2024, 5, 24), #
+             # datetime.datetime(2024, 5, 24), #
             #  datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
             #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
             #  datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
             #  datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
             #  datetime.datetime(2024, 6, 5),  # ARCSIX-1 science flight #5
-            #  datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6
+            datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6
             #  datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
             #  datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
             #  datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
@@ -1234,7 +1234,7 @@ if __name__ == '__main__':
             #  datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
-            #  datetime.datetime(2024, 8, 16), # 
+            #  datetime.datetime(2024, 8, 16), #
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -1250,24 +1250,62 @@ if __name__ == '__main__':
         # step 1
         # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(cfg, run=True)
+        # main_process_data_v0(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
         # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        run_time_offset_check(cfg)
+        # run_time_offset_check(cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
         # apply time offsets to sync data to aircraft housekeeping file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v1(cfg, run=True)
+        # main_process_data_v1(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v2(cfg, run=True)
+        # main_process_data_v2(cfg, run=True)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # figure
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        fname_old = 'data/arcsix/processed/ARCSIX-SSFR-A_P3B_20240606_v2.h5'
+        data_old = ssfr.util.load_h5(fname_old)
+        fname_new = 'ARCSIX-SSFR-A_P3B_20240606_v2.h5'
+        data_new = ssfr.util.load_h5(fname_new)
+
+        plot = True
+        if plot:
+            plt.close('all')
+            fig = plt.figure(figsize=(8, 6))
+            # fig.suptitle('Figure')
+            # plot1
+            #╭──────────────────────────────────────────────────────────────╮#
+            ax1 = fig.add_subplot(111)
+            ax1.scatter(data_old['tmhr'], data_old['zen/flux'][:, 100], s=8, c='k', lw=0.0)
+            ax1.scatter(data_new['tmhr'], data_new['zen/flux'][:, 100], s=2, c='r', lw=0.0)
+            # ax1.set_xlim((0, 1))
+            # ax1.set_ylim((0, 1))
+            # ax1.set_xlabel('X')
+            # ax1.set_ylabel('Y')
+            # ax1.set_title('Plot1')
+            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            #╰──────────────────────────────────────────────────────────────╯#
+            # save figure
+            #╭──────────────────────────────────────────────────────────────╮#
+            fig.subplots_adjust(hspace=0.35, wspace=0.35)
+            _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+            fname_fig = f'{_metadata_['Function']}.png'
+            plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+            #╰──────────────────────────────────────────────────────────────╯#
+            plt.show()
+            sys.exit()
+            plt.close(fig)
+            plt.clf()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         pass

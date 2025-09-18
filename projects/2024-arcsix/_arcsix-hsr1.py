@@ -44,38 +44,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 import ssfr
+import er3t
 
-
-_HSR1_TIME_OFFSET_ = {
-        '20240517': 0.0,
-        '20240521': 0.0,
-        '20240524': 86400.0,
-        '20240528': 0.0,
-        '20240530': 0.0,
-        '20240531': 0.0,
-        '20240603': 0.0,
-        '20240605': 0.0,
-        '20240606': 0.0,
-        '20240607': 0.0,
-        '20240610': 0.0,
-        '20240611': 0.0,
-        '20240613': 0.0,
-        '20240708': 0.0,
-        '20240709': 0.0,
-        '20240722': 0.0,
-        '20240724': 0.0,
-        '20240725': 0.0,
-        '20240726': 0.0,
-        '20240729': 0.0,
-        '20240730': 0.0,
-        '20240801': 0.0,
-        '20240802': 0.0,
-        '20240807': 0.0,
-        '20240808': 0.0,
-        '20240809': 0.0,
-        '20240815': 0.0,
-        '20240816': 0.0,
-        }
 
 
 # functions for processing HSR1
@@ -224,6 +194,7 @@ def cdata_hsr1_v2(
 
         # correction factor
         #╭────────────────────────────────────────────────────────────────────────────╮#
+        data_hsk['sza'], data_hsk['saa'] = ssfr.util.cal_solar_angles(data_hsk['jday'], data_hsk['lon'], data_hsk['lat'], data_hsk['alt'])
         mu = np.cos(np.deg2rad(data_hsk['sza']))
 
         try:
@@ -275,7 +246,161 @@ def cdata_hsr1_v2(
 
         f.close()
 
+        # test dc
+        # =============================
+        data_hsr1_v2_old = ssfr.util.load_h5(f"data/arcsix/processed/{fname_h5}")
+        data_hsr1_v2_new = ssfr.util.load_h5(f"{fname_h5}")
+
+        index_wvl = np.argmin(np.abs(data_hsr1_v2_new['tot/wvl']-555.0))
+
+        # 17:05:10 -- 17:12:00
+        # logic_select = (data_hsr1_v2['tmhr']>=17.0861) & (data_hsr1_v2['tmhr']<=17.2) &\
+        #                (np.abs(data_hsr1_v2['att_corr/ang_rol'])<=10.0)
+
+        # tmhr = data_hsk['tmhr'][logic_select]
+        # jday = data_hsk['jday'][logic_select]
+        # lon = data_hsk['lon'][logic_select]
+        # lat = data_hsk['lat'][logic_select]
+        # alt = data_hsk['alt'][logic_select]
+
+        # sza_new, saa_new = er3t.util.cal_sol_ang(jday, lon, lat, alt)
+        # sza_old = data_hsr1_v2['att_corr/sza'][logic_select]
+        # saa_old = data_hsr1_v2['att_corr/saa'][logic_select]
+        # hed_old = data_hsr1_v2['att_corr/ang_hed'][logic_select]
+        # iaa_old = iaa[logic_select]
+
+# def plot_time_series():
+
+#     if True:
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        plot = True
+        if plot:
+            plt.close('all')
+            fig = plt.figure(figsize=(12, 6))
+            # fig.suptitle('Figure')
+            # plot1
+            #╭──────────────────────────────────────────────────────────────╮#
+            ax1 = fig.add_subplot(111)
+
+            # ax1.scatter(data_hsr1_v2_old['tmhr'], data_hsr1_v2_old['att_corr/dc'], s=8, lw=0.0, c='k')
+            # ax1.scatter(data_hsr1_v2_old['tmhr'], dc, s=2, lw=0.0, c='r')
+            ax1.scatter(data_hsr1_v1['tmhr'], data_hsr1_v1['tot/flux'][:, index_wvl], s=8, lw=0.0, c='k')
+            ax1.scatter(data_hsr1_v2_old['tmhr'], data_hsr1_v2_old['tot/flux'][:, index_wvl], s=2, lw=0.0, c='r')
+            ax1.scatter(data_hsr1_v2_new['tmhr'], data_hsr1_v2_new['tot/flux'][:, index_wvl], s=2, lw=0.0, c='b')
+            ax1.scatter(data_hsr1_v2_new['tmhr'], data_hsr1_v2_new['tot/toa0'][index_wvl]*data_hsr1_v2_new['att_corr/mu'], s=2, lw=0.0, c='g')
+            # ax1.set_xlim((0, 1))
+            ax1.set_ylim((0, 2))
+            ax1.set_xlabel('Time [Hour]')
+            ax1.set_ylabel('Irradiance [$\\mathrm{W m^{-2} nm^{-1}}$]')
+            ax1.set_title(fname_h5)
+            patches_legend = [
+                              mpatches.Patch(color='black' , label='v1'), \
+                              mpatches.Patch(color='red'   , label='v2 (wrong)'), \
+                              mpatches.Patch(color='blue'  , label='v2 (fixed)'), \
+                             ]
+            # ax1.legend(handles=patches_legend, bbox_to_anchor=(0., 1.01, 1., .102), loc=3, ncol=len(patches_legend), mode="expand", borderaxespad=0., frameon=False, handletextpad=0.2, fontsize=14)
+            ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+
+            # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+            #╰──────────────────────────────────────────────────────────────╯#
+            # save figure
+            #╭──────────────────────────────────────────────────────────────╮#
+            fig.subplots_adjust(hspace=0.35, wspace=0.35)
+            _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+            fname_fig = f'{_metadata_['Function']}.png'
+            plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+            #╰──────────────────────────────────────────────────────────────╯#
+            plt.show()
+            sys.exit()
+            plt.close(fig)
+            plt.clf()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
     return fname_h5
+
+
+def plot_heading():
+
+    if True:
+
+        # figure
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        plot = True
+        if plot:
+            plt.close('all')
+            fig = plt.figure(figsize=(8, 6))
+            # plot1
+            #╭──────────────────────────────────────────────────────────────╮#
+            ax1 = fig.add_subplot(111)
+            ax1.scatter(tmhr, data_hsr1_v2['att_corr/ang_hed'][logic_select], s=8, c='k', lw=0.0)
+            ax1.scatter(tmhr, hed_old, s=2, c='r', lw=0.0)
+            ax2 = ax1.twinx()
+            ax2.scatter(tmhr, iaa_old, s=2, c='b', lw=0.0)
+            ax1.set_xlabel('Time [Hour]')
+            ax1.set_ylabel('Heading [$^\\circ$]')
+            ax2.set_ylabel('Sensor Azimuth [$^\\circ$]', color='blue')
+
+            patches_legend = [
+                              mpatches.Patch(color='black' , label='Archived'),\
+                              mpatches.Patch(color='red'   , label='HSK Heading (0$^\\circ$ North, 90$^\\circ$ East)'),\
+                              mpatches.Patch(color='blue'   , label='HSR1 Azimuth (0$^\\circ$ North, 90$^\\circ$ East)'),\
+                             ]
+            ax1.legend(handles=patches_legend, loc='upper center', fontsize=16)
+            #╰──────────────────────────────────────────────────────────────╯#
+            # save figure
+            #╭──────────────────────────────────────────────────────────────╮#
+            fig.subplots_adjust(hspace=0.35, wspace=0.35)
+            _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+            fname_fig = f'{_metadata_['Function']}.png'
+            plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+            #╰──────────────────────────────────────────────────────────────╯#
+            plt.show()
+            sys.exit()
+            plt.close(fig)
+            plt.clf()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+def plot_saa():
+
+    if True:
+
+        # figure
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        plot = True
+        if plot:
+            plt.close('all')
+            fig = plt.figure(figsize=(8, 6))
+            # plot1
+            #╭──────────────────────────────────────────────────────────────╮#
+            ax1 = fig.add_subplot(111)
+            ax1.scatter(tmhr, data_hsr1_v2['att_corr/saa'][logic_select], s=8, c='k', lw=0.0)
+            ax1.scatter(tmhr, saa_old, s=2, c='r', lw=0.0)
+            ax2 = ax1.twinx()
+            ax2.scatter(tmhr, saa_new, s=2, c='b', lw=0.0)
+            ax1.set_xlabel('Time [Hour]')
+            ax1.set_ylabel('SAA [$^\\circ$]')
+            ax2.set_ylabel('SAA [$^\\circ$]', rotation=270, labelpad=16, color='blue')
+
+            patches_legend = [
+                              mpatches.Patch(color='black' , label='Archived'),\
+                              mpatches.Patch(color='red'   , label='SSFR (0$^\\circ$ South, 90$^\\circ$ East)'),\
+                              mpatches.Patch(color='blue'  , label='EaR³T (0$^\\circ$ North, 90$^\\circ$ East)'), \
+                             ]
+            ax1.legend(handles=patches_legend, loc='upper center', fontsize=16)
+            #╰──────────────────────────────────────────────────────────────╯#
+            # save figure
+            #╭──────────────────────────────────────────────────────────────╮#
+            fig.subplots_adjust(hspace=0.35, wspace=0.35)
+            _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+            fname_fig = f'{_metadata_['Function']}.png'
+            plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+            #╰──────────────────────────────────────────────────────────────╯#
+            plt.show()
+            sys.exit()
+            plt.close(fig)
+            plt.clf()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 def cdata_hsr1_archive(
         date,
@@ -716,28 +841,28 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             datetime.datetime(2024, 5, 24), #
-            #  datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
-            #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
-            #  datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
-            #  datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
-            #  datetime.datetime(2024, 6, 5),  # ARCSIX-1 science flight #5
-            #  datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6
-            #  datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
-            #  datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
-            #  datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
-            #  datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 7, 22), #
-            #  datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
-            #  datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
-            #  datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
-            #  datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
-            #  datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
-            #  datetime.datetime(2024, 8, 16), # 
+            # datetime.datetime(2024, 5, 24), #
+            # datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
+            # datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
+            # datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
+            # datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
+            datetime.datetime(2024, 6, 5),  # ARCSIX-1 science flight #5
+            # datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6
+            # datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
+            # datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
+            # datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
+            # datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
+            # datetime.datetime(2024, 7, 22), #
+            # datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
+            # datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
+            # datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
+            # datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
+            # datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+            # datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
+            # datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+            # datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
+            # datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
+            # datetime.datetime(2024, 8, 16), #
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -753,19 +878,19 @@ if __name__ == '__main__':
         # step 1
         # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(cfg, run=True)
+        # main_process_data_v0(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
         # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        run_time_offset_check(cfg)
+        # run_time_offset_check(cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
         # apply time offsets to sync data to aircraft housekeeping file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v1(cfg, run=True)
+        # main_process_data_v1(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4

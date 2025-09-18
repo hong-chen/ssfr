@@ -70,20 +70,22 @@ fnames_ssrr = ssfr.util.get_all_files(fdir_ssrr, pattern='*.SKS')
 
 fname_hsk_v0 = f'{fdir_out}/{mission.upper()}-{hsk_aka.upper()}_{platform.upper()}_{date_s}_v0.h5'
 
-fname_alp_v0 = f'{fdir_out}/{mission.upper()}-{alp_aka.upper()}_{platform.upper()}_{date_s}_v0.h5'
-fname_alp_v1 = f'{fdir_out}/{mission.upper()}-{alp_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
+fname_alp_v0 = f'{fdir_out}/{mission.upper()}-{alp_tag.upper()}_{platform.upper()}_{date_s}_v0.h5'
+fname_alp_v1 = f'{fdir_out}/{mission.upper()}-{alp_tag.upper()}_{platform.upper()}_{date_s}_v1.h5'
 
-fname_hsr1_v0 = f'{fdir_out}/{mission.upper()}-{hsr1_aka.upper()}_{platform.upper()}_{date_s}_v0.h5'
-fname_hsr1_v1 = f'{fdir_out}/{mission.upper()}-{hsr1_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
-fname_hsr1_v2 = f'{fdir_out}/{mission.upper()}-{hsr1_aka.upper()}_{platform.upper()}_{date_s}_v2.h5'
+fname_hsr1_v0 = f'{fdir_out}/{mission.upper()}-{hsr1_tag.upper()}_{platform.upper()}_{date_s}_v0.h5'
+fname_hsr1_v1 = f'{fdir_out}/{mission.upper()}-{hsr1_tag.upper()}_{platform.upper()}_{date_s}_v1.h5'
+# fname_hsr1_v2 = f'{fdir_out}/{mission.upper()}-{hsr1_tag.upper()}_{platform.upper()}_{date_s}_v2.h5'
+fname_hsr1_v2 = f'{mission.upper()}-{hsr1_tag.upper()}_{platform.upper()}_{date_s}_v2.h5'
 
-fname_ssfr_v0 = f'{fdir_out}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v0.h5'
-fname_ssfr_v1 = f'{fdir_out}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
-fname_ssfr_v2 = f'{fdir_out}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v2.h5'
+fname_ssfr_v0 = f'{fdir_out}/{mission.upper()}-{ssfr_tag.upper()}_{platform.upper()}_{date_s}_v0.h5'
+fname_ssfr_v1 = f'{fdir_out}/{mission.upper()}-{ssfr_tag.upper()}_{platform.upper()}_{date_s}_v1.h5'
+# fname_ssfr_v2 = f'{fdir_out}/{mission.upper()}-{ssfr_tag.upper()}_{platform.upper()}_{date_s}_v2.h5'
+fname_ssfr_v2 = f'{mission.upper()}-{ssfr_tag.upper()}_{platform.upper()}_{date_s}_v2.h5'
 
-fname_ssrr_v0 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.upper()}_{date_s}_v0.h5'
-fname_ssrr_v1 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
-fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.upper()}_{date_s}_v2.h5'
+fname_ssrr_v0 = f'{fdir_out}/{mission.upper()}-{ssrr_tag.upper()}_{platform.upper()}_{date_s}_v0.h5'
+fname_ssrr_v1 = f'{fdir_out}/{mission.upper()}-{ssrr_tag.upper()}_{platform.upper()}_{date_s}_v1.h5'
+fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_tag.upper()}_{platform.upper()}_{date_s}_v2.h5'
 #╰────────────────────────────────────────────────╯#
 
 # calibrations
