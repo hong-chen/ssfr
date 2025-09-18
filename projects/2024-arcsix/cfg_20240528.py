@@ -57,6 +57,7 @@ fdir_ssrr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}{date
 # data files
 #╭────────────────────────────────────────────────╮#
 fname_hsk = ssfr.util.get_all_files(fdir_hsk, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*.???')[-1]
+print(fname_hsk)
 fnames_alp = ssfr.util.get_all_files(fdir_alp, pattern='*.plt3')
 fnames_hsr1 = ssfr.util.get_all_files(fdir_hsr1, pattern='*.txt')
 fnames_ssfr = ssfr.util.get_all_files(fdir_ssfr, pattern='*.SKS')
