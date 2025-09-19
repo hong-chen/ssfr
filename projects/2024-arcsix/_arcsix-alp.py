@@ -406,7 +406,6 @@ def main_process_data_v0(cfg, run=True):
                 )
     else:
         # * preferred, use P3 housekeeping file, ict > iwg > mts
-        print(fname_hsk)
         fname_hsk_v0 = cdata_hsk_v0(
                 date,
                 fname_hsk,
