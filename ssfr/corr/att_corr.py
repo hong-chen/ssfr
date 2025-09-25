@@ -50,7 +50,7 @@ def att_corr(fnames,
     iza, iaa = ssfr.util.prh2za(angles['ang_pit']-angles['ang_pit_m']-angles['ang_pit_offset'], angles['ang_rol']-angles['ang_rol_m']-angles['ang_rol_offset'], angles['ang_hed'])
     dc       = ssfr.util.muslope(angles['sza'], angles['saa'], iza, iaa)
     corr_factors['iza'] = iza # sensor zenith
-    corr_factors['iaa'] = iza # sensor azimuth
+    corr_factors['iaa'] = iaa # sensor azimuth
     corr_factors['dc']  = dc  # cosine of relative zenith (zenith between sun and sensor)
 
 
@@ -84,7 +84,8 @@ def att_corr(fnames,
         f = np.poly1d(ang_resp['poly_coef'][index, :])
         resp = f(wvl)
         resp[resp<1e-8] = 1e-8
-        factors_dir[i, :] = ang_resp['mu'][index] / resp
+        # factors_dir[i, :] = ang_resp['mu'][index] / resp
+        factors_dir[i, :] = np.cos(np.radians(angles['sza'][i])) / resp
 
     if diff_ratio is None:
         corr_factors['zen'] = factors_dir
