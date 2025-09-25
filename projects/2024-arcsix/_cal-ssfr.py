@@ -1430,22 +1430,53 @@ def ssrr_rad_cal(
         pri_resp_data = np.concatenate((pri_resp[si_tag][logic_si], pri_resp[in_tag][logic_in]))
 
         indices_sort = np.argsort(wvl_data)
-        wvl      = wvl_data[indices_sort]
-        pri_resp = pri_resp_data[indices_sort]
+        wvl_      = wvl_data[indices_sort]
+        pri_resp_ = pri_resp_data[indices_sort]
         #\----------------------------------------------------------------------------/#
 
         # flux to radiance (reflectance panel)
         #/----------------------------------------------------------------------------\#
         # reflectance panel efficiency
-        effic_refl = 0.97 # 97% reflectance panel efficiency (assumed)
-        pri_resp_rad = pri_resp * np.pi / effic_refl
+        # effic_refl = 0.97 # 97% reflectance panel efficiency (assumed)
+        fname_panel = '%s/panel/12x12Spectralon_ASDwavs.ascii' % (ssfr.common.fdir_data)
+        if not os.path.exists(fname_panel):
+            msg = '\nError [ssfr_rad_cal]: cannot locate calibration file for panel <%s>.' % fname_panel
+            raise OSError(msg)
+        data_panel = np.loadtxt(fname_panel)
+        wvl_panel = data_panel[:, 0]
+        refl_panel = data_panel[:, 1]
+        pri_resp_rad = {}
+        pri_resp_rad[si_tag] = pri_resp[si_tag] * np.pi / np.interp(wvls[si_tag], wvl_panel, refl_panel)
+        pri_resp_rad[in_tag] = pri_resp[in_tag] * np.pi / np.interp(wvls[in_tag], wvl_panel, refl_panel)
+        pri_resp_rad_ = pri_resp_ * np.pi / np.interp(wvl_, wvl_panel, refl_panel)
         #\----------------------------------------------------------------------------/#
 
         # brute force filtering for low response
         #/----------------------------------------------------------------------------\#
-        resp_threshold = 60. # counts / (W m^{-2} nm^{-1} sr^{-1} s)
-        pri_resp_rad[pri_resp_rad < resp_threshold] = np.nan
+        # resp_threshold = 60. # counts / (W m^{-2} nm^{-1} sr^{-1} s)
+        resp_threshold = 10. # counts / (W m^{-2} nm^{-1} sr^{-1} s)
+        pri_resp_rad[si_tag][pri_resp_rad[si_tag] < resp_threshold] = np.nan
+        pri_resp_rad[in_tag][pri_resp_rad[in_tag] < resp_threshold] = np.nan
+        pri_resp_rad_[pri_resp_rad_ < resp_threshold] = np.nan
         #\----------------------------------------------------------------------------/#
+
+        # Silicon scaling based on the joint wavelength signals
+        #/----------------------------------------------------------------------------\#
+        if   which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'zen':
+            si_in_diff = 0.9036051272130695
+        elif which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'nad':
+            si_in_diff = 0.9808717432930821
+        elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'zen':
+            si_in_diff = 0.9279473175434759
+        elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'nad':
+            si_in_diff = 0.9887711508106611
+        else:
+            msg = '\nError [ssfr_rad_cal]: <which_ssrr=> does not support <\'%s\'> (only supports <\'lasp|ssrr-a\'> or <\'lasp|ssrr-b\'>).' % which_ssrr
+            raise ValueError(msg)
+        scaling_factor = -(si_in_diff - 1.) * np.exp( 0.015 * (350. - wvl_[wvl_ < wvl_joint])) + si_in_diff
+        pri_resp_rad_[wvl_ < wvl_joint] = pri_resp_rad_[wvl_ < wvl_joint] * scaling_factor 
+        #\----------------------------------------------------------------------------/#
+
 
         # save file
         #/----------------------------------------------------------------------------\#
@@ -1455,8 +1486,19 @@ def ssrr_rad_cal(
             fname_out = 'rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssrr, which_spec, int_time[si_tag], int_time[in_tag])
 
         f = h5py.File(fname_out, 'w')
-        f['wvl']       = wvl
-        f['pri_resp']  = pri_resp_rad
+        f['wvl']       = wvl_
+        f['pri_resp']  = pri_resp_rad_
+
+        g = f.create_group('raw')
+        
+        g_si = g.create_group('si')
+        g_si['wvl'] = wvls[si_tag]
+        g_si['pri_resp'] = pri_resp_rad[si_tag]
+
+        g_in = g.create_group('in')
+        g_in['wvl'] = wvls[in_tag]
+        g_in['pri_resp'] = pri_resp_rad[in_tag]
+
         f.close()
         #\----------------------------------------------------------------------------/#
 
