@@ -579,9 +579,12 @@ def cdata_ssfr_v2(
         angles = {}
         angles['sza'] = data_aux['sza']
         angles['saa'] = data_aux['saa']
-        angles['ang_pit']   = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
-        angles['ang_rol']   = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
-        angles['ang_hed']   = data_aux['ang_hed']
+        angles['ang_pit']   = data_ssfr_v1['ang_pit'] # HSK pitch
+        angles['ang_rol']   = data_ssfr_v1['ang_rol'] # HSK roll
+        angles['ang_hed']   = data_ssfr_v1['ang_hed'] # HSK heading - true heading
+        # angles['ang_pit']   = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
+        # angles['ang_rol']   = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
+        # angles['ang_hed']   = data_aux['ang_hed'] # heading (tracking angle) from ALP prod
         angles['ang_pit_m'] = data_aux['ang_pit_m']
         angles['ang_rol_m'] = data_aux['ang_rol_m']
         angles['ang_pit_offset'] = ang_pit_offset
@@ -619,6 +622,8 @@ def cdata_ssfr_v2(
         g1 = f.create_group('att_corr')
         g1.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
         g1.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+        g1.create_dataset('dc', data=factors['dc'], compression='gzip', compression_opts=9, chunks=True)
+        g1.create_dataset('diff_ratio', data=diff_ratio, compression='gzip', compression_opts=9, chunks=True)
         for key in ['sza', 'saa', 'ang_pit_s', 'ang_rol_s', 'ang_hed', 'ang_pit_m', 'ang_rol_m']:
             g1.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
 
@@ -1198,6 +1203,8 @@ def main_process_data_v2(cfg, run=True):
             cfg.ssfr['fname_v1'],
             cfg.alp['fname_v1'],
             cfg.hsr1['fname_v2'],
+            ang_pit_offset=cfg.alp['ang_pit_offset'],
+            ang_rol_offset=cfg.alp['ang_rol_offset'],
             fname_h5=fname_h5,
             fdir_out=fdir_out,
             run=run,
