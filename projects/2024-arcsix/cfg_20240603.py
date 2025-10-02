@@ -3,12 +3,12 @@ import ssfr
 
 # parameters that need frequent change
 #╭────────────────────────────────────────────────────────────────────────────╮#
-date = datetime.datetime(2024, 5, 28)
+date = datetime.datetime(2024, 6, 3)
 operator = 'Vikas Nataraja'
 mission = 'arcsix'
 year = '2024'
 platform = 'p3b'
-comments = '1st research flight, performed clear-sky spiral'
+comments = '4th research flight, performed cloud wall'
 
 hsk_tag  = 'hsk'
 alp_tag  = 'alp'
@@ -22,10 +22,10 @@ hsr1_aka = 'hsr1'
 ssfr_aka = 'ssfr'
 ssrr_aka = 'ssrr'
 
-alp_time_offset  = -17.19
-hsr1_time_offset = 0.0
-ssfr_time_offset = -156.26
-ssrr_time_offset = -222.66
+alp_time_offset  = -17.41
+hsr1_time_offset = 0.00
+ssfr_time_offset = -170.42
+ssrr_time_offset = -241.66
 
 alp_ang_pit_offset = 0.0
 alp_ang_rol_offset = 0.0
@@ -36,6 +36,8 @@ fdir_data = f'data/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
 fdir_out = f'data/{mission}/processed'
 # fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
+fdir_data = f'/Volumes/argus/field/{mission}/{year}/{platform}'
+
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
@@ -192,6 +194,12 @@ ssfr = {
         #   also available in `mean`, which uses the average to represent darks
         #   generally, `interp` is preferred
         'dark_corr_mode': 'interp',
+        
+        'response_zen': ['2025-08-12_lamp-1324_postdeploymentresurgery|2025-08-12_lamp-150c_postdeploymentresurgery|2024-06-09_lamp-150c_pituffik|2025-09-22_processed-for-arcsix|rad-resp|lasp|ssfr-a|zen|si-080|in-250|lamp-adjust|corr.h5', 
+                         '2025-08-12_lamp-1324_postdeploymentresurgery|2025-08-12_lamp-150c_postdeploymentresurgery|2024-06-09_lamp-150c_pituffik|2025-09-22_processed-for-arcsix|rad-resp|lasp|ssfr-a|zen|si-120|in-350|lamp-adjust|corr.h5'],
+        
+        'response_nad': ['2025-02-18_lamp-1324_post|2025-02-18_lamp-150c_post|2024-06-09_lamp-150c_pituffik|2025-09-22_processed-for-arcsix|rad-resp|lasp|ssfr-a|nad|si-080|in-250|lamp-adjust|corr.h5',
+                         '2025-02-18_lamp-1324_post|2025-02-18_lamp-150c_post|2024-06-09_lamp-150c_pituffik|2025-09-22_processed-for-arcsix|rad-resp|lasp|ssfr-a|nad|si-120|in-350|lamp-adjust|corr.h5']
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 

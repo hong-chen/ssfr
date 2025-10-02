@@ -172,8 +172,13 @@ def dark_corr(
                 if Nl<0:
                     msg = '\nWarnings [dark_corr]: Found light cycle at the very beginning, use average darks from the next available dark cycle ...'
                     warnings.warn(msg)
-                    dark_mean = np.mean(data[circle_range[Nr][0]:circle_range[Nr][1], ...], axis=0)
-                    data_corr[crange[0]:crange[1], ...] = data[crange[0]:crange[1], ...] - np.tile(dark_mean, crange[1]-crange[0]).reshape(-1, Ny)
+                    if Nr < (Ncircle-1):
+                        dark_mean = np.mean(data[circle_range[Nr][0]:circle_range[Nr][1], ...], axis=0)
+                        data_corr[crange[0]:crange[1], ...] = data[crange[0]:crange[1], ...] - np.tile(dark_mean, crange[1]-crange[0]).reshape(-1, Ny)
+                    else:
+                        msg = '\nWarnings [dark_corr]: Found light cycle at the very beginning, but no available dark cycle found ...'
+                        warnings.warn(msg)
+                        data_corr[crange[0]:crange[1], ...] = fill_value
 
                     if 'interp_begin' not in shutter_mode.keys():
                         shutter_mode['interp_begin'] = -10

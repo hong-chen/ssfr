@@ -32,12 +32,10 @@ alp_ang_rol_offset = 0.0
 hsr1_ang_pit_offset = 0.0
 hsr1_ang_rol_offset = 0.0
 
-# fdir_data = '/Volumes/argus/field/%s/%s/%s' % (mission, year, platform)
-# fdir_cal = '/Volumes/argus/field/%s/cal' % mission
-# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
 fdir_data = f'data/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
 fdir_out = f'data/{mission}/processed'
+# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
@@ -50,15 +48,15 @@ date_s_ = date.strftime('%Y-%m-%d')
 # data directory
 #╭────────────────────────────────────────────────╮#
 fdir_hsk = f'{fdir_data}/aux/hsk'
-fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{alp_tag}')[-1]
-fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{hsr1_tag}')[-1]
-fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{ssfr_tag}')[-1]
-fdir_ssrr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*raw?{ssrr_tag}')[-1]
+fdir_alp = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*raw?{alp_tag}')[-1]
+fdir_hsr1 = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*raw?{hsr1_tag}')[-1]
+fdir_ssfr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*raw?{ssfr_tag}')[-1]
+fdir_ssrr = ssfr.util.get_all_folders(fdir_data, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*raw?{ssrr_tag}')[-1]
 #╰────────────────────────────────────────────────╯#
 
 # data files
 #╭────────────────────────────────────────────────╮#
-fname_hsk = ssfr.util.get_all_files(fdir_hsk, pattern=f'*{date.year:04d}*{date.month:02d}*{date.day:02d}*.???')[-1]
+fname_hsk = ssfr.util.get_all_files(fdir_hsk, pattern=f'*{date.year:04d}{date.month:02d}{date.day:02d}*.???')[-1]
 fnames_alp = ssfr.util.get_all_files(fdir_alp, pattern='*.plt3')
 fnames_hsr1 = ssfr.util.get_all_files(fdir_hsr1, pattern='*.txt')
 fnames_ssfr = ssfr.util.get_all_files(fdir_ssfr, pattern='*.SKS')
@@ -182,7 +180,7 @@ ssfr = {
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
-        'time_offset': 0.0,
+        'time_offset': ssfr_time_offset,
 
         # number of data points to be excluded at the beginning and end of a dark cycle (due to slow shutter closing/opening glitch)
         'dark_extend': 1,
@@ -222,7 +220,7 @@ ssrr = {
         'wvl_j': 950.0,  # joinder wavelength within the overlapping wavelength coverage between Silicon and InGaAs spectrometers
 
         # time offset [seconds]
-        'time_offset': 0.0,
+        'time_offset': ssrr_time_offset,
 
         # number of data points to be excluded at the beginning and end of a dark cycle (due to slow shutter closing/opening glitch)
         'dark_extend': 1,

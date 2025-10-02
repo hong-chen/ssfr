@@ -681,9 +681,13 @@ def find_offset_bokeh(
     htool = HoverTool(tooltips = [('x', '$x{0.0000}'), ('y', '$y{0.0}')], mode='mouse', line_policy='nearest')
     plt_offset.add_tools(htool)
 
-    plt_offset.scatter('x0'    , 'y0'    , source=data0, color='black', size=3, legend_label='Reference')
-    plt_offset.scatter('x1'    , 'y1'    , source=data1, color='red', size=3, legend_label='Raw', visible=False)
-    plt_offset.scatter('x1_new', 'y1_new', source=data1, color='green', size=3, legend_label='With Offset')
+    # plt_offset.scatter('x0'    , 'y0'    , source=data0, color='black', size=3, legend_label='Reference')
+    # plt_offset.scatter('x1'    , 'y1'    , source=data1, color='red', size=3, legend_label='Raw', visible=False)
+    # plt_offset.scatter('x1_new', 'y1_new', source=data1, color='green', size=3, legend_label='With Offset')
+    
+    plt_offset.line('x0'    , 'y0'    , source=data0, color='black', legend_label='Reference')
+    plt_offset.line('x1'    , 'y1'    , source=data1, color='red', legend_label='Raw', visible=False)
+    plt_offset.line('x1_new', 'y1_new', source=data1, color='green', legend_label='With Offset')
 
     slider_x_offset = Slider(start=offset_x_range[0], end=offset_x_range[1], value=0.0, step=0.01, width=width_time, height=40, title='X Offset', format='0[.]00')
     slider_y_offset = Slider(start=offset_y_range[0], end=offset_y_range[1], value=0.0, step=0.01, width=width_time, height=40, title='Y Offset', format='0[.]00')

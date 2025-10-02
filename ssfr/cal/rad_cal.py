@@ -18,7 +18,29 @@ __all__ = [
         'cdata_rad_resp',
         ]
 
+def planck(wvl, T):
+    """
+    Planck function.
 
+    Parameters:
+        wvl: Wavelength in nm
+        T: Temperature in K
+
+    Returns:
+        Spectral radiance in W/m^2/sr/nm
+    """
+    h = 6.62607015e-34  # Planck constant, J*s
+    c = 2.99792458e8    # speed of light, m/s
+    k = 1.380649e-23    # Boltzmann constant, J/K
+    b = 2.897771955e-3 # Wien's displacement constant, m*K
+
+    wvl_m = wvl * 1e-9  # Convert nm to m
+    return (2*h*c**2) / (wvl_m**5) / (np.exp(h*c/(wvl_m*k*T)) - 1) * 1e-9 * 4 * np.pi  # Convert to W/m^2/nm
+
+
+# planck with scaling factor
+def planck_scaled(wvl, T, scale):
+    return scale * planck(wvl, T)
 
 def cal_rad_resp(
         fnames,
@@ -28,8 +50,9 @@ def cal_rad_resp(
         spec_reverse=False,
         which_lamp='f-1324',
         int_time={'si':80.0, 'in':250.0},
-        dark_extend=2,
-        light_extend=2,
+        lamp_corr=False,
+        dark_extend=5,
+        light_extend=5,
         verbose=True,
         ):
 
@@ -135,6 +158,33 @@ def cal_rad_resp(
         else:
             data_flux = data[:, 1]*10000.0   # W m^-2 nm^-1
         #╰──────────────────────────────────────────────────────────────╯#
+        
+        # apply planck function correction for lamp spectrum (tested with F-1324)
+        #╭──────────────────────────────────────────────────────────────╮#
+        if which_lamp == 'f-1324' and lamp_corr:
+            lamp_fitT = 3139.5  # K
+            lamp_scale = 1.4064602e-9
+
+            test_T = lamp_fitT - 25.5
+            
+            lamp_corr_factor = planck_scaled(data_wvl, test_T, lamp_scale) / planck_scaled(data_wvl, lamp_fitT, lamp_scale)
+            
+            data_flux = data_flux * lamp_corr_factor
+            
+            # save to new lamp file
+            fname_lamp_new = '%s/lamp/%s_%.1fK.dat' % (ssfr.common.fdir_data, which_lamp, test_T)
+            with open(fname_lamp_new, 'w') as f:
+                # f.write('# Wavelength(nm)    Radiance(W/m^2/nm)\n')
+                for i in range(data_wvl.size):
+                    f.write('%.1f    %.6e\n' % (data_wvl[i], data_flux[i]/10000.0))
+            sys.exit()
+            
+            
+            if verbose:
+                msg = '\nMessage [cal_rad_resp]: applying Planck function correction for lamp <%s> with fit temperature of %.1f K ...' % (which_lamp, test_T)
+                print(msg)
+        #╰──────────────────────────────────────────────────────────────╯#
+
 
 
         # get ssfr wavelength for two spectrometers
@@ -162,7 +212,9 @@ def cal_rad_resp(
 
         resp = {
                 si_tag: lamp_nist_si,
-                in_tag: lamp_nist_in
+                in_tag: lamp_nist_in,
+                si_tag+'_std': None,
+                in_tag+'_std': None,
                }
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -204,8 +256,11 @@ def cal_rad_resp(
         shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_si], ssfr0.data_raw['shutter'][logic_si], ssfr0.data_raw['count_raw'][logic_si, :, index_si], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
         logic  = (shutter==0)
         logic_nan = (np.sum(np.isnan(counts), axis=-1)) > 0
+        print(logic_nan.sum())
         spectra_si     = np.nanmean(counts[logic, :], axis=0)
         spectra_si_std = np.nanstd(counts[logic, :], axis=0)
+        msg = '\nMessage [cal_rad_resp]: '
+        print(msg)
 
         shutter, counts = ssfr.corr.dark_corr(ssfr0.data_raw['tmhr'][logic_in], ssfr0.data_raw['shutter'][logic_in], ssfr0.data_raw['count_raw'][logic_in, :, index_in], mode='interp', dark_extend=dark_extend, light_extend=light_extend)
         logic  = (shutter==0)
@@ -233,8 +288,15 @@ def cal_rad_resp(
         spectra_si[spectra_si<=0.0] = np.nan
         rad_resp_si = spectra_si / int_time_new[si_tag] / resp[si_tag]
 
-        spectra_si_std[spectra_si_std<=0.0] = np.nan
-        rad_resp_si_std = spectra_si_std / int_time_new[si_tag] / resp[si_tag]
+        if resp[si_tag+'_std'] is None:
+            spectra_si_std[spectra_si_std<=0.0] = np.nan
+            rad_resp_si_std = spectra_si_std / int_time_new[si_tag] / resp[si_tag]
+        else:
+            resp_si_std = resp[si_tag+'_std']
+            spectra_si_std_frac = spectra_si_std / spectra_si
+            resp_si_std_frac    = resp_si_std    / resp[si_tag]
+            rad_resp_si_std = np.sqrt((spectra_si_std_frac/int_time_new[si_tag]/resp[si_tag])**2 + (spectra_si/int_time_new[si_tag]/resp[si_tag]*resp_si_std_frac)**2) * rad_resp_si
+            # rad_resp_si_std = np.sqrt( (spectra_si_std / int_time_new[si_tag] / resp[si_tag])**2 + (spectra_si / int_time_new[si_tag] / resp[si_tag]**2 * resp_si_std)**2 )
     else:
         rad_resp_si     = None
         rad_resp_si_std = None
@@ -247,8 +309,15 @@ def cal_rad_resp(
         spectra_in[spectra_in<=0.0] = np.nan
         rad_resp_in = spectra_in / int_time_new[in_tag] / resp[in_tag]
 
-        spectra_in_std[spectra_in_std<=0.0] = np.nan
-        rad_resp_in_std = spectra_in_std / int_time_new[in_tag] / resp[in_tag]
+        if resp[in_tag+'_std'] is None:
+            spectra_in_std[spectra_in_std<=0.0] = np.nan
+            rad_resp_in_std = spectra_in_std / int_time_new[in_tag] / resp[in_tag]
+        else:
+            resp_in_std = resp[in_tag+'_std']
+            spectra_in_std_frac = spectra_in_std / spectra_in
+            resp_in_std_frac    = resp_in_std    / resp[in_tag]
+            rad_resp_in_std = np.sqrt((spectra_in_std_frac/int_time_new[in_tag]/resp[in_tag])**2 + (spectra_in/int_time_new[in_tag]/resp[in_tag]*resp_in_std_frac)**2) * rad_resp_in
+            # rad_resp_in_std = np.sqrt( (spectra_in_std / int_time_new[in_tag] / resp[in_tag])**2 + (spectra_in / int_time_new[in_tag] / resp[in_tag]**2 * resp_in_std)**2 )
     else:
         rad_resp_in     = None
         rad_resp_in_std = None
@@ -259,7 +328,13 @@ def cal_rad_resp(
     #╭────────────────────────────────────────────────────────────────────────────╮#
     rad_resp = {
                si_tag: rad_resp_si,
-               in_tag: rad_resp_in
+               in_tag: rad_resp_in,
+               si_tag+'_std': rad_resp_si_std,
+               in_tag+'_std': rad_resp_in_std,
+               si_tag+'_count': spectra_si,
+               in_tag+'_count': spectra_in,
+               si_tag+'_count_std': spectra_si_std,
+               in_tag+'_count_std': spectra_in_std,
                }
 
     return rad_resp
@@ -279,6 +354,7 @@ def cdata_rad_resp(
         wvl_joint=950.0,
         wvl_range=[350.0, 2200.0],
         int_time={'si':80.0, 'in':250.0},
+        lamp_corr=False,
         verbose=True,
         ):
 
@@ -338,6 +414,7 @@ def cdata_rad_resp(
                 spec_reverse=spec_reverse,
                 which_lamp=which_lamp,
                 int_time=int_time,
+                lamp_corr=lamp_corr,
                 verbose=verbose,
                 )
     else:
@@ -397,27 +474,72 @@ def cdata_rad_resp(
     pri_resp_data = np.concatenate((pri_resp[si_tag][logic_si], pri_resp[in_tag][logic_in]))
     transfer_data = np.concatenate((transfer[si_tag][logic_si], transfer[in_tag][logic_in]))
     sec_resp_data = np.concatenate((sec_resp[si_tag][logic_si], sec_resp[in_tag][logic_in]))
+    pri_count_data = np.concatenate((pri_resp[si_tag+'_count'][logic_si], pri_resp[in_tag+'_count'][logic_in]))
+    transfer_count_data = np.concatenate((transfer[si_tag+'_count'][logic_si], transfer[in_tag+'_count'][logic_in]))
+    sec_count_data = np.concatenate((sec_resp[si_tag+'_count'][logic_si], sec_resp[in_tag+'_count'][logic_in]))
+    
+    pri_resp_data_std = np.concatenate((pri_resp[si_tag+'_std'][logic_si], pri_resp[in_tag+'_std'][logic_in]))
+    transfer_data_std = np.concatenate((transfer[si_tag+'_std'][logic_si], transfer[in_tag+'_std'][logic_in]))
+    sec_resp_data_std = np.concatenate((sec_resp[si_tag+'_std'][logic_si], sec_resp[in_tag+'_std'][logic_in]))
+    pri_count_data_std = np.concatenate((pri_resp[si_tag+'_count_std'][logic_si], pri_resp[in_tag+'_count_std'][logic_in]))
+    transfer_count_data_std = np.concatenate((transfer[si_tag+'_count_std'][logic_si], transfer[in_tag+'_count_std'][logic_in]))
+    sec_count_data_std = np.concatenate((sec_resp[si_tag+'_count_std'][logic_si], sec_resp[in_tag+'_count_std'][logic_in]))
 
     indices_sort = np.argsort(wvl_data)
     wvl_      = wvl_data[indices_sort]
     pri_resp_ = pri_resp_data[indices_sort]
     transfer_ = transfer_data[indices_sort]
     sec_resp_ = sec_resp_data[indices_sort]
+    pri_resp_std_ = pri_resp_data_std[indices_sort]
+    transfer_std_ = transfer_data_std[indices_sort]
+    sec_resp_std_ = sec_resp_data_std[indices_sort]
+    pri_count_ = pri_count_data[indices_sort]
+    transfer_count_ = transfer_count_data[indices_sort]
+    sec_count_ = sec_count_data[indices_sort]
+    pri_count_std_ = pri_count_data_std[indices_sort]
+    transfer_count_std_ = transfer_count_data_std[indices_sort]
+    sec_count_std_ = sec_count_data_std[indices_sort]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
     # save file
     #╭────────────────────────────────────────────────────────────────────────────╮#
     if filename_tag is not None:
-        fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssfr, which_spec, int_time[si_tag], int_time[in_tag])
+        if not lamp_corr:
+            fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, which_ssfr, which_spec, int_time[si_tag], int_time[in_tag])
+        else:
+            fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d|lamp-adjust.h5' % (filename_tag, which_ssfr, which_spec, int_time[si_tag], int_time[in_tag])
     else:
         fname_out = 'rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (which_ssfr, which_spec, int_time[si_tag], int_time[in_tag])
 
+    # save resps to pickle files
+    pri_resp_out = fname_out.replace('.h5', '|pri_resp.pkl')
+    transfer_out = fname_out.replace('.h5', '|transfer.pkl')
+    sec_resp_out = fname_out.replace('.h5', '|sec_resp.pkl')
+    
+    import pickle as pkl
+    with open(pri_resp_out, 'wb') as f:
+        pkl.dump(pri_resp, f)
+    with open(transfer_out, 'wb') as f:
+        pkl.dump(transfer, f)
+    with open(sec_resp_out, 'wb') as f:
+        pkl.dump(sec_resp, f)
+    
+    # save other data to hdf5 files
     f = h5py.File(fname_out, 'w')
     f['wvl']       = wvl_
     f['pri_resp']  = pri_resp_
     f['transfer']  = transfer_
     f['sec_resp']  = sec_resp_
+    f['pri_resp_std']  = pri_resp_std_
+    f['transfer_std']  = transfer_std_
+    f['sec_resp_std']  = sec_resp_std_
+    f['pri_count'] = pri_count_
+    f['transfer_count'] = transfer_count_
+    f['sec_count'] = sec_count_
+    f['pri_count_std'] = pri_count_std_
+    f['transfer_count_std'] = transfer_count_std_
+    f['sec_count_std'] = sec_count_std_
 
     # raw data
     #╭────────────────────────────────────────────────╮#
@@ -427,12 +549,30 @@ def cdata_rad_resp(
     g_si['pri_resp'] = pri_resp[si_tag]
     g_si['transfer'] = transfer[si_tag]
     g_si['sec_resp'] = sec_resp[si_tag]
+    g_si['pri_resp_std'] = pri_resp[si_tag+'_std']
+    g_si['transfer_std'] = transfer[si_tag+'_std']
+    g_si['sec_resp_std'] = sec_resp[si_tag+'_std']
+    g_si['pri_count'] = pri_resp[si_tag+'_count']
+    g_si['transfer_count'] = transfer[si_tag+'_count']
+    g_si['sec_count'] = sec_resp[si_tag+'_count']
+    g_si['pri_count_std'] = pri_resp[si_tag+'_count_std']
+    g_si['transfer_count_std'] = transfer[si_tag+'_count_std']
+    g_si['sec_count_std'] = sec_resp[si_tag+'_count_std']
 
     g_in = g.create_group('in')
     g_in['wvl'] = wvls[in_tag]
     g_in['pri_resp'] = pri_resp[in_tag]
     g_in['transfer'] = transfer[in_tag]
     g_in['sec_resp'] = sec_resp[in_tag]
+    g_in['pri_resp_std'] = pri_resp[in_tag+'_std']
+    g_in['transfer_std'] = transfer[in_tag+'_std']
+    g_in['sec_resp_std'] = sec_resp[in_tag+'_std']
+    g_in['pri_count'] = pri_resp[in_tag+'_count']
+    g_in['transfer_count'] = transfer[in_tag+'_count']
+    g_in['sec_count'] = sec_resp[in_tag+'_count']
+    g_in['pri_count_std'] = pri_resp[in_tag+'_count_std']
+    g_in['transfer_count_std'] = transfer[in_tag+'_count_std']
+    g_in['sec_count_std'] = sec_resp[in_tag+'_count_std']
     #╰────────────────────────────────────────────────╯#
 
     f.close()
