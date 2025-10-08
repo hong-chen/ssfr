@@ -27,21 +27,15 @@ hsr1_time_offset = 0.0
 ssfr_time_offset = -180.41
 ssrr_time_offset = -256.90
 
-alp_ang_pit_offset = 0.0
-alp_ang_rol_offset = 0.0
-hsr1_ang_pit_offset = 0.0
-hsr1_ang_rol_offset = 0.0
+alp_ang_pit_offset = 4.3
+alp_ang_rol_offset = 0.2
+hsr1_ang_pit_offset = 0.5
+hsr1_ang_rol_offset = 4.3
 
 fdir_data = f'data/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
-# fdir_cal = '/Users/kehi6101/Downloads/ssfr_test/%s/cal0' % mission
-# fdir_cal = '/Users/kehi6101/Downloads/ssfr_test/%s/cal1' % mission
-# fdir_cal = '/Users/kehi6101/Downloads/ssfr_test/%s/cal2' % mission
 fdir_out = f'data/{mission}/processed'
 # fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
-# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed0' % mission
-# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed1' % mission
-# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed2' % mission
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
