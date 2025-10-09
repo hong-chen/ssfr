@@ -1359,8 +1359,8 @@ def main_ssfr_rad_cal_all(
                     zen_output = zen_output_dict[key]
                     nad_output = nad_output_dict[key]
                     # 'zen-si%3.3d_zen-in%3.3d__nad-si%3.3d_nad-in%3.3d'
-                    int_time_dict = {'zen|si':int(key.split('_')[0].split('-')[-1]), 'zen|in':int(key.split('_')[1].split('-')[-1]), \
-                                    'nad|si':int(key.split('_')[2].split('-')[-1]), 'nad|in':int(key.split('_')[3].split('-')[-1])}
+                    int_time_dict = {'zen|si':float(key.split('_')[0].split('-')[-1]), 'zen|in':float(key.split('_')[1].split('-')[-1]), \
+                                    'nad|si':float(key.split('_')[2].split('-')[-1]), 'nad|in':float(key.split('_')[3].split('-')[-1])}
                     ssfr.cal.rad_resp_corr(fnames_resp_zen=zen_output, fnames_resp_nad=nad_output, which_ssfr=which_ssfr, int_time=int_time_dict)
             
     return
@@ -1887,6 +1887,7 @@ if __name__ == '__main__':
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    # sys.exit()
     plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
     plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
     plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
