@@ -32,6 +32,9 @@ build
 *.ict
 *idl*
 
+# output files
+*output*
+
 # libRadtran
 randomseed
 
