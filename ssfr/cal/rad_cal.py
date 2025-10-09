@@ -1,3 +1,7 @@
+"""
+Code for processing radiometric calibration of SSFR spectrometers.
+"""
+
 import os
 import sys
 import copy
@@ -14,6 +18,8 @@ import matplotlib.pyplot as plt
 
 
 __all__ = ['cal_rad_resp', 'cdata_rad_resp', 'rad_resp_corr',]
+
+ResponseData = Dict[str, np.ndarray]
 
 @dataclass
 class InstrumentConfig:
@@ -461,8 +467,6 @@ def cdata_rad_resp(
 
     return fname_out
 
-ResponseData = Dict[str, np.ndarray]
-
 def _load_response_group(base_fname: str, delete_files: bool=True) -> Tuple[ResponseData, ResponseData, ResponseData]:
     """
     Loads primary, transfer, and secondary response data from a 
@@ -628,6 +632,7 @@ def _apply_scaling_correction(
 
     return new_transfer, new_transfer_std
 
+
 def _save_combined_h5(
     fname_out: str, wvls: Dict, data: Dict, tags: Tuple[str, str],
     wvl_range: List[float], wvl_joint: float
@@ -724,7 +729,6 @@ def rad_resp_corr(fnames_resp_zen: str,
     # 4. Perform correction 
     wvl_start_joint = wvl_joint - wvl_joint_range / 2.0
     wvl_end_joint = wvl_joint + wvl_joint_range / 2.0
-    
     # (4-1) Correct NAD-IN based on NAD-SI
     new_transfer_in_nad, new_transfer_in_std_nad = _apply_scaling_correction(
         data=nad_data,

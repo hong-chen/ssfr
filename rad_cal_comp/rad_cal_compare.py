@@ -1,19 +1,5 @@
 """
-Code for processing data collected by SSFR Team during NASA ARCSIX 2024.
-
-SSFR-A: Solar Spectral Flux Radiometer - Alvin
-SSFR-B: Solar Spectral Flux Radiometer - Belana
-HSR1-A: Hyper-Spectral Radiometer 1 - Alvin
-HSR1-B: Hyper-Spectral Radiometer 1 - Belana
-ALP: Active Leveling Platform
-
-Acknowledgements:
-    Instrument engineering:
-        Jeffery Drouet, Sebastian Schmidt
-    Pre-mission and post-mission calibration and data analysis:
-        Hong Chen, Yu-Wen Chen, Ken Hirata, Vikas Nataraja, Sebastian Schmidt, Bruce Kindel
-    In-field calibration and on-flight operation:
-        Vikas Nataraja, Arabella Chamberlain, Ken Hirata, Sebastian Becker, Jeffery Drouet, Sebastian Schmidt
+Code for comparing the SSFR effective counts of different measurements.
 """
 
 import os
@@ -44,7 +30,7 @@ def plot_response(
         ):
 
     # 2025-02-18_lamp-1324_post|2024-03-29_lamp-150c_after-pri|2024-03-29_lamp-150c_after-pri|2025-09-11_processed-for-arcsix|rad-resp|lasp|ssfr-a|nad|si-120|in-350.h5
-    search_path_nad = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|%s|%s|si-%s|in-*0.h5' % (which_ssfr, which_lc, si_integration_time))
+    search_path_nad = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|%s|%s|si-%s|in-*0*|corr.h5' % (which_ssfr, which_lc, si_integration_time))
     fnames_nad = sorted(glob.glob(search_path_nad))
     pri_files_nad = [os.path.basename(fname).split('|')[0] for fname in fnames_nad]
     transfer_files_nad = [os.path.basename(fname).split('|')[1] for fname in fnames_nad]

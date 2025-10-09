@@ -1887,7 +1887,6 @@ if __name__ == '__main__':
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    # sys.exit()
     plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
     plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
     plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
