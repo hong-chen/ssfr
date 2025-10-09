@@ -423,6 +423,8 @@ def cdata_rad_resp(
     # Wavelength slicing and sorting
     wvls = config.wvls
 
+    
+    
     # File saving
     if filename_tag is None:
         filename_tag = 'test'
@@ -430,6 +432,13 @@ def cdata_rad_resp(
         fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d.h5' % (filename_tag, config.ssfr_id, config.lc_id, int_time[si_tag], int_time[in_tag])
     else:
         fname_out = '%s|rad-resp|%s|%s|si-%3.3d|in-%3.3d|lamp-adjust.h5' % (filename_tag, config.ssfr_id, config.lc_id, int_time[si_tag], int_time[in_tag])
+    
+    # output directory
+    out_parent = 'output'
+    os.makedirs(out_parent, exist_ok=True)
+    out_dir = f'{out_parent}/{filename_tag}'
+    os.makedirs(out_dir, exist_ok=True)
+    fname_out = f'{out_dir}/{os.path.basename(fname_out)}'
     
     # save resps to h5 files
     pri_resp_out = fname_out.replace('.h5', '|pri_resp.pkl')
@@ -710,7 +719,9 @@ def rad_resp_corr(fnames_resp_zen: str,
     (pri_resp_zen, transfer_zen, sec_resp_zen,
      pri_resp_nad, transfer_nad, sec_resp_nad,
      transfer_zen_ori, transfer_nad_ori) = load_responses_and_validate(fnames_resp_zen, fnames_resp_nad, delete_files=True)
-        
+    
+    out_dir = os.path.dirname(fnames_resp_zen)
+    
     # Group data into a more manageable structure
     zen_data = {'pri_resp': pri_resp_zen, 'transfer': transfer_zen, 'sec_resp': sec_resp_zen}
     nad_data = {'pri_resp': pri_resp_nad, 'transfer': transfer_nad, 'sec_resp': sec_resp_nad}
@@ -747,7 +758,7 @@ def rad_resp_corr(fnames_resp_zen: str,
             {'x': wvl_in_nad, 'y': nad_data['transfer']['nad|in'], 'label': 'NAD-InGaAs (scaled)', 'color': 'orange', 'style': '--'}
         ],
         title='Nadir Si-InGaAs Correction', xlabel='Wavelength (nm)', ylabel='Transfer flux ($W m^{-2} nm^{-1}$)',
-        output_fname='rad_resp_corr_nad_si_in.png',
+        output_fname=f'{out_dir}/rad_resp_corr_nad_si_in.png',
         joint_region=(wvl_start_joint, wvl_end_joint)
     )
     
@@ -772,7 +783,7 @@ def rad_resp_corr(fnames_resp_zen: str,
             {'x': wvl_si_zen, 'y': zen_data['transfer']['zen|si'], 'label': 'ZEN-SI (scaled)', 'color': 'orange', 'style': '--'}
         ],
         title='Zenith Si Correction', xlabel='Wavelength (nm)', ylabel='Transfer flux ($W m^{-2} nm^{-1}$)',
-        output_fname='rad_resp_corr_zen_si_nad_si_2.png'
+        output_fname=f'{out_dir}/rad_resp_corr_zen_si_nad_si.png'
     )
     
     # (4-3) zen-si and zen-in transfer check
@@ -794,7 +805,7 @@ def rad_resp_corr(fnames_resp_zen: str,
             {'x': wvl_si_zen, 'y': transfer_si_zen_orig, 'label': 'ZEN-Si (original)', 'color': 'cyan'}
         ],
         title='Zenith Si-InGaAs Correction', xlabel='Wavelength (nm)', ylabel='Transfer flux ($W m^{-2} nm^{-1}$)',
-        output_fname='rad_resp_corr_zen_si_zen_in_2.png',
+        output_fname=f'{out_dir}/rad_resp_corr_zen_si_zen_in.png',
         joint_region=(wvl_start_joint, wvl_end_joint)
     )
     
@@ -822,7 +833,8 @@ def rad_resp_corr(fnames_resp_zen: str,
                                     wvl_si_nad, wvl_in_nad,
                                     sec_resp_si_zen_ori, 
                                     sec_resp_in_zen_ori,
-                                    sec_resp_in_nad_ori) 
+                                    sec_resp_in_nad_ori,
+                                    out_dir) 
     
     # 6. Save final corrected data using the save helper
     wvl_zen_, transfer_zen_ = _save_combined_h5(
@@ -839,7 +851,8 @@ def rad_resp_corr(fnames_resp_zen: str,
 
     plot_transfer_before_after_corr(wvl_nad_, transfer_nad_ori,
                                     wvl_zen_, transfer_zen_ori,
-                                    transfer_nad_, transfer_zen_)
+                                    transfer_nad_, transfer_zen_,
+                                    out_dir)
 
 
 def plot_sec_resp_before_after_corr(zen_data, nad_data,
@@ -847,7 +860,8 @@ def plot_sec_resp_before_after_corr(zen_data, nad_data,
                                     wvl_si_nad, wvl_in_nad,
                                     sec_resp_si_zen_ori, 
                                     sec_resp_in_zen_ori,
-                                    sec_resp_in_nad_ori):
+                                    sec_resp_in_nad_ori,
+                                    out_dir):
     """Plot secondary responses before and after correction."""
     plt.close('all')
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 9))
@@ -872,12 +886,13 @@ def plot_sec_resp_before_after_corr(zen_data, nad_data,
         ax.legend()
         ax.grid(True, which='both', linestyle='--', alpha=0.5)    
     fig.tight_layout()
-    fig.savefig('rad_resp_corr_sec_resp_update.png', dpi=300)
+    fig.savefig(f'{out_dir}/rad_resp_corr_sec_resp_update.png', dpi=300)
     
 
 def plot_transfer_before_after_corr(wvl_nad_, transfer_nad_ori,
                                     wvl_zen_, transfer_zen_ori,
-                                    transfer_nad_, transfer_zen_):
+                                    transfer_nad_, transfer_zen_,
+                                    out_dir):
     """Plot transfer functions before and after correction."""
     f_transfer_nad_ori = interpolate.interp1d(wvl_nad_, transfer_nad_ori, bounds_error=False, fill_value=np.nan)
     transfer_nad_ori_interp = f_transfer_nad_ori(wvl_zen_)
@@ -907,7 +922,7 @@ def plot_transfer_before_after_corr(wvl_nad_, transfer_nad_ori,
     ax3.set_ylabel('Transfer ratio (Nad/Zen)')
     ax4.axis('off') # set ax4 invisible
     fig.tight_layout()
-    fig.savefig('rad_resp_corr_transfer_check.png', dpi=300)
+    fig.savefig(f'{out_dir}/rad_resp_corr_transfer_check.png', dpi=300)
     
 
 if __name__ == '__main__':
