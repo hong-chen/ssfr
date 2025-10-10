@@ -179,6 +179,8 @@ def cdata_ssfr_v1(
         time_offset=0.0,
         which_ssfr='lasp|ssfr-a',
         which_ssfr_for_flux='lasp|ssfr-a',
+        response_zen=None,
+        response_nad=None,
         run=True,
         ):
 
@@ -235,6 +237,7 @@ def cdata_ssfr_v1(
             if which_ssfr_for_flux == which_ssfr:
                 # select calibration file (can later be adjusted for different integration time sets)
                 #╭──────────────────────────────────────────────────────────────╮#
+                # fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
                 fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
 
                 jday_today = ssfr.util.dtime_to_jday(date)
@@ -242,45 +245,69 @@ def cdata_ssfr_v1(
                 int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
                 int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
 
-                # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                if len(fnames_cal_zen) == 0:
-                    msg = '\nWarnings [cdata_ssfr_v1]: No zenith calibration file found for <%s> ...' % (int_time_tag_zen)
-                    warnings.warn(msg)
-                    int_time_tag_zen = 'si-080|in-250'  # default integration time tag for zenith calibration
-                    msg = '\nMessage [cdata_ssfr_v1]: Using the zenith calibration file for <%s> ...' % (int_time_tag_zen)
-                    print(msg)
+                if response_zen is not None:
+                    fnames_zen = [f for f in response_zen if int_time_tag_zen in f]
+                    if len(fnames_zen) == 0:
+                        msg = '\nWarnings [cdata_ssfr_v1]: No zenith calibration file found for <%s> ...' % (int_time_tag_zen)
+                        raise OSError(msg)
+                    elif len(fnames_zen) > 1:
+                        msg = '\nWarnings [cdata_ssfr_v1]: More than one zenith calibration files found for <%s>, Using <%s>...' % (int_time_tag_zen, fnames_zen[0])
+                        warnings.warn(msg)
+                    fname_cal_zen = fnames_zen[0]
+                
+                else:
+                    # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
                     # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
                     fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
-                for i in range(jday_cal_zen.size):
-                    dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
-                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
-                    jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
-                fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
+                    if len(fnames_cal_zen) == 0:
+                        msg = '\nWarnings [cdata_ssfr_v1]: No zenith calibration file found for <%s> ...' % (int_time_tag_zen)
+                        warnings.warn(msg)
+                        int_time_tag_zen = 'si-080|in-250'  # default integration time tag for zenith calibration
+                        msg = '\nMessage [cdata_ssfr_v1]: Using the zenith calibration file for <%s> ...' % (int_time_tag_zen)
+                        print(msg)
+                        # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
+                        fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
+                    jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
+                    for i in range(jday_cal_zen.size):
+                        dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
+                        dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                        jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
+                    fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
+                
                 data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
                 msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s zenith irradiance ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
                 print(msg)
 
-                # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                if len(fnames_cal_nad) == 0:
-                    msg = '\nWarnings [cdata_ssfr_v1]: No nadir calibration file found for <%s> ...' % (int_time_tag_nad)
-                    warnings.warn(msg)
-                    int_time_tag_nad = 'si-080|in-250'  # default integration time tag for nadir calibration
-                    msg = '\nMessage [cdata_ssfr_v1]: Using the nadir calibration file for <%s> ...' % (int_time_tag_nad)
-                    print(msg)
+                if response_nad is not None:
+                    fnames_nad = [f for f in response_nad if int_time_tag_nad in f]
+                    if len(fnames_nad) == 0:
+                        msg = '\nWarnings [cdata_ssfr_v1]: No nadir calibration file found for <%s> ...' % (int_time_tag_nad)
+                        raise OSError(msg)
+                    elif len(fnames_nad) > 1:
+                        msg = '\nWarnings [cdata_ssfr_v1]: More than one nadir calibration files found for <%s>, Using <%s>...' % (int_time_tag_nad, fnames_nad[0])
+                        warnings.warn(msg)
+                    fname_cal_nad = fnames_nad[0]
+
+                else:
+                    # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
                     # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
                     fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
-                for i in range(jday_cal_nad.size):
-                    dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
-                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
-                    jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
-                fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
+                    if len(fnames_cal_nad) == 0:
+                        msg = '\nWarnings [cdata_ssfr_v1]: No nadir calibration file found for <%s> ...' % (int_time_tag_nad)
+                        warnings.warn(msg)
+                        int_time_tag_nad = 'si-080|in-250'  # default integration time tag for nadir calibration
+                        msg = '\nMessage [cdata_ssfr_v1]: Using the nadir calibration file for <%s> ...' % (int_time_tag_nad)
+                        print(msg)
+                        # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
+                        fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
+                    jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
+                    for i in range(jday_cal_nad.size):
+                        dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
+                        dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                        jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
+                    fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
+
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
 
                 msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s nadir irradiance ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
@@ -445,6 +472,8 @@ def cdata_ssfr_v2(
         fname_hsr1_v2,
         fname_h5='SSFR_v2.h5',
         fdir_out='./',
+        cosine_zen=None,
+        cosine_nad=None,
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         run=True,
@@ -599,8 +628,22 @@ def cdata_ssfr_v2(
         #╭────────────────────────────────────────────────────────────────────────────╮#
         dset_s = 'dset1'
         fdir_cal = '%s/ang-cal' % cfg.fdir_cal #_FDIR_CAL_
-        fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*zen*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
-        fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*nad*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
+
+        if cosine_zen is not None:
+            fname_cal_zen = cosine_zen
+        else:
+            fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*zen*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
+
+        msg = '\nMessage [cdata_ssfr_v2]: Using <%s> for zenith irradiance ...' % (os.path.basename(fname_cal_zen))
+        print(msg)
+
+        if cosine_nad is not None:
+            fname_cal_nad = cosine_nad
+        else:
+            fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*nad*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
+
+        msg = '\nMessage [cdata_ssfr_v2]: Using <%s> for nadir irradiance ...' % (os.path.basename(fname_cal_nad))
+        print(msg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -1174,6 +1217,8 @@ def main_process_data_v1(cfg, run=True):
             time_offset=cfg.ssfr['time_offset'],
             which_ssfr=cfg.ssfr['which_ssfr'],
             which_ssfr_for_flux=cfg.ssfr['which_ssfr'],
+            response_zen=cfg.ssfr['response_zen'],
+            response_nad=cfg.ssfr['response_nad'],
             fdir_out=fdir_out,
             run=run
             )
@@ -1203,6 +1248,8 @@ def main_process_data_v2(cfg, run=True):
             cfg.ssfr['fname_v1'],
             cfg.alp['fname_v1'],
             cfg.hsr1['fname_v2'],
+            cosine_zen=cfg.ssfr['cosine_zen'],
+            cosine_nad=cfg.ssfr['cosine_nad'],
             ang_pit_offset=cfg.alp['ang_pit_offset'],
             ang_rol_offset=cfg.alp['ang_rol_offset'],
             fname_h5=fname_h5,
@@ -1212,7 +1259,6 @@ def main_process_data_v2(cfg, run=True):
             )
     #╰────────────────────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
-
 
 if __name__ == '__main__':
 
@@ -1275,6 +1321,6 @@ if __name__ == '__main__':
         # step 4
         #╭────────────────────────────────────────────────────────────────────────────╮#
         main_process_data_v2(cfg, run=True)
-        #╰────────────────────────────────────────────────────────────────────────────╯#
+        #╰────────────────────────────────────────────────────────────────────────────╯# 
 
         pass

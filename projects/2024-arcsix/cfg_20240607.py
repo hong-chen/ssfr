@@ -34,8 +34,10 @@ hsr1_ang_rol_offset = 4.3
 
 fdir_data = f'data/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
-fdir_out = f'data/{mission}/processed'
+# fdir_out = f'data/{mission}/processed'
 # fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
+fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed_src' % mission
+fdir_test = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
@@ -72,8 +74,8 @@ fname_hsr1_v1 = f'{fdir_out}/{mission.upper()}-{hsr1_aka.upper()}_{platform.uppe
 fname_hsr1_v2 = f'{fdir_out}/{mission.upper()}-{hsr1_aka.upper()}_{platform.upper()}_{date_s}_v2.h5'
 
 fname_ssfr_v0 = f'{fdir_out}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v0.h5'
-fname_ssfr_v1 = f'{fdir_out}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
-fname_ssfr_v2 = f'{fdir_out}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v2.h5'
+fname_ssfr_v1 = f'{fdir_test}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
+fname_ssfr_v2 = f'{fdir_test}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v2.h5'
 
 fname_ssrr_v0 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.upper()}_{date_s}_v0.h5'
 fname_ssrr_v1 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
@@ -82,15 +84,19 @@ fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.uppe
 
 # calibrations
 #╭────────────────────────────────────────────────╮#
-fname_ssfr_rad_cal_zen = None
-fname_ssfr_rad_cal_nad = None
-fname_ssfr_ang_cal_zen = None
-fname_ssfr_ang_cal_nad = None
-
-fname_ssrr_rad_cal_zen = None
-fname_ssrr_rad_cal_nad = None
-fname_ssrr_ang_cal_zen = None
-fname_ssrr_ang_cal_nad = None
+fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-07_response_files'
+# prop_ssfr_rad_cal_zen = {'primary_date': '2025-08-12', 'transfer_date': '2025-08-12', 'secondary_date': '2024-06-09',
+prop_ssfr_rad_cal_zen = {'primary_date': '2025-08-12', 'transfer_date': '2025-08-12', 'secondary_date': '2024-06-09',
+                         'int_time': [(80, 250), (120, 350)],
+                         'lamp_adjust': True, 'transfer-based_corr': True, }
+fdir_ssfr_rad_cal_nad = f'{fdir_cal}/rad-cal/2025-10-07_response_files'
+prop_ssfr_rad_cal_nad = {'primary_date': '2025-02-18', 'transfer_date': '2025-02-18', 'secondary_date': '2024-06-09',
+                         'int_time': [(80, 250), (120, 350)],
+                         'lamp_adjust': True, 'transfer-based_corr': True, }
+fdir_ssfr_ang_cal_zen = f'{fdir_cal}/ang-cal'
+prop_ssfr_ang_cal_zen = {'date': '2025-08-13', }
+fdir_ssfr_ang_cal_nad = f'{fdir_cal}/ang-cal'
+prop_ssfr_ang_cal_nad = {'date': '2025-07-31', }
 #╰────────────────────────────────────────────────╯#
 #╰──────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -192,6 +198,34 @@ ssfr = {
         #   also available in `mean`, which uses the average to represent darks
         #   generally, `interp` is preferred
         'dark_corr_mode': 'interp',
+
+        # Radiometric calibration files (if None, the cal file with the closest date will be used)
+        'response_zen': [sorted(ssfr.util.get_all_files(fdir_ssfr_rad_cal_zen, pattern='%s*|%s*|%s*|rad-resp|lasp|%s|zen|si-%03d|in-%03d%s.h5' % (
+                                        prop_ssfr_rad_cal_zen["primary_date"],
+                                        prop_ssfr_rad_cal_zen["transfer_date"],
+                                        prop_ssfr_rad_cal_zen["secondary_date"],
+                                        ssfr_tag.lower(),
+                                        prop_ssfr_rad_cal_zen["int_time"][iinttime][0],
+                                        prop_ssfr_rad_cal_zen["int_time"][iinttime][1],
+                                        '|lamp-adjust|corr' if prop_ssfr_rad_cal_zen["lamp_adjust"] and prop_ssfr_rad_cal_zen["transfer-based_corr"] else
+                                        '|lamp-adjust' if prop_ssfr_rad_cal_zen["lamp_adjust"] and not prop_ssfr_rad_cal_zen["transfer-based_corr"] else
+                                        '|corr' if not prop_ssfr_rad_cal_zen["lamp_adjust"] and prop_ssfr_rad_cal_zen["transfer-based_corr"] else
+                                        '' )
+                                        ))[0] for iinttime in range(2) ],
+        'response_nad': [sorted(ssfr.util.get_all_files(fdir_ssfr_rad_cal_nad, pattern='%s*|%s*|%s*|rad-resp|lasp|%s|nad|si-%03d|in-%03d%s.h5' % (
+                                        prop_ssfr_rad_cal_nad["primary_date"],
+                                        prop_ssfr_rad_cal_nad["transfer_date"],
+                                        prop_ssfr_rad_cal_nad["secondary_date"],
+                                        ssfr_tag.lower(),
+                                        prop_ssfr_rad_cal_nad["int_time"][iinttime][0],
+                                        prop_ssfr_rad_cal_nad["int_time"][iinttime][1],
+                                        '|lamp-adjust|corr' if prop_ssfr_rad_cal_nad["lamp_adjust"] and prop_ssfr_rad_cal_nad["transfer-based_corr"] else
+                                        '|lamp-adjust' if prop_ssfr_rad_cal_nad["lamp_adjust"] and not prop_ssfr_rad_cal_nad["transfer-based_corr"] else
+                                        '|corr' if not prop_ssfr_rad_cal_nad["lamp_adjust"] and prop_ssfr_rad_cal_nad["transfer-based_corr"] else
+                                        '' )
+                                        ))[0] for iinttime in range(2) ],
+        'cosine_zen': sorted(ssfr.util.get_all_files(fdir_ssfr_ang_cal_zen, pattern='%s*%s*|zen|*.h5' % (prop_ssfr_ang_cal_zen["date"], 'dset1')))[-1],
+        'cosine_nad': sorted(ssfr.util.get_all_files(fdir_ssfr_ang_cal_nad, pattern='%s*%s*|nad|*.h5' % (prop_ssfr_ang_cal_nad["date"], 'dset1')))[-1],
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
