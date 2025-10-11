@@ -237,7 +237,6 @@ def cdata_ssfr_v1(
             if which_ssfr_for_flux == which_ssfr:
                 # select calibration file (can later be adjusted for different integration time sets)
                 #╭──────────────────────────────────────────────────────────────╮#
-                # fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
                 fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
 
                 jday_today = ssfr.util.dtime_to_jday(date)
@@ -341,18 +340,13 @@ def cdata_ssfr_v1(
                     fname_cal_zen = os.path.join(fdir_cal, fnames_zen[0])
                 else:
                     fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*zen*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_zen)), key=os.path.getmtime)
-                    # fnames_cal_zen = [f for f in fnames_cal_zen if 'corr' not in f]
-                    fnames_cal_zen = [f for f in fnames_cal_zen if 'corr' in f]
-                    
                     jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
                     for i in range(jday_cal_zen.size):
                         dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[1].split('_')[0]
                         dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
                         jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
                     fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
-                
-                print("fname_cal_zen:", fname_cal_zen)
-                
+                                
                 data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
                 msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s zenith radince ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
@@ -367,9 +361,6 @@ def cdata_ssfr_v1(
                     fname_cal_nad = os.path.join(fdir_cal, fnames_nad[0])
                 else:
                     fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*nad*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_nad)), key=os.path.getmtime)
-                    # fnames_cal_nad = [f for f in fnames_cal_nad if 'corr' not in f]
-                    fnames_cal_nad = [f for f in fnames_cal_nad if 'corr' in f]
-                    
                     jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
                     for i in range(jday_cal_nad.size):
                         dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[1].split('_')[0]
