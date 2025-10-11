@@ -308,8 +308,7 @@ def cdata_ssfr_v1(
                     fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
 
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
-                print("fname_cal_nad:", fname_cal_nad)
-
+                
                 msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s nadir irradiance ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
                 print(msg)
                 #╰──────────────────────────────────────────────────────────────╯#
