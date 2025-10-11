@@ -1260,7 +1260,7 @@ def main_process_data_v2(cfg, run=True):
     #╰────────────────────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
-def test_zenith_vs_toa(cfg):
+def run_test_zenith_vs_toa(cfg):
     # Test function to check the zenith irradiance against the Kurucz TOA irradiance
     # for various calibration file combinations
     rad_cal_dates = [  # primary, transfer, secondary
@@ -1298,16 +1298,19 @@ def test_zenith_vs_toa(cfg):
 
                 print(f"Processing date {date.strftime('%Y-%m-%d')} with radiometric cal {rad_cal_date} and angular cal {ang_cal_date}")
 
-
                 try:
 
-                    fdir_cal = f'data/arcsix/cal'
-                    fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-07_response_files'
+                    # fdir_cal = f'data/arcsix/cal'
+                    
+                    # fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-07_response_files'
+                    fdir_ssfr_rad_cal_zen = cfg.fdir_ssfr_rad_cal_zen
                     # prop_ssfr_rad_cal_zen = {'primary_date': '2025-08-12', 'transfer_date': '2025-08-12', 'secondary_date': '2024-06-02',
                     prop_ssfr_rad_cal_zen = {'primary_date': rad_cal_date[0], 'transfer_date': rad_cal_date[1], 'secondary_date': rad_cal_date[2],
                                             'int_time': [(80, 250), (120, 350)],
                                             'lamp_adjust': True, 'transfer-based_corr': transfer_based_corr, }
-                    fdir_ssfr_ang_cal_zen = f'{fdir_cal}/ang-cal'
+                    
+                    # fdir_ssfr_ang_cal_zen = f'{fdir_cal}/ang-cal'
+                    fdir_ssfr_ang_cal_zen = cfg.fdir_ssfr_ang_cal_zen
                     # prop_ssfr_ang_cal_zen = {'date': '2025-08-13', }
                     prop_ssfr_ang_cal_zen = {'date': ang_cal_date, }
 
@@ -1504,7 +1507,12 @@ if __name__ == '__main__':
         #╭────────────────────────────────────────────────────────────────────────────╮#
         main_process_data_v2(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯# 
+       
+        # optional
+        # compare zenith irradiance against TOA to evaluate calibration files
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        # run_test_zenith_vs_toa(cfg)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
-        test_zenith_vs_toa(cfg)
 
         pass
