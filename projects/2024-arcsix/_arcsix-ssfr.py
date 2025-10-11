@@ -229,7 +229,7 @@ def cdata_ssfr_v1(
         spec_zen = np.zeros_like(cnt_zen)
         cnt_nad  = data_ssfr_v0['spec/cnt_nad']
         spec_nad = np.zeros_like(cnt_nad)
-
+  
         for idset in np.unique(dset_num):
 
             logic_dset = (dset_num == idset)
@@ -238,7 +238,7 @@ def cdata_ssfr_v1(
                 # select calibration file (can later be adjusted for different integration time sets)
                 #╭──────────────────────────────────────────────────────────────╮#
                 # fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
-                fdir_cal = 'data/arcsix/cal/rad-cal/2025-08-12_pri-cal_lamp-1324/processed' # local
+                fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
 
                 jday_today = ssfr.util.dtime_to_jday(date)
 
@@ -246,21 +246,19 @@ def cdata_ssfr_v1(
                 int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
 
                 if response_zen is not None:
-                    print("response_zen:", response_zen)
                     fnames_zen = [f for f in response_zen if int_time_tag_zen in f]
                     if len(fnames_zen) == 0:
                         msg = '\nWarnings [cdata_ssfr_v1]: No zenith calibration file found for <%s> ...' % (int_time_tag_zen)
+                        raise OSError(msg)
+                    elif len(fnames_zen) > 1:
+                        msg = '\nWarnings [cdata_ssfr_v1]: More than one zenith calibration files found for <%s>, Using <%s>...' % (int_time_tag_zen, fnames_zen[0])
                         warnings.warn(msg)
-                        raise ValueError('No zenith calibration file found for <%s> ...' % (int_time_tag_zen))
-                    fname_cal_zen = os.path.join(fdir_cal, fnames_zen[0])
-                    
+                    fname_cal_zen = fnames_zen[0]
+                
                 else:
                     # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
                     # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
                     fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                    # fnames_cal_zen = [f for f in fnames_cal_zen if 'corr' not in f]
-                    fnames_cal_zen = [f for f in fnames_cal_zen if 'corr' in f]
-                
                     if len(fnames_cal_zen) == 0:
                         msg = '\nWarnings [cdata_ssfr_v1]: No zenith calibration file found for <%s> ...' % (int_time_tag_zen)
                         warnings.warn(msg)
@@ -269,14 +267,12 @@ def cdata_ssfr_v1(
                         print(msg)
                         # fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
                         fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*zen*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_zen)), key=os.path.getmtime)
-                    
                     jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
                     for i in range(jday_cal_zen.size):
                         dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[2].split('_')[0]
                         dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
                         jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
                     fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
-
                 
                 data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
@@ -285,19 +281,18 @@ def cdata_ssfr_v1(
 
                 if response_nad is not None:
                     fnames_nad = [f for f in response_nad if int_time_tag_nad in f]
-                    print("fnames_nad:", fnames_nad)
                     if len(fnames_nad) == 0:
                         msg = '\nWarnings [cdata_ssfr_v1]: No nadir calibration file found for <%s> ...' % (int_time_tag_nad)
+                        raise OSError(msg)
+                    elif len(fnames_nad) > 1:
+                        msg = '\nWarnings [cdata_ssfr_v1]: More than one nadir calibration files found for <%s>, Using <%s>...' % (int_time_tag_nad, fnames_nad[0])
                         warnings.warn(msg)
-                        raise ValueError('No nadir calibration file found for <%s> ...' % (int_time_tag_nad))
-                    fname_cal_nad = os.path.join(fdir_cal, fnames_nad[0])
+                    fname_cal_nad = fnames_nad[0]
+
                 else:
                     # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c_after-pri|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
                     # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
                     fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                    # fnames_cal_nad = [f for f in fnames_cal_nad if 'corr' not in f]
-                    fnames_cal_nad = [f for f in fnames_cal_nad if 'corr' in f]
-                
                     if len(fnames_cal_nad) == 0:
                         msg = '\nWarnings [cdata_ssfr_v1]: No nadir calibration file found for <%s> ...' % (int_time_tag_nad)
                         warnings.warn(msg)
@@ -306,15 +301,13 @@ def cdata_ssfr_v1(
                         print(msg)
                         # fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324|*lamp-150c*|*pituffik*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
                         fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324*|*lamp-150c*|*%s*nad*%s*' % (which_ssfr_for_flux.lower(), int_time_tag_nad)), key=os.path.getmtime)
-                    
                     jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
                     for i in range(jday_cal_nad.size):
                         dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[2].split('_')[0]
                         dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
                         jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
                     fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
-                    
-                print("fname_cal_nad:", fname_cal_nad)
+
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
                 print("fname_cal_nad:", fname_cal_nad)
 
@@ -505,6 +498,8 @@ def cdata_ssfr_v2(
         fname_hsr1_v2,
         fname_h5='SSFR_v2.h5',
         fdir_out='./',
+        cosine_zen=None,
+        cosine_nad=None,
         ang_pit_offset=0.0,
         ang_rol_offset=0.0,
         run=True,
@@ -662,9 +657,12 @@ def cdata_ssfr_v2(
         angles = {}
         angles['sza'] = data_aux['sza']
         angles['saa'] = data_aux['saa']
-        angles['ang_pit']   = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
-        angles['ang_rol']   = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
-        angles['ang_hed']   = data_aux['ang_hed']
+        angles['ang_pit']   = data_ssfr_v1['ang_pit'] # HSK pitch
+        angles['ang_rol']   = data_ssfr_v1['ang_rol'] # HSK roll
+        angles['ang_hed']   = data_ssfr_v1['ang_hed'] # HSK heading - true heading
+        # angles['ang_pit']   = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
+        # angles['ang_rol']   = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
+        # angles['ang_hed']   = data_aux['ang_hed'] # heading (tracking angle) from ALP prod
         angles['ang_pit_m'] = data_aux['ang_pit_m']
         angles['ang_rol_m'] = data_aux['ang_rol_m']
         angles['ang_pit_offset'] = ang_pit_offset
@@ -679,8 +677,22 @@ def cdata_ssfr_v2(
         #╭────────────────────────────────────────────────────────────────────────────╮#
         dset_s = 'dset1'
         fdir_cal = '%s/ang-cal' % cfg.fdir_cal #_FDIR_CAL_
-        fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*zen*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
-        fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*nad*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
+
+        if cosine_zen is not None:
+            fname_cal_zen = cosine_zen
+        else:
+            fname_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*zen*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
+
+        msg = '\nMessage [cdata_ssfr_v2]: Using <%s> for zenith irradiance ...' % (os.path.basename(fname_cal_zen))
+        print(msg)
+
+        if cosine_nad is not None:
+            fname_cal_nad = cosine_nad
+        else:
+            fname_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*|*%s*%s*nad*' % (dset_s, 'ssfr-a')), key=os.path.getmtime)[-1]
+
+        msg = '\nMessage [cdata_ssfr_v2]: Using <%s> for nadir irradiance ...' % (os.path.basename(fname_cal_nad))
+        print(msg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
         print("fname_cal_zen:", fname_cal_zen)
         print("fname_cal_nad:", fname_cal_nad)
@@ -704,6 +716,8 @@ def cdata_ssfr_v2(
         g1 = f.create_group('att_corr')
         g1.create_dataset('factors_zen', data=factors['zen'], compression='gzip', compression_opts=9, chunks=True)
         g1.create_dataset('factors_nad', data=factors['nad'], compression='gzip', compression_opts=9, chunks=True)
+        g1.create_dataset('dc', data=factors['dc'], compression='gzip', compression_opts=9, chunks=True)
+        g1.create_dataset('diff_ratio', data=diff_ratio, compression='gzip', compression_opts=9, chunks=True)
         for key in ['sza', 'saa', 'ang_pit_s', 'ang_rol_s', 'ang_hed', 'ang_pit_m', 'ang_rol_m']:
             g1.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
 
@@ -1310,6 +1324,10 @@ def main_process_data_v2(cfg, run=True):
             cfg.ssfr['fname_v1'],
             cfg.alp['fname_v1'],
             cfg.hsr1['fname_v2'],
+            cosine_zen=cfg.ssfr['cosine_zen'],
+            cosine_nad=cfg.ssfr['cosine_nad'],
+            ang_pit_offset=cfg.alp['ang_pit_offset'],
+            ang_rol_offset=cfg.alp['ang_rol_offset'],
             fname_h5=fname_h5,
             fdir_out=fdir_out,
             run=run,
@@ -1318,6 +1336,190 @@ def main_process_data_v2(cfg, run=True):
     #╰────────────────────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
+def run_test_zenith_vs_toa(cfg):
+    # Test function to check the zenith irradiance against the Kurucz TOA irradiance
+    # for various calibration file combinations
+    rad_cal_dates = [  # primary, transfer, secondary
+                    ('2024-03-29', '2024-03-29', '2024-05-27'),
+                    ('2024-03-29', '2024-03-29', '2024-06-02'),
+                    ('2024-03-29', '2024-03-29', '2024-06-09'),
+                    ('2024-03-29', '2024-03-29', '2025-02-18'),
+                    ('2025-02-18', '2025-02-18', '2024-05-27'),
+                    ('2025-02-18', '2025-02-18', '2024-06-02'),
+                    ('2025-02-18', '2025-02-18', '2024-06-09'),
+                    ('2025-02-18', '2025-02-18', '2025-02-18'),
+                    ('2025-08-12', '2025-08-12', '2024-05-27'),
+                    ('2025-08-12', '2025-08-12', '2024-06-02'),
+                    ('2025-08-12', '2025-08-12', '2024-06-09'),
+                    ('2025-08-12', '2025-08-12', '2025-02-18'),
+                    ]
+    ang_cal_dates = [ # angular calibration
+                    '2024-03-19',
+                    '2025-08-13',
+                    ]
+
+
+    for i_rad_cal_dates, rad_cal_date in enumerate(rad_cal_dates):
+        for transfer_based_corr in [True, False]:
+        # for transfer_based_corr in [True]:
+            for i_ang_cal_dates, ang_cal_date in enumerate(ang_cal_dates):
+                suffix = '%s_%s_%s_%s_%s_%s' % (
+                        date.strftime('%Y%m%d'),
+                        rad_cal_date[0].replace('-', ''),
+                        rad_cal_date[1].replace('-', ''),
+                        rad_cal_date[2].replace('-', ''),
+                        'corr' if transfer_based_corr else 'orig',
+                        ang_cal_date.replace('-', ''),
+                )
+
+                print(f"Processing date {date.strftime('%Y-%m-%d')} with radiometric cal {rad_cal_date} and angular cal {ang_cal_date}")
+
+                try:
+
+                    # fdir_cal = f'data/arcsix/cal'
+                    
+                    # fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-07_response_files'
+                    fdir_ssfr_rad_cal_zen = cfg.fdir_ssfr_rad_cal_zen
+                    # prop_ssfr_rad_cal_zen = {'primary_date': '2025-08-12', 'transfer_date': '2025-08-12', 'secondary_date': '2024-06-02',
+                    prop_ssfr_rad_cal_zen = {'primary_date': rad_cal_date[0], 'transfer_date': rad_cal_date[1], 'secondary_date': rad_cal_date[2],
+                                            'int_time': [(80, 250), (120, 350)],
+                                            'lamp_adjust': True, 'transfer-based_corr': transfer_based_corr, }
+                    
+                    # fdir_ssfr_ang_cal_zen = f'{fdir_cal}/ang-cal'
+                    fdir_ssfr_ang_cal_zen = cfg.fdir_ssfr_ang_cal_zen
+                    # prop_ssfr_ang_cal_zen = {'date': '2025-08-13', }
+                    prop_ssfr_ang_cal_zen = {'date': ang_cal_date, }
+
+                    cfg.ssfr['response_zen'] = [sorted(ssfr.util.get_all_files(fdir_ssfr_rad_cal_zen, pattern='%s*|%s*|%s*|rad-resp|lasp|%s|zen|si-%03d|in-%03d%s.h5' % (
+                                                    prop_ssfr_rad_cal_zen["primary_date"],
+                                                    prop_ssfr_rad_cal_zen["transfer_date"],
+                                                    prop_ssfr_rad_cal_zen["secondary_date"],
+                                                    cfg.ssfr_tag.lower(),
+                                                    prop_ssfr_rad_cal_zen["int_time"][iinttime][0],
+                                                    prop_ssfr_rad_cal_zen["int_time"][iinttime][1],
+                                                    '|lamp-adjust|corr' if prop_ssfr_rad_cal_zen["lamp_adjust"] and prop_ssfr_rad_cal_zen["transfer-based_corr"] else
+                                                    '|lamp-adjust' if prop_ssfr_rad_cal_zen["lamp_adjust"] and not prop_ssfr_rad_cal_zen["transfer-based_corr"] else
+                                                    '|corr' if not prop_ssfr_rad_cal_zen["lamp_adjust"] and prop_ssfr_rad_cal_zen["transfer-based_corr"] else
+                                                    '' )
+                                                    ))[0] for iinttime in range(2) ]
+                    cfg.ssfr['cosine_zen'] = sorted(ssfr.util.get_all_files(fdir_ssfr_ang_cal_zen, pattern='%s*%s*|zen|*.h5' % (prop_ssfr_ang_cal_zen["date"], 'dset1')))[-1]
+
+                    # Run
+                    main_process_data_v1(cfg, run=True)
+                    
+                    main_process_data_v2(cfg, run=True)
+
+                    data_hsk = ssfr.util.load_h5(cfg.hsk['fname_v0'])
+                    data_ssfr_v2 = ssfr.util.load_h5(cfg.ssfr['fname_v2'])
+
+                    # Evaluation
+                    tmhr = data_ssfr_v2['tmhr']
+                    wvl_zen = data_ssfr_v2['zen/wvl']
+                    flux_zen = data_ssfr_v2['zen/flux']
+                    diff_ratio = data_ssfr_v2['att_corr/diff_ratio']
+                    toa0_zen = data_ssfr_v2['zen/toa0']
+                    sza = data_ssfr_v2['att_corr/sza']
+                    tmhr_hsk = data_hsk['tmhr']
+                    alt = data_hsk['alt']
+                    hed = data_hsk['ang_hed']
+                    pit = data_hsk['ang_pit']
+                    rol = data_hsk['ang_rol']
+                    toa_flight = toa0_zen[np.newaxis, :] * np.cos(np.radians(sza[:, np.newaxis]))
+
+                    level_leg = np.sqrt(pit**2 + rol**2) < 2.0
+                    
+                    w1, w2 = 530.0, 570.0
+                    w3, w4 = 1620.0, 1660.0
+                    green_wvl = (wvl_zen>=w1) & (wvl_zen<=w2)
+                    swir_wvl = (wvl_zen>=w3) & (wvl_zen<=w4)
+                    flux_green = np.nanmean(flux_zen[:, green_wvl], axis=1)/np.cos(np.radians(sza))
+                    flux_swir = np.nanmean(flux_zen[:, swir_wvl], axis=1)/np.cos(np.radians(sza))
+                    toa_green = np.nanmean(toa0_zen[green_wvl])
+                    toa_swir = np.nanmean(toa0_zen[swir_wvl])
+                    diff_ratio_mean = np.nanmean(diff_ratio[:, green_wvl], axis=1)
+
+                    diff_thresh = 0.18
+                    alt_thresh = 3000.0
+                    clear_times = (diff_ratio_mean < diff_thresh) & level_leg & (alt > alt_thresh)
+                    mean_flux_zen_clear = np.nanmean(flux_zen[clear_times, :], axis=0)
+                    mean_toa_zen_clear = np.nanmean(toa_flight[clear_times, :], axis=0)
+
+                    toa_ratio = mean_flux_zen_clear / mean_toa_zen_clear
+
+                    import matplotlib.pyplot as plt
+                    from matplotlib.gridspec import GridSpec
+
+                    plt.close('all')
+                    fig = plt.figure(figsize=(14, 10))
+                    gs = GridSpec(2, 2, width_ratios=[2, 2], height_ratios=[1, 1], wspace=0.25, hspace=0.3)
+
+                    ax1 = fig.add_subplot(gs[0, 0])
+                    ax2 = fig.add_subplot(gs[1, 0], sharex=ax1)
+
+                    ax1.plot(wvl_zen, mean_flux_zen_clear, label='SSFR Zenith', color='red')
+                    ax1.plot(wvl_zen, mean_toa_zen_clear, label='TOA * cos(SZA)', color='black', ls='--')
+                    ax1.set_ylim([0.0, 1.25])
+                    ax1.set_ylabel('Downwelling Flux (W m$^{-2}$ nm$^{-1}$)')
+                    ax1.legend()
+                    ax1.grid()
+                    ax1.axvspan(w1, w2, color='green', alpha=0.15)
+                    ax1.axvspan(w3, w4, color='purple', alpha=0.10)
+
+                    ax2.plot(wvl_zen, toa_ratio, label='SSFR Zenith / (TOA * cos(SZA))', color='red')
+                    ax2.axhline(1.0, color='gray', ls='--')
+                    ax2.set_ylim([0.8, 1.2])
+                    ax2.set_xlabel('Wavelength (nm)')
+                    ax2.set_ylabel('Ratio')
+                    ax2.legend()
+                    ax2.grid()
+                    ax2.axvspan(w1, w2, color='green', alpha=0.15)
+                    ax2.axvspan(w3, w4, color='purple', alpha=0.10)
+
+                    ax3 = fig.add_subplot(gs[0, 1])
+                    ax4 = fig.add_subplot(gs[1, 1], sharex=ax3)
+
+                    ax3.plot(tmhr[level_leg], flux_green[level_leg], color='green', alpha=0.2)
+                    ax3.scatter(tmhr[clear_times], flux_green[clear_times], label='SSFR %d-%d nm' % (w1, w2), s=3, color='green')
+                    ax3.axhline(toa_green, label='TOA %d-%d nm' % (w1, w2), color='black', ls='--')
+                    ax3.set_ylim([np.nanmean(flux_green[clear_times])*0.8, np.nanmean(flux_green[clear_times])*1.3])
+                    ax3.set_ylabel('SZA-normalized Flux (W m$^{-2}$ nm$^{-1}$)')
+                    ax3.grid()
+
+                    ax3_alt = ax3.twinx()
+                    ax3_alt.plot(tmhr_hsk, alt, color='#87ceeb', alpha=0.5, label='Altitude')
+                    ax3_alt.set_ylabel('Altitude (m)', color='#87ceeb')
+                    ax3_alt.tick_params(axis='y', labelcolor='#87ceeb')
+                    ax3_alt.legend(loc='upper right', fontsize=8)
+
+                    ax3.legend()
+
+                    ax4.plot(tmhr[level_leg], flux_swir[level_leg], color='purple', alpha=0.2)
+                    ax4.scatter(tmhr[clear_times], flux_swir[clear_times], label='SSFR %d-%d nm' % (w3, w4), s=3, color='purple')
+                    ax4.axhline(toa_swir, label='TOA %d-%d nm' % (w3, w4), color='black', ls='--')
+                    ax4.set_ylim([np.nanmean(flux_swir[clear_times])*0.8, np.nanmean(flux_swir[clear_times])*1.3])
+                    ax4.set_xlabel('Time (hr)')
+                    ax4.set_ylabel('SZA-normalized Flux (W m$^{-2}$ nm$^{-1}$)')
+                    ax4.grid()
+
+                    ax4_hed = ax4.twinx()
+                    ax4_hed.plot(tmhr_hsk, hed, color='#ffcc99', alpha=0.5, label='Heading')
+                    ax4_hed.set_ylabel('Heading (deg)', color='#ffcc99')
+                    ax4_hed.tick_params(axis='y', labelcolor='#ffcc99')
+                    ax4_hed.legend(loc='lower right', fontsize=8)
+                    
+                    ax4.legend()
+
+                    fig.suptitle(f'SSFR Zenith Average Clear-Sky and high-alt (green diff ratio < {diff_thresh}, alt > {alt_thresh} m) \nDate: {date.strftime("%Y-%m-%d")}, Radiometric Cal: {rad_cal_date}, Angular Cal: {ang_cal_date}\n{"w/ transfer-based correction" if transfer_based_corr else "original"}', y=0.98)
+                    fig.savefig('ssfr_evaluation_%s.png' % (suffix), bbox_inches='tight', dpi=300)
+
+                    # # Rename the file
+                    # import shutil
+                    # if os.path.exists(cfg.ssfr['fname_v2']):
+                    #     shutil.move(cfg.ssfr['fname_v2'], cfg.ssfr['fname_v2'].replace('.h5', '_%s.h5' % suffix))
+                    # print(f"Renamed {cfg.ssfr['fname_v2']} to {cfg.ssfr['fname_v2'].replace('.h5', '_%s.h5' % suffix)}")
+                except Exception as e:
+                    print(f"Failed processing date {date.strftime('%Y-%m-%d')} with radiometric cal {rad_cal_date} and angular cal {ang_cal_date}: {e}")
+                    continue
 
 if __name__ == '__main__':
 
@@ -1325,7 +1527,7 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-            #  datetime.datetime(2024, 5, 24), #
+             datetime.datetime(2024, 5, 24), #
             #  datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
             #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
             #  datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
@@ -1335,7 +1537,7 @@ if __name__ == '__main__':
             #  datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
             #  datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
             #  datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
-             datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 7, 22), #
             #  datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
@@ -1380,57 +1582,13 @@ if __name__ == '__main__':
         # step 4
         #╭────────────────────────────────────────────────────────────────────────────╮#
         main_process_data_v2(cfg, run=True)
+        #╰────────────────────────────────────────────────────────────────────────────╯# 
+       
+        # optional
+        # compare zenith irradiance against TOA to evaluate calibration files
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        # run_test_zenith_vs_toa(cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
-        
-        #####
-        # convert final v1 data to R0 format
-        #####
-        ssfr_v01_fname = cfg.ssfr['fname_v1']
-        with h5py.File(ssfr_v01_fname, 'r') as f:
-            alt = f['alt'][:]
-            lon = f['lon'][:]
-            lat = f['lat'][:]
-            time = f['tmhr'][:] * 3600.0 # convert to seconds
-            wvl_dn = f['zen/wvl'][:]
-            wvl_up = f['nad/wvl'][:]
-            f_dn = f['zen/flux'][:,:]
-            f_up = f['nad/flux'][:,:]
-        
-        with h5py.File(ssfr_v01_fname.replace('_v1', '_R4_V1_test_after_corr'), 'w') as f:
-            f.create_dataset('gps_alt', data=alt)
-            f.create_dataset('gps_lon', data=lon)
-            f.create_dataset('gps_lat', data=lat)
-            f.create_dataset('time', data=time)
-            f.create_dataset('wvl_dn', data=wvl_dn)
-            f.create_dataset('wvl_up', data=wvl_up)
-            f.create_dataset('f_dn', data=f_dn)
-            f.create_dataset('f_up', data=f_up)
-
-        
-        
-        #####
-        # convert final v2 data to R0 format
-        #####
-        ssfr_v02_fname = cfg.ssfr['fname_v2']
-        with h5py.File(ssfr_v02_fname, 'r') as f:
-            alt = f['alt'][:]
-            lon = f['lon'][:]
-            lat = f['lat'][:]
-            time = f['tmhr'][:] * 3600.0 # convert to seconds
-            wvl_dn = f['zen/wvl'][:]
-            wvl_up = f['nad/wvl'][:]
-            f_dn = f['zen/flux'][:,:]
-            f_up = f['nad/flux'][:,:]
-        
-        with h5py.File(ssfr_v02_fname.replace('_v2', '_R4_V2_test_after_corr'), 'w') as f:
-            f.create_dataset('gps_alt', data=alt)
-            f.create_dataset('gps_lon', data=lon)
-            f.create_dataset('gps_lat', data=lat)
-            f.create_dataset('time', data=time)
-            f.create_dataset('wvl_dn', data=wvl_dn)
-            f.create_dataset('wvl_up', data=wvl_up)
-            f.create_dataset('f_dn', data=f_dn)
-            f.create_dataset('f_up', data=f_up)
 
         pass

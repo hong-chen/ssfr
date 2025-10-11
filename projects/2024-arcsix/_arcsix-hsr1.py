@@ -227,10 +227,10 @@ def cdata_hsr1_v2(
         mu = np.cos(np.deg2rad(data_hsk['sza']))
 
         try:
-            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit']+ang_pit_offset, data_hsk['ang_rol']+ang_rol_offset, data_hsk['ang_hed'])
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit']-ang_pit_offset, data_hsk['ang_rol']-ang_rol_offset, data_hsk['ang_hed'])
         except Exception as error:
             print(error)
-            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_s']+ang_pit_offset, data_hsk['ang_rol_s']+ang_rol_offset, data_hsk['ang_hed'])
+            iza, iaa = ssfr.util.prh2za(data_hsk['ang_pit_s']-ang_pit_offset, data_hsk['ang_rol_s']-ang_rol_offset, data_hsk['ang_hed'])
         dc = ssfr.util.muslope(data_hsk['sza'], data_hsk['saa'], iza, iaa)
 
         factors = mu / dc
@@ -702,6 +702,8 @@ def main_process_data_v2(cfg, run=True):
             date,
             cfg.hsr1['fname_v1'],
             cfg.hsk['fname_v0'],
+            ang_pit_offset=cfg.hsr1['ang_pit_offset'],
+            ang_rol_offset=cfg.hsr1['ang_rol_offset'],
             fname_h5=fname_h5,
             fdir_out=fdir_out,
             run=run

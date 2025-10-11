@@ -27,10 +27,10 @@ hsr1_time_offset = 0.00
 ssfr_time_offset = -437.18
 ssrr_time_offset = -331.98
 
-alp_ang_pit_offset = 0.0
-alp_ang_rol_offset = 0.0
-hsr1_ang_pit_offset = 0.0
-hsr1_ang_rol_offset = 0.0
+alp_ang_pit_offset = 4.3
+alp_ang_rol_offset = 0.2
+hsr1_ang_pit_offset = 0.3
+hsr1_ang_rol_offset = 3.4
 
 fdir_data = f'data/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
@@ -192,6 +192,12 @@ ssfr = {
         #   also available in `mean`, which uses the average to represent darks
         #   generally, `interp` is preferred
         'dark_corr_mode': 'interp',
+
+        # Radiometric calibration files (if None, the cal file with the closest date will be used)
+        'response_zen': None,
+        'response_nad': None,
+        'cosine_zen': None,
+        'cosine_nad': None,
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
