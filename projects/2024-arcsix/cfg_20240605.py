@@ -34,10 +34,8 @@ hsr1_ang_rol_offset = 4.3
 
 fdir_data = f'data/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
-# fdir_out = f'data/{mission}/processed'
+fdir_out = f'data/{mission}/processed'
 # fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
-fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed_src' % mission
-fdir_test = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
@@ -74,8 +72,8 @@ fname_hsr1_v1 = f'{fdir_out}/{mission.upper()}-{hsr1_aka.upper()}_{platform.uppe
 fname_hsr1_v2 = f'{fdir_out}/{mission.upper()}-{hsr1_aka.upper()}_{platform.upper()}_{date_s}_v2.h5'
 
 fname_ssfr_v0 = f'{fdir_out}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v0.h5'
-fname_ssfr_v1 = f'{fdir_test}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
-fname_ssfr_v2 = f'{fdir_test}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v2.h5'
+fname_ssfr_v1 = f'{fdir_out}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
+fname_ssfr_v2 = f'{fdir_out}/{mission.upper()}-{ssfr_aka.upper()}_{platform.upper()}_{date_s}_v2.h5'
 
 fname_ssrr_v0 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.upper()}_{date_s}_v0.h5'
 fname_ssrr_v1 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.upper()}_{date_s}_v1.h5'
@@ -85,7 +83,6 @@ fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.uppe
 # calibrations
 #╭────────────────────────────────────────────────╮#
 fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-07_response_files'
-# prop_ssfr_rad_cal_zen = {'primary_date': '2025-08-12', 'transfer_date': '2025-08-12', 'secondary_date': '2024-06-09',
 prop_ssfr_rad_cal_zen = {'primary_date': '2025-08-12', 'transfer_date': '2025-08-12', 'secondary_date': '2024-06-09',
                          'int_time': [(80, 250), (120, 350)],
                          'lamp_adjust': True, 'transfer-based_corr': True, }

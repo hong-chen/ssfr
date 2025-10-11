@@ -192,6 +192,12 @@ ssfr = {
         #   also available in `mean`, which uses the average to represent darks
         #   generally, `interp` is preferred
         'dark_corr_mode': 'interp',
+
+        # Radiometric calibration files (if None, the cal file with the closest date will be used)
+        'response_zen': None,
+        'response_nad': None,
+        'cosine_zen': None,
+        'cosine_nad': None,
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
