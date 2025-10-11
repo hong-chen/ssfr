@@ -7,6 +7,7 @@ import numpy as np
 import datetime
 
 import ssfr
+import ssfr.cal as cal
 
 
 
@@ -31,10 +32,10 @@ def get_ssfr_wvl(
         raise OSError(msg)
 
     wvls = {
-            'zen|si': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|zen|si' % which_ssfr), Nchan=Nchan),
-            'zen|in': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|zen|in' % which_ssfr), Nchan=Nchan),
-            'nad|si': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|nad|si' % which_ssfr), Nchan=Nchan),
-            'nad|in': ssfr.cal.cal_wvl(ssfr.cal.get_wvl_coef('%s|nad|in' % which_ssfr), Nchan=Nchan),
+            'zen|si': cal.cal_wvl(cal.get_wvl_coef('%s|zen|si' % which_ssfr), Nchan=Nchan),
+            'zen|in': cal.cal_wvl(cal.get_wvl_coef('%s|zen|in' % which_ssfr), Nchan=Nchan),
+            'nad|si': cal.cal_wvl(cal.get_wvl_coef('%s|nad|si' % which_ssfr), Nchan=Nchan),
+            'nad|in': cal.cal_wvl(cal.get_wvl_coef('%s|nad|in' % which_ssfr), Nchan=Nchan),
             }
 
     return wvls

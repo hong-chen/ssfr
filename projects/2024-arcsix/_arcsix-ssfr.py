@@ -229,7 +229,7 @@ def cdata_ssfr_v1(
         spec_zen = np.zeros_like(cnt_zen)
         cnt_nad  = data_ssfr_v0['spec/cnt_nad']
         spec_nad = np.zeros_like(cnt_nad)
-
+  
         for idset in np.unique(dset_num):
 
             logic_dset = (dset_num == idset)
@@ -237,7 +237,6 @@ def cdata_ssfr_v1(
             if which_ssfr_for_flux == which_ssfr:
                 # select calibration file (can later be adjusted for different integration time sets)
                 #╭──────────────────────────────────────────────────────────────╮#
-                # fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
                 fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
 
                 jday_today = ssfr.util.dtime_to_jday(date)
@@ -309,7 +308,7 @@ def cdata_ssfr_v1(
                     fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
 
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
-
+                
                 msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s nadir irradiance ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
                 print(msg)
                 #╰──────────────────────────────────────────────────────────────╯#
@@ -331,25 +330,42 @@ def cdata_ssfr_v1(
                 int_time_tag_zen = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 0], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 1])
                 int_time_tag_nad = 'si-%3.3d|in-%3.3d' % (data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 2], data_ssfr_v0['raw/int_time'][data_ssfr_v0['raw/dset_num']==idset][0, 3])
 
-                fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*zen*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_zen)), key=os.path.getmtime)
-                jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
-                for i in range(jday_cal_zen.size):
-                    dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[1].split('_')[0]
-                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
-                    jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
-                fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
+                if response_zen is not None:
+                    fnames_zen = [f for f in response_zen if int_time_tag_zen in f]
+                    if len(fnames_zen) == 0:
+                        msg = '\nWarnings [cdata_ssfr_v1]: No zenith calibration file found for <%s> ...' % (int_time_tag_zen)
+                        warnings.warn(msg)
+                        raise ValueError('No zenith calibration file found for <%s> ...' % (int_time_tag_zen))
+                    fname_cal_zen = os.path.join(fdir_cal, fnames_zen[0])
+                else:
+                    fnames_cal_zen = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*zen*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_zen)), key=os.path.getmtime)
+                    jday_cal_zen = np.zeros(len(fnames_cal_zen), dtype=np.float64)
+                    for i in range(jday_cal_zen.size):
+                        dtime0_s = os.path.basename(fnames_cal_zen[i]).split('|')[1].split('_')[0]
+                        dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                        jday_cal_zen[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
+                    fname_cal_zen = fnames_cal_zen[np.argmin(np.abs(jday_cal_zen-jday_today))]
+                                
                 data_cal_zen = ssfr.util.load_h5(fname_cal_zen)
 
                 msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s zenith radince ...' % (os.path.basename(fname_cal_zen), which_ssfr.upper())
                 print(msg)
 
-                fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*nad*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_nad)), key=os.path.getmtime)
-                jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
-                for i in range(jday_cal_nad.size):
-                    dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[1].split('_')[0]
-                    dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
-                    jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
-                fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
+                if response_nad is not None:
+                    fnames_nad = [f for f in response_nad if int_time_tag_nad in f]
+                    if len(fnames_nad) == 0:
+                        msg = '\nWarnings [cdata_ssfr_v1]: No nadir calibration file found for <%s> ...' % (int_time_tag_nad)
+                        warnings.warn(msg)
+                        raise ValueError('No nadir calibration file found for <%s> ...' % (int_time_tag_nad))
+                    fname_cal_nad = os.path.join(fdir_cal, fnames_nad[0])
+                else:
+                    fnames_cal_nad = sorted(ssfr.util.get_all_files(fdir_cal, pattern='*lamp-1324_postdeployment|*%s*nad*%s*' % (which_ssfr.lower().replace('ssfr', 'ssrr'), int_time_tag_nad)), key=os.path.getmtime)
+                    jday_cal_nad = np.zeros(len(fnames_cal_nad), dtype=np.float64)
+                    for i in range(jday_cal_nad.size):
+                        dtime0_s = os.path.basename(fnames_cal_nad[i]).split('|')[1].split('_')[0]
+                        dtime0 = datetime.datetime.strptime(dtime0_s, '%Y-%m-%d')
+                        jday_cal_nad[i] = ssfr.util.dtime_to_jday(dtime0) + i/86400.0
+                    fname_cal_nad = fnames_cal_nad[np.argmin(np.abs(jday_cal_nad-jday_today))]
                 data_cal_nad = ssfr.util.load_h5(fname_cal_nad)
 
                 msg = '\nMessage [cdata_ssfr_v1]: Using <%s> for %s nadir radince ...' % (os.path.basename(fname_cal_nad), which_ssfr.upper())
@@ -514,8 +530,31 @@ def cdata_ssfr_v2(
             data_ssfr_v1['v0/spec_zen'] = data_ssfr_v1['v0/spec_zen'][:, :424]
             data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:424]
         # ╰────────────────────────────────────────────────────────────────────────────╯#
+        
+        if date_s == '20240531':
+            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][1:, :]
+            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][1:, :]
+            data_ssfr_v1['nad/flux'] = data_ssfr_v1['nad/flux'][1:, :]
+            data_ssfr_v1['nad/cnt'] = data_ssfr_v1['nad/cnt'][1:, :]
+            data_ssfr_v1['jday'] = data_ssfr_v1['jday'][1:]
+            data_ssfr_v1['jday_ori'] = data_ssfr_v1['jday_ori'][1:]
+            data_ssfr_v1['tmhr'] = data_ssfr_v1['tmhr'][1:]
+            data_ssfr_v1['tmhr_ori'] = data_ssfr_v1['tmhr_ori'][1:]
+            data_ssfr_v1['sza'] = data_ssfr_v1['sza'][1:]
+            data_ssfr_v1['saa'] = data_ssfr_v1['saa'][1:]
+            data_ssfr_v1['ang_pit'] = data_ssfr_v1['ang_pit'][1:]
+            data_ssfr_v1['ang_rol'] = data_ssfr_v1['ang_rol'][1:]
+            data_ssfr_v1['ang_hed'] = data_ssfr_v1['ang_hed'][1:]
+            data_ssfr_v1['alt'] = data_ssfr_v1['alt'][1:]
+            data_ssfr_v1['ir_surf_temp'] = data_ssfr_v1['ir_surf_temp'][1:]
+            data_ssfr_v1['lon'] = data_ssfr_v1['lon'][1:]
+            data_ssfr_v1['lat'] = data_ssfr_v1['lat'][1:]
+            
+            
 
         fname_aux = fname_h5.replace('_v2.h5', '-aux_v2.h5')
+        
+        
 
         if run_aux:
 
@@ -645,6 +684,8 @@ def cdata_ssfr_v2(
         msg = '\nMessage [cdata_ssfr_v2]: Using <%s> for nadir irradiance ...' % (os.path.basename(fname_cal_nad))
         print(msg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
+        print("fname_cal_zen:", fname_cal_zen)
+        print("fname_cal_nad:", fname_cal_nad)
 
 
         # calculate attitude correction factors
@@ -953,6 +994,7 @@ def run_time_offset_check(cfg):
     date_s = date.strftime('%Y%m%d')
     data_hsr1_v0 = ssfr.util.load_h5(cfg.hsr1['fname_v0'])
     data_ssfr_v0 = ssfr.util.load_h5(cfg.ssfr['fname_v0'])
+    data_hsk_v0 = ssfr.util.load_h5(cfg.hsk['fname_v0'])
 
     # data_hsr1_v0['tot/jday'] += 1.0
     # data_hsr1_v0['dif/jday'] += 1.0
@@ -983,6 +1025,30 @@ def run_time_offset_check(cfg):
             description='SSFR Zenith Count vs. HSR1 Total (745nm)',
             fname_html='ssfr_offset_check_%s.html' % (date_s))
     #╰────────────────────────────────────────────────────────────────────────────╯#
+    
+    
+    # SSFR vs HSK
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+
+    data_y0 = data_hsk_v0['ang_rol'][:]
+
+    index_wvl_ssfr = np.argmin(np.abs(745.0-data_ssfr_v0['spec/wvl_zen']))
+    data_y1 = data_ssfr_v0['spec/cnt_zen'][:, index_wvl_ssfr]
+    data_offset = {
+            'x0': data_hsk_v0['jday']*86400.0,
+            'y0': data_y0,
+            'x1': data_ssfr_v0['raw/jday']*86400.0,
+            'y1': data_y1,
+            }
+    ssfr.vis.find_offset_bokeh(
+            data_offset,
+            offset_x_range=[-600, 600],
+            offset_y_range=[-10, 10],
+            x_reset=True,
+            y_reset=True,
+            description='SSFR Zenith Count vs. HSK Roll Angle',
+            fname_html='ssfr_offset_rsp_hsk_check_%s.html' % (date_s))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
     return
 
@@ -994,12 +1060,12 @@ def run_angle_offset_check(
         ):
 
     date_s = date.strftime('%Y%m%d')
-    data_hsk = ssfr.util.load_h5(_FNAMES_['%s_hsk_v0' % date_s])
+    data_hsk = ssfr.util.load_h5(cfg.hsk['fname_v0'])
 
 
     # HSR1 v1
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    data_hsr1_v1 = ssfr.util.load_h5(_FNAMES_['%s_hsr1_v1' % date_s])
+    data_hsr1_v1 = ssfr.util.load_h5(cfg.hsr1['fname_v1'])
     index_wvl_hsr1 = np.argmin(np.abs(wvl0-data_hsr1_v1['tot/wvl']))
     data_y1 = data_hsr1_v1['tot/flux'][:, index_wvl_hsr1]
     #╰────────────────────────────────────────────────────────────────────────────╯#

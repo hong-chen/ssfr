@@ -346,6 +346,7 @@ def ssfr_rad_cal(
         fdir_tra,
         fdir_sec=None,
         spec_reverse=False,
+        lamp_corr=False,
         ):
 
     # get calibration files of primary
@@ -395,6 +396,7 @@ def ssfr_rad_cal(
 
     ssfr_ = ssfr.lasp_ssfr.read_ssfr(fnames_pri, verbose=False)
 
+    int_time_out_dict = {}
     for i in range(ssfr_.Ndset):
         dset_tag = 'dset%d' % i
         int_time = ssfr_.dset_info[dset_tag]
@@ -416,7 +418,13 @@ def ssfr_rad_cal(
 
         filename_tag = '%s|%s_processed-for-arcsix' % (cal_tag, date_today_s)
 
-        ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time, which_lamp=tags_pri[4], filename_tag=filename_tag, verbose=True, spec_reverse=spec_reverse)
+        out_h5 = ssfr.cal.cdata_rad_resp(fnames_pri=fnames_pri, fnames_tra=fnames_tra, fnames_sec=fnames_sec, which_ssfr='lasp|%s' % ssfr_tag, 
+                                         which_lc=lc_tag, int_time=int_time, which_lamp=tags_pri[4], filename_tag=filename_tag, 
+                                         verbose=True, spec_reverse=spec_reverse, lamp_corr=lamp_corr)
+        int_time_str = 'zen-si-%3.3d_zen-in-%3.3d_nad-si-%3.3d_nad-in-%3.3d' % (int_time['zen|si'], int_time['zen|in'], int_time['nad|si'], int_time['nad|in'])
+        int_time_out_dict[int_time_str] = out_h5
+        
+    return int_time_out_dict
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 # angular calibrations
@@ -687,6 +695,100 @@ def ssfr_ang_cal_20250804(fdir, fdir_out=None, decipher_vaa=False):
 
         ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, fdir_out=fdir_out, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
 #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+def ssfr_ang_cal_20250630_fine(fdir):
+
+    """
+    Notes:
+        angular calibration is done for SSFR-A zenith
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 90.1, 5.0), np.array([60.0, 45.0, 30.0])))
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+    
+    print("angles size = %d" % angles.size)
+    print("angles = %s" % angles)
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    # fnames  = {
+    #         fnames_[i]: angles[i] for i in range(angles.size)
+    #         }
+    fnames = {}
+    for i in range(angles.size):
+        print
+        fnames[fnames_[i]] = angles[i]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+
+
+
+
+def ssfr_ang_cal_20250813_fine(fdir):
+
+    """
+    Notes:
+        angular calibration is done for SSFR-A zenith
+    """
+
+    tags = os.path.basename(fdir).split('_')
+    ssfr_tag = tags[1]
+    lc_tag   = tags[2]
+
+    # get angles
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    angles_pos = np.concatenate((np.arange(0.0, 30.0, 3.0), np.arange(30.0, 90.1, 5.0), np.array([60.0])))
+    angles_neg = -angles_pos
+    angles = np.concatenate((angles_pos, angles_neg, np.array([0.0])))
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+    
+    print("angles size = %d" % angles.size)
+    print("angles = %s" % angles)
+
+    # make fnames, a dictionary <key:value> with file name as key, angle as value
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fnames_ = sorted(glob.glob('%s/*.SKS' % fdir))
+    # fnames  = {
+    #         fnames_[i]: angles[i] for i in range(angles.size)
+    #         }
+    fnames = {}
+    for i in range(angles.size):
+        print
+        fnames[fnames_[i]] = angles[i]
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    date_today_s = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    ssfr_ = ssfr.lasp_ssfr.read_ssfr([fnames_[0]])
+    for i in range(ssfr_.Ndset):
+        dset_tag = 'dset%d' % i
+        int_time = ssfr_.dset_info[dset_tag]
+
+        filename_tag = '%s|%s|%s|%s' % (tags[0], tags[4], date_today_s, dset_tag)
+
+        ssfr.cal.cdata_ang_resp(fnames, filename_tag=filename_tag, which_ssfr='lasp|%s' % ssfr_tag, which_lc=lc_tag, int_time=int_time)
+
+
 
 def ssfr_ang_cal_20250813(fdir, decipher_vaa=False):
 
@@ -1146,30 +1248,42 @@ def main_ssfr_rad_cal_all(
         # SSFR-A (regular setup for measuring irradiance)
         #╭────────────────────────────────────────────────────────────────────────────╮#
         fdirs_pri = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post0',
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+                {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
+                 'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 ]
 
         fdirs_tra = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+                {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_postdeploymentresurgery',
+                 'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
                 ]
 
         fdirs_sec = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
                 {'zen': 'data/arcsix/cal/rad-cal/2024-05-27_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
                  'nad': 'data/arcsix/cal/rad-cal/2024-05-26_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'zen': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
-                 'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                #  'nad': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
+                #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
                 ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -1217,16 +1331,38 @@ def main_ssfr_rad_cal_all(
     for fdir_pri in fdirs_pri:
         for fdir_tra in fdirs_tra:
             for fdir_sec in fdirs_sec:
-                for spec_tag in fdir_sec.keys():
-                    fdir_pri0 = fdir_pri[spec_tag]
-                    fdir_tra0 = fdir_tra[spec_tag]
-                    fdir_sec0 = fdir_sec[spec_tag]
+                
+                # zen
+                fdir_pri0 = fdir_pri['zen']
+                fdir_tra0 = fdir_tra['zen']
+                fdir_sec0 = fdir_sec['zen']
 
-                    print(spec_tag)
-                    print(fdir_pri0)
-                    print(fdir_tra0)
-                    print(fdir_sec0)
-                    ssfr_rad_cal(fdir_pri0, fdir_tra0, fdir_sec=fdir_sec0, spec_reverse=False)
+                print(f'Processing {which_ssfr.lower()} ZENITH ...')
+                print(fdir_pri0)
+                print(fdir_tra0)
+                print(fdir_sec0)
+                zen_output_dict = ssfr_rad_cal(fdir_pri0, fdir_tra0, fdir_sec=fdir_sec0, spec_reverse=False, lamp_corr=True)
+
+                # nad
+                fdir_pri1 = fdir_pri['nad']
+                fdir_tra1 = fdir_tra['nad']
+                fdir_sec1 = fdir_sec['nad']
+                print(f'Processing {which_ssfr.lower()} NADIR ...')
+                print(fdir_pri1)
+                print(fdir_tra1)
+                print(fdir_sec1)
+                nad_output_dict = ssfr_rad_cal(fdir_pri1, fdir_tra1, fdir_sec=fdir_sec1, spec_reverse=False, lamp_corr=True)
+            
+                
+                # calibration correction test
+                for key in zen_output_dict.keys():
+                    zen_output = zen_output_dict[key]
+                    nad_output = nad_output_dict[key]
+                    # 'zen-si%3.3d_zen-in%3.3d__nad-si%3.3d_nad-in%3.3d'
+                    int_time_dict = {'zen|si':float(key.split('_')[0].split('-')[-1]), 'zen|in':float(key.split('_')[1].split('-')[-1]), \
+                                    'nad|si':float(key.split('_')[2].split('-')[-1]), 'nad|in':float(key.split('_')[3].split('-')[-1])}
+                    ssfr.cal.rad_resp_corr(fnames_resp_zen=zen_output, fnames_resp_nad=nad_output, which_ssfr=which_ssfr, int_time=int_time_dict)
+            
     return
 
 def plot_time_series_all(
@@ -1236,10 +1372,15 @@ def plot_time_series_all(
         ):
 
 
+    # if 'ssfr-a' in which_ssfr.lower():
+    #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+    # elif 'ssfr-b' in which_ssfr.lower():
+    #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+        
     if 'ssfr-a' in which_ssfr.lower():
-        pattern = '*lamp-150c_after-pri|*%s*%s*si-%3.3d*in-%3.3d*.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+        pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
     elif 'ssfr-b' in which_ssfr.lower():
-        pattern = '*lamp-150c|*%s*%s*si-%3.3d*in-%3.3d*.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+        pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
 
     fnames = sorted(glob.glob(pattern))
 
@@ -1248,11 +1389,21 @@ def plot_time_series_all(
 
     data0 = np.zeros(len(fnames), dtype=np.float64)
     data1 = np.zeros(len(fnames), dtype=np.float64)
+    data0_groups_avg = np.zeros(len(fnames), dtype=np.float64)
+    data1_groups_avg = np.zeros(len(fnames), dtype=np.float64)
+    data0_groups_std = np.zeros(len(fnames), dtype=np.float64)
+    data1_groups_std = np.zeros(len(fnames), dtype=np.float64)
+    sec_groups = []
     xlabels = []
 
+    # 2025-08-12_lamp-1324_postdeploymentresurgery|2025-08-12_lamp-150c_postdeploymentresurgery|2025-02-18_lamp-150c_post|2025-09-12_processed-for-arcsix|rad-resp|lasp|ssfr-a|zen|si-080|in-250|corr.h5
+    # 2025-02-18_lamp-1324_post|2025-02-18_lamp-150c_post|2024-06-09_lamp-150c_pituffik|2025-09-12_processed-for-arcsix|rad-resp|lasp|ssfr-a|nad|si-080|in-250|corr.h5
     for i, fname in enumerate(fnames):
+        print("Processing %s ..." % (fname))
         # date_s = os.path.basename(fname).split('|')[2].split('_')[0]
-        date_s = os.path.basename(fname).split('|')[2].replace('lamp-150c_', '')
+        date_p = os.path.basename(fname).split('|')[0][:10]
+        date_t = os.path.basename(fname).split('|')[1][:10]
+        date_s = os.path.basename(fname).split('|')[2][:10]
         f = h5py.File(fname, 'r')
         wvl = f['wvl'][...]
         resp = f['sec_resp'][...]
@@ -1261,7 +1412,23 @@ def plot_time_series_all(
         data0[i] = resp[np.argmin(np.abs(wvl-wvl0))]
         data1[i] = resp[np.argmin(np.abs(wvl-wvl1))]
 
-        xlabels.append(date_s)
+        # xlabels.append(date_s)
+        xlabels.append('s-%s|p-%s|t-%s' % (date_s, date_p, date_t))
+        sec_groups.append(date_s)
+        
+    isort_xlabels = np.argsort(xlabels)
+    data0 = data0[isort_xlabels]
+    data1 = data1[isort_xlabels]
+    fnames = [fnames[i] for i in isort_xlabels]
+    xlabels = [xlabels[i] for i in isort_xlabels]
+    sec_groups = [sec_groups[i] for i in isort_xlabels]
+    
+    for i, sec in enumerate(np.unique(sec_groups)):
+        index = np.where(np.array(sec_groups) == sec)[0]
+        data0_groups_avg[index] = np.nanmean(data0[index])
+        data1_groups_avg[index] = np.nanmean(data1[index])
+        data0_groups_std[index] = np.nanstd(data0[index])
+        data1_groups_std[index] = np.nanstd(data1[index])
 
     # figure
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -1269,16 +1436,143 @@ def plot_time_series_all(
     x = np.arange(len(fnames))
     if plot:
         plt.close('all')
-        fig = plt.figure(figsize=(12, 6))
+        fig = plt.figure(figsize=(18, 6))
         # fig.suptitle('Figure')
         # plot1
         #╭──────────────────────────────────────────────────────────────╮#
         ax1 = fig.add_subplot(111)
         ax1.plot(x, data0, marker='o', markersize=8, color='r', lw=1.0)
         ax1.plot(x, data1, marker='o', markersize=8, color='b', lw=1.0)
+        
+        ax1.plot(x, data0_groups_avg,  '--', color='r', lw=2.0, alpha=0.75)
+        ax1.plot(x, data1_groups_avg,  '--', color='b', lw=2.0, alpha=0.75)
+        ax1.fill_between(x, data0_groups_avg-data0_groups_std, data0_groups_avg+data0_groups_std, color='r', alpha=0.25)
+        ax1.fill_between(x, data1_groups_avg-data1_groups_std, data1_groups_avg+data1_groups_std, color='b', alpha=0.25)
 
         ax1.xaxis.set_major_locator(FixedLocator(x))
-        ax1.set_xticklabels(xlabels, rotation=45)
+        ax1.set_xticklabels(xlabels, rotation=90)
+
+        if which_lc == 'zen':
+            if 'ssfr-a' in which_ssfr.lower():
+                ax1.set_ylim((0, 500))
+            elif 'ssfr-b' in which_ssfr.lower():
+                ax1.set_ylim((0, 600))
+        else:
+            if 'ssfr-a' in which_ssfr.lower():
+                ax1.set_ylim((0, 600))
+            elif 'ssfr-b' in which_ssfr.lower():
+                ax1.set_ylim((0, 600))
+
+        ax1.grid()
+        ax1.set_ylabel('Secondary Response')
+        ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
+        #╰──────────────────────────────────────────────────────────────╯#
+        patches_legend = [
+                          mpatches.Patch(color='red'  , label='550 nm'), \
+                          mpatches.Patch(color='blue' , label='1600 nm'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+        # save figure
+        #╭──────────────────────────────────────────────────────────────╮#
+        fig.subplots_adjust(hspace=0.35, wspace=0.35)
+        _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+        fname_fig = '%s_%s.png' % (_metadata_['Function'], pattern.replace('*', '_'))
+        plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+        #╰──────────────────────────────────────────────────────────────╯#
+        # plt.show()
+        # sys.exit()
+        plt.close(fig)
+        plt.clf()
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+def plot_time_series_corr_all(
+        which_ssfr='lasp|ssfr-a',
+        which_lc='zen',
+        int_time={'si':80, 'in':250},
+        ):
+
+
+    # if 'ssfr-a' in which_ssfr.lower():
+    #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+    # elif 'ssfr-b' in which_ssfr.lower():
+    #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+        
+    if 'ssfr-a' in which_ssfr.lower():
+        pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+    elif 'ssfr-b' in which_ssfr.lower():
+        pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+
+    print("glob.glob(pattern):", glob.glob(pattern))
+    fnames = sorted(glob.glob(pattern))
+
+    wvl0 = 550
+    wvl1 = 1600
+
+    data0 = np.zeros(len(fnames), dtype=np.float64)
+    data1 = np.zeros(len(fnames), dtype=np.float64)
+    data0_groups_avg = np.zeros(len(fnames), dtype=np.float64)
+    data1_groups_avg = np.zeros(len(fnames), dtype=np.float64)
+    data0_groups_std = np.zeros(len(fnames), dtype=np.float64)
+    data1_groups_std = np.zeros(len(fnames), dtype=np.float64)
+    sec_groups = []
+    xlabels = []
+
+    # 2025-08-12_lamp-1324_postdeploymentresurgery|2025-08-12_lamp-150c_postdeploymentresurgery|2025-02-18_lamp-150c_post|2025-09-12_processed-for-arcsix|rad-resp|lasp|ssfr-a|zen|si-080|in-250|corr.h5
+    # 2025-02-18_lamp-1324_post|2025-02-18_lamp-150c_post|2024-06-09_lamp-150c_pituffik|2025-09-12_processed-for-arcsix|rad-resp|lasp|ssfr-a|nad|si-080|in-250|corr.h5
+    for i, fname in enumerate(fnames):
+        print("Processing %s ..." % (fname))
+        # date_s = os.path.basename(fname).split('|')[2].split('_')[0]
+        date_p = os.path.basename(fname).split('|')[0][:10]
+        date_t = os.path.basename(fname).split('|')[1][:10]
+        date_s = os.path.basename(fname).split('|')[2][:10]
+        f = h5py.File(fname, 'r')
+        wvl = f['wvl'][...]
+        resp = f['sec_resp'][...]
+        f.close()
+
+        data0[i] = resp[np.argmin(np.abs(wvl-wvl0))]
+        data1[i] = resp[np.argmin(np.abs(wvl-wvl1))]
+
+        # xlabels.append(date_s)
+        xlabels.append('s-%s|p-%s|t-%s' % (date_s, date_p, date_t))
+        sec_groups.append(date_s)
+        
+    isort_xlabels = np.argsort(xlabels)
+    data0 = data0[isort_xlabels]
+    data1 = data1[isort_xlabels]
+    fnames = [fnames[i] for i in isort_xlabels]
+    xlabels = [xlabels[i] for i in isort_xlabels]
+    sec_groups = [sec_groups[i] for i in isort_xlabels]
+    
+    for i, sec in enumerate(np.unique(sec_groups)):
+        index = np.where(np.array(sec_groups) == sec)[0]
+        data0_groups_avg[index] = np.nanmean(data0[index])
+        data1_groups_avg[index] = np.nanmean(data1[index])
+        data0_groups_std[index] = np.nanstd(data0[index])
+        data1_groups_std[index] = np.nanstd(data1[index])
+
+    # figure
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    plot = True
+    x = np.arange(len(fnames))
+    if plot:
+        plt.close('all')
+        fig = plt.figure(figsize=(18, 6))
+        # fig.suptitle('Figure')
+        # plot1
+        #╭──────────────────────────────────────────────────────────────╮#
+        ax1 = fig.add_subplot(111)
+        ax1.plot(x, data0, marker='o', markersize=8, color='r', lw=1.0)
+        ax1.plot(x, data1, marker='o', markersize=8, color='b', lw=1.0)
+        
+        ax1.plot(x, data0_groups_avg,  '--', color='r', lw=2.0, alpha=0.75)
+        ax1.plot(x, data1_groups_avg,  '--', color='b', lw=2.0, alpha=0.75)
+        ax1.fill_between(x, data0_groups_avg-data0_groups_std, data0_groups_avg+data0_groups_std, color='r', alpha=0.25)
+        ax1.fill_between(x, data1_groups_avg-data1_groups_std, data1_groups_avg+data1_groups_std, color='b', alpha=0.25)
+
+        ax1.xaxis.set_major_locator(FixedLocator(x))
+        ax1.set_xticklabels(xlabels, rotation=90)
 
         if which_lc == 'zen':
             if 'ssfr-a' in which_ssfr.lower():
@@ -1607,7 +1901,7 @@ def main_ssrr_rad_cal_all(
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-06-18_SSRR-B_zen-lcx_pri-cal_lamp-507_si-180-300_in-080-180_postdeploymentzen2zenaz360'},
         ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
-    
+
     elif 'ssrr-a' in which_ssrr.lower():
 
         # SSRR-A (backup setup for measuring radiance)
@@ -2215,8 +2509,12 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
+    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
+    plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
+    plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
+
     # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
 
     # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
@@ -2237,6 +2535,12 @@ if __name__ == '__main__':
 
     # fdir = 'data/arcsix/cal/ang-cal/2025-06-27_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
     # ssfr_ang_cal_20250627(fdir)
+    
+    # fdir = 'data/arcsix/cal/ang-cal/2025-08-13_SSFR-A_zen-lc4_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment.resurgery'
+    # ssfr_ang_cal_20250813_fine(fdir)
+    
+    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal_20250630_fine(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # angular calibrations(SSFR-A, zen-lc4,  post)

@@ -124,6 +124,8 @@ def cal_solar_angles(julian_day, longitude, latitude, altitude, verbose=ssfr.com
             #         saa_i = -saa_i - 180.0
             #     else:
             #         saa_i = np.nan
+            if saa_i < 0.0:
+                saa_i = saa_i + 360.0
             saa[i] = saa_i
 
         except Exception as error:
