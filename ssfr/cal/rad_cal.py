@@ -216,11 +216,11 @@ def cal_rad_resp(
         # the other option is to interpolate the lamp file at SSFR wavelength, which is commented out
         # lamp_nist_si = np.zeros_like(wvl_si)
         # for i in range(lamp_nist_si.size):
-        #     lamp_nist_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data)
+        #     lamp_nist_si[i] = ssfr.util.cal_weighted_flux(wvl_si[i], data_wvl, data_flux, slit_func_file='%s/slit/vis_0.1nm_update.dat' % ssfr.common.fdir_data)
 
         # lamp_nist_in = np.zeros_like(wvl_in)
         # for i in range(lamp_nist_in.size):
-        #     lamp_nist_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data)
+        #     lamp_nist_in[i] = ssfr.util.cal_weighted_flux(wvl_in[i], data_wvl, data_flux, slit_func_file='%s/slit/nir_0.1nm_update.dat' % ssfr.common.fdir_data)
 
         lamp_nist_si = np.interp(wvl_si, data_wvl, data_flux)
         lamp_nist_in = np.interp(wvl_in, data_wvl, data_flux)
@@ -470,6 +470,13 @@ def cdata_rad_resp(
     # Save results to HDF5 file           
     _, _ = _save_combined_h5(
         fname_out=fname_out,
+        wvls=wvls, data=lc_data, tags=(si_tag, in_tag),
+        wvl_range=wvl_range, wvl_joint=wvl_joint
+    )
+    
+    fname_out_copy = f'{out_parent}/{os.path.basename(fname_out)}'
+    _, _ = _save_combined_h5(
+        fname_out=fname_out_copy,
         wvls=wvls, data=lc_data, tags=(si_tag, in_tag),
         wvl_range=wvl_range, wvl_joint=wvl_joint
     )
@@ -848,6 +855,23 @@ def rad_resp_corr(fnames_resp_zen: str,
         wvls=wvls_nad, data=nad_data, tags=('nad|si', 'nad|in'),
         wvl_range=wvl_range, wvl_joint=wvl_joint
     )
+    
+    fnames_resp_zen_copy = fnames_resp_zen.replace('.h5', '|corr.h5').replace(out_dir, 'output')
+    fnames_resp_nad_copy = fnames_resp_nad.replace('.h5', '|corr.h5').replace(out_dir, 'output')
+    
+    
+    wvl_zen_, transfer_zen_ = _save_combined_h5(
+        fname_out=fnames_resp_zen_copy,
+        wvls=wvls_zen, data=zen_data, tags=('zen|si', 'zen|in'),
+        wvl_range=wvl_range, wvl_joint=wvl_joint
+    )
+    
+    wvl_nad_, transfer_nad_ = _save_combined_h5(
+        fname_out=fnames_resp_nad_copy,
+        wvls=wvls_nad, data=nad_data, tags=('nad|si', 'nad|in'),
+        wvl_range=wvl_range, wvl_joint=wvl_joint
+    )
+    
 
     plot_transfer_before_after_corr(wvl_nad_, transfer_nad_ori,
                                     wvl_zen_, transfer_zen_ori,

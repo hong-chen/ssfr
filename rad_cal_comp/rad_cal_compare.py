@@ -35,7 +35,7 @@ def plot_response(
     pri_files_nad = [os.path.basename(fname).split('|')[0] for fname in fnames_nad]
     transfer_files_nad = [os.path.basename(fname).split('|')[1] for fname in fnames_nad]
     sec_files_nad = [os.path.basename(fname).split('|')[2] for fname in fnames_nad]
-    integration_time_nad = [int(os.path.basename(fname).split('|')[-2].split('-')[-1]) for fname in fnames_nad]
+    integration_time_nad = [int(os.path.basename(fname).split('|')[8].split('-')[-1]) for fname in fnames_nad]
     pri_set_nad = [pri_files_nad[i]+'|'+str(integration_time_nad[i]) for i in range(len(pri_files_nad))]
     transfer_nad = [transfer_files_nad[i]+'|'+str(integration_time_nad[i]) for i in range(len(transfer_files_nad))]
     sec_nad = [sec_files_nad[i]+'|'+str(integration_time_nad[i]) for i in range(len(sec_files_nad))]
@@ -170,8 +170,8 @@ def plot_response(
         # params = parse_fname(fname)
         f = h5py.File(fname, 'r')
         wvl = f['wvl'][...]
-        resp = f['pri_count'][...]
-        resp_std = f['pri_count_std'][...]
+        resp = f['pri_resp_count'][...]
+        resp_std = f['pri_resp_count_std'][...]
         f.close()
         label = pri_set_nad[i]
         ax1.plot(wvl, resp, lw=1.0, color=color, label=label)
@@ -301,8 +301,8 @@ def plot_response(
         # params = parse_fname(fname)
         f = h5py.File(fname, 'r')
         wvl = f['wvl'][...]
-        sec_count = f['sec_count'][...]
-        sec_count_std = f['sec_count_std'][...]
+        sec_count = f['sec_resp_count'][...]
+        sec_count_std = f['sec_resp_count_std'][...]
         f.close()
         label = sec_nad[i]
         ax1.plot(wvl, sec_count, lw=1.0, color=color, label=label)
@@ -333,12 +333,14 @@ if __name__ == '__main__':
     #╭────────────────────────────────────────────────────────────────────────────╮#
     # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
     # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
-    plot_response(which_ssfr='lasp|ssfr-a', which_lc='nad', si_integration_time='080', fdir='../',)
+    # plot_response(which_ssfr='lasp|ssfr-a', which_lc='nad', si_integration_time='080', fdir='../',)
     # plot_response(which_ssfr='lasp|ssfr-a', which_lc='nad', si_integration_time='*', fdir='.',)
-    plot_response(which_ssfr='lasp|ssfr-a', which_lc='zen', si_integration_time='080', fdir='../',)
+    # plot_response(which_ssfr='lasp|ssfr-a', which_lc='zen', si_integration_time='080', fdir='../',)
     # plot_response(which_ssfr='lasp|ssfr-a', which_lc='zen', si_integration_time='120', fdir='.',)
     # plot_response(which_ssfr='lasp|ssfr-a', which_lc='zen', si_integration_time='*', fdir='.',)
     # plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
+    plot_response(which_ssfr='lasp|ssfr-b', which_lc='nad', si_integration_time='080', fdir='../output/output_h5',)
+    plot_response(which_ssfr='lasp|ssfr-b', which_lc='zen', si_integration_time='080', fdir='../output/output_h5',)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     pass
