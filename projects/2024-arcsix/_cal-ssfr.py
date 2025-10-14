@@ -2728,8 +2728,8 @@ def wvl_cal_both_lamps(which_instrument='lasp|ssfr-a', spec_tag='zen', Nchan=256
 
 if __name__ == '__main__':
 
-    output_dir = 'output'
-    os.makedirs(output_dir, exist_ok=True)
+    # output_dir = 'output'
+    # os.makedirs(output_dir, exist_ok=True)
     
     # process wavelength calibration
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -2760,11 +2760,11 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
-    plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
-    plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
+    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
+    # plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
+    # plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
 
     # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
     # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen')
@@ -2776,6 +2776,12 @@ if __name__ == '__main__':
     # angular calibrations(SSFR-A, zen-lc4,  pre)
     #╭────────────────────────────────────────────────────────────────────────────╮#
     # fdir = 'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350'
+    # ssfr_ang_cal(fdir)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # angular calibrations(SSFR-A, nad-lc6,  pre)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fdir = 'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350'
     # ssfr_ang_cal(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -2797,8 +2803,8 @@ if __name__ == '__main__':
     # angular calibrations(SSFR-A, zen-lc4,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
     ### Before re-surgery (replaced baffle from LC1)
-    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
-    # ssfr_ang_cal_20250630(fdir)
+    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal_20250630_fine(fdir)
 
     # for vaa in np.arange(0.0, 181.0, 30.0):
     #     fdir = 'data/arcsix/cal/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-all_lamp-507_si-080-120_in-250-350_post/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
