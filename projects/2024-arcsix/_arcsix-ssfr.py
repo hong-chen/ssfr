@@ -531,24 +531,24 @@ def cdata_ssfr_v2(
             data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:424]
         # ╰────────────────────────────────────────────────────────────────────────────╯#
         
-        if date_s == '20240531':
-            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][1:, :]
-            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][1:, :]
-            data_ssfr_v1['nad/flux'] = data_ssfr_v1['nad/flux'][1:, :]
-            data_ssfr_v1['nad/cnt'] = data_ssfr_v1['nad/cnt'][1:, :]
-            data_ssfr_v1['jday'] = data_ssfr_v1['jday'][1:]
-            data_ssfr_v1['jday_ori'] = data_ssfr_v1['jday_ori'][1:]
-            data_ssfr_v1['tmhr'] = data_ssfr_v1['tmhr'][1:]
-            data_ssfr_v1['tmhr_ori'] = data_ssfr_v1['tmhr_ori'][1:]
-            data_ssfr_v1['sza'] = data_ssfr_v1['sza'][1:]
-            data_ssfr_v1['saa'] = data_ssfr_v1['saa'][1:]
-            data_ssfr_v1['ang_pit'] = data_ssfr_v1['ang_pit'][1:]
-            data_ssfr_v1['ang_rol'] = data_ssfr_v1['ang_rol'][1:]
-            data_ssfr_v1['ang_hed'] = data_ssfr_v1['ang_hed'][1:]
-            data_ssfr_v1['alt'] = data_ssfr_v1['alt'][1:]
-            data_ssfr_v1['ir_surf_temp'] = data_ssfr_v1['ir_surf_temp'][1:]
-            data_ssfr_v1['lon'] = data_ssfr_v1['lon'][1:]
-            data_ssfr_v1['lat'] = data_ssfr_v1['lat'][1:]
+        # if date_s == '20240531':
+        #     data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][1:, :]
+        #     data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][1:, :]
+        #     data_ssfr_v1['nad/flux'] = data_ssfr_v1['nad/flux'][1:, :]
+        #     data_ssfr_v1['nad/cnt'] = data_ssfr_v1['nad/cnt'][1:, :]
+        #     data_ssfr_v1['jday'] = data_ssfr_v1['jday'][1:]
+        #     data_ssfr_v1['jday_ori'] = data_ssfr_v1['jday_ori'][1:]
+        #     data_ssfr_v1['tmhr'] = data_ssfr_v1['tmhr'][1:]
+        #     data_ssfr_v1['tmhr_ori'] = data_ssfr_v1['tmhr_ori'][1:]
+        #     data_ssfr_v1['sza'] = data_ssfr_v1['sza'][1:]
+        #     data_ssfr_v1['saa'] = data_ssfr_v1['saa'][1:]
+        #     data_ssfr_v1['ang_pit'] = data_ssfr_v1['ang_pit'][1:]
+        #     data_ssfr_v1['ang_rol'] = data_ssfr_v1['ang_rol'][1:]
+        #     data_ssfr_v1['ang_hed'] = data_ssfr_v1['ang_hed'][1:]
+        #     data_ssfr_v1['alt'] = data_ssfr_v1['alt'][1:]
+        #     data_ssfr_v1['ir_surf_temp'] = data_ssfr_v1['ir_surf_temp'][1:]
+        #     data_ssfr_v1['lon'] = data_ssfr_v1['lon'][1:]
+        #     data_ssfr_v1['lat'] = data_ssfr_v1['lat'][1:]
             
             
 
@@ -653,6 +653,7 @@ def cdata_ssfr_v2(
         # angles['ang_pit']   = data_aux['ang_pit_s'] # pitch angle from SPAN-CPT
         # angles['ang_rol']   = data_aux['ang_rol_s'] # roll angle from SPAN-CPT
         # angles['ang_hed']   = data_aux['ang_hed'] # heading (tracking angle) from ALP prod
+        # data_aux['ang_hed'] = data_ssfr_v1['ang_hed']
         angles['ang_pit_m'] = data_aux['ang_pit_m']
         angles['ang_rol_m'] = data_aux['ang_rol_m']
         angles['ang_pit_offset'] = ang_pit_offset
@@ -1329,30 +1330,75 @@ def main_process_data_v2(cfg, run=True):
 def run_test_zenith_vs_toa(cfg):
     # Test function to check the zenith irradiance against the Kurucz TOA irradiance
     # for various calibration file combinations
-    rad_cal_dates = [  # primary, transfer, secondary
-                    ('2024-03-29', '2024-03-29', '2024-05-27'),
-                    ('2024-03-29', '2024-03-29', '2024-06-02'),
-                    ('2024-03-29', '2024-03-29', '2024-06-09'),
-                    ('2024-03-29', '2024-03-29', '2025-02-18'),
-                    ('2025-02-18', '2025-02-18', '2024-05-27'),
-                    ('2025-02-18', '2025-02-18', '2024-06-02'),
-                    ('2025-02-18', '2025-02-18', '2024-06-09'),
-                    ('2025-02-18', '2025-02-18', '2025-02-18'),
-                    ('2025-08-12', '2025-08-12', '2024-05-27'),
-                    ('2025-08-12', '2025-08-12', '2024-06-02'),
-                    ('2025-08-12', '2025-08-12', '2024-06-09'),
-                    ('2025-08-12', '2025-08-12', '2025-02-18'),
-                    ]
-    ang_cal_dates = [ # angular calibration
-                    '2024-03-19',
-                    '2025-08-13',
+    # rad_cal_dates = [  # primary, transfer, secondary
+    #                 ('2024-03-29', '2024-03-29', '2024-05-27'),
+    #                 ('2024-03-29', '2024-03-29', '2024-06-02'),
+    #                 ('2024-03-29', '2024-03-29', '2024-06-09'),
+    #                 ('2024-03-29', '2024-03-29', '2025-02-18'),
+    #                 ('2025-02-18', '2025-02-18', '2024-05-27'),
+    #                 ('2025-02-18', '2025-02-18', '2024-06-02'),
+    #                 ('2025-02-18', '2025-02-18', '2024-06-09'),
+    #                 ('2025-02-18', '2025-02-18', '2025-02-18'),
+    #                 ('2025-08-12', '2025-08-12', '2024-05-27'),
+    #                 ('2025-08-12', '2025-08-12', '2024-06-02'),
+    #                 ('2025-08-12', '2025-08-12', '2024-06-09'),
+    #                 ('2025-08-12', '2025-08-12', '2025-02-18'),
+    #                 ]
+    # ang_cal_dates = [ # angular calibration
+    #                 '2024-03-15',
+    #                 '2025-08-13',
+    #                 ]
+    rad_ang_cal_dates = [ # primary, transfer, secondary, angular
+                    # ('2024-03-29', '2024-03-29', '2024-05-27', '2024-03-15'),
+                    # ('2024-03-29', '2024-03-29', '2024-06-02', '2024-03-15'),
+                    # ('2024-03-29', '2024-03-29', '2024-06-09', '2024-03-15'),
+                    # ('2024-03-29', '2024-03-29', '2025-02-18', '2024-03-15'),
+                    # ('2025-02-18', '2025-02-18', '2024-05-27', '2024-03-15'),
+                    # ('2025-02-18', '2025-02-18', '2024-06-02', '2024-03-15'),
+                    # ('2025-02-18', '2025-02-18', '2024-06-09', '2024-03-15'),
+                    # ('2025-02-18', '2025-02-18', '2025-02-18', '2024-03-15'),
+                    # ('2025-08-12', '2025-08-12', '2024-05-27', '2025-08-13'),
+                    # ('2025-08-12', '2025-08-12', '2024-06-02', '2025-08-13'),
+                    # ('2025-08-12', '2025-08-12', '2024-06-09', '2025-08-13'),
+                    # ('2025-08-12', '2025-08-12', '2025-02-18', '2025-08-13'),
+
+                    ('2024-03-21', '2024-03-21', '2024-03-21', '2024-03-15'),
+                    ('2024-03-21', '2024-03-21', '2024-06-02', '2024-03-15'),
+                    ('2024-03-21', '2024-03-21', '2024-07-26', '2024-03-15'),
+                    ('2024-03-21', '2024-03-21', '2024-07-31', '2024-03-15'),
+                    ('2024-03-21', '2024-03-21', '2024-08-04', '2024-03-15'),
+                    ('2024-03-21', '2024-03-21', '2024-08-05', '2024-03-15'),
+                    ('2024-03-21', '2024-03-21', '2024-08-10_lamp-150c_pituffik1', '2024-03-15'),
+                    ('2024-03-21', '2024-03-21', '2024-08-10_lamp-150c_pituffik2', '2024-03-15'),
+                    ('2024-03-21', '2024-03-21', '2025-02-25', '2024-03-15'),
+                    ('2025-02-25', '2025-02-25', '2024-03-21', '2025-08-13'),
+                    ('2025-02-25', '2025-02-25', '2024-06-02', '2025-08-13'),
+                    ('2025-02-25', '2025-02-25', '2024-07-26', '2025-08-13'),
+                    ('2025-02-25', '2025-02-25', '2024-07-31', '2025-08-13'),
+                    ('2025-02-25', '2025-02-25', '2024-08-04', '2025-08-13'),
+                    ('2025-02-25', '2025-02-25', '2024-08-05', '2025-08-13'),
+                    ('2025-02-25', '2025-02-25', '2024-08-10_lamp-150c_pituffik1', '2025-08-13'),
+                    ('2025-02-25', '2025-02-25', '2024-08-10_lamp-150c_pituffik2', '2025-08-13'),
+                    ('2025-02-25', '2025-02-25', '2025-02-25', '2025-08-13'),
+                    ('2025-08-12', '2025-08-12', '2024-03-21', '2025-08-13'),
+                    ('2025-08-12', '2025-08-12', '2024-06-02', '2025-08-13'),
+                    ('2025-08-12', '2025-08-12', '2024-07-26', '2025-08-13'),
+                    ('2025-08-12', '2025-08-12', '2024-07-31', '2025-08-13'),
+                    ('2025-08-12', '2025-08-12', '2024-08-04', '2025-08-13'),
+                    ('2025-08-12', '2025-08-12', '2024-08-05', '2025-08-13'),
+                    ('2025-08-12', '2025-08-12', '2024-08-10_lamp-150c_pituffik1', '2025-08-13'),
+                    ('2025-08-12', '2025-08-12', '2024-08-10_lamp-150c_pituffik2', '2025-08-13'),
+                    ('2025-08-12', '2025-08-12', '2025-02-25', '2025-08-13'),
                     ]
 
-
-    for i_rad_cal_dates, rad_cal_date in enumerate(rad_cal_dates):
+    for i_rad_ang_cal_dates, (rad_cal_date, ang_cal_date) in enumerate([(x[:3], x[3]) for x in rad_ang_cal_dates]):
+    # for i_rad_cal_dates, rad_cal_date in enumerate(rad_cal_dates):
         for transfer_based_corr in [True, False]:
         # for transfer_based_corr in [True]:
-            for i_ang_cal_dates, ang_cal_date in enumerate(ang_cal_dates):
+            # for i_ang_cal_dates, ang_cal_date in enumerate(ang_cal_dates):
+            if True:
+                date = cfg.common['date']
+
                 suffix = '%s_%s_%s_%s_%s_%s' % (
                         date.strftime('%Y%m%d'),
                         rad_cal_date[0].replace('-', ''),
