@@ -1758,7 +1758,7 @@ def ssrr_rad_cal(
 
         filename_tag = '%s|%s_processed-for-arcsix' % (cal_tag, date_today_s)
 
-        pri_resp = ssfr.cal.cal_rad_resp(
+        pri_resp = ssfr.cal.cal_rad_resp_old(
                 fnames_pri,
                 resp=None,
                 which_ssfr=which_ssfr,
