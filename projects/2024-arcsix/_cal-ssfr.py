@@ -1396,6 +1396,7 @@ def main_ssfr_rad_cal_all(
             fdir_sec_nad = fdir_sec['nad']
             
             for lamp_corr in [True, False]:
+            # for lamp_corr in [True]:#, False]: 
 
                 print(f'Processing {which_ssfr.lower()} ZENITH ...')
                 print(fdir_pri_zen)
@@ -2663,11 +2664,11 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
-    # plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
-    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
-    # plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
+    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
     main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
     plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=False)
