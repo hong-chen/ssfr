@@ -1,20 +1,31 @@
 # SSFR spectrometer tag, poly coef 0, poly coef 1, poly coef 2, poly coef 3, poly coef 4
 #
-# updated on 2025-10-13 19:25:00 (by Yu-Wen Chen)
-# notes: after initial wavelength and radiometric calibrations for SSFR, we
-#        found inconsistencies between Silicon and InGaAs spectrometers at
-#        joinder wavelength for SSFR-B. We weren't sure whether this inconsistency
-#        came from non-linearity or inaccurate wavelength. In addition to InGaAs
-#        spectrometers only, Yu-Wen processed wavelength fitting for Silicon
-#        and now the coefficients for SSFR-B Silicon has been updated.
-lasp|ssfr-a|zen|si, 302.192,  3.32223,  0.00041042,  -2.23259e-6, 0.0
-lasp|ssfr-a|zen|in, 2232.54, -4.47975, -0.00091390,  -3.23303e-6, -1.25822e-8
-lasp|ssfr-a|nad|si, 302.499,  3.31259,  0.00043623,  -2.07235e-6, 0.0
-lasp|ssfr-a|nad|in, 2216.76, -4.54948,  0.00052451,  -1.39972e-5,  1.03865e-8
-lasp|ssfr-b|zen|si, 301.895,  3.33783,  0.00022100,  -1.56554e-6, 0.0
-lasp|ssfr-b|zen|in, 2202.35, -4.29530, -0.00295726,   4.83458e-6, -2.44732e-8
-lasp|ssfr-b|nad|si, 303.292,  3.30000,  0.00049258,  -2.17364e-6, 0.0
-lasp|ssfr-b|nad|in, 2218.99, -4.55324,  0.00052451,  -1.35504e-5,  1.01812e-8
+# updated on 2025-10-16 18:15:00 (by Yu-Wen Chen)
+# notes: The updated coefficients were based on the ARCSIX post-mission
+#        SSRR wavelength calibration (Hg & Kr) measurements.
+lasp|ssfr-a|zen|si, 302.702,  3.30627,  0.00043380,  -1.84385e-6, 0.0
+lasp|ssfr-a|zen|in, 2233.24, -4.50791, -0.00059508,  -4.65557e-6, -1.05477e-8
+lasp|ssfr-a|nad|si, 302.294,  3.32492,  0.00031931,  -1.76912e-6, 0.0
+lasp|ssfr-a|nad|in, 2215.26, -4.52175,  0.00033569,  -1.30464e-5,  8.30773e-9
+lasp|ssfr-b|zen|si, 302.401,  3.31818,  0.00037349,  -1.92196e-6, 0.0
+lasp|ssfr-b|zen|in, 2205.86, -4.33849, -0.00270305,   3.63979e-6, -2.23298e-8
+lasp|ssfr-b|nad|si, 302.287,  3.31442,  0.00042072,  -1.95232e-6, 0.0
+lasp|ssfr-b|nad|in, 2216.85, -4.55280,  0.00053128,  -1.25495e-5,  6.51597e-9
+nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
+nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
+nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0
+nasa|ssfr-6|nad|in, 2225.74, -4.37926, -0.00220588,   2.80201e-6, -2.2624e-8
+# updated on 2025-10-16 17:45:00 (by Yu-Wen Chen)
+# notes: The updated coefficients were based on the ARCSIX pre-mission
+#        SSFR wavelength calibration (Hg & Kr) measurements.
+lasp|ssfr-a|zen|si, 302.901,  3.29529,  0.00055195,  -2.19638e-6, 0.0
+lasp|ssfr-a|zen|in, 2233.67, -4.51204, -0.00058490,  -4.65557e-6, -1.03717e-8
+lasp|ssfr-a|nad|si, 302.492,  3.32499,  0.00029517,  -1.66863e-6, 0.0
+lasp|ssfr-a|nad|in, 2216.04, -4.53006,  0.00033569,  -1.32126e-5,  9.20628e-9
+lasp|ssfr-b|zen|si, 302.521,  3.31553,  0.00037349,  -1.87158e-6, 0.0
+lasp|ssfr-b|zen|in, 2203.14, -4.25173, -0.00328888,   3.82916e-6, -1.82202e-8
+lasp|ssfr-b|nad|si, 302.516,  3.30874,  0.00045370,  -2.00317e-6, 0.0
+lasp|ssfr-b|nad|in, 2219.10, -4.55360,  0.00050353,  -1.33671e-5,  9.77395e-9
 nasa|ssfr-6|zen|si, 303.087,  3.30588,  4.09568e-4,  -1.63269e-6, 0.0
 nasa|ssfr-6|zen|in, 2213.37, -4.46844, -0.00111879,  -2.76593e-6, -1.57883e-8
 nasa|ssfr-6|nad|si, 302.255,  3.30977,  4.38733e-4,  -1.90935e-6, 0.0

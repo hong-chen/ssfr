@@ -143,7 +143,7 @@ def plot_response(
     ax1.set_xlim(350.0, 2200.0)
     ax1.set_ylim(0.0, None)
     ax1.set_xlabel('Wavelength (nm)')
-    ax1.set_ylabel('Relative Response (to %s)' % label_ref)
+    ax1.set_ylabel('Relative Primary Response (to %s)' % label_ref)
     ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
     ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fontsize=10)
 
@@ -320,8 +320,129 @@ def plot_response(
     fname_fig = '%s_%s_si_%s_transfer_sec_counts.png' % (which_ssfr, which_lc, si_integration_time)
     fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
     plt.close(fig)
+    
+    
+    # plot transfer and secondary count ratios
+    plt.close('all')
+    fig = plt.figure(figsize=(7, 5))
+    ax1 = fig.add_subplot(111)
+    color_list_nad = plt.cm.rainbow(np.linspace(0, 1, len(set(transfer_nad+sec_nad))))
+    color_list_nad_ind = 0
+    transfer_sec_nad_plot = []
+    for i in range(len(fnames_nad)):
+        fname = fnames_nad[i]
+        
+        
+        # print("transfer_nad[i]=", transfer_nad[i], transfer_nad[i] in transfer_sec_nad_plot)
+        if transfer_nad[i] in transfer_sec_nad_plot:
+            continue
+        transfer_sec_nad_plot.append(transfer_nad[i])
+        color = color_list_nad[color_list_nad_ind]
+        # Optionally parse params from filename if needed
+        # params = parse_fname(fname)
+        f = h5py.File(fname, 'r')
+        wvl = f['wvl'][...]
+        resp = f['transfer_count'][...]
+        resp_std = f['transfer_count_std'][...]
+        f.close()
+        if i == 0:
+            resp_ref = resp.copy()
+            label_ref = transfer_nad[i]
+        label = transfer_nad[i]
+        ax1.plot(wvl, resp/resp_ref, lw=1.0, color=color, label=label)
+        ax1.fill_between(wvl, (resp - resp_std)/resp_ref, (resp + resp_std)/resp_ref, color=color, alpha=0.3)
+        color_list_nad_ind += 1
+    
+    for i in range(len(fnames_nad)):
+        fname = fnames_nad[i]    
+        # print("sec_nad[i]=", sec_nad[i], sec_nad[i] in transfer_sec_nad_plot)
+        if sec_nad[i] in transfer_sec_nad_plot:
+            continue
+        transfer_sec_nad_plot.append(sec_nad[i])
+        color = color_list_nad[color_list_nad_ind]
+        # Optionally parse params from filename if needed
+        # params = parse_fname(fname)
+        f = h5py.File(fname, 'r')
+        wvl = f['wvl'][...]
+        sec_count = f['sec_resp_count'][...]
+        sec_count_std = f['sec_resp_count_std'][...]
+        f.close()
+        label = sec_nad[i]
+        ax1.plot(wvl, sec_count/resp_ref, lw=1.0, color=color, label=label)
+        ax1.fill_between(wvl, (sec_count - sec_count_std)/resp_ref, (sec_count + sec_count_std)/resp_ref, color=color, alpha=0.3)
+        color_list_nad_ind += 1
+        
+
+    ax1.set_xlim(350.0, 2100.0)
+    ax1.set_ylim(0.5, 1.5)
+    ax1.grid(True, which='both', ls='--', lw=0.5)
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Count ratio (to %s)' % label_ref)
+    ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fontsize=10)
+
+    fname_fig = '%s_%s_si_%s_transfer_sec_counts_ratio_over_%s.png' % (which_ssfr, which_lc, si_integration_time, label_ref)
+    fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
+    plt.close(fig)
+    
+    # plot secondary response relative
+
+    plt.close('all')
+    fig = plt.figure(figsize=(7, 5))
+    ax1 = fig.add_subplot(111)
+    color_list_nad = plt.cm.rainbow(np.linspace(0, 1, len(set(sec_nad))))
+    color_list_nad_ind = 0
+    sec_set_nad_plot = []
+    for i in range(len(fnames_nad)):
+        fname = fnames_nad[i]
+        if sec_nad[i] in sec_set_nad_plot:
+            continue
+        sec_set_nad_plot.append(sec_nad[i])
+        color = color_list_nad[color_list_nad_ind]
+        
+        # Optionally parse params from filename if needed
+        # params = parse_fname(fname)
+        f = h5py.File(fname, 'r')
+        wvl = f['wvl'][...]
+        resp = f['sec_resp'][...]
+        resp_std = f['sec_resp_std'][...]
+        wvl_si = f['raw/si/wvl'][...]
+        respil_si = f['raw/si/sec_resp'][...]
+        respil_si_std = f['raw/si/sec_resp_std'][...]
+        wvl_in = f['raw/in/wvl'][...]
+        respil_in = f['raw/in/sec_resp'][...]
+        respil_in_std = f['raw/in/sec_resp_std'][...]
+        f.close()
+        
+        
+        if color_list_nad_ind == 0:
+            label_ref = pri_set_nad[i]
+            resp_ref = resp.copy()
+            respil_si_ref = respil_si.copy()
+            respil_in_ref = respil_in.copy()
+        
+        label = pri_set_nad[i]+'/'+label_ref
+        
+        ax1.plot(wvl, resp/resp_ref, lw=1.0, color=color, label=label)
+        # ax1.fill_between(wvl, resp - resp_std, resp + resp_std, color=color, alpha=0.3)
+        ax1.plot(wvl_si, respil_si/respil_si_ref, lw=1.0, ls='--', color=color)
+        # ax1.fill_between(wvl_si, respil_si - respil_si_std, respil_si + respil_si_std, color=color, alpha=0.3)
+        ax1.plot(wvl_in, respil_in/respil_in_ref, lw=1.0, ls=':', color=color)
+        # ax1.fill_between(wvl_in, respil_in - respil_in_std, respil_in + respil_in_std, color=color, alpha=0.3)
+        
+        color_list_nad_ind += 1
+
+    ax1.set_xlim(350.0, 2200.0)
+    ax1.set_ylim(0.0, None)
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Relative Secondary Response (to %s)' % label_ref)
+    ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fontsize=10)
 
 
+    fname_fig = '%s_%s_si_%s_sec_relative.png' % (which_ssfr, which_lc, si_integration_time)
+    fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
+    plt.close(fig)
 
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
