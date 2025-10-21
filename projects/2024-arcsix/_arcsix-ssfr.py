@@ -1557,6 +1557,179 @@ def run_test_zenith_vs_toa(cfg):
                     print(f"Failed processing date {date.strftime('%Y-%m-%d')} with radiometric cal {rad_cal_date} and angular cal {ang_cal_date}: {e}")
                     continue
 
+def run_alp_offset_check(cfg, fdir='.', plot=True, wvl=550.0, diff_ratio_thresh=0.24, altitude_thresh=0.0):
+
+    # ALP offset value ranges to test
+    ang_pit_offset_array = np.arange(2.5, 6.51, 0.1)
+    ang_rol_offset_array = np.arange(-2.0, 2.01, 0.1)
+    # ang_hed_offset_array = np.array([0.0])
+
+    if not os.path.exists(fdir):
+        os.makedirs(fdir)
+
+    def sine_func(x, amp, phase, offset):
+        return amp * np.sin(np.deg2rad(x) + phase) + offset
+
+    # Load data
+    data_ssfr_v1 = ssfr.util.load_h5(cfg.ssfr['fname_v1'])
+    data_hsk = ssfr.util.load_h5(cfg.hsk['fname_v0'])
+    data_alp_v1 = ssfr.util.load_h5(cfg.alp['fname_v1'])
+    data_hsr1_v2 = ssfr.util.load_h5(cfg.hsr1['fname_v2'])
+    angles = {
+        'ang_pit': data_hsk['ang_pit'],
+        'ang_rol': data_hsk['ang_rol'],
+        'ang_hed': data_hsk['ang_hed'],
+        'sza': data_hsk['sza'],
+        'saa': data_hsk['saa'],
+        'raa': np.mod(data_hsk['ang_hed'] - data_hsk['saa'] + 360.0, 360.0),
+        'ang_pit_m': data_alp_v1['ang_pit_m'],
+        'ang_rol_m': data_alp_v1['ang_rol_m'],
+    }
+
+    tmhr = data_ssfr_v1['tmhr']
+
+    wvl_zen  = data_ssfr_v1['zen/wvl'][...]
+    flux_zen = data_ssfr_v1['zen/flux'][...][:, np.argmin(np.abs(wvl_zen - wvl))]
+    wvl_hsr1 = data_hsr1_v2['tot/wvl'][...]
+    diff_ratio = (data_hsr1_v2['dif/flux'][...] / data_hsr1_v2['tot/flux'][...])[:, np.argmin(np.abs(wvl_hsr1 - wvl))]
+    
+    flux_kurudz = ssfr.util.get_solar_kurudz()
+    f_dn_sol_zen = np.zeros_like(wvl_zen)
+    for i, wvl0 in enumerate(wvl_zen):
+        f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_kurudz[:, 0], flux_kurudz[:, 1])*ssfr.util.cal_solar_factor(date)
+    flux_toa = f_dn_sol_zen[np.argmin(np.abs(wvl_zen - wvl))]
+
+    # Filtering logic
+    smoothing_window = 120  # in samples
+    tolerance = 0.2 # number of samples that can exceed this threshold within the smoothing window
+    logic_clear_ = diff_ratio < diff_ratio_thresh
+    logic_clear = np.bool_(np.floor(np.convolve(logic_clear_.astype(float), np.ones(smoothing_window)/smoothing_window, mode='same') + tolerance))
+
+    smoothing_window_remain = 60  # in samples
+    diff_ratio_gradient_thres = 0.0005
+    diff_ratio_gradient = np.bool_(np.floor(np.convolve(np.abs(np.gradient(diff_ratio)), np.ones(smoothing_window_remain)/smoothing_window_remain, mode='same')))
+    logic_remain_clear = diff_ratio_gradient < diff_ratio_gradient_thres
+
+    tilt_thres = 2.5  # degrees
+    logic_tilt_ = np.sqrt(data_hsk['ang_pit']**2 + data_hsk['ang_rol']**2) < tilt_thres
+    logic_tilt = np.bool_(np.floor(np.convolve(logic_tilt_.astype(float), np.ones(smoothing_window)/smoothing_window, mode='same') + tolerance))
+
+    logic_altitude = data_hsk['alt'] > altitude_thresh
+
+    logic_valid = logic_clear & logic_remain_clear & logic_tilt & logic_altitude
+
+    target = {'val': np.inf, 'slope': None, 'intercept': None, 'x': None, 'y': None, 'ang_pit_offset': np.nan, 'ang_rol_offset': np.nan, 'ang_hed_offset': np.nan}
+    target2 = {'val': np.inf, 'amp': None, 'phase': None, 'offset': None, 'x': None, 'y': None, 'ang_pit_offset': np.nan, 'ang_rol_offset': np.nan, 'ang_hed_offset': np.nan}
+    for ang_pit_offset in ang_pit_offset_array:
+        for ang_rol_offset in ang_rol_offset_array:
+            # for ang_hed_offset in ang_hed_offset_array:
+            ang_hed_offset = 0.0
+            iza, iaa = ssfr.util.prh2za(angles['ang_pit']-angles['ang_pit_m']-ang_pit_offset, angles['ang_rol']-angles['ang_rol_m']-ang_rol_offset, angles['ang_hed']-ang_hed_offset)
+            dc       = ssfr.util.muslope(angles['sza'], angles['saa'], iza, iaa)
+            
+            ##### DC linear fitting #####
+            y_1 = flux_zen[logic_valid] / flux_toa
+            x_1 = dc[logic_valid]
+            not_nan = ~np.isnan(y_1) & ~np.isnan(x_1)
+
+            cof = np.polyfit(x_1[not_nan], y_1[not_nan], 1)
+
+            ### Target function options
+            # val = np.abs(cof[0] - 1.0)
+            # val = np.abs(cof[1])
+            # val = np.abs(cof[0] - 1.0) + np.abs(cof[1])
+            # val = np.sqrt(np.mean((np.polyval(cof, x_1[not_nan]) - y_1[not_nan]) ** 2))
+            val = np.sqrt(np.mean((np.polyval(cof, x_1[not_nan]) - y_1[not_nan]) ** 2)) + np.abs(cof[1])
+
+            if val < target['val'] and cof[0] > 0.0 and cof[1] > 0.0:
+                target['val'] = val
+                target['intercept'] = cof[1]
+                target['slope'] = cof[0]
+                target['x'] = x_1[not_nan]
+                target['y'] = y_1[not_nan]
+                target['ang_pit_offset'] = ang_pit_offset
+                target['ang_rol_offset'] = ang_rol_offset
+                target['ang_hed_offset'] = ang_hed_offset
+                # print('(DC linear fitting) New best found: ALP Offsets (Pit: %.2f, Rol: %.2f, Hed: %.2f), Linear Fit Slope: %.4f, Intercept: %.4f, Val: %.4f' % (
+                #     ang_pit_offset, ang_rol_offset, ang_hed_offset, cof[0], cof[1], val
+                # ))
+
+            ##### Flux sine fitting #####
+            flux_sim_v1 = flux_toa * dc
+            x_2 = angles['raa'][logic_valid]
+            y_2 = flux_zen[logic_valid] / flux_sim_v1[logic_valid]
+            bin_edges = np.arange(0, 361, 10)
+            bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+            digitized = np.digitize(x_2, bin_edges) - 1
+            bin_means = np.array([np.nanmean(y_2[digitized == i]) for i in range(1, len(bin_edges))])
+            not_nan_1 = ~np.isnan(bin_means)
+            x_fit, y_fit = bin_centers[not_nan_1], bin_means[not_nan_1]
+            try:
+                popt, pcov = curve_fit(sine_func, x_fit, y_fit, p0=[np.nanmax(y_fit) - np.nanmin(y_fit), 0.0, np.nanmean(y_fit)])
+            except:
+                popt = [None, None, None]
+            amp, phase, offset = popt
+            if np.abs(amp/offset) < target2['val']:
+                target2['val'] = np.abs(amp/offset)
+                target2['amp'] = amp
+                target2['phase'] = phase
+                target2['offset'] = offset
+                target2['x'] = x_fit
+                target2['y'] = y_fit
+                target2['ang_pit_offset'] = ang_pit_offset
+                target2['ang_rol_offset'] = ang_rol_offset
+                target2['ang_hed_offset'] = ang_hed_offset
+                # print('(flux sine fitting) New best found: ALP Offsets (Pit: %.2f, Rol: %.2f, Hed: %.2f), Sine Fit Amp/Offset: %.4f' % (
+                #     ang_pit_offset, ang_rol_offset, ang_hed_offset, np.abs(amp/offset)
+                # ))
+            
+            if plot:
+                plt.close('all')
+                fig, axs = plt.subplots(3, 1, figsize=(8, 10))
+                axs[0].scatter(tmhr, flux_zen/dc, s=2, color='grey', alpha=0.2)
+                axs[0].scatter(tmhr[logic_valid], flux_zen[logic_valid]/dc[logic_valid], s=2, color='blue', alpha=1, label='Fobs/DC')
+                axs[0].axhline(flux_toa, color='orange', label='TOA Flux: %.4f W/m2/nm' % flux_toa)
+                axs[0].set_ylim([0, 1.6*np.nanmax(flux_zen[logic_valid]/dc[logic_valid])])
+                axs[0].set_xlabel('Time (hr)')
+                axs[0].set_ylabel(r'Measured Flux / DC ($\rm W/m^2/nm$)')
+                axs[0].legend()
+                axs[0].grid()
+                axs[1].scatter(x_1, y_1, s=2, color='blue', alpha=0.5)
+                axs[1].plot(np.array([0., np.nanmax(x_1)]), np.polyval(cof, np.array([0., np.nanmax(x_1)])), color='red', label='slope=%.4f, intercept=%.4f' % (cof[0], cof[1]))
+                axs[1].set_xlim([0, None])
+                axs[1].set_ylim([0, None])
+                axs[1].set_xlabel('DC')
+                axs[1].set_ylabel('Measured Flux Ratio')
+                axs[1].legend()
+                axs[1].grid()
+                axs[2].scatter(x_2, y_2, s=2, color='blue', alpha=0.5, label='Fobs / (TOA * DC)')
+                if None not in popt:
+                    x_fit_line = np.linspace(0, 360, 360)
+                    axs[2].plot(x_fit_line, sine_func(x_fit_line, *popt), color='red', label='fit: amp=%.4f, phase=%.4f, offset=%.4f' % (amp, phase, offset))
+                axs[2].set_xlim([0, 360])
+                axs[2].set_xlabel('Relative Azimuth Angle (deg)')
+                axs[2].set_ylabel('Measured / (TOA * dc)')
+                axs[2].legend()
+                axs[2].grid()
+                fig.suptitle(
+                    'ALP Offset Check (Date: %s, Wavelength: %.1f nm)\nPitch Offset: %.2f deg, Roll Offset: %.2f deg, Heading Offset: %.2f deg' % (
+                        cfg.common['date'].strftime('%Y-%m-%d'), wvl, ang_pit_offset, ang_rol_offset, ang_hed_offset),
+                )
+                fig.tight_layout()
+                fig.savefig(f"{fdir}/alp_offset_{cfg.common['date'].strftime('%Y-%m-%d')}_wvl{int(wvl)}nm_pit{ang_pit_offset:+.2f}_rol{ang_rol_offset:+.2f}.png", bbox_inches='tight', dpi=150)
+                # fig.savefig(f"{fdir}/alp_offset_{cfg.common['date'].strftime('%Y-%m-%d')}_wvl{int(wvl)}nm_pit{ang_pit_offset:+.2f}_rol{ang_rol_offset:+.2f}_hed{ang_hed_offset:+.2f}.png", bbox_inches='tight', dpi=150)
+
+    print('\n-------------------------------------------------')
+    print("ALP Offset Check Results for Date: %s, Wavelength: %.1f nm" % (cfg.common['date'].strftime('%Y-%m-%d'), wvl))
+    print("Best ALP offsets found (DC linear fitting):")
+    print('Ang Pit Offset: %+0.2f deg, Ang Rol Offset: %+0.2f deg, Ang Hed Offset: %+0.2f deg' % (target['ang_pit_offset'], target['ang_rol_offset'], target['ang_hed_offset']))
+    print("Best ALP offsets found (flux sine fitting):")
+    print('Ang Pit Offset: %+0.2f deg, Ang Rol Offset: %+0.2f deg, Ang Hed Offset: %+0.2f deg' % (target2['ang_pit_offset'], target2['ang_rol_offset'], target2['ang_hed_offset']))
+    print('-------------------------------------------------')
+
+
+#╰────────────────────────────────────────────────────────────────────────────╯#
+
 if __name__ == '__main__':
 
 
@@ -1624,6 +1797,12 @@ if __name__ == '__main__':
         # compare zenith irradiance against TOA to evaluate calibration files
         #╭────────────────────────────────────────────────────────────────────────────╮#
         # run_test_zenith_vs_toa(cfg)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # optional
+        # check ALP angle offsets
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        # run_alp_offset_check(cfg, fdir='alp_offset_check', plot=True, wvl=550.0, diff_ratio_thresh=0.24)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
