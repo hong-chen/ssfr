@@ -35,6 +35,7 @@ build
 # output files
 *output*
 *v2_conv*
+*rad_cal_comp*
 
 # libRadtran
 randomseed
