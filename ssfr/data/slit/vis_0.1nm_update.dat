@@ -1,6 +1,7 @@
 # SSFR Silicon slit function
 # based on wavelength calibration peak fitting
 # average of both SSFR measurement in 2023 and SSRR measurement in 2025
+# FWHM about 9 nm
 # wavelength (nm)      relative intensity
       -12.0  7.29237e-03
       -11.9  7.91296e-03
