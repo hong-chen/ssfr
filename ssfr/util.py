@@ -278,9 +278,9 @@ def get_slit_func(wvl, slit_func_file=None, wvl_joint=950.0):
 
     if slit_func_file is None:
         if wvl <= wvl_joint:
-            slit_func_file = '%s/slit/vis_0.1nm_s.dat' % ssfr.common.fdir_data
+            slit_func_file = '%s/slit/vis_0.1nm_update.dat' % ssfr.common.fdir_data
         else:
-            slit_func_file = '%s/slit/nir_0.1nm_s.dat' % ssfr.common.fdir_data
+            slit_func_file = '%s/slit/nir_0.1nm_update.dat' % ssfr.common.fdir_data
 
     data_slt = np.loadtxt(slit_func_file)
 
@@ -292,6 +292,16 @@ def get_solar_kurudz(kurudz_file=None):
         kurudz_file = '%s/solar/kurudz_0.1nm.dat' % ssfr.common.fdir_data
 
     data_sol = np.loadtxt(kurudz_file)
+    data_sol[:, 1] /= 1000.0
+
+    return data_sol
+
+def get_solar_cu(solar_file=None):
+
+    if solar_file is None:
+        solar_file = '%s/solar/CU_composite_solar_processed.dat' % ssfr.common.fdir_data
+
+    data_sol = np.loadtxt(solar_file)
     data_sol[:, 1] /= 1000.0
 
     return data_sol
