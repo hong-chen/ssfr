@@ -27,8 +27,10 @@ hsr1_time_offset = 0.00
 ssfr_time_offset = -181.44
 ssrr_time_offset = -255.45
 
-alp_ang_pit_offset = 4.3
-alp_ang_rol_offset = 0.2
+# alp_ang_pit_offset = 4.3
+# alp_ang_rol_offset = 0.2
+alp_ang_pit_offset = 4.6
+alp_ang_rol_offset = 0.0
 hsr1_ang_pit_offset = 0.5
 hsr1_ang_rol_offset = 4.3
 
@@ -82,17 +84,17 @@ fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.uppe
 
 # calibrations
 #╭────────────────────────────────────────────────╮#
-fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-07_response_files'
+fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-14_response_files'
 prop_ssfr_rad_cal_zen = {'primary_date': '2025-08-12', 'transfer_date': '2025-08-12', 'secondary_date': '2024-06-09',
                          'int_time': [(80, 250), (120, 350)],
                          'lamp_adjust': True, 'transfer-based_corr': True, }
-fdir_ssfr_rad_cal_nad = f'{fdir_cal}/rad-cal/2025-10-07_response_files'
+fdir_ssfr_rad_cal_nad = f'{fdir_cal}/rad-cal/2025-10-14_response_files'
 prop_ssfr_rad_cal_nad = {'primary_date': '2025-02-18', 'transfer_date': '2025-02-18', 'secondary_date': '2024-06-09',
                          'int_time': [(80, 250), (120, 350)],
                          'lamp_adjust': True, 'transfer-based_corr': True, }
-fdir_ssfr_ang_cal_zen = f'{fdir_cal}/ang-cal'
+fdir_ssfr_ang_cal_zen = f'{fdir_cal}/ang-cal/2025-10-14_ang-cal_files'
 prop_ssfr_ang_cal_zen = {'date': '2025-08-13', }
-fdir_ssfr_ang_cal_nad = f'{fdir_cal}/ang-cal'
+fdir_ssfr_ang_cal_nad = f'{fdir_cal}/ang-cal/2025-10-14_ang-cal_files'
 prop_ssfr_ang_cal_nad = {'date': '2025-07-31', }
 #╰────────────────────────────────────────────────╯#
 #╰──────────────────────────────────────────────────────────────╯#
