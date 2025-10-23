@@ -726,7 +726,6 @@ def ssfr_ang_cal_20250630_fine(fdir):
     #         }
     fnames = {}
     for i in range(angles.size):
-        print
         fnames[fnames_[i]] = angles[i]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -1247,43 +1246,67 @@ def main_ssfr_rad_cal_all(
 
         # SSFR-A (regular setup for measuring irradiance)
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        fdirs_pri = [
-                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
-                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
-                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
-                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
-                #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
-                {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
-                 'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+        fdirs_pri_tra = [
+                # {'zen_pri': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+                #  'nad_pri': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350',
+                #  'zen_tra': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
+                #  'nad_tra': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350',},
+                # {'zen_pri': 'data/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+                #  'nad_pri': 'data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350',
+                #  'zen_tra': 'data/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350',
+                #  'nad_tra': 'data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350'},
+                {'zen_pri': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+                 'nad_pri': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350',
+                 'zen_tra': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
+                 'nad_tra': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
+                {'zen_pri': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
+                 'nad_pri': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post',
+                 'zen_tra': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
+                 'nad_tra': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+                {'zen_pri': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
+                 'nad_pri': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post',
+                 'zen_tra': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_postdeploymentresurgery',
+                 'nad_tra': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
                 ]
+        
+        
+        # fdirs_pri = [
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+        #         #  'nad': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-03-27_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+        #         #  'nad': 'data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+        #         #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
+        #         #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+        #         {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
+        #          'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+        #         ]
 
-        fdirs_tra = [
-                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
-                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350',
-                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
-                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
-                #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
-                {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_postdeploymentresurgery',
-                 'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
-                ]
+        # fdirs_tra = [
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
+        #         #  'nad': 'data/arcsix/cal/rad-cal/2024-03-20_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-03-26_SSFR-A_zen-lc4_transfer_lamp-150e_si-080-120_in-250-350',
+        #         #  'nad': 'data/arcsix/cal/rad-cal/2024-03-25_SSFR-A_nad-lc6_transfer_lamp-150e_si-080-120_in-250-350'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
+        #         #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
+        #         # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
+        #         #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+        #         {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_postdeploymentresurgery',
+        #          'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+        #         ]
 
         fdirs_sec = [
-                # {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
-                #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
+                {'zen': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_after-pri',
+                 'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_after-pri'},
                 {'zen': 'data/arcsix/cal/rad-cal/2024-05-27_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
                  'nad': 'data/arcsix/cal/rad-cal/2024-05-26_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                #  'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
-                #  'nad': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
-                #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+                {'zen': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                 'nad': 'data/arcsix/cal/rad-cal/2024-06-02_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                {'zen': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_zen-lc4_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik',
+                 'nad': 'data/arcsix/cal/rad-cal/2024-06-09_SSFR-A_nad-lc6_sec-cal_lamp-150c_si-080-120_in-250-350_pituffik'},
+                {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
+                 'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
                 ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -1292,19 +1315,34 @@ def main_ssfr_rad_cal_all(
 
         # SSFR-B (backup setup for measuring irradiance)
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        fdirs_pri = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
-                #  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+        fdirs_pri_tra = [
+                {'zen_pri': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+                 'nad_pri': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350',
+                 'zen_tra': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
+                 'nad_tra': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350'},
+                {'zen_pri': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
+                 'nad_pri': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post',
+                 'zen_tra': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
+                 'nad_tra': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+                {'zen_pri': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
+                 'nad_pri': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post',
+                 'zen_tra': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_postdeploymentresurgery',
+                 'nad_tra': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
                 ]
+        
+        # fdirs_pri = [
+        #         {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350',
+        #          'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
+        #         {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
+        #          'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+        #         ]
 
-        fdirs_tra = [
-                {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
-                 'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350'},
-                # {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
-                #  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
-                ]
+        # fdirs_tra = [
+        #         {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
+        #          'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-160_in-250-350'},
+        #         {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350_post',
+        #          'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_transfer_lamp-150c_si-080-120_in-250-350_post'},
+        #         ]
 
         fdirs_sec = [
                 {'zen': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_zen-lc4_transfer_lamp-150c_si-080-120_in-250-350',
@@ -1328,30 +1366,50 @@ def main_ssfr_rad_cal_all(
                 ]
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
+    """
     for fdir_pri in fdirs_pri:
         for fdir_tra in fdirs_tra:
             for fdir_sec in fdirs_sec:
                 
                 # zen
-                fdir_pri0 = fdir_pri['zen']
-                fdir_tra0 = fdir_tra['zen']
-                fdir_sec0 = fdir_sec['zen']
+                fdir_pri_zen = fdir_pri['zen']
+                fdir_tra_zen = fdir_tra['zen']
+                fdir_sec_zen = fdir_sec['zen']
+                
+                # nad
+                fdir_pri_nad = fdir_pri['nad']
+                fdir_tra_nad = fdir_tra['nad']
+                fdir_sec_nad = fdir_sec['nad']
+    """
+                
+    for fdir_pri_tra in fdirs_pri_tra:
+        for fdir_sec in fdirs_sec:
+                
+            # zen
+            fdir_pri_zen = fdir_pri_tra['zen_pri']
+            fdir_tra_zen = fdir_pri_tra['zen_tra']
+            fdir_sec_zen = fdir_sec['zen']
+            
+            # nad
+            fdir_pri_nad = fdir_pri_tra['nad_pri']
+            fdir_tra_nad = fdir_pri_tra['nad_tra']
+            fdir_sec_nad = fdir_sec['nad']
+            
+            for lamp_corr in [True, False]:
+            # for lamp_corr in [True]:#, False]: 
 
                 print(f'Processing {which_ssfr.lower()} ZENITH ...')
-                print(fdir_pri0)
-                print(fdir_tra0)
-                print(fdir_sec0)
-                zen_output_dict = ssfr_rad_cal(fdir_pri0, fdir_tra0, fdir_sec=fdir_sec0, spec_reverse=False, lamp_corr=True)
+                print(fdir_pri_zen)
+                print(fdir_tra_zen)
+                print(fdir_sec_zen)
+                zen_output_dict = ssfr_rad_cal(fdir_pri_zen, fdir_tra_zen, fdir_sec=fdir_sec_zen, spec_reverse=False, lamp_corr=lamp_corr)
 
-                # nad
-                fdir_pri1 = fdir_pri['nad']
-                fdir_tra1 = fdir_tra['nad']
-                fdir_sec1 = fdir_sec['nad']
+                
                 print(f'Processing {which_ssfr.lower()} NADIR ...')
-                print(fdir_pri1)
-                print(fdir_tra1)
-                print(fdir_sec1)
-                nad_output_dict = ssfr_rad_cal(fdir_pri1, fdir_tra1, fdir_sec=fdir_sec1, spec_reverse=False, lamp_corr=True)
+                print(fdir_pri_nad)
+                print(fdir_tra_nad)
+                print(fdir_sec_nad)
+                nad_output_dict = ssfr_rad_cal(fdir_pri_nad, fdir_tra_nad, fdir_sec=fdir_sec_nad, spec_reverse=False, lamp_corr=lamp_corr)
             
                 
                 # calibration correction test
@@ -1365,10 +1423,12 @@ def main_ssfr_rad_cal_all(
             
     return
 
+
 def plot_time_series_all(
         which_ssfr='lasp|ssfr-a',
         which_lc='zen',
         int_time={'si':80, 'in':250},
+        lamp_corr=True, transfer_corr=True,
         ):
 
 
@@ -1376,23 +1436,36 @@ def plot_time_series_all(
     #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
     # elif 'ssfr-b' in which_ssfr.lower():
     #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
-        
+    output_dir = 'output'
+    
+    corr_suffix = ''
+    if lamp_corr and transfer_corr:
+        corr_suffix = '|lamp-adjust|corr'
+    elif lamp_corr and not transfer_corr:
+        corr_suffix = '|lamp-adjust'
+    elif not lamp_corr and transfer_corr:
+        corr_suffix = '|corr'
+    
     if 'ssfr-a' in which_ssfr.lower():
-        pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+        pattern = '%s/*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d%s.h5' % (output_dir, which_ssfr, which_lc, int_time['si'], int_time['in'], corr_suffix)
     elif 'ssfr-b' in which_ssfr.lower():
-        pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+        pattern = '%s/*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d%s.h5' % (output_dir, which_ssfr, which_lc, int_time['si'], int_time['in'], corr_suffix)
 
     fnames = sorted(glob.glob(pattern))
 
     wvl0 = 550
-    wvl1 = 1600
+    wvl1 = 860
+    wvl2 = 1600
 
     data0 = np.zeros(len(fnames), dtype=np.float64)
     data1 = np.zeros(len(fnames), dtype=np.float64)
+    data2 = np.zeros(len(fnames), dtype=np.float64)
     data0_groups_avg = np.zeros(len(fnames), dtype=np.float64)
     data1_groups_avg = np.zeros(len(fnames), dtype=np.float64)
+    data2_groups_avg = np.zeros(len(fnames), dtype=np.float64)
     data0_groups_std = np.zeros(len(fnames), dtype=np.float64)
     data1_groups_std = np.zeros(len(fnames), dtype=np.float64)
+    data2_groups_std = np.zeros(len(fnames), dtype=np.float64)
     sec_groups = []
     xlabels = []
 
@@ -1411,6 +1484,7 @@ def plot_time_series_all(
 
         data0[i] = resp[np.argmin(np.abs(wvl-wvl0))]
         data1[i] = resp[np.argmin(np.abs(wvl-wvl1))]
+        data2[i] = resp[np.argmin(np.abs(wvl-wvl2))]
 
         # xlabels.append(date_s)
         xlabels.append('s-%s|p-%s|t-%s' % (date_s, date_p, date_t))
@@ -1419,6 +1493,7 @@ def plot_time_series_all(
     isort_xlabels = np.argsort(xlabels)
     data0 = data0[isort_xlabels]
     data1 = data1[isort_xlabels]
+    data2 = data2[isort_xlabels]
     fnames = [fnames[i] for i in isort_xlabels]
     xlabels = [xlabels[i] for i in isort_xlabels]
     sec_groups = [sec_groups[i] for i in isort_xlabels]
@@ -1427,8 +1502,10 @@ def plot_time_series_all(
         index = np.where(np.array(sec_groups) == sec)[0]
         data0_groups_avg[index] = np.nanmean(data0[index])
         data1_groups_avg[index] = np.nanmean(data1[index])
+        data2_groups_avg[index] = np.nanmean(data2[index])
         data0_groups_std[index] = np.nanstd(data0[index])
         data1_groups_std[index] = np.nanstd(data1[index])
+        data2_groups_std[index] = np.nanstd(data2[index])
 
     # figure
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -1443,134 +1520,15 @@ def plot_time_series_all(
         ax1 = fig.add_subplot(111)
         ax1.plot(x, data0, marker='o', markersize=8, color='r', lw=1.0)
         ax1.plot(x, data1, marker='o', markersize=8, color='b', lw=1.0)
+        ax1.plot(x, data2, marker='o', markersize=8, color='g', lw=1.0)
         
         ax1.plot(x, data0_groups_avg,  '--', color='r', lw=2.0, alpha=0.75)
         ax1.plot(x, data1_groups_avg,  '--', color='b', lw=2.0, alpha=0.75)
+        ax1.plot(x, data2_groups_avg,  '--', color='g', lw=2.0, alpha=0.75)
         ax1.fill_between(x, data0_groups_avg-data0_groups_std, data0_groups_avg+data0_groups_std, color='r', alpha=0.25)
         ax1.fill_between(x, data1_groups_avg-data1_groups_std, data1_groups_avg+data1_groups_std, color='b', alpha=0.25)
-
-        ax1.xaxis.set_major_locator(FixedLocator(x))
-        ax1.set_xticklabels(xlabels, rotation=90)
-
-        if which_lc == 'zen':
-            if 'ssfr-a' in which_ssfr.lower():
-                ax1.set_ylim((0, 500))
-            elif 'ssfr-b' in which_ssfr.lower():
-                ax1.set_ylim((0, 600))
-        else:
-            if 'ssfr-a' in which_ssfr.lower():
-                ax1.set_ylim((0, 600))
-            elif 'ssfr-b' in which_ssfr.lower():
-                ax1.set_ylim((0, 600))
-
-        ax1.grid()
-        ax1.set_ylabel('Secondary Response')
-        ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
-        #╰──────────────────────────────────────────────────────────────╯#
-        patches_legend = [
-                          mpatches.Patch(color='red'  , label='550 nm'), \
-                          mpatches.Patch(color='blue' , label='1600 nm'), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
-        # save figure
-        #╭──────────────────────────────────────────────────────────────╮#
-        fig.subplots_adjust(hspace=0.35, wspace=0.35)
-        _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
-        fname_fig = '%s_%s.png' % (_metadata_['Function'], pattern.replace('*', '_'))
-        plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
-        #╰──────────────────────────────────────────────────────────────╯#
-        # plt.show()
-        # sys.exit()
-        plt.close(fig)
-        plt.clf()
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-def plot_time_series_corr_all(
-        which_ssfr='lasp|ssfr-a',
-        which_lc='zen',
-        int_time={'si':80, 'in':250},
-        ):
-
-
-    # if 'ssfr-a' in which_ssfr.lower():
-    #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
-    # elif 'ssfr-b' in which_ssfr.lower():
-    #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
+        ax1.fill_between(x, data2_groups_avg-data2_groups_std, data2_groups_avg+data2_groups_std, color='g', alpha=0.25)
         
-    if 'ssfr-a' in which_ssfr.lower():
-        pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
-    elif 'ssfr-b' in which_ssfr.lower():
-        pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
-
-    print("glob.glob(pattern):", glob.glob(pattern))
-    fnames = sorted(glob.glob(pattern))
-
-    wvl0 = 550
-    wvl1 = 1600
-
-    data0 = np.zeros(len(fnames), dtype=np.float64)
-    data1 = np.zeros(len(fnames), dtype=np.float64)
-    data0_groups_avg = np.zeros(len(fnames), dtype=np.float64)
-    data1_groups_avg = np.zeros(len(fnames), dtype=np.float64)
-    data0_groups_std = np.zeros(len(fnames), dtype=np.float64)
-    data1_groups_std = np.zeros(len(fnames), dtype=np.float64)
-    sec_groups = []
-    xlabels = []
-
-    # 2025-08-12_lamp-1324_postdeploymentresurgery|2025-08-12_lamp-150c_postdeploymentresurgery|2025-02-18_lamp-150c_post|2025-09-12_processed-for-arcsix|rad-resp|lasp|ssfr-a|zen|si-080|in-250|corr.h5
-    # 2025-02-18_lamp-1324_post|2025-02-18_lamp-150c_post|2024-06-09_lamp-150c_pituffik|2025-09-12_processed-for-arcsix|rad-resp|lasp|ssfr-a|nad|si-080|in-250|corr.h5
-    for i, fname in enumerate(fnames):
-        print("Processing %s ..." % (fname))
-        # date_s = os.path.basename(fname).split('|')[2].split('_')[0]
-        date_p = os.path.basename(fname).split('|')[0][:10]
-        date_t = os.path.basename(fname).split('|')[1][:10]
-        date_s = os.path.basename(fname).split('|')[2][:10]
-        f = h5py.File(fname, 'r')
-        wvl = f['wvl'][...]
-        resp = f['sec_resp'][...]
-        f.close()
-
-        data0[i] = resp[np.argmin(np.abs(wvl-wvl0))]
-        data1[i] = resp[np.argmin(np.abs(wvl-wvl1))]
-
-        # xlabels.append(date_s)
-        xlabels.append('s-%s|p-%s|t-%s' % (date_s, date_p, date_t))
-        sec_groups.append(date_s)
-        
-    isort_xlabels = np.argsort(xlabels)
-    data0 = data0[isort_xlabels]
-    data1 = data1[isort_xlabels]
-    fnames = [fnames[i] for i in isort_xlabels]
-    xlabels = [xlabels[i] for i in isort_xlabels]
-    sec_groups = [sec_groups[i] for i in isort_xlabels]
-    
-    for i, sec in enumerate(np.unique(sec_groups)):
-        index = np.where(np.array(sec_groups) == sec)[0]
-        data0_groups_avg[index] = np.nanmean(data0[index])
-        data1_groups_avg[index] = np.nanmean(data1[index])
-        data0_groups_std[index] = np.nanstd(data0[index])
-        data1_groups_std[index] = np.nanstd(data1[index])
-
-    # figure
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    plot = True
-    x = np.arange(len(fnames))
-    if plot:
-        plt.close('all')
-        fig = plt.figure(figsize=(18, 6))
-        # fig.suptitle('Figure')
-        # plot1
-        #╭──────────────────────────────────────────────────────────────╮#
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, data0, marker='o', markersize=8, color='r', lw=1.0)
-        ax1.plot(x, data1, marker='o', markersize=8, color='b', lw=1.0)
-        
-        ax1.plot(x, data0_groups_avg,  '--', color='r', lw=2.0, alpha=0.75)
-        ax1.plot(x, data1_groups_avg,  '--', color='b', lw=2.0, alpha=0.75)
-        ax1.fill_between(x, data0_groups_avg-data0_groups_std, data0_groups_avg+data0_groups_std, color='r', alpha=0.25)
-        ax1.fill_between(x, data1_groups_avg-data1_groups_std, data1_groups_avg+data1_groups_std, color='b', alpha=0.25)
-
         ax1.xaxis.set_major_locator(FixedLocator(x))
         ax1.set_xticklabels(xlabels, rotation=90)
 
@@ -1591,14 +1549,15 @@ def plot_time_series_corr_all(
         #╰──────────────────────────────────────────────────────────────╯#
         patches_legend = [
                           mpatches.Patch(color='red'  , label='550 nm'), \
-                          mpatches.Patch(color='blue' , label='1600 nm'), \
+                          mpatches.Patch(color='blue', label='860 nm'), \
+                          mpatches.Patch(color='green' , label='1600 nm'), \
                          ]
         ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
         # save figure
         #╭──────────────────────────────────────────────────────────────╮#
         fig.subplots_adjust(hspace=0.35, wspace=0.35)
         _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
-        fname_fig = '%s_%s.png' % (_metadata_['Function'], pattern.replace('*', '_'))
+        fname_fig = '%s_%s_%s_si-%3.3f_in-%3.3f%s.png' % (_metadata_['Function'], which_ssfr, which_lc, int_time['si'], int_time['in'], corr_suffix.replace('|', '-'))
         plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
         #╰──────────────────────────────────────────────────────────────╯#
         # plt.show()
@@ -1699,7 +1658,7 @@ def ssrr_rad_cal(
 
         filename_tag = '%s|%s_processed-for-arcsix' % (cal_tag, date_today_s)
 
-        pri_resp = ssfr.cal.cal_rad_resp(
+        pri_resp = ssfr.cal.cal_rad_resp_old(
                 fnames_pri,
                 resp=None,
                 which_ssfr=which_ssfr,
@@ -2489,8 +2448,204 @@ def plot_response_fiber_rotation(
 #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
+def wvl_cal_both_lamps(which_instrument='lasp|ssfr-a', spec_tag='zen', Nchan=256):
+
+    fdir_data = 'data/arcsix/cal/wvl-cal'
+    
+    output_dir = 'output/wvl-cal'
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # --- Check SSFR spectrometer ---
+    lab_tag  = which_instrument.split('|')[0].lower()
+    instrument_tag = which_instrument.split('|')[1].lower()
+
+    indices_spec = {
+            'zen': [0, 1],
+            'nad': [2, 3]
+            }
+
+    xchan = np.arange(Nchan)
+    
+ 
+    # '/Users/yuch8913/programming/SSRR/ssfr/data/cal/2024-03-29|cal-rad-pri|lasp|ssfr-a|nad|lc6|steel|dset1-si240-in350|2024-03-30.h5'
+    # fnames_zen = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|zen|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.lower(), 'dset1')))
+    # fnames_nad = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|nad|%s*.h5' % (ssfr.common.fdir_data, _ssfr_.lower(), 'dset1')))
+    # if len(fnames_zen) >= 1 and len(fnames_nad) >= 1:
+    #     fname_zen = fnames_zen[-1]
+    #     fname_nad = fnames_nad[-1]
+    #     print(fname_zen)
+    #     print(fname_nad)
+    # print('%s/cal/*cal-rad-pri|lasp|%s|%s|*.h5' % ('./ssfr/data', instrument_tag, spec_tag.lower()))
+    # print(sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|%s|*.h5' % ('./ssfr/data', instrument_tag, spec_tag.lower()))))
+    # if 'zen' in spec_tag.lower():
+    #     # fname_zen = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|zen|%s*.h5' % (ssfr.common.fdir_data, instrument_tag, spec_tag.lower())))[-1]
+    #     fname_zen = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|%s|*.h5' % ('./ssfr/data', instrument_tag, spec_tag.lower())))[-1]
+    #     print(fname_zen)
+    #     f_zen = h5py.File(fname_zen, 'r')
+    #     sec_resp_si = f_zen['zen|si'][...]
+    #     sec_resp_in = f_zen['zen|in'][...]
+    #     f_zen.close()
+    # elif 'nad' in spec_tag.lower():
+    #     # fname_nad = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|nad|%s*.h5' % (ssfr.common.fdir_data, instrument_tag, spec_tag.lower())))[-1]
+    #     fname_nad = sorted(glob.glob('%s/cal/*cal-rad-pri|lasp|%s|%s|*.h5' % ('./ssfr/data', instrument_tag, spec_tag.lower())))[-1]
+    #     print(fname_nad)
+    #     f_nad = h5py.File(fname_nad, 'r')
+    #     sec_resp_si = f_nad['nad|si'][...]
+    #     sec_resp_in = f_nad['nad|in'][...]
+    #     f_nad.close()
+
+    print('%s/*%s*%s*%s*' % (fdir_data, instrument_tag.upper(), spec_tag, 'hg'))
+
+    #2025-06-26_SSRR-A_nad-lcx_pri-cal_lamp-hg_si-045-300_in-250-350_postdeployment
+    print(glob.glob('%s/*%s*%s*%s*' % (fdir_data, instrument_tag.upper(), spec_tag, 'hg')))
+    fdir_Hg =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, instrument_tag.upper(), spec_tag, 'hg')))[-1]
+    print(f'fdir_Hg: {fdir_Hg}')
+
+    fnames_Hg = sorted(glob.glob('%s/*00001.SKS' % (fdir_Hg)))
+
+    ssfr0_Hg = ssfr.lasp_ssfr.read_ssfr(fnames_Hg, dark_corr_mode='interp')
+    
+    # assume nad and zen have the same integration time settings
+    si_int_time_set_hg_sorted = np.sort(np.unique(ssfr0_Hg.data_raw['int_time'][:, 0]))
+    in_int_time_set_hg_sorted = np.sort(np.unique(ssfr0_Hg.data_raw['int_time'][:, 1]))
+    
+    
+    si_low_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, indices_spec[spec_tag][0]] == si_int_time_set_hg_sorted[0]
+    si_high_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, indices_spec[spec_tag][0]] == si_int_time_set_hg_sorted[-1]
+    in_low_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, indices_spec[spec_tag][1]] == in_int_time_set_hg_sorted[0]
+    in_high_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, indices_spec[spec_tag][1]] == in_int_time_set_hg_sorted[-1]
+    
+    
+    si_spectra0_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][si_low_int_time_hg_mask, :, indices_spec[spec_tag][0]], axis=0)
+    si_spectra1_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][si_high_int_time_hg_mask, :, indices_spec[spec_tag][0]], axis=0)
+    in_spectra0_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][in_low_int_time_hg_mask, :, indices_spec[spec_tag][1]], axis=0)
+    in_spectra1_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][in_high_int_time_hg_mask, :, indices_spec[spec_tag][1]], axis=0)
+
+    fdir_Kr =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, instrument_tag.upper(), spec_tag, 'kr')))[-1]
+    fnames_Kr = sorted(glob.glob('%s/*00001.SKS' % (fdir_Kr)))
+
+    ssfr0_Kr = ssfr.lasp_ssfr.read_ssfr(fnames_Kr, dark_corr_mode='interp')
+    
+    # assume nad and zen have the same integration time settings
+    si_int_time_set_kr_sorted = np.sort(np.unique(ssfr0_Kr.data_raw['int_time'][:, 0]))
+    in_int_time_set_kr_sorted = np.sort(np.unique(ssfr0_Kr.data_raw['int_time'][:, 1]))
+    
+    si_low_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, indices_spec[spec_tag][0]] == si_int_time_set_kr_sorted[0]
+    si_high_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, indices_spec[spec_tag][0]] == si_int_time_set_kr_sorted[-1]
+    in_low_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, indices_spec[spec_tag][1]] == in_int_time_set_kr_sorted[0]
+    in_high_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, indices_spec[spec_tag][1]] == in_int_time_set_kr_sorted[-1]
+    
+
+    si_spectra0_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][si_low_int_time_kr_mask, :, indices_spec[spec_tag][0]], axis=0)
+    si_spectra1_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][si_high_int_time_kr_mask, :, indices_spec[spec_tag][0]], axis=0)
+    in_spectra0_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][in_low_int_time_kr_mask, :, indices_spec[spec_tag][1]], axis=0)
+    in_spectra1_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][in_high_int_time_kr_mask, :, indices_spec[spec_tag][1]], axis=0)
+    
+    if 'ssfr' in instrument_tag.lower():
+        # use high integration time for both Si and InGaAs
+        ssfr.cal.cal_wvl_coef_two_lamps_Si(si_spectra1_Hg, si_spectra1_Kr, which_spec='%s|%s|%s|si' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+        ssfr.cal.cal_wvl_coef_two_lamps_InGaAs(in_spectra1_Hg, in_spectra1_Kr, which_spec='%s|%s|%s|in' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+    elif 'ssrr' in instrument_tag.lower():
+        # use low integration time for Si
+        si_spectra_Hg_ssrr = si_spectra0_Hg.copy()
+        si_Hg_sticking_pixel = 100 
+        si_spectra_Hg_ssrr[si_Hg_sticking_pixel:] = si_spectra1_Hg[si_Hg_sticking_pixel:]
+        si_Kr_sticking_pixel_1 = 110
+        si_Kr_sticking_pixel_2 = 190
+        si_spectra_Kr_ssrr = si_spectra0_Kr.copy()
+        si_spectra_Kr_ssrr[:si_Kr_sticking_pixel_1] = si_spectra1_Kr[:si_Kr_sticking_pixel_1]
+        si_spectra_Kr_ssrr[si_Kr_sticking_pixel_2:] = si_spectra1_Kr[si_Kr_sticking_pixel_2:]
+        ssfr.cal.cal_wvl_coef_two_lamps_Si(si_spectra0_Hg, si_spectra0_Kr, which_spec='%s|%s|%s|si' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+        # ssfr.cal.cal_wvl_coef_two_lamps_si(spectra1_Hg[:, 0], spectra1_Kr[:, 0], which_spec='%s|%s|%s|si' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+        # ssfr.cal.cal_wvl_coef_two_lamps(spectra0_Hg[:, 1], spectra0_Kr[:, 1], which_spec='%s|%s|%s|in' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+        # use high integration time for InGaAs
+        ssfr.cal.cal_wvl_coef_two_lamps_InGaAs(in_spectra1_Hg, in_spectra1_Kr, which_spec='%s|%s|%s|in' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+    
+    
+    """# convert counts to irradiance
+    spectra0_Hg[:, 0] = spectra0_Hg[:, 0] / sec_resp_si
+    spectra0_Hg[:, 1] = spectra0_Hg[:, 1] / sec_resp_in
+    spectra1_Hg[:, 0] = spectra1_Hg[:, 0] / sec_resp_si
+    spectra1_Hg[:, 1] = spectra1_Hg[:, 1] / sec_resp_in
+    spectra0_Kr[:, 0] = spectra0_Kr[:, 0] / sec_resp_si
+    spectra0_Kr[:, 1] = spectra0_Kr[:, 1] / sec_resp_in
+    spectra1_Kr[:, 0] = spectra1_Kr[:, 0] / sec_resp_si
+    spectra1_Kr[:, 1] = spectra1_Kr[:, 1] / sec_resp_in
+    
+    for spec in [spectra0_Hg, spectra1_Hg, spectra0_Kr, spectra1_Kr]:
+        nan_neg_mask_0 = np.isnan(spec[:, 0]) | (spec[:, 0] < 0)
+        nan_neg_mask_1 = np.isnan(spec[:, 1]) | (spec[:, 1] < 0)
+        spec[nan_neg_mask_0, 0] = 0.0
+        spec[nan_neg_mask_1, 1] = 0.0
+    
+    if 'ssfr' in instrument_tag.lower():
+        ssfr.cal.cal_wvl_coef_two_lamps_Si(spectra1_Hg[:, 0], spectra1_Kr[:, 0], which_spec='%s|%s|%s|si' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+        ssfr.cal.cal_wvl_coef_two_lamps_E_in(spectra1_Hg[:, 1], spectra1_Kr[:, 1], which_spec='%s|%s|%s|in' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+    elif 'ssrr' in instrument_tag.lower():
+        ssfr.cal.cal_wvl_coef_two_lamps_Si(spectra0_Hg[:, 0], spectra0_Kr[:, 0], which_spec='%s|%s|%s|si' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+        ## ssfr.cal.cal_wvl_coef_two_lamps_E_si(spectra1_Hg[:, 0], spectra1_Kr[:, 0], which_spec='%s|%s|%s|si' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+        ## ssfr.cal.cal_wvl_coef_two_lamps_E_in(spectra0_Hg[:, 1], spectra0_Kr[:, 1], which_spec='%s|%s|%s|in' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+        ssfr.cal.cal_wvl_coef_two_lamps_E_in(spectra1_Hg[:, 1], spectra1_Kr[:, 1], which_spec='%s|%s|%s|in' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
+    """
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if False:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 6))
+        fig.suptitle('%s %s (illuminated by %s Lamp)' % (ssfr_tag.upper(), spec_tag.title(), lamp_tag.upper()))
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(121)
+        ax1.plot(xchan, spectra0[:, 0], lw=1, c='r')
+        ax1.plot(xchan, spectra1[:, 0], lw=1, c='b')
+        ax1.set_xlabel('Channel #')
+        ax1.set_ylabel('Counts')
+        ax1.set_ylim(bottom=0)
+        ax1.set_title('Silicon')
+
+        ax2 = fig.add_subplot(122)
+        ax2.plot(xchan, spectra0[:, 1], lw=1, c='r')
+        ax2.plot(xchan, spectra1[:, 1], lw=1, c='b')
+        ax2.set_xlabel('Channel #')
+        ax2.set_ylabel('Counts')
+        ax2.set_ylim(bottom=0)
+        ax2.set_title('InGaAs')
+        #\--------------------------------------------------------------/#
+
+        patches_legend = [
+                          mpatches.Patch(color='red' , label='IntTime set 1'), \
+                          mpatches.Patch(color='blue', label='IntTime set 2'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig('%s_%s_%s_%s_both_lamps.png' % (_metadata['Function'], instrument_tag, spec_tag.lower()), bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+    #\----------------------------------------------------------------------------/#
+#\----------------------------------------------------------------------------/#
+
+
+
 if __name__ == '__main__':
 
+    output_dir = 'output'
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # process wavelength calibration
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # for ssfr_tag in ['lasp|ssfr-a', 'lasp|ssfr-b']:
+    #     for spec_tag in ['zen', 'nad']:
+    #         wvl_cal_both_lamps(which_instrument=ssfr_tag, spec_tag=spec_tag)
+            
+    # for ssfr_tag in ['lasp|ssrr-a', 'lasp|ssrr-b']:
+    #     for spec_tag in ['nad', 'zen']:
+    #         wvl_cal_both_lamps(which_instrument=ssfr_tag, spec_tag=spec_tag)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+    
     # process field calibration (SSFR-A)
     #╭────────────────────────────────────────────────────────────────────────────╮#
     # main_ssfr_rad_cal(which_ssfr='lasp|ssfr-a')
@@ -2510,21 +2665,27 @@ if __name__ == '__main__':
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
-    plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
-    plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
-    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
-
-    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
-    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen')
-    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad')
+    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
 
     # angular calibrations(SSFR-A, zen-lc4,  pre)
     #╭────────────────────────────────────────────────────────────────────────────╮#
     # fdir = 'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350'
+    # ssfr_ang_cal(fdir)
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # angular calibrations(SSFR-A, nad-lc6,  pre)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fdir = 'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350'
     # ssfr_ang_cal(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
@@ -2546,8 +2707,8 @@ if __name__ == '__main__':
     # angular calibrations(SSFR-A, zen-lc4,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
     ### Before re-surgery (replaced baffle from LC1)
-    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
-    # ssfr_ang_cal_20250630(fdir)
+    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    # ssfr_ang_cal_20250630_fine(fdir)
 
     # for vaa in np.arange(0.0, 181.0, 30.0):
     #     fdir = 'data/arcsix/cal/ang-cal/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-all_lamp-507_si-080-120_in-250-350_post/2025-07-07_SSFR-A_zen-lc4_ang-cal_vaa-%3.3d_lamp-507_si-080-120_in-250-350_post' % vaa
@@ -2581,12 +2742,12 @@ if __name__ == '__main__':
 
     # post-mission SSRR calibration (nadir)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
-    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
-    plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-a', which_lc='zen', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-b', which_lc='zen', fdir='.',)
+    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
+    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
+    # plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
+    # plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
+    # plot_response(which_ssfr='lasp|ssrr-a', which_lc='zen', fdir='.',)
+    # plot_response(which_ssfr='lasp|ssrr-b', which_lc='zen', fdir='.',)
 
     # Nonlinearity test
     # plot_response_nonlinearity(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.')
