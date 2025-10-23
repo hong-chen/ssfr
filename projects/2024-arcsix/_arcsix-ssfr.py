@@ -175,6 +175,7 @@ def cdata_ssfr_v1(
         fname_ssfr_v0,
         fname_hsk,
         fname_h5='SSFR_v1.h5',
+        wvl_j=950.0,
         fdir_out='./',
         time_offset=0.0,
         which_ssfr='lasp|ssfr-a',
@@ -204,14 +205,16 @@ def cdata_ssfr_v1(
         data_hsk = ssfr.util.load_h5(fname_hsk)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
-        # read wavelengths and calculate toa downwelling solar flux
+        # read wavelengths and calculate toa downwelling solar flux and convolve with slit function
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        flux_toa = ssfr.util.get_solar_kurudz()
+        # flux_toa = ssfr.util.get_solar_kurudz()
+        flux_toa = ssfr.util.get_solar_cu()
 
         wvl_zen = data_ssfr_v0['spec/wvl_zen']
         f_dn_sol_zen = np.zeros_like(wvl_zen)
         for i, wvl0 in enumerate(wvl_zen):
-            f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1])*ssfr.util.cal_solar_factor(date)
+            f_dn_sol_zen[i] = ssfr.util.cal_weighted_flux(wvl0, flux_toa[:, 0], flux_toa[:, 1], wvl_joint=wvl_j) # slit_func_file determined based on wvl0 inside the function
+        f_dn_sol_zen *= ssfr.util.cal_solar_factor(date)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         f = h5py.File(fname_h5, 'w')
@@ -1281,6 +1284,7 @@ def main_process_data_v1(cfg, run=True):
             cfg.ssfr['fname_v0'],
             cfg.hsk['fname_v0'],
             fname_h5=fname_h5,
+            wvl_j=cfg.ssfr['wvl_j'],
             time_offset=cfg.ssfr['time_offset'],
             which_ssfr=cfg.ssfr['which_ssfr'],
             which_ssfr_for_flux=cfg.ssfr['which_ssfr'],

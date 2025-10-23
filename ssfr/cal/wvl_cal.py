@@ -100,7 +100,7 @@ lamps_ssfr_fitting = {
             1816.732, 
             # 2116.547, # only strong enough for ssrr
         #    2190.251, # only strong enough for ssrr
-            ])
+            ]) 
         }
 
 lamps_ssrr_fitting = {
@@ -118,6 +118,8 @@ lamps_ssrr_fitting = {
             1395.055, 
             1529.597,
             # 1707.279,
+            1813.038,  # from NIST
+            1970.017,  # from NIST  
 
             ]),
         'kr': np.array([
@@ -137,6 +139,7 @@ lamps_ssrr_fitting = {
             # 1022.146, 
             # 1145.748, 
             1181.938,
+            1220.453, # from NIST 
             1286.189, 1317.741,
             1363.422, 1442.679, 1473.444, 
             1523.962, 

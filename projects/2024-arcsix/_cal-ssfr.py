@@ -1396,7 +1396,7 @@ def main_ssfr_rad_cal_all(
             fdir_sec_nad = fdir_sec['nad']
             
             for lamp_corr in [True, False]:
-            # for lamp_corr in [True]:#, False]:
+            # for lamp_corr in [True]:#, False]: 
 
                 print(f'Processing {which_ssfr.lower()} ZENITH ...')
                 print(fdir_pri_zen)
@@ -1423,10 +1423,12 @@ def main_ssfr_rad_cal_all(
             
     return
 
+
 def plot_time_series_all(
         which_ssfr='lasp|ssfr-a',
         which_lc='zen',
         int_time={'si':80, 'in':250},
+        lamp_corr=True, transfer_corr=True,
         ):
 
 
@@ -1436,22 +1438,34 @@ def plot_time_series_all(
     #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
     output_dir = 'output'
     
+    corr_suffix = ''
+    if lamp_corr and transfer_corr:
+        corr_suffix = '|lamp-adjust|corr'
+    elif lamp_corr and not transfer_corr:
+        corr_suffix = '|lamp-adjust'
+    elif not lamp_corr and transfer_corr:
+        corr_suffix = '|corr'
+    
     if 'ssfr-a' in which_ssfr.lower():
-        pattern = '%s/*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d.h5' % (output_dir, which_ssfr, which_lc, int_time['si'], int_time['in'])
+        pattern = '%s/*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d%s.h5' % (output_dir, which_ssfr, which_lc, int_time['si'], int_time['in'], corr_suffix)
     elif 'ssfr-b' in which_ssfr.lower():
-        pattern = '%s/*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d.h5' % (output_dir, which_ssfr, which_lc, int_time['si'], int_time['in'])
+        pattern = '%s/*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d%s.h5' % (output_dir, which_ssfr, which_lc, int_time['si'], int_time['in'], corr_suffix)
 
     fnames = sorted(glob.glob(pattern))
 
     wvl0 = 550
-    wvl1 = 1600
+    wvl1 = 860
+    wvl2 = 1600
 
     data0 = np.zeros(len(fnames), dtype=np.float64)
     data1 = np.zeros(len(fnames), dtype=np.float64)
+    data2 = np.zeros(len(fnames), dtype=np.float64)
     data0_groups_avg = np.zeros(len(fnames), dtype=np.float64)
     data1_groups_avg = np.zeros(len(fnames), dtype=np.float64)
+    data2_groups_avg = np.zeros(len(fnames), dtype=np.float64)
     data0_groups_std = np.zeros(len(fnames), dtype=np.float64)
     data1_groups_std = np.zeros(len(fnames), dtype=np.float64)
+    data2_groups_std = np.zeros(len(fnames), dtype=np.float64)
     sec_groups = []
     xlabels = []
 
@@ -1470,6 +1484,7 @@ def plot_time_series_all(
 
         data0[i] = resp[np.argmin(np.abs(wvl-wvl0))]
         data1[i] = resp[np.argmin(np.abs(wvl-wvl1))]
+        data2[i] = resp[np.argmin(np.abs(wvl-wvl2))]
 
         # xlabels.append(date_s)
         xlabels.append('s-%s|p-%s|t-%s' % (date_s, date_p, date_t))
@@ -1478,6 +1493,7 @@ def plot_time_series_all(
     isort_xlabels = np.argsort(xlabels)
     data0 = data0[isort_xlabels]
     data1 = data1[isort_xlabels]
+    data2 = data2[isort_xlabels]
     fnames = [fnames[i] for i in isort_xlabels]
     xlabels = [xlabels[i] for i in isort_xlabels]
     sec_groups = [sec_groups[i] for i in isort_xlabels]
@@ -1486,8 +1502,10 @@ def plot_time_series_all(
         index = np.where(np.array(sec_groups) == sec)[0]
         data0_groups_avg[index] = np.nanmean(data0[index])
         data1_groups_avg[index] = np.nanmean(data1[index])
+        data2_groups_avg[index] = np.nanmean(data2[index])
         data0_groups_std[index] = np.nanstd(data0[index])
         data1_groups_std[index] = np.nanstd(data1[index])
+        data2_groups_std[index] = np.nanstd(data2[index])
 
     # figure
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -1502,134 +1520,15 @@ def plot_time_series_all(
         ax1 = fig.add_subplot(111)
         ax1.plot(x, data0, marker='o', markersize=8, color='r', lw=1.0)
         ax1.plot(x, data1, marker='o', markersize=8, color='b', lw=1.0)
+        ax1.plot(x, data2, marker='o', markersize=8, color='g', lw=1.0)
         
         ax1.plot(x, data0_groups_avg,  '--', color='r', lw=2.0, alpha=0.75)
         ax1.plot(x, data1_groups_avg,  '--', color='b', lw=2.0, alpha=0.75)
+        ax1.plot(x, data2_groups_avg,  '--', color='g', lw=2.0, alpha=0.75)
         ax1.fill_between(x, data0_groups_avg-data0_groups_std, data0_groups_avg+data0_groups_std, color='r', alpha=0.25)
         ax1.fill_between(x, data1_groups_avg-data1_groups_std, data1_groups_avg+data1_groups_std, color='b', alpha=0.25)
-
-        ax1.xaxis.set_major_locator(FixedLocator(x))
-        ax1.set_xticklabels(xlabels, rotation=90)
-
-        if which_lc == 'zen':
-            if 'ssfr-a' in which_ssfr.lower():
-                ax1.set_ylim((0, 500))
-            elif 'ssfr-b' in which_ssfr.lower():
-                ax1.set_ylim((0, 600))
-        else:
-            if 'ssfr-a' in which_ssfr.lower():
-                ax1.set_ylim((0, 600))
-            elif 'ssfr-b' in which_ssfr.lower():
-                ax1.set_ylim((0, 600))
-
-        ax1.grid()
-        ax1.set_ylabel('Secondary Response')
-        ax1.set_title('%s (%s)' % (which_ssfr.upper(), which_lc.upper()))
-        #╰──────────────────────────────────────────────────────────────╯#
-        patches_legend = [
-                          mpatches.Patch(color='red'  , label='550 nm'), \
-                          mpatches.Patch(color='blue' , label='1600 nm'), \
-                         ]
-        ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
-        # save figure
-        #╭──────────────────────────────────────────────────────────────╮#
-        fig.subplots_adjust(hspace=0.35, wspace=0.35)
-        _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
-        fname_fig = '%s_%s_%s_si-%3.3f_in-%3.3f.png' % (_metadata_['Function'], which_ssfr, which_lc, int_time['si'], int_time['in'])
-        plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
-        #╰──────────────────────────────────────────────────────────────╯#
-        # plt.show()
-        # sys.exit()
-        plt.close(fig)
-        plt.clf()
-    #╰────────────────────────────────────────────────────────────────────────────╯#
-
-
-def plot_time_series_corr_all(
-        which_ssfr='lasp|ssfr-a',
-        which_lc='zen',
-        int_time={'si':80, 'in':250},
-        ):
-
-
-    # if 'ssfr-a' in which_ssfr.lower():
-    #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
-    # elif 'ssfr-b' in which_ssfr.lower():
-    #     pattern = '*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d*|corr.h5' % (which_ssfr, which_lc, int_time['si'], int_time['in'])
-    output_dir = 'output'
-    
-    if 'ssfr-a' in which_ssfr.lower():
-        pattern = '%s/*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d|lamp-adjust|corr.h5' % (output_dir, which_ssfr, which_lc, int_time['si'], int_time['in'])
-    elif 'ssfr-b' in which_ssfr.lower():
-        pattern = '%s/*lamp-150c*|*%s*%s*si-%3.3d*in-%3.3d|lamp-adjust|corr.h5' % (output_dir, which_ssfr, which_lc, int_time['si'], int_time['in'])
-
-    fnames = sorted(glob.glob(pattern))
-
-    wvl0 = 550
-    wvl1 = 1600
-
-    data0 = np.zeros(len(fnames), dtype=np.float64)
-    data1 = np.zeros(len(fnames), dtype=np.float64)
-    data0_groups_avg = np.zeros(len(fnames), dtype=np.float64)
-    data1_groups_avg = np.zeros(len(fnames), dtype=np.float64)
-    data0_groups_std = np.zeros(len(fnames), dtype=np.float64)
-    data1_groups_std = np.zeros(len(fnames), dtype=np.float64)
-    sec_groups = []
-    xlabels = []
-
-    # 2025-08-12_lamp-1324_postdeploymentresurgery|2025-08-12_lamp-150c_postdeploymentresurgery|2025-02-18_lamp-150c_post|2025-09-12_processed-for-arcsix|rad-resp|lasp|ssfr-a|zen|si-080|in-250|corr.h5
-    # 2025-02-18_lamp-1324_post|2025-02-18_lamp-150c_post|2024-06-09_lamp-150c_pituffik|2025-09-12_processed-for-arcsix|rad-resp|lasp|ssfr-a|nad|si-080|in-250|corr.h5
-    for i, fname in enumerate(fnames):
-        print("Processing %s ..." % (fname))
-        # date_s = os.path.basename(fname).split('|')[2].split('_')[0]
-        date_p = os.path.basename(fname).split('|')[0][:10]
-        date_t = os.path.basename(fname).split('|')[1][:10]
-        date_s = os.path.basename(fname).split('|')[2][:10]
-        f = h5py.File(fname, 'r')
-        wvl = f['wvl'][...]
-        resp = f['sec_resp'][...]
-        f.close()
-
-        data0[i] = resp[np.argmin(np.abs(wvl-wvl0))]
-        data1[i] = resp[np.argmin(np.abs(wvl-wvl1))]
-
-        # xlabels.append(date_s)
-        xlabels.append('s-%s|p-%s|t-%s' % (date_s, date_p, date_t))
-        sec_groups.append(date_s)
+        ax1.fill_between(x, data2_groups_avg-data2_groups_std, data2_groups_avg+data2_groups_std, color='g', alpha=0.25)
         
-    isort_xlabels = np.argsort(xlabels)
-    data0 = data0[isort_xlabels]
-    data1 = data1[isort_xlabels]
-    fnames = [fnames[i] for i in isort_xlabels]
-    xlabels = [xlabels[i] for i in isort_xlabels]
-    sec_groups = [sec_groups[i] for i in isort_xlabels]
-    
-    for i, sec in enumerate(np.unique(sec_groups)):
-        index = np.where(np.array(sec_groups) == sec)[0]
-        data0_groups_avg[index] = np.nanmean(data0[index])
-        data1_groups_avg[index] = np.nanmean(data1[index])
-        data0_groups_std[index] = np.nanstd(data0[index])
-        data1_groups_std[index] = np.nanstd(data1[index])
-
-    # figure
-    #╭────────────────────────────────────────────────────────────────────────────╮#
-    plot = True
-    x = np.arange(len(fnames))
-    if plot:
-        plt.close('all')
-        fig = plt.figure(figsize=(18, 6))
-        # fig.suptitle('Figure')
-        # plot1
-        #╭──────────────────────────────────────────────────────────────╮#
-        ax1 = fig.add_subplot(111)
-        ax1.plot(x, data0, marker='o', markersize=8, color='r', lw=1.0)
-        ax1.plot(x, data1, marker='o', markersize=8, color='b', lw=1.0)
-        
-        ax1.plot(x, data0_groups_avg,  '--', color='r', lw=2.0, alpha=0.75)
-        ax1.plot(x, data1_groups_avg,  '--', color='b', lw=2.0, alpha=0.75)
-        ax1.fill_between(x, data0_groups_avg-data0_groups_std, data0_groups_avg+data0_groups_std, color='r', alpha=0.25)
-        ax1.fill_between(x, data1_groups_avg-data1_groups_std, data1_groups_avg+data1_groups_std, color='b', alpha=0.25)
-
         ax1.xaxis.set_major_locator(FixedLocator(x))
         ax1.set_xticklabels(xlabels, rotation=90)
 
@@ -1650,14 +1549,15 @@ def plot_time_series_corr_all(
         #╰──────────────────────────────────────────────────────────────╯#
         patches_legend = [
                           mpatches.Patch(color='red'  , label='550 nm'), \
-                          mpatches.Patch(color='blue' , label='1600 nm'), \
+                          mpatches.Patch(color='blue', label='860 nm'), \
+                          mpatches.Patch(color='green' , label='1600 nm'), \
                          ]
         ax1.legend(handles=patches_legend, loc='upper right', fontsize=16)
         # save figure
         #╭──────────────────────────────────────────────────────────────╮#
         fig.subplots_adjust(hspace=0.35, wspace=0.35)
         _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
-        fname_fig = '%s_%s_%s_si-%3.3f_in-%3.3f.png' % (_metadata_['Function'], which_ssfr, which_lc, int_time['si'], int_time['in'])
+        fname_fig = '%s_%s_%s_si-%3.3f_in-%3.3f%s.png' % (_metadata_['Function'], which_ssfr, which_lc, int_time['si'], int_time['in'], corr_suffix.replace('|', '-'))
         plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
         #╰──────────────────────────────────────────────────────────────╯#
         # plt.show()
@@ -2605,30 +2505,21 @@ def wvl_cal_both_lamps(which_instrument='lasp|ssfr-a', spec_tag='zen', Nchan=256
 
     ssfr0_Hg = ssfr.lasp_ssfr.read_ssfr(fnames_Hg, dark_corr_mode='interp')
     
-    # print("ssfr0_Hg['spectra_dark-corr'] shape:", ssfr0_Hg['spectra_dark-corr'].shape)
-    print("ssfr0_Hg.dset0['spectra_dark-corr'] shape:", ssfr0_Hg.data_raw['count_dark-corr'].shape)
-    print("ssfr0_Hg.data_raw['int_time'] shape:", ssfr0_Hg.data_raw['int_time'].shape)
-    
     # assume nad and zen have the same integration time settings
     si_int_time_set_hg_sorted = np.sort(np.unique(ssfr0_Hg.data_raw['int_time'][:, 0]))
     in_int_time_set_hg_sorted = np.sort(np.unique(ssfr0_Hg.data_raw['int_time'][:, 1]))
     
-    si_low_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, 0] == si_int_time_set_hg_sorted[0]
-    si_high_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, 0] == si_int_time_set_hg_sorted[-1]
-    in_low_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, 1] == in_int_time_set_hg_sorted[0]
-    in_high_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, 1] == in_int_time_set_hg_sorted[-1]
     
-    print("si_low_int_time_mask shape:", si_low_int_time_hg_mask.shape, " sum:", np.sum(si_low_int_time_hg_mask))
-    print("indices_spec[spec_tag]:", indices_spec[spec_tag])
+    si_low_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, indices_spec[spec_tag][0]] == si_int_time_set_hg_sorted[0]
+    si_high_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, indices_spec[spec_tag][0]] == si_int_time_set_hg_sorted[-1]
+    in_low_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, indices_spec[spec_tag][1]] == in_int_time_set_hg_sorted[0]
+    in_high_int_time_hg_mask = ssfr0_Hg.data_raw['int_time'][:, indices_spec[spec_tag][1]] == in_int_time_set_hg_sorted[-1]
     
-    print("ssfr0_Hg.data_raw['count_dark-corr'] shape:", ssfr0_Hg.data_raw['count_dark-corr'].shape)
-
+    
     si_spectra0_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][si_low_int_time_hg_mask, :, indices_spec[spec_tag][0]], axis=0)
-    si_spectra1_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][si_high_int_time_hg_mask, :, indices_spec[spec_tag][1]], axis=0)
-    in_spectra0_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][in_low_int_time_hg_mask, :, indices_spec[spec_tag][0]], axis=0)
+    si_spectra1_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][si_high_int_time_hg_mask, :, indices_spec[spec_tag][0]], axis=0)
+    in_spectra0_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][in_low_int_time_hg_mask, :, indices_spec[spec_tag][1]], axis=0)
     in_spectra1_Hg = np.nanmean(ssfr0_Hg.data_raw['count_dark-corr'][in_high_int_time_hg_mask, :, indices_spec[spec_tag][1]], axis=0)
-    
-    print("si_spectra0_Hg shape:", si_spectra0_Hg.shape)
 
     fdir_Kr =  sorted(glob.glob('%s/*%s*%s*%s*' % (fdir_data, instrument_tag.upper(), spec_tag, 'kr')))[-1]
     fnames_Kr = sorted(glob.glob('%s/*00001.SKS' % (fdir_Kr)))
@@ -2639,15 +2530,15 @@ def wvl_cal_both_lamps(which_instrument='lasp|ssfr-a', spec_tag='zen', Nchan=256
     si_int_time_set_kr_sorted = np.sort(np.unique(ssfr0_Kr.data_raw['int_time'][:, 0]))
     in_int_time_set_kr_sorted = np.sort(np.unique(ssfr0_Kr.data_raw['int_time'][:, 1]))
     
-    si_low_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, 0] == si_int_time_set_kr_sorted[0]
-    si_high_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, 0] == si_int_time_set_kr_sorted[-1]
-    in_low_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, 1] == in_int_time_set_kr_sorted[0]
-    in_high_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, 1] == in_int_time_set_kr_sorted[-1]
+    si_low_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, indices_spec[spec_tag][0]] == si_int_time_set_kr_sorted[0]
+    si_high_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, indices_spec[spec_tag][0]] == si_int_time_set_kr_sorted[-1]
+    in_low_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, indices_spec[spec_tag][1]] == in_int_time_set_kr_sorted[0]
+    in_high_int_time_kr_mask = ssfr0_Kr.data_raw['int_time'][:, indices_spec[spec_tag][1]] == in_int_time_set_kr_sorted[-1]
     
 
     si_spectra0_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][si_low_int_time_kr_mask, :, indices_spec[spec_tag][0]], axis=0)
-    si_spectra1_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][si_high_int_time_kr_mask, :, indices_spec[spec_tag][1]], axis=0)
-    in_spectra0_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][in_low_int_time_kr_mask, :, indices_spec[spec_tag][0]], axis=0)
+    si_spectra1_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][si_high_int_time_kr_mask, :, indices_spec[spec_tag][0]], axis=0)
+    in_spectra0_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][in_low_int_time_kr_mask, :, indices_spec[spec_tag][1]], axis=0)
     in_spectra1_Kr = np.nanmean(ssfr0_Kr.data_raw['count_dark-corr'][in_high_int_time_kr_mask, :, indices_spec[spec_tag][1]], axis=0)
     
     if 'ssfr' in instrument_tag.lower():
@@ -2656,6 +2547,14 @@ def wvl_cal_both_lamps(which_instrument='lasp|ssfr-a', spec_tag='zen', Nchan=256
         ssfr.cal.cal_wvl_coef_two_lamps_InGaAs(in_spectra1_Hg, in_spectra1_Kr, which_spec='%s|%s|%s|in' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
     elif 'ssrr' in instrument_tag.lower():
         # use low integration time for Si
+        si_spectra_Hg_ssrr = si_spectra0_Hg.copy()
+        si_Hg_sticking_pixel = 100 
+        si_spectra_Hg_ssrr[si_Hg_sticking_pixel:] = si_spectra1_Hg[si_Hg_sticking_pixel:]
+        si_Kr_sticking_pixel_1 = 110
+        si_Kr_sticking_pixel_2 = 190
+        si_spectra_Kr_ssrr = si_spectra0_Kr.copy()
+        si_spectra_Kr_ssrr[:si_Kr_sticking_pixel_1] = si_spectra1_Kr[:si_Kr_sticking_pixel_1]
+        si_spectra_Kr_ssrr[si_Kr_sticking_pixel_2:] = si_spectra1_Kr[si_Kr_sticking_pixel_2:]
         ssfr.cal.cal_wvl_coef_two_lamps_Si(si_spectra0_Hg, si_spectra0_Kr, which_spec='%s|%s|%s|si' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
         # ssfr.cal.cal_wvl_coef_two_lamps_si(spectra1_Hg[:, 0], spectra1_Kr[:, 0], which_spec='%s|%s|%s|si' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
         # ssfr.cal.cal_wvl_coef_two_lamps(spectra0_Hg[:, 1], spectra0_Kr[:, 1], which_spec='%s|%s|%s|in' % (lab_tag, instrument_tag.lower(), spec_tag.lower()))
@@ -2743,7 +2642,7 @@ if __name__ == '__main__':
     #         wvl_cal_both_lamps(which_instrument=ssfr_tag, spec_tag=spec_tag)
             
     # for ssfr_tag in ['lasp|ssrr-a', 'lasp|ssrr-b']:
-    #     for spec_tag in ['nad']:
+    #     for spec_tag in ['nad', 'zen']:
     #         wvl_cal_both_lamps(which_instrument=ssfr_tag, spec_tag=spec_tag)
     #╰────────────────────────────────────────────────────────────────────────────╯#
     
@@ -2766,16 +2665,16 @@ if __name__ == '__main__':
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
-    plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='zen')
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
-    plot_time_series_corr_all(which_ssfr='lasp|ssfr-a', which_lc='nad')
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
     main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen')
-    plot_time_series_corr_all(which_ssfr='lasp|ssfr-b', which_lc='zen')
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad')
-    plot_time_series_corr_all(which_ssfr='lasp|ssfr-b', which_lc='nad')
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
 
     # angular calibrations(SSFR-A, zen-lc4,  pre)

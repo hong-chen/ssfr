@@ -9,7 +9,6 @@ import ssfr
 import warnings
 import h5py
 import numpy as np
-import pickle as pkl
 from scipy import interpolate
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple, Any
@@ -18,6 +17,7 @@ import matplotlib.pyplot as plt
 
 
 __all__ = ['cal_rad_resp', 'cal_rad_resp_old', 'cdata_rad_resp', 'rad_resp_corr',]
+
 
 ResponseData = Dict[str, np.ndarray]
 
@@ -686,18 +686,6 @@ def cdata_rad_resp(
     out_dir = f'{out_parent}/{filename_tag}'
     os.makedirs(out_dir, exist_ok=True)
     fname_out = f'{out_dir}/{os.path.basename(fname_out)}'
-    
-    # save resps to h5 files
-    pri_resp_out = fname_out.replace('.h5', '|pri_resp.pkl')
-    transfer_out = fname_out.replace('.h5', '|transfer.pkl')
-    sec_resp_out = fname_out.replace('.h5', '|sec_resp.pkl')
-        
-    # # Save calibration results to pickle files
-    for out_name, data in zip([pri_resp_out, transfer_out, sec_resp_out],
-                              [pri_resp, transfer, sec_resp]):
-        with open(out_name, 'wb') as f:
-            pkl.dump(data, f)
-            
 
     fname_resp_out = fname_out.replace('.h5', '|resp_intermediate.h5')
 
@@ -975,6 +963,7 @@ def rad_resp_corr(fnames_resp_zen: str,
      transfer_zen_ori, transfer_nad_ori) = load_responses_and_validate(fnames_resp_zen, fnames_resp_nad, delete_files=True)
     
     out_dir = os.path.dirname(fnames_resp_zen)
+    nad_dir = os.path.dirname(fnames_resp_nad)
     
     # Group data into a more manageable structure
     zen_data = {'pri_resp': pri_resp_zen, 'transfer': transfer_zen, 'sec_resp': sec_resp_zen}
@@ -1065,7 +1054,7 @@ def rad_resp_corr(fnames_resp_zen: str,
     
     
     # 5. Update secondary responses
-    # assume nad-si is correct, update other three responses 
+    # assume nad-si is correct, update other three responses
     sec_resp_in_nad_ori = nad_data['sec_resp']['nad|in'].copy()
     sec_resp_si_zen_ori = zen_data['sec_resp']['zen|si'].copy()
     sec_resp_in_zen_ori = zen_data['sec_resp']['zen|in'].copy()
@@ -1104,7 +1093,7 @@ def rad_resp_corr(fnames_resp_zen: str,
     )
     
     fnames_resp_zen_copy = fnames_resp_zen.replace('.h5', '|corr.h5').replace(out_dir, 'output')
-    fnames_resp_nad_copy = fnames_resp_nad.replace('.h5', '|corr.h5').replace(out_dir, 'output')
+    fnames_resp_nad_copy = fnames_resp_nad.replace('.h5', '|corr.h5').replace(nad_dir, 'output')
     
     
     wvl_zen_, transfer_zen_ = _save_combined_h5(
