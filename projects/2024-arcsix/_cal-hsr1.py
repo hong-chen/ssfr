@@ -60,7 +60,7 @@ def hsr1_rad_cal_20250903():
             #╭──────────────────────────────────────────────────────────────╮#
             fig.subplots_adjust(hspace=0.35, wspace=0.35)
             _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
-            fname_fig = f'{_metadata_['Function']}_{i}.png'
+            fname_fig = f"{_metadata_['Function']}_{i}.png"
             plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
             #╰──────────────────────────────────────────────────────────────╯#
             plt.close(fig)
@@ -106,7 +106,7 @@ def hsr1_rad_cal_raw_20250903():
         #╭──────────────────────────────────────────────────────────────╮#
         fig.subplots_adjust(hspace=0.35, wspace=0.35)
         _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
-        fname_fig = f'{_metadata_['Function']}.png'
+        fname_fig = f"{_metadata_['Function']}.png"
         plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
         #╰──────────────────────────────────────────────────────────────╯#
         plt.show()
@@ -153,7 +153,7 @@ def hsr1_rad_cal_new_20250903():
         #╭──────────────────────────────────────────────────────────────╮#
         fig.subplots_adjust(hspace=0.35, wspace=0.35)
         _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
-        fname_fig = f'{_metadata_['Function']}.png'
+        fname_fig = f"{_metadata_['Function']}.png"
         plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
         #╰──────────────────────────────────────────────────────────────╯#
         plt.show()
@@ -161,7 +161,6 @@ def hsr1_rad_cal_new_20250903():
         plt.close(fig)
         plt.clf()
     #╰────────────────────────────────────────────────────────────────────────────╯#
-
 
 def hsr1_flux_compare_20250905():
 
@@ -301,7 +300,7 @@ def hsr1_flux_compare_20250905():
         #╭──────────────────────────────────────────────────────────────╮#
         fig.subplots_adjust(hspace=0.35, wspace=0.35)
         _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
-        fname_fig = f'{_metadata_['Function']}.png'
+        fname_fig = f"{_metadata_['Function']}.png"
         plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
         #╰──────────────────────────────────────────────────────────────╯#
         plt.show()
@@ -310,10 +309,204 @@ def hsr1_flux_compare_20250905():
         plt.clf()
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
+def hsr1_rad_cal_20251027():
+    fname_raw = 'data/arcsix/cal/rad-cal/2025-10-26_HSR1-B_pri-cal_lamp-wood_hdr_premission/SN01 SpectrometerCalibration 2023-07-10 x10 Std.txt'
+    data_raw = np.genfromtxt(fname_raw, skip_header=4, delimiter='\t', usecols=(1, 2, 3, 4, 5, 6, 7, 8))
+
+    fname_new = 'data/arcsix/cal/rad-cal/2025-10-27_HSR1-B_pri-cal_lamp-1324_hdr_postmission/hsr1-b_2025-10-27_lamp-1324_int-18_gain-50_hdr_n10.txt'
+    data_new = np.genfromtxt(fname_new, skip_header=4, delimiter='\t', usecols=(1, 2, 3, 4, 5, 6, 7, 8))
+
+    fname_new2 = 'data/arcsix/cal/rad-cal/2025-10-27_HSR1-B_pri-cal_lamp-1324_int-040_gain-050_postmission/hsr1-b_2025-10-27_lamp-1324_int-40_gain-50_n10.txt'
+    data_new2 = np.genfromtxt(fname_new2, skip_header=4, delimiter='\t', usecols=(1, 2, 3, 4, 5, 6, 7, 8))
+    
+    fname_new3 = 'data/arcsix/cal/rad-cal/2025-10-27_HSR1-B_pri-cal_lamp-1324_int-040_gain-050_postmission/hsr1-b_2025-10-27_lamp-1324_int-18_gain-50_n10.txt'
+    data_new3 = np.genfromtxt(fname_new3, skip_header=4, delimiter='\t', usecols=(1, 2, 3, 4, 5, 6, 7, 8))
+
+    fname_new4 = 'data/arcsix/cal/rad-cal/2025-10-27_HSR1-B_pri-cal_lamp-1324_int-040_gain-050_postmission/hsr1-b_2025-10-27_lamp-1324_int-100_gain-50_n10.txt'
+    data_new4 = np.genfromtxt(fname_new4, skip_header=4, delimiter='\t', usecols=(1, 2, 3, 4, 5, 6, 7, 8))
+
+    fname_new5 = 'data/arcsix/cal/rad-cal/2025-10-27_HSR1-B_pri-cal_lamp-1324_int-040_gain-050_postmission/hsr1-b_2025-10-27_lamp-1324_int-1000_gain-50_n10.txt'
+    data_new5 = np.genfromtxt(fname_new5, skip_header=4, delimiter='\t', usecols=(1, 2, 3, 4, 5, 6, 7, 8))
+
+    for i in range(1, 8):
+
+        # figure
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        plot = True
+        if plot:
+            plt.close('all')
+            fig = plt.figure(figsize=(8, 6))
+            # plot1
+            #╭──────────────────────────────────────────────────────────────╮#
+            ax1 = fig.add_subplot(111)
+            ax1.plot(data_raw[:, 0], data_raw[:, i], c='blue')
+            ax1.plot(data_new[:, 0], data_new[:, i], c='red')
+            ax1.plot(data_new2[:, 0], data_new2[:, i], c='orange')
+            ax1.plot(data_new3[:, 0], data_new3[:, i], c='green', ls='--')
+            ax1.plot(data_new4[:, 0], data_new4[:, i], c='lightgreen', ls='--')
+            ax1.plot(data_new5[:, 0], data_new5[:, i], c='gold', ls='--')
+            ax1.grid(True, which='both', linestyle='--', linewidth=0.5)
+            ax1.set_yscale('log')
+            ax1.set_ylim((0.1, None))
+            ax1.set_xlabel('Wavelength [nm]')
+            ax1.set_ylabel('Response')
+            ax1.set_title(f'HSR1-A Sensor {i}')
+            #╰──────────────────────────────────────────────────────────────╯#
+            patches_legend = [
+                              mpatches.Patch(color='blue' , label='Pre-mission (HDR)'), \
+                              mpatches.Patch(color='red'   , label='Post-mission (HDR)'), \
+                              mpatches.Patch(color='orange'  , label='Post-mission (I=40, G=50)'), \
+                                mpatches.Patch(color='green'  , label='Post-mission (I=18, G=50)'), \
+                                mpatches.Patch(color='lightgreen'  , label='Post-mission (I=100, G=50)'), \
+                                mpatches.Patch(color='gold'  , label='Post-mission (I=1000, G=50)'), \
+                             ]
+            ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
+            # save figure
+            #╭──────────────────────────────────────────────────────────────╮#
+            fig.subplots_adjust(hspace=0.35, wspace=0.35)
+            _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+            fname_fig = f"{_metadata_['Function']}_{i}.png"
+            plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+            #╰──────────────────────────────────────────────────────────────╯#
+            plt.close(fig)
+            plt.clf()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+def hsr1_flux_compare_20251027():
+
+    # lamp data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    # fname = f'{ssfr.common.fdir_data}/lamp/f-506c.dat'
+    # data_lamp_ = np.loadtxt(fname)
+    # logic_lamp = (data_lamp_[:, 0]>=300.0) & (data_lamp_[:, 0]<=1100.0)
+    # data_lamp0 = {
+    #         'wvl': data_lamp_[logic_lamp, 0],
+    #         'flux': data_lamp_[logic_lamp, 1]*0.01,
+    #         }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # lamp data
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname = f'{ssfr.common.fdir_data}/lamp/f-1324.dat'
+    data_lamp_ = np.loadtxt(fname)
+    logic_lamp = (data_lamp_[:, 0]>=300.0) & (data_lamp_[:, 0]<=1100.0)
+    data_lamp1 = {
+            'wvl': data_lamp_[logic_lamp, 0],
+            'flux': data_lamp_[logic_lamp, 1]*1.0e4,
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # measurements with the original calibration file (HDR)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_tot = '/Users/kehi6101/Downloads/hsr_cal_20251027/2025-10-27_int-40_cal-orig/Total.txt'
+    data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
+
+    data_hsr1_old0 = {
+            'wvl': data_hsr1_.data['wvl'],
+            'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
+            'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # measurements with the updated calibration file (HDR)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_tot = '/Users/kehi6101/Downloads/hsr_cal_20251027/2025-10-27_int-40_cal-new-hdr/Total.txt'
+    data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
+
+    data_hsr1_new0 = {
+            'wvl': data_hsr1_.data['wvl'],
+            'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
+            'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # Measurements with the updated calibration file (integration time/gains = 40/50)
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_tot = '/Users/kehi6101/Downloads/hsr_cal_20251027/2025-10-27_int-40_cal-new-int-40/Total.txt'
+    data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
+
+    data_hsr1_new1 = {
+            'wvl': data_hsr1_.data['wvl'],
+            'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
+            'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
+            }
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    # figure
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    plot = True
+    if plot:
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 12))
+        # fig.suptitle('Figure')
+        # plot1
+        #╭──────────────────────────────────────────────────────────────╮#
+        ax1 = fig.add_subplot(211)
+        # ax1.plot(data_lamp0['wvl'], data_lamp0['flux'], color='gray', lw=2.0)
+        ax1.plot(data_lamp1['wvl'], data_lamp1['flux'], color='k', lw=2.0)
+
+        ax1.fill_between(data_hsr1_old0['wvl'], data_hsr1_old0['flux']-data_hsr1_old0['flux_std'], data_hsr1_old0['flux']+data_hsr1_old0['flux_std'], color='blue', lw=0.0, alpha=0.1)
+        ax1.plot(data_hsr1_old0['wvl'], data_hsr1_old0['flux'], color='blue', lw=1.5)
+
+        ax1.fill_between(data_hsr1_new0['wvl'], data_hsr1_new0['flux']-data_hsr1_new0['flux_std'], data_hsr1_new0['flux']+data_hsr1_new0['flux_std'], color='red', lw=0.0, alpha=0.1)
+        ax1.plot(data_hsr1_new0['wvl'], data_hsr1_new0['flux'], color='red', lw=1.5)
+
+        ax1.fill_between(data_hsr1_new1['wvl'], data_hsr1_new1['flux']-data_hsr1_new1['flux_std'], data_hsr1_new1['flux']+data_hsr1_new1['flux_std'], color='orange', lw=0.0, alpha=0.1)
+        ax1.plot(data_hsr1_new1['wvl'], data_hsr1_new1['flux'], color='orange', lw=1.5)
+
+        ax1.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+        ax1.set_xlabel('Wavelength [nm]')
+        ax1.set_ylabel('Irradiance [$\\mathrm{W m^{-2} nm^{-1}}$]')
+        # ax1.set_xlim((0, 1))
+        ax1.set_ylim((0, None))
+        # ax1.set_xlabel('X')
+        # ax1.set_ylabel('Y')
+        # ax1.set_title('Plot1')
+        # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
+        #╰──────────────────────────────────────────────────────────────╯#
+        patches_legend = [
+                          mpatches.Patch(color='black', label='Lamp data (1324)'), \
+                        #   mpatches.Patch(color='gray' , label='Lamp data (506c)'), \
+                          mpatches.Patch(color='blue'   , label='Original cal (HDR)'), \
+                          mpatches.Patch(color='red', label='New Cal (HDR)'), \
+                          mpatches.Patch(color='orange'  , label='New Cal (I40|G50)'), \
+                         ]
+        # ax1.legend(handles=patches_legend, bbox_to_anchor=(0., 1.01, 1., .102), loc=3, ncol=len(patches_legend), mode="expand", borderaxespad=0., frameon=False, handletextpad=0.2, fontsize=14)
+        ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
+
+        data_lamp1_flux = np.interp(data_hsr1_new0['wvl'], data_lamp1['wvl'], data_lamp1['flux'])
+
+        ax2 = fig.add_subplot(212)
+        ax2.plot(data_hsr1_new0['wvl'], data_lamp1_flux/data_hsr1_new0['flux'], color='red', lw=1.5, label='Lamp truth / New Cal (HDR)')
+        ax2.axhline(1.0, color='k', lw=0.5, ls='--')
+        ax2.set_xlabel('Wavelength [nm]')
+        ax2.set_ylabel('Ratio (Original Cal / New Cal (HDR))')
+        ax2.set_ylim((0.8, 1.2))
+        ax2.grid(True, which='both', linestyle='--', linewidth=0.5)
+        #╰──────────────────────────────────────────────────────────────╯#
+
+        # save figure
+        #╭──────────────────────────────────────────────────────────────╮#
+        fig.subplots_adjust(hspace=0.35, wspace=0.35)
+        _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+        fname_fig = f"{_metadata_['Function']}.png"
+        plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+        #╰──────────────────────────────────────────────────────────────╯#
+        plt.show()
+        sys.exit()
+        plt.close(fig)
+        plt.clf()
+    #╰────────────────────────────────────────────────────────────────────────────╯#
 
 if __name__ == '__main__':
 
     # hsr1_rad_cal_raw_20250903()
     # hsr1_rad_cal_new_20250903()
-    hsr1_flux_compare_20250905()
+    # hsr1_flux_compare_20250905()
+
+    hsr1_rad_cal_20251027()
+    hsr1_flux_compare_20251027()
+
     pass
