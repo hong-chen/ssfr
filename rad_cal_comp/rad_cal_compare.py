@@ -460,8 +460,17 @@ if __name__ == '__main__':
     # plot_response(which_ssfr='lasp|ssfr-a', which_lc='zen', si_integration_time='120', fdir='.',)
     # plot_response(which_ssfr='lasp|ssfr-a', which_lc='zen', si_integration_time='*', fdir='.',)
     # plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
-    plot_response(which_ssfr='lasp|ssfr-b', which_lc='nad', si_integration_time='080', fdir='../output/output_h5',)
-    plot_response(which_ssfr='lasp|ssfr-b', which_lc='zen', si_integration_time='080', fdir='../output/output_h5',)
+    # plot_response(which_ssfr='lasp|ssfr-a', which_lc='nad', si_integration_time='080', fdir='../output/output_h5',)
+    # plot_response(which_ssfr='lasp|ssfr-a', which_lc='zen', si_integration_time='080', fdir='../output/output_h5',)
+    # plot_response(which_ssfr='lasp|ssfr-b', which_lc='nad', si_integration_time='080', fdir='../output/output_h5',)
+    # plot_response(which_ssfr='lasp|ssfr-b', which_lc='zen', si_integration_time='080', fdir='../output/output_h5',)
+    
+    file_dir = '/Users/yuch8913/programming/ssfr_arcsix/ssfr/data/arcsix/cal/rad-cal/2025-10-26_response_files'
+    plot_response(which_ssfr='lasp|ssfr-a', which_lc='nad', si_integration_time='080', fdir=file_dir,)
+    plot_response(which_ssfr='lasp|ssfr-a', which_lc='zen', si_integration_time='080', fdir=file_dir,)
+    plot_response(which_ssfr='lasp|ssfr-b', which_lc='nad', si_integration_time='080', fdir=file_dir,)
+    plot_response(which_ssfr='lasp|ssfr-b', which_lc='zen', si_integration_time='080', fdir=file_dir,)
+
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     pass

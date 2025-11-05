@@ -525,33 +525,34 @@ def cdata_ssfr_v2(
 
         # temporary fix to bypass the attitude correction for SSFR-B
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        if data_ssfr_v1['zen/wvl'].size > 424:
-            data_ssfr_v1['zen/toa0'] = data_ssfr_v1['zen/toa0'][:424]
-            data_ssfr_v1['zen/wvl'] = data_ssfr_v1['zen/wvl'][:424]
-            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][:, :424]
-            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][:, :424]
-            data_ssfr_v1['v0/spec_zen'] = data_ssfr_v1['v0/spec_zen'][:, :424]
-            data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:424]
+        size_limit = 423
+        if data_ssfr_v1['zen/wvl'].size > size_limit:
+            data_ssfr_v1['zen/toa0'] = data_ssfr_v1['zen/toa0'][:size_limit]
+            data_ssfr_v1['zen/wvl'] = data_ssfr_v1['zen/wvl'][:size_limit]
+            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][:, :size_limit]
+            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][:, :size_limit]
+            data_ssfr_v1['v0/spec_zen'] = data_ssfr_v1['v0/spec_zen'][:, :size_limit]
+            data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:size_limit]
         # ╰────────────────────────────────────────────────────────────────────────────╯#
         
-        # if date_s == '20240531':
-        #     data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][1:, :]
-        #     data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][1:, :]
-        #     data_ssfr_v1['nad/flux'] = data_ssfr_v1['nad/flux'][1:, :]
-        #     data_ssfr_v1['nad/cnt'] = data_ssfr_v1['nad/cnt'][1:, :]
-        #     data_ssfr_v1['jday'] = data_ssfr_v1['jday'][1:]
-        #     data_ssfr_v1['jday_ori'] = data_ssfr_v1['jday_ori'][1:]
-        #     data_ssfr_v1['tmhr'] = data_ssfr_v1['tmhr'][1:]
-        #     data_ssfr_v1['tmhr_ori'] = data_ssfr_v1['tmhr_ori'][1:]
-        #     data_ssfr_v1['sza'] = data_ssfr_v1['sza'][1:]
-        #     data_ssfr_v1['saa'] = data_ssfr_v1['saa'][1:]
-        #     data_ssfr_v1['ang_pit'] = data_ssfr_v1['ang_pit'][1:]
-        #     data_ssfr_v1['ang_rol'] = data_ssfr_v1['ang_rol'][1:]
-        #     data_ssfr_v1['ang_hed'] = data_ssfr_v1['ang_hed'][1:]
-        #     data_ssfr_v1['alt'] = data_ssfr_v1['alt'][1:]
-        #     data_ssfr_v1['ir_surf_temp'] = data_ssfr_v1['ir_surf_temp'][1:]
-        #     data_ssfr_v1['lon'] = data_ssfr_v1['lon'][1:]
-        #     data_ssfr_v1['lat'] = data_ssfr_v1['lat'][1:]
+        if date_s == '20240531':
+            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][1:, :]
+            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][1:, :]
+            data_ssfr_v1['nad/flux'] = data_ssfr_v1['nad/flux'][1:, :]
+            data_ssfr_v1['nad/cnt'] = data_ssfr_v1['nad/cnt'][1:, :]
+            data_ssfr_v1['jday'] = data_ssfr_v1['jday'][1:]
+            data_ssfr_v1['jday_ori'] = data_ssfr_v1['jday_ori'][1:]
+            data_ssfr_v1['tmhr'] = data_ssfr_v1['tmhr'][1:]
+            data_ssfr_v1['tmhr_ori'] = data_ssfr_v1['tmhr_ori'][1:]
+            data_ssfr_v1['sza'] = data_ssfr_v1['sza'][1:]
+            data_ssfr_v1['saa'] = data_ssfr_v1['saa'][1:]
+            data_ssfr_v1['ang_pit'] = data_ssfr_v1['ang_pit'][1:]
+            data_ssfr_v1['ang_rol'] = data_ssfr_v1['ang_rol'][1:]
+            data_ssfr_v1['ang_hed'] = data_ssfr_v1['ang_hed'][1:]
+            data_ssfr_v1['alt'] = data_ssfr_v1['alt'][1:]
+            data_ssfr_v1['ir_surf_temp'] = data_ssfr_v1['ir_surf_temp'][1:]
+            data_ssfr_v1['lon'] = data_ssfr_v1['lon'][1:]
+            data_ssfr_v1['lat'] = data_ssfr_v1['lat'][1:]
             
             
 
@@ -1366,7 +1367,7 @@ def run_test_zenith_vs_toa(cfg):
                     # ('2025-08-12', '2025-08-12', '2024-06-09', '2025-08-13'),
                     # ('2025-08-12', '2025-08-12', '2025-02-18', '2025-08-13'),
 
-                    ('2024-03-21', '2024-03-21', '2024-03-21', '2024-03-15'),
+                    # ('2024-03-21', '2024-03-21', '2024-03-21', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-06-02', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-07-26', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-07-31', '2024-03-15'),
@@ -1374,8 +1375,8 @@ def run_test_zenith_vs_toa(cfg):
                     ('2024-03-21', '2024-03-21', '2024-08-05', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-08-10_lamp-150c_pituffik1', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-08-10_lamp-150c_pituffik2', '2024-03-15'),
-                    ('2024-03-21', '2024-03-21', '2025-02-25', '2024-03-15'),
-                    ('2025-02-25', '2025-02-25', '2024-03-21', '2025-08-13'),
+                    # ('2024-03-21', '2024-03-21', '2025-02-25', '2024-03-15'),
+                    # ('2025-02-25', '2025-02-25', '2024-03-21', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-06-02', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-07-26', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-07-31', '2025-08-13'),
@@ -1383,8 +1384,8 @@ def run_test_zenith_vs_toa(cfg):
                     ('2025-02-25', '2025-02-25', '2024-08-05', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-08-10_lamp-150c_pituffik1', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-08-10_lamp-150c_pituffik2', '2025-08-13'),
-                    ('2025-02-25', '2025-02-25', '2025-02-25', '2025-08-13'),
-                    ('2025-08-12', '2025-08-12', '2024-03-21', '2025-08-13'),
+                    # ('2025-02-25', '2025-02-25', '2025-02-25', '2025-08-13'),
+                    # ('2025-08-12', '2025-08-12', '2024-03-21', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-06-02', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-07-26', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-07-31', '2025-08-13'),
@@ -1392,7 +1393,7 @@ def run_test_zenith_vs_toa(cfg):
                     ('2025-08-12', '2025-08-12', '2024-08-05', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-08-10_lamp-150c_pituffik1', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-08-10_lamp-150c_pituffik2', '2025-08-13'),
-                    ('2025-08-12', '2025-08-12', '2025-02-25', '2025-08-13'),
+                    # ('2025-08-12', '2025-08-12', '2025-02-25', '2025-08-13'),
                     ]
 
     for i_rad_ang_cal_dates, (rad_cal_date, ang_cal_date) in enumerate([(x[:3], x[3]) for x in rad_ang_cal_dates]):
@@ -1740,8 +1741,8 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             datetime.datetime(2024, 5, 24), #
-            #  datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
+            #  datetime.datetime(2024, 5, 24), #
+             datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
             #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
             #  datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
             #  datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
@@ -1777,13 +1778,13 @@ if __name__ == '__main__':
         # step 1
         # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(cfg, run=True)
+        # main_process_data_v0(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
         # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        run_time_offset_check(cfg)
+        # run_time_offset_check(cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3

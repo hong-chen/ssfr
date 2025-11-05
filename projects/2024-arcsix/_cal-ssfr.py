@@ -2670,38 +2670,38 @@ if __name__ == '__main__':
     plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
     plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
-    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=False)
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=True)
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=False)
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=True)
-
+    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=True)
+    sys.exit()
 
     # angular calibrations(SSFR-A, zen-lc4,  pre)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fdir = 'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350'
-    # ssfr_ang_cal(fdir)
+    fdir = 'data/arcsix/cal/ang-cal/2024-03-15_SSFR-A_zen-lc4_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350'
+    ssfr_ang_cal(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # angular calibrations(SSFR-A, nad-lc6,  pre)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fdir = 'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350'
-    # ssfr_ang_cal(fdir)
+    fdir = 'data/arcsix/cal/ang-cal/2024-03-18_SSFR-A_nad-lc6_ang-cal_vaa-180_lamp-507_si-080-120_in-250-350'
+    ssfr_ang_cal(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # angular calibrations(SSFR-B, zen-lc4,  post)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # fdir = 'data/arcsix/cal/ang-cal/2025-03-05_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
-    # ssfr_ang_cal(fdir)
+    fdir = 'data/arcsix/cal/ang-cal/2025-03-05_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
+    ssfr_ang_cal(fdir)
 
-    # fdir = 'data/arcsix/cal/ang-cal/2025-06-27_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
-    # ssfr_ang_cal_20250627(fdir)
+    fdir = 'data/arcsix/cal/ang-cal/2025-06-27_SSFR-B_zen-lc4_ang-cal_vaa-000_lamp-507_si-080-120_in-250-350_post'
+    ssfr_ang_cal_20250627(fdir)
     
-    # fdir = 'data/arcsix/cal/ang-cal/2025-08-13_SSFR-A_zen-lc4_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment.resurgery'
-    # ssfr_ang_cal_20250813_fine(fdir)
+    fdir = 'data/arcsix/cal/ang-cal/2025-08-13_SSFR-A_zen-lc4_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment.resurgery'
+    ssfr_ang_cal_20250813_fine(fdir)
     
-    # fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
-    # ssfr_ang_cal_20250630_fine(fdir)
+    fdir = 'data/arcsix/cal/ang-cal/2025-06-30_SSFR-A_zen-lc4_ang-cal-vaa-000_lamp-507_si-080-120_in-250-350_post'
+    ssfr_ang_cal_20250630_fine(fdir)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # angular calibrations(SSFR-A, zen-lc4,  post)
