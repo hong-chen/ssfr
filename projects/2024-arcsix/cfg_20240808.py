@@ -86,7 +86,7 @@ fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.uppe
 # calibrations
 #╭────────────────────────────────────────────────╮#
 fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-26_response_files'
-prop_ssfr_rad_cal_zen = {'primary_date': '2024-03-21', 'transfer_date': '2024-03-21', 'secondary_date': '2024-08-05',
+prop_ssfr_rad_cal_zen = {'primary_date': '2024-03-21', 'transfer_date': '2024-03-21', 'secondary_date': '2024-08-10_lamp-150c_pituffik1',
                          'int_time': [(80, 250), (120, 350)],
                          'lamp_adjust': True, 'transfer-based_corr': True, }
 fdir_ssfr_rad_cal_nad = f'{fdir_cal}/rad-cal/2025-10-26_response_files'

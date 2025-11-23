@@ -1718,7 +1718,7 @@ def cdata_ssfr_archive_r1_from_ra(
     # data_hsk = ssfr.util.load_h5(fname_hsk)
     
     # pitch/roll angle exceed threshold
-    pitch_roll_threshold = 2.5  #degree
+    pitch_roll_threshold = 3.0  #degree
     pitch_roll_exceed = np.zeros_like(data_ra['tmhr'], dtype=bool)
     hsk_pitch_roll_sq_sum = data_ra['hsk_pitch_roll_square_sum']
     pitch_roll_exceed |= hsk_pitch_roll_sq_sum > (pitch_roll_threshold ** 2)
@@ -2347,26 +2347,26 @@ if __name__ == '__main__':
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
             #  datetime.datetime(2024, 5, 24),
-             datetime.datetime(2024, 5, 28),
-             datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
-             datetime.datetime(2024, 5, 31),
-             datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
-             datetime.datetime(2024, 6, 5),
-             datetime.datetime(2024, 6, 6),
-             datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
-             datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
-             datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
-             datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 5, 28),
+            #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
+            #  datetime.datetime(2024, 5, 31),
+            #  datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
+            #  datetime.datetime(2024, 6, 5),
+            #  datetime.datetime(2024, 6, 6),
+            #  datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
+            #  datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
+            #  datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
+            #  datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 7, 22),
-             datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
-             datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
-             datetime.datetime(2024, 8, 1),
-             datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
-             datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
+            #  datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
+            #  datetime.datetime(2024, 8, 1),
+            #  datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+            #  datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
              datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
+            #  datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
             #  datetime.datetime(2024, 8, 16),
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -2403,7 +2403,7 @@ if __name__ == '__main__':
         # SSFR RA
         if run_ssfr:
             fname_ssfr_ra = cdata_ssfr_archive(cfg, cfg.ssfr['fname_v2'],
-                    fdir_out=fdir_out, run=False)
+                    fdir_out=fdir_out, run=True)
 
         # SSRR RA
         if run_ssrr:
