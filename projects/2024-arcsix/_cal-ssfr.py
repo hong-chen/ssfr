@@ -975,6 +975,9 @@ def main_ssfr_rad_cal(
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
                  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
+                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest'},
+                # #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest'},
                 ]
 
         fdirs_tra = [
@@ -1010,6 +1013,9 @@ def main_ssfr_rad_cal(
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
                  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+                # {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
+                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest'},
+                # #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest'},
                 ]
 
         fdirs_tra = [
@@ -1932,10 +1938,14 @@ def main_ssrr_rad_cal_all(
 def plot_response(
         which_ssfr='lasp|ssrr-a',
         which_lc='nad',
+        date=None,
         fdir='.',
         ):
 
-    search_path = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|%s|%s|si-*|in-*.h5' % (which_ssfr, which_lc))
+    if date is None:
+        search_path = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|%s|%s|si-*|in-*.h5' % (which_ssfr, which_lc))
+    else:
+        search_path = os.path.join(fdir, '%s*|*processed-for-arcsix|rad-resp|%s|%s|si-*|in-*.h5' % (date, which_ssfr, which_lc))
     fnames = sorted(glob.glob(search_path))
     if not fnames:
         raise OSError('No file found for pattern: %s' % search_path)
@@ -1961,6 +1971,66 @@ def plot_response(
     ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fontsize=10)
 
     fname_fig = '%s_%s.png' % (which_ssfr, which_lc)
+    fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
+    plt.close(fig)
+
+def plot_response_ratio(
+        condition='lasp|ssfr-a',
+        which_lc='nad',
+        date=None,
+        criteria=None,
+        fdir='.',
+        ):
+
+    if criteria is None:
+        raise ValueError('criteria must be provided as a list of strings.')
+    fnames_list = []
+    for criteron in criteria:
+        if date is None:
+            search_path = os.path.join(fdir, '*|*processed-for-arcsix|rad-resp|*|%s|si-*|in-*.h5' % (which_lc))
+        else:
+            search_path = os.path.join(fdir, '%s*|*processed-for-arcsix|rad-resp|*|%s|si-*|in-*.h5' % (date, which_lc))
+        fnames = sorted([fn for fn in glob.glob(search_path) if condition in os.path.basename(fn)])
+        if not fnames:
+            raise OSError('No file found for pattern: %s' % search_path)
+        fnames_list.append([fn for fn in fnames if criteron in os.path.basename(fn)])
+
+    fig = plt.figure(figsize=(6, 5))
+    ax1 = fig.add_subplot(111)
+
+    wvl_list = [[] for _ in criteria]
+    resp_list = [[] for _ in criteria]
+    label_list = [[] for _ in criteria]
+    for ic, fname_group in enumerate(fnames_list):
+        for fname in fname_group:
+            # Optionally parse params from filename if needed
+            # params = parse_fname(fname)
+            f = h5py.File(fname, 'r')
+            wvl = f['wvl'][...]
+            resp = f['pri_resp'][...]
+            f.close()
+            wvl_list[ic].append(wvl)
+            resp_list[ic].append(resp)
+            label_list[ic].append(os.path.basename(fname))
+    for ifname in range(len(wvl_list[0])):
+        wvl = wvl_list[0][ifname]
+        resp_ref = resp_list[0][ifname]
+        for ic in range(1, len(criteria)):
+            resp = resp_list[ic][ifname]
+            resp_ratio = resp / resp_ref
+            label = '|'.join(label_list[ic][ifname].split('|')[-3:]).replace('.h5', '')
+            ax1.plot(wvl, resp_ratio, lw=1.0, label=label)
+    ax1.axhline(1.0, color='gray', lw=0.8, ls='--')
+
+    ax1.set_xlim(350.0, 2200.0)
+    # ax1.set_ylim(0.0, None)
+    ax1.set_ylim(0.5, 1.5)
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Response ratio (%s/%s)' % (criteria[1], criteria[0]))
+    ax1.set_title('%s (%s)' % (condition.upper(), which_lc.upper()))
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=1, fontsize=10)
+
+    fname_fig = '%s_%s_ratio.png' % (condition, which_lc)
     fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
     plt.close(fig)
 
@@ -2664,18 +2734,27 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=False)
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=True)
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
-    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=False)
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=True)
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=False)
-    plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
+    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
+
+    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=True)
+
+    # Lamp color temperature test
+    main_ssfr_rad_cal(which_ssfr='lasp|ssfr-a')
+    main_ssfr_rad_cal(which_ssfr='lasp|ssfr-b')
+    plot_response_ratio(condition='lasp|ssfr-a', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
+    plot_response_ratio(condition='lasp|ssfr-b', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
+    # plot_response_ratio(condition='lamp-1324', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
+    # plot_response_ratio(condition='lamp-506', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
 
     # angular calibrations(SSFR-A, zen-lc4,  pre)
     #╭────────────────────────────────────────────────────────────────────────────╮#
