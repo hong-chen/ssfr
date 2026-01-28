@@ -123,6 +123,7 @@ def cal_rad_resp_old(
         int_time={'si':80.0, 'in':250.0},
         dark_extend=5,
         light_extend=5,
+        lamp_corr=False,
         verbose=True,
         ):
 
@@ -227,6 +228,25 @@ def cal_rad_resp_old(
             data_flux = data[:, 1]*0.01      # W m^-2 nm^-1
         else:
             data_flux = data[:, 1]*10000.0   # W m^-2 nm^-1
+            
+        # apply planck function correction for lamp spectrum (tested with F-1324)
+        if which_lamp == 'f-1324' and lamp_corr:
+            lamp_fitT = 3139.5  # K
+            lamp_scale = 1.4064602e-9
+            test_T = lamp_fitT - 25.5
+            
+            lamp_corr_factor = planck_scaled(data_wvl, test_T, lamp_scale) / planck_scaled(data_wvl, lamp_fitT, lamp_scale)
+            data_flux = data_flux * lamp_corr_factor
+            
+            # save to new lamp file
+            fname_lamp_new = f'{ssfr.common.fdir_data}/lamp/{which_lamp}_{test_T:.1f}K.dat'
+            with open(fname_lamp_new, 'w') as f:
+                for i in range(data_wvl.size):
+                    f.write('%.1f    %.6e\n' % (data_wvl[i], data_flux[i]/10000.0))
+            
+            if verbose:
+                msg = f'\nMessage [cal_rad_resp]: applying Planck function correction for lamp <{which_lamp}> with fit temperature of {test_T:.1f} K ...'
+                print(msg)
         #╰──────────────────────────────────────────────────────────────╯#
 
 

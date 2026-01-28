@@ -34,10 +34,11 @@ alp_ang_rol_offset = -0.1
 hsr1_ang_pit_offset = 0.3
 hsr1_ang_rol_offset = 3.4
 
-fdir_data = f'data/{mission}/{year}/{platform}'
+# fdir_data = f'data/{mission}/{year}/{platform}'
+fdir_data = f'/Volumes/argus/field/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
 fdir_out = f'data/{mission}/processed'
-# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed' % mission
+# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed_test' % mission
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
@@ -84,17 +85,17 @@ fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.uppe
 
 # calibrations
 #╭────────────────────────────────────────────────╮#
-fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-14_response_files'
-prop_ssfr_rad_cal_zen = {'primary_date': '2025-08-12', 'transfer_date': '2025-08-12', 'secondary_date': '2024-08-10_lamp-150c_pituffik1',
+fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-26_response_files'
+prop_ssfr_rad_cal_zen = {'primary_date': '2024-03-21', 'transfer_date': '2024-03-21', 'secondary_date': '2024-08-10_lamp-150c_pituffik1',
                          'int_time': [(80, 250), (120, 350)],
                          'lamp_adjust': True, 'transfer-based_corr': True, }
-fdir_ssfr_rad_cal_nad = f'{fdir_cal}/rad-cal/2025-10-14_response_files'
-prop_ssfr_rad_cal_nad = {'primary_date': '2025-02-25', 'transfer_date': '2025-02-25', 'secondary_date': '2024-08-10',
+fdir_ssfr_rad_cal_nad = f'{fdir_cal}/rad-cal/2025-10-26_response_files'
+prop_ssfr_rad_cal_nad = {'primary_date': '2024-03-21', 'transfer_date': '2024-03-21', 'secondary_date': '2024-08-10',
                          'int_time': [(80, 250), (120, 350)],
                          'lamp_adjust': True, 'transfer-based_corr': True, }
-fdir_ssfr_ang_cal_zen = f'{fdir_cal}/ang-cal/2025-10-14_ang-cal_files'
-prop_ssfr_ang_cal_zen = {'date': '2025-08-13', }
-fdir_ssfr_ang_cal_nad = f'{fdir_cal}/ang-cal/2025-10-14_ang-cal_files'
+fdir_ssfr_ang_cal_zen = f'{fdir_cal}/ang-cal/2025-10-26_ang-cal_files'
+prop_ssfr_ang_cal_zen = {'date': '2024-03-15', }
+fdir_ssfr_ang_cal_nad = f'{fdir_cal}/ang-cal/2025-10-26_ang-cal_files'
 prop_ssfr_ang_cal_nad = {'date': '2025-07-31', }
 #╰────────────────────────────────────────────────╯#
 #╰──────────────────────────────────────────────────────────────╯#

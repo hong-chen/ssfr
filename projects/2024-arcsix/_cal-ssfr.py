@@ -1580,6 +1580,7 @@ def ssrr_rad_cal(
         which_ssrr='lasp|ssrr-a',
         which_lc='zen',
         spec_reverse=False,
+        lamp_corr=False,
         ):
 
     # get calibration files of primary
@@ -1672,6 +1673,7 @@ def ssrr_rad_cal(
                 spec_reverse=spec_reverse,
                 which_lamp=which_lamp,
                 int_time=int_time,
+                lamp_corr=lamp_corr,
                 verbose=True,
                 )
 
@@ -1931,6 +1933,7 @@ def main_ssrr_rad_cal_all(
                 fdir_pri0,
                 which_ssrr=which_ssrr,
                 which_lc=spec_tag,
+                lamp_corr=True,
                 spec_reverse=False,
                 )
     return
@@ -2821,12 +2824,12 @@ if __name__ == '__main__':
 
     # post-mission SSRR calibration (nadir)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
-    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
-    # plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
-    # plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
-    # plot_response(which_ssfr='lasp|ssrr-a', which_lc='zen', fdir='.',)
-    # plot_response(which_ssfr='lasp|ssrr-b', which_lc='zen', fdir='.',)
+    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
+    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
+    plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
+    plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
+    plot_response(which_ssfr='lasp|ssrr-a', which_lc='zen', fdir='.',)
+    plot_response(which_ssfr='lasp|ssrr-b', which_lc='zen', fdir='.',)
 
     # Nonlinearity test
     # plot_response_nonlinearity(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.')

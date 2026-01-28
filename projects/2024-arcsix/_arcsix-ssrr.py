@@ -235,7 +235,7 @@ def cdata_ssfr_v1(
             if which_ssfr_for_flux == which_ssfr:
                 # select calibration file (can later be adjusted for different integration time sets)
                 #╭──────────────────────────────────────────────────────────────╮#
-                fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
+                # fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
 
                 jday_today = ssfr.util.dtime_to_jday(date)
 
@@ -280,6 +280,7 @@ def cdata_ssfr_v1(
                 
             else:
                 fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
+                fdir_cal = 'data/arcsix/cal/rad-cal/2025-11-06_ssrr_response_files'
 
                 jday_today = ssfr.util.dtime_to_jday(date)
 
@@ -346,6 +347,12 @@ def cdata_ssfr_v1(
                 # print(msg)
 
                 # convert counts to radiance
+                print("which_ssfr:", which_ssfr)
+                print("which_ssfr_for_flux:", which_ssfr_for_flux)
+                print("wvl_zen size:", wvl_zen.size)
+                print("wvl_nad size:", wvl_nad.size)
+                print("data_cal_zen['pri_resp'] size:", data_cal_zen['pri_resp'].shape)
+                print("data_cal_nad['pri_resp'] size:", data_cal_nad['pri_resp'].shape)
                 #╭──────────────────────────────────────────────────────────────╮#
                 for i in range(wvl_zen.size):
                     spec_zen[logic_dset, i] = cnt_zen[logic_dset, i] / data_cal_zen['pri_resp'][i]
@@ -979,14 +986,14 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             datetime.datetime(2024, 5, 24), #
+            #  datetime.datetime(2024, 5, 24), #
             #  datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
             #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
             #  datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
-            #  datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
+             datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
             #  datetime.datetime(2024, 6, 5),  # ARCSIX-1 science flight #5
-            #  datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6
-            #  datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
+             datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6
+             datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
             #  datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
             #  datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
             #  datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
@@ -1022,7 +1029,7 @@ if __name__ == '__main__':
         # step 2
         # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        run_time_offset_check(cfg)
+        # run_time_offset_check(cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3

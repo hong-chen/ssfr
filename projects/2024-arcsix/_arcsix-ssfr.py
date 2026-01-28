@@ -525,33 +525,34 @@ def cdata_ssfr_v2(
 
         # temporary fix to bypass the attitude correction for SSFR-B
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        if data_ssfr_v1['zen/wvl'].size > 424:
-            data_ssfr_v1['zen/toa0'] = data_ssfr_v1['zen/toa0'][:424]
-            data_ssfr_v1['zen/wvl'] = data_ssfr_v1['zen/wvl'][:424]
-            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][:, :424]
-            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][:, :424]
-            data_ssfr_v1['v0/spec_zen'] = data_ssfr_v1['v0/spec_zen'][:, :424]
-            data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:424]
+        size_limit = 423
+        if data_ssfr_v1['zen/wvl'].size > size_limit:
+            data_ssfr_v1['zen/toa0'] = data_ssfr_v1['zen/toa0'][:size_limit]
+            data_ssfr_v1['zen/wvl'] = data_ssfr_v1['zen/wvl'][:size_limit]
+            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][:, :size_limit]
+            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][:, :size_limit]
+            data_ssfr_v1['v0/spec_zen'] = data_ssfr_v1['v0/spec_zen'][:, :size_limit]
+            data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:size_limit]
         # ╰────────────────────────────────────────────────────────────────────────────╯#
         
-        # if date_s == '20240531':
-        #     data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][1:, :]
-        #     data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][1:, :]
-        #     data_ssfr_v1['nad/flux'] = data_ssfr_v1['nad/flux'][1:, :]
-        #     data_ssfr_v1['nad/cnt'] = data_ssfr_v1['nad/cnt'][1:, :]
-        #     data_ssfr_v1['jday'] = data_ssfr_v1['jday'][1:]
-        #     data_ssfr_v1['jday_ori'] = data_ssfr_v1['jday_ori'][1:]
-        #     data_ssfr_v1['tmhr'] = data_ssfr_v1['tmhr'][1:]
-        #     data_ssfr_v1['tmhr_ori'] = data_ssfr_v1['tmhr_ori'][1:]
-        #     data_ssfr_v1['sza'] = data_ssfr_v1['sza'][1:]
-        #     data_ssfr_v1['saa'] = data_ssfr_v1['saa'][1:]
-        #     data_ssfr_v1['ang_pit'] = data_ssfr_v1['ang_pit'][1:]
-        #     data_ssfr_v1['ang_rol'] = data_ssfr_v1['ang_rol'][1:]
-        #     data_ssfr_v1['ang_hed'] = data_ssfr_v1['ang_hed'][1:]
-        #     data_ssfr_v1['alt'] = data_ssfr_v1['alt'][1:]
-        #     data_ssfr_v1['ir_surf_temp'] = data_ssfr_v1['ir_surf_temp'][1:]
-        #     data_ssfr_v1['lon'] = data_ssfr_v1['lon'][1:]
-        #     data_ssfr_v1['lat'] = data_ssfr_v1['lat'][1:]
+        if date_s == '20240531':
+            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][1:, :]
+            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][1:, :]
+            data_ssfr_v1['nad/flux'] = data_ssfr_v1['nad/flux'][1:, :]
+            data_ssfr_v1['nad/cnt'] = data_ssfr_v1['nad/cnt'][1:, :]
+            data_ssfr_v1['jday'] = data_ssfr_v1['jday'][1:]
+            data_ssfr_v1['jday_ori'] = data_ssfr_v1['jday_ori'][1:]
+            data_ssfr_v1['tmhr'] = data_ssfr_v1['tmhr'][1:]
+            data_ssfr_v1['tmhr_ori'] = data_ssfr_v1['tmhr_ori'][1:]
+            data_ssfr_v1['sza'] = data_ssfr_v1['sza'][1:]
+            data_ssfr_v1['saa'] = data_ssfr_v1['saa'][1:]
+            data_ssfr_v1['ang_pit'] = data_ssfr_v1['ang_pit'][1:]
+            data_ssfr_v1['ang_rol'] = data_ssfr_v1['ang_rol'][1:]
+            data_ssfr_v1['ang_hed'] = data_ssfr_v1['ang_hed'][1:]
+            data_ssfr_v1['alt'] = data_ssfr_v1['alt'][1:]
+            data_ssfr_v1['ir_surf_temp'] = data_ssfr_v1['ir_surf_temp'][1:]
+            data_ssfr_v1['lon'] = data_ssfr_v1['lon'][1:]
+            data_ssfr_v1['lat'] = data_ssfr_v1['lat'][1:]
             
             
 
@@ -662,6 +663,81 @@ def cdata_ssfr_v2(
         angles['ang_pit_offset'] = ang_pit_offset
         angles['ang_rol_offset'] = ang_rol_offset
         #╰────────────────────────────────────────────────────────────────────────────╯#
+        
+        # check alp and HSK angles consistency
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        hsk_pit = data_ssfr_v1['ang_pit']
+        hsk_rol = data_ssfr_v1['ang_rol']
+        alp_pit = data_aux['ang_pit_m']
+        alp_rol = data_aux['ang_rol_m']
+        # alp_pit = data_aux['ang_pit_s']
+        # alp_rol = data_aux['ang_rol_s']
+        
+        fig, axes = plt.subplots(3, 2, figsize=(20, 8), sharex=True)
+        ax1 = axes[0, 0]
+        ax2 = axes[1, 0]
+        ax3 = axes[2, 0]
+        ax4 = axes[0, 1]
+        ax5 = axes[1, 1]
+        ax6 = axes[2, 1]
+        ax11 = ax1.twinx()
+        ax22 = ax2.twinx()
+        ax33 = ax3.twinx()
+        ax1.plot(data_ssfr_v1['tmhr'], hsk_pit, label='HSK Pitch', color='blue')
+        ax1.plot(data_ssfr_v1['tmhr'], alp_pit, label='ALP Pitch', color='orange', linestyle='--')
+        ax1.set_ylabel('Pitch Angle (deg)')
+        ax1.legend()
+        ax1.grid()
+        ax11.plot(data_ssfr_v1['tmhr'], hsk_pit - alp_pit, label='HSK - ALP Pitch', color='green')
+        ax11.set_ylabel('Pitch Angle Difference (deg)')
+        ax11.legend(loc='upper right')
+        ax11.grid()
+        dhsk_alp_pit = np.gradient(hsk_pit - alp_pit, data_ssfr_v1['tmhr']*3600.0)
+        ax4.plot(data_ssfr_v1['tmhr'], dhsk_alp_pit, label='d HSK-ALP Pitch/dt', color='blue')
+        ax4.set_ylabel('dPitch/dt (deg/s)')
+        ax4.legend()
+        ax4.grid()
+        
+        ax2.plot(data_ssfr_v1['tmhr'], hsk_rol, label='HSK Roll', color='blue')
+        ax2.plot(data_ssfr_v1['tmhr'], alp_rol, label='ALP Roll', color='orange', linestyle='--')
+        ax2.set_ylabel('Roll Angle (deg)')
+        ax2.legend()
+        ax2.grid()
+        ax22.plot(data_ssfr_v1['tmhr'], hsk_rol - alp_rol, label='HSK - ALP Roll', color='green')
+        ax22.set_ylabel('Roll Angle Difference (deg)')
+        ax22.legend(loc='upper right')
+        ax22.grid()
+        
+        dhsk_alp_rol = np.gradient(hsk_rol - alp_rol, data_ssfr_v1['tmhr']*3600.0)
+        ax5.plot(data_ssfr_v1['tmhr'], dhsk_alp_rol, label='d HSK-ALP Roll/dt', color='blue')
+        ax5.set_ylabel('dRoll/dt (deg/s)')
+        ax5.legend()
+        ax5.grid()
+        
+        hsk_pit_roll_sqrt = np.sqrt(hsk_pit**2 + hsk_rol**2)
+        alp_pit_roll_sqrt = np.sqrt(alp_pit**2 + alp_rol**2)
+        ax3.plot(data_ssfr_v1['tmhr'], hsk_pit_roll_sqrt, label='HSK sqrt(Pitch^2 + Roll^2)', color='blue')
+        ax3.plot(data_ssfr_v1['tmhr'], alp_pit_roll_sqrt, label='ALP sqrt(Pitch^2 + Roll^2)', color='orange', linestyle='--')
+        ax3.set_ylabel('Sqrt(Pitch^2 + Roll^2) (deg)')
+        ax3.set_xlabel('Time (hr)')
+        ax3.legend()
+        ax3.grid()
+        ax33.plot(data_ssfr_v1['tmhr'], hsk_pit_roll_sqrt - alp_pit_roll_sqrt, label='HSK - ALP Sqrt(Pitch^2 + Roll^2)', color='green')
+        ax33.set_ylabel('Sqrt(Pitch^2 + Roll^2) Difference (deg)')
+        ax33.legend(loc='upper right')
+        ax33.grid()
+        
+        dhsk_alp_pit_roll_sqrt = np.gradient(hsk_pit_roll_sqrt - alp_pit_roll_sqrt, data_ssfr_v1['tmhr']*3600.0)
+        ax6.plot(data_ssfr_v1['tmhr'], dhsk_alp_pit_roll_sqrt, label='d HSK-ALP Sqrt(Pitch^2 + Roll^2)/dt', color='blue')
+        ax6.set_ylabel('dSqrt(Pitch^2 + Roll^2)/dt (deg/s)')
+        ax6.set_xlabel('Time (hr)')
+        ax6.legend()
+        ax6.grid()
+        plt.suptitle('Comparison of Attitude Angles from HSK and ALP')
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.savefig(os.path.join(fdir_out, 'SSFR_Angles_Comparison_%s.png' % date_s))
+        plt.close()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # select calibration file for attitude correction
@@ -714,7 +790,8 @@ def cdata_ssfr_v2(
         g1.create_dataset('diff_ratio', data=diff_ratio, compression='gzip', compression_opts=9, chunks=True)
         for key in ['sza', 'saa', 'ang_pit_s', 'ang_rol_s', 'ang_hed', 'ang_pit_m', 'ang_rol_m']:
             g1.create_dataset(key, data=data_aux[key], compression='gzip', compression_opts=9, chunks=True)
-
+        for key in ['ang_pit', 'ang_rol']:
+            g1.create_dataset(key, data=data_ssfr_v1[key], compression='gzip', compression_opts=9, chunks=True)
         # apply attitude correction
         #╭──────────────────────────────────────────────────────────────╮#
         g2 = f.create_group('zen')
@@ -1366,7 +1443,7 @@ def run_test_zenith_vs_toa(cfg):
                     # ('2025-08-12', '2025-08-12', '2024-06-09', '2025-08-13'),
                     # ('2025-08-12', '2025-08-12', '2025-02-18', '2025-08-13'),
 
-                    ('2024-03-21', '2024-03-21', '2024-03-21', '2024-03-15'),
+                    # ('2024-03-21', '2024-03-21', '2024-03-21', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-06-02', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-07-26', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-07-31', '2024-03-15'),
@@ -1374,8 +1451,8 @@ def run_test_zenith_vs_toa(cfg):
                     ('2024-03-21', '2024-03-21', '2024-08-05', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-08-10_lamp-150c_pituffik1', '2024-03-15'),
                     ('2024-03-21', '2024-03-21', '2024-08-10_lamp-150c_pituffik2', '2024-03-15'),
-                    ('2024-03-21', '2024-03-21', '2025-02-25', '2024-03-15'),
-                    ('2025-02-25', '2025-02-25', '2024-03-21', '2025-08-13'),
+                    # ('2024-03-21', '2024-03-21', '2025-02-25', '2024-03-15'),
+                    # ('2025-02-25', '2025-02-25', '2024-03-21', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-06-02', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-07-26', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-07-31', '2025-08-13'),
@@ -1383,8 +1460,8 @@ def run_test_zenith_vs_toa(cfg):
                     ('2025-02-25', '2025-02-25', '2024-08-05', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-08-10_lamp-150c_pituffik1', '2025-08-13'),
                     ('2025-02-25', '2025-02-25', '2024-08-10_lamp-150c_pituffik2', '2025-08-13'),
-                    ('2025-02-25', '2025-02-25', '2025-02-25', '2025-08-13'),
-                    ('2025-08-12', '2025-08-12', '2024-03-21', '2025-08-13'),
+                    # ('2025-02-25', '2025-02-25', '2025-02-25', '2025-08-13'),
+                    # ('2025-08-12', '2025-08-12', '2024-03-21', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-06-02', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-07-26', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-07-31', '2025-08-13'),
@@ -1392,7 +1469,7 @@ def run_test_zenith_vs_toa(cfg):
                     ('2025-08-12', '2025-08-12', '2024-08-05', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-08-10_lamp-150c_pituffik1', '2025-08-13'),
                     ('2025-08-12', '2025-08-12', '2024-08-10_lamp-150c_pituffik2', '2025-08-13'),
-                    ('2025-08-12', '2025-08-12', '2025-02-25', '2025-08-13'),
+                    # ('2025-08-12', '2025-08-12', '2025-02-25', '2025-08-13'),
                     ]
 
     for i_rad_ang_cal_dates, (rad_cal_date, ang_cal_date) in enumerate([(x[:3], x[3]) for x in rad_ang_cal_dates]):
@@ -1740,7 +1817,7 @@ if __name__ == '__main__':
     # dates
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
-             datetime.datetime(2024, 5, 24), #
+            #  datetime.datetime(2024, 5, 24), #
             #  datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
             #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
             #  datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
@@ -1758,7 +1835,7 @@ if __name__ == '__main__':
             #  datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
             #  datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
             #  datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
             #  datetime.datetime(2024, 8, 16), # 
@@ -1783,7 +1860,7 @@ if __name__ == '__main__':
         # step 2
         # create bokeh interactive plots to retrieve time offset
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        run_time_offset_check(cfg)
+        # run_time_offset_check(cfg)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 3
