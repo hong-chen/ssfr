@@ -205,8 +205,67 @@ def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
     f.close()
 
     # figure
-    #/----------------------------------------------------------------------------\#
+        #/----------------------------------------------------------------------------\#
     if True:
+        fontsize = 20
+        title = os.path.basename(fname).replace('.h5', '').upper()
+        title2 = 'Cosine response for ' + ' '.join(os.path.basename(fname).replace('.h5', '').split('|')[6:8]).upper() # extract direction and channel info for title
+        plt.close('all')
+        plt.rcParams.update({'font.size': fontsize})
+        fig = plt.figure(figsize=(7, 7))
+        # fig.suptitle('Cosine Response (%d nm, %s channel)' % (wvl0, channel.upper()), fontsize=fontsize+4)
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        # ax1.scatter(mu, cos_resp[:, np.argmin(np.abs(wvl-wvl0))], s=6, c='k', lw=0.0, alpha=0.2)
+
+        # find the closest wavelength index but also print actual vs requested wavelength used
+        wvl_idx = np.argmin(np.abs(wvl_-wvl0))
+        actual_wvl = wvl_[wvl_idx]
+
+        ax1.scatter(mu_[ang_ >= 0.0], cos_resp_[ang_ >= 0.0, wvl_idx], marker='o', s=70, color='r', alpha=0.6)
+        ax1.scatter(mu_[ang_ < 0.0], cos_resp_[ang_ < 0.0, wvl_idx], marker='o', s=70, color='b', alpha=0.6)
+        ax1.plot(mu0, cos_resp0[:, wvl_idx], color='k', lw=3.0, linestyle='solid')
+
+        # angle_offset = -2.5
+        angle_offset = 0.0
+        # mu_new = np.cos(np.deg2rad(np.rad2deg(np.arccos(mu_[19:-1])) + angle_offset))
+        # ax1.plot(mu_[19:-1], cos_resp_[19:-1, np.argmin(np.abs(wvl_-wvl0))], marker='o', markersize=8, color='b', lw=1.0, alpha=0.2)
+        # ax1.plot(mu_new, cos_resp_[19:-1, np.argmin(np.abs(wvl_-wvl0))], marker='o', markersize=8, color='b', lw=1.0, alpha=0.6)
+        # ax1.errorbar(mu0, cos_resp0[:, np.argmin(np.abs(wvl_-wvl0))], yerr=cos_resp_std0[:, np.argmin(np.abs(wvl_-wvl0))], color='g', lw=1.0)
+        ax1.axhline(1.0, color='gray', ls='--')
+        ax1.plot([0.0, 1.0], [0.0, 1.0], color='gray', ls='--')
+        ax1.set_xlim((0.0, 1.0))
+        ax1.set_ylim((0.0, 1.1))
+        ax1.set_xlabel('$cos(\\theta)$')
+        ax1.set_ylabel('Response')
+        ax1.set_title('%s at %.1f nm' % (title2, actual_wvl), fontsize=fontsize)
+
+        patches_legend = [
+                          mpatches.Patch(color='black' , label='Averaged & Interpolated'), \
+                          mpatches.Patch(color='red'   , label='Pos. Angles (C.C.W.)'), \
+                          mpatches.Patch(color='blue'  , label='Neg. Angles (C.W.)'), \
+                          # mpatches.Patch(color='green' , label='Average&Std.'), \
+                         ]
+        ax1.legend(handles=patches_legend, loc='lower right', fontsize=16)
+        # ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
+        #\--------------------------------------------------------------/#
+
+        # save figure
+        #/--------------------------------------------------------------\#
+        fname = os.path.splitext(fname)[0] + '_wvl-{}_cos_resp.h5'.format(int(wvl0))
+        fname_png = os.path.basename(fname).replace('.h5', '.png')
+        if fdir_out is not None:
+            if not os.path.exists(fdir_out):
+                os.makedirs(fdir_out)
+            fname_png = os.path.join(fdir_out, fname_png)
+
+        fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        _metadata = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        fig.savefig(fname_png, bbox_inches='tight', metadata=_metadata)
+        #\--------------------------------------------------------------/#
+    #/----------------------------------------------------------------------------\#
+    if False:
         fontsize = 20
         title = os.path.basename(fname).replace('.h5', '').upper()
         plt.close('all')
@@ -224,6 +283,7 @@ def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
 
         ax1.plot(mu_[ang_ >= 0.0], cos_resp_[ang_ >= 0.0, wvl_idx], marker='o', markersize=10, color='r', lw=2.0, alpha=0.6)
         ax1.plot(mu_[ang_ < 0.0], cos_resp_[ang_ < 0.0, wvl_idx], marker='o', markersize=10, color='b', lw=2.0, alpha=0.6)
+        ax1.plot(mu0, cos_resp0[:, wvl_idx], marker='o', markersize=10, color='k', lw=4.0, linestyle='dashed')
 
         # angle_offset = -2.5
         angle_offset = 0.0
@@ -240,7 +300,7 @@ def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
         ax1.set_title('%s (Actual: %.1f nm)' % (title, actual_wvl), fontsize=fontsize)
 
         patches_legend = [
-                          # mpatches.Patch(color='black' , label='Average&Interpolated'), \
+                          mpatches.Patch(color='black' , label='Average&Interpolated'), \
                           mpatches.Patch(color='red'   , label='Pos. Angles (C.C.W.)'), \
                           mpatches.Patch(color='blue'  , label='Neg. Angles (C.W.)'), \
                           # mpatches.Patch(color='green' , label='Average&Std.'), \
@@ -487,14 +547,14 @@ if __name__ == '__main__':
 
     else:
         class Args:
-            # fdir = './'
-            fdir = '../'
-            # fname = '*ang-resp*si-120|in-350.h5'
-            fname = '2025-06-30*ang-resp*si-120|in-350.h5'
+            fdir = './'
+            fname = '*ang-resp*si-120|in-350.h5'
+            # fdir = '../'
+            # fname = '2025-06-30*ang-resp*si-120|in-350.h5'
             fdir_out = './'
             wvl = 555.0
-            # azimuthal = False
-            azimuthal = True
+            azimuthal = False
+            # azimuthal = True
             info = False
         args = Args()
 
