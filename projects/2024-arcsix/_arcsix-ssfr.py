@@ -1641,8 +1641,10 @@ def run_test_zenith_vs_toa(cfg):
 def run_alp_offset_check(cfg, fdir='.', plot=True, wvl=550.0, diff_ratio_thresh=0.24, altitude_thresh=0.0):
 
     # ALP offset value ranges to test
-    ang_pit_offset_array = np.arange(2.5, 6.51, 0.1)
-    ang_rol_offset_array = np.arange(-2.0, 2.01, 0.1)
+    # ang_pit_offset_array = np.arange(2.5, 6.51, 0.1)
+    # ang_rol_offset_array = np.arange(-2.0, 2.01, 0.1)
+    ang_pit_offset_array = np.arange(4.5, 5.01, 0.1) # For small sized example
+    ang_rol_offset_array = np.arange(-0.2, 0.21, 0.1)
     # ang_hed_offset_array = np.array([0.0])
 
     if not os.path.exists(fdir):
@@ -1698,6 +1700,26 @@ def run_alp_offset_check(cfg, fdir='.', plot=True, wvl=550.0, diff_ratio_thresh=
     logic_altitude = data_hsk['alt'] > altitude_thresh
 
     logic_valid = logic_clear & logic_remain_clear & logic_tilt & logic_altitude
+
+    ### Initial attempt of pit/tol = 0.0/0.0
+    iza, iaa = ssfr.util.prh2za(angles['ang_pit']-angles['ang_pit_m']-0., angles['ang_rol']-angles['ang_rol_m']-0., angles['ang_hed']-0.)
+    dc00       = ssfr.util.muslope(angles['sza'], angles['saa'], iza, iaa)
+    ##### DC linear fitting #####
+    y_1 = flux_zen[logic_valid] / flux_toa
+    x_1 = dc00[logic_valid]
+    not_nan = ~np.isnan(y_1) & ~np.isnan(x_1)
+    cof = np.polyfit(x_1[not_nan], y_1[not_nan], 1)
+    ##### Flux sine fitting #####
+    flux_sim_v1 = flux_toa * dc00
+    x_200 = angles['raa'][logic_valid]
+    y_200 = flux_zen[logic_valid] / flux_sim_v1[logic_valid]
+    bin_edges = np.arange(0, 361, 10)
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    digitized = np.digitize(x_200, bin_edges) - 1
+    bin_means = np.array([np.nanmean(y_200[digitized == i]) for i in range(1, len(bin_edges))])
+    not_nan_1 = ~np.isnan(bin_means)
+    x_fit, y_fit = bin_centers[not_nan_1], bin_means[not_nan_1]
+    popt00, pcov00 = curve_fit(sine_func, x_fit, y_fit, p0=[np.nanmax(y_fit) - np.nanmin(y_fit), 0.0, np.nanmean(y_fit)])
 
     target = {'val': np.inf, 'slope': None, 'intercept': None, 'x': None, 'y': None, 'ang_pit_offset': np.nan, 'ang_rol_offset': np.nan, 'ang_hed_offset': np.nan}
     target2 = {'val': np.inf, 'amp': None, 'phase': None, 'offset': None, 'x': None, 'y': None, 'ang_pit_offset': np.nan, 'ang_rol_offset': np.nan, 'ang_hed_offset': np.nan}
@@ -1766,39 +1788,68 @@ def run_alp_offset_check(cfg, fdir='.', plot=True, wvl=550.0, diff_ratio_thresh=
             
             if plot:
                 plt.close('all')
-                fig, axs = plt.subplots(3, 1, figsize=(8, 10))
-                axs[0].scatter(tmhr, flux_zen/dc, s=2, color='grey', alpha=0.2)
-                axs[0].scatter(tmhr[logic_valid], flux_zen[logic_valid]/dc[logic_valid], s=2, color='blue', alpha=1, label='Fobs/DC')
+                fig, axs = plt.subplots(2, 1, figsize=(6, 7))
+                axs[0].scatter(tmhr, flux_zen/dc00, s=2, color='grey', alpha=0.2)
+                axs[0].scatter(tmhr[logic_valid], flux_zen[logic_valid]/dc00[logic_valid], s=2, color='blue', alpha=1, label='Fobs/DC (raw)')
+                axs[0].scatter(tmhr[logic_valid], flux_zen[logic_valid]/dc[logic_valid], s=2, color='red', alpha=1, label='Fobs/DC (corrected)')
                 axs[0].axhline(flux_toa, color='orange', label='TOA Flux: %.4f W/m2/nm' % flux_toa)
                 axs[0].set_ylim([0, 1.6*np.nanmax(flux_zen[logic_valid]/dc[logic_valid])])
                 axs[0].set_xlabel('Time (hr)')
                 axs[0].set_ylabel(r'Measured Flux / DC ($\rm W/m^2/nm$)')
                 axs[0].legend()
                 axs[0].grid()
-                axs[1].scatter(x_1, y_1, s=2, color='blue', alpha=0.5)
-                axs[1].plot(np.array([0., np.nanmax(x_1)]), np.polyval(cof, np.array([0., np.nanmax(x_1)])), color='red', label='slope=%.4f, intercept=%.4f' % (cof[0], cof[1]))
-                axs[1].set_xlim([0, None])
-                axs[1].set_ylim([0, None])
-                axs[1].set_xlabel('DC')
-                axs[1].set_ylabel('Measured Flux Ratio')
-                axs[1].legend()
-                axs[1].grid()
-                axs[2].scatter(x_2, y_2, s=2, color='blue', alpha=0.5, label='Fobs / (TOA * DC)')
+                axs[1].scatter(x_200, y_200, s=2, color='blue', alpha=0.5)#, label='Fobs / (TOA * DC) (raw)')
+                axs[1].scatter(x_2, y_2, s=2, color='red', alpha=0.5)#, label='Fobs / (TOA * DC) (corrected)')
                 if None not in popt:
                     x_fit_line = np.linspace(0, 360, 360)
-                    axs[2].plot(x_fit_line, sine_func(x_fit_line, *popt), color='red', label='fit: amp=%.4f, phase=%.4f, offset=%.4f' % (amp, phase, offset))
-                axs[2].set_xlim([0, 360])
-                axs[2].set_xlabel('Relative Azimuth Angle (deg)')
-                axs[2].set_ylabel('Measured / (TOA * dc)')
-                axs[2].legend()
-                axs[2].grid()
+                    axs[1].plot(x_fit_line, sine_func(x_fit_line, *popt00), color='blue', linestyle='dashed', label='Raw (fit: %.4f * sin(RAA + %.4f) + %.4f' % (popt00[0], popt00[1], popt00[2]))
+                    axs[1].plot(x_fit_line, sine_func(x_fit_line, *popt), color='red', linestyle='dashed', label='Corrected (fit: %.4f * sin(RAA + %.4f) + %.4f' % (popt[0], popt[1], popt[2]))
+                axs[1].set_xlim([0, 360])
+                axs[1].set_xlabel('Relative Azimuth Angle (deg)')
+                axs[1].set_ylabel('Measured / (TOA * dc)')
+                axs[1].legend()
+                axs[1].grid()
                 fig.suptitle(
                     'ALP Offset Check (Date: %s, Wavelength: %.1f nm)\nPitch Offset: %.2f deg, Roll Offset: %.2f deg, Heading Offset: %.2f deg' % (
                         cfg.common['date'].strftime('%Y-%m-%d'), wvl, ang_pit_offset, ang_rol_offset, ang_hed_offset),
                 )
                 fig.tight_layout()
-                fig.savefig(f"{fdir}/alp_offset_{cfg.common['date'].strftime('%Y-%m-%d')}_wvl{int(wvl)}nm_pit{ang_pit_offset:+.2f}_rol{ang_rol_offset:+.2f}.png", bbox_inches='tight', dpi=150)
-                # fig.savefig(f"{fdir}/alp_offset_{cfg.common['date'].strftime('%Y-%m-%d')}_wvl{int(wvl)}nm_pit{ang_pit_offset:+.2f}_rol{ang_rol_offset:+.2f}_hed{ang_hed_offset:+.2f}.png", bbox_inches='tight', dpi=150)
+                fig.savefig(f"{fdir}/alp_offset2_{cfg.common['date'].strftime('%Y-%m-%d')}_wvl{int(wvl)}nm_pit{ang_pit_offset:+.2f}_rol{ang_rol_offset:+.2f}.png", bbox_inches='tight', dpi=150)
+            # if plot:
+            #     plt.close('all')
+            #     fig, axs = plt.subplots(3, 1, figsize=(8, 10))
+            #     axs[0].scatter(tmhr, flux_zen/dc, s=2, color='grey', alpha=0.2)
+            #     axs[0].scatter(tmhr[logic_valid], flux_zen[logic_valid]/dc[logic_valid], s=2, color='blue', alpha=1, label='Fobs/DC')
+            #     axs[0].axhline(flux_toa, color='orange', label='TOA Flux: %.4f W/m2/nm' % flux_toa)
+            #     axs[0].set_ylim([0, 1.6*np.nanmax(flux_zen[logic_valid]/dc[logic_valid])])
+            #     axs[0].set_xlabel('Time (hr)')
+            #     axs[0].set_ylabel(r'Measured Flux / DC ($\rm W/m^2/nm$)')
+            #     axs[0].legend()
+            #     axs[0].grid()
+            #     axs[1].scatter(x_1, y_1, s=2, color='blue', alpha=0.5)
+            #     axs[1].plot(np.array([0., np.nanmax(x_1)]), np.polyval(cof, np.array([0., np.nanmax(x_1)])), color='red', label='slope=%.4f, intercept=%.4f' % (cof[0], cof[1]))
+            #     axs[1].set_xlim([0, None])
+            #     axs[1].set_ylim([0, None])
+            #     axs[1].set_xlabel('DC')
+            #     axs[1].set_ylabel('Measured Flux Ratio')
+            #     axs[1].legend()
+            #     axs[1].grid()
+            #     axs[2].scatter(x_2, y_2, s=2, color='blue', alpha=0.5, label='Fobs / (TOA * DC)')
+            #     if None not in popt:
+            #         x_fit_line = np.linspace(0, 360, 360)
+            #         axs[2].plot(x_fit_line, sine_func(x_fit_line, *popt), color='red', label='fit: amp=%.4f, phase=%.4f, offset=%.4f' % (amp, phase, offset))
+            #     axs[2].set_xlim([0, 360])
+            #     axs[2].set_xlabel('Relative Azimuth Angle (deg)')
+            #     axs[2].set_ylabel('Measured / (TOA * dc)')
+            #     axs[2].legend()
+            #     axs[2].grid()
+            #     fig.suptitle(
+            #         'ALP Offset Check (Date: %s, Wavelength: %.1f nm)\nPitch Offset: %.2f deg, Roll Offset: %.2f deg, Heading Offset: %.2f deg' % (
+            #             cfg.common['date'].strftime('%Y-%m-%d'), wvl, ang_pit_offset, ang_rol_offset, ang_hed_offset),
+            #     )
+            #     fig.tight_layout()
+            #     fig.savefig(f"{fdir}/alp_offset_{cfg.common['date'].strftime('%Y-%m-%d')}_wvl{int(wvl)}nm_pit{ang_pit_offset:+.2f}_rol{ang_rol_offset:+.2f}.png", bbox_inches='tight', dpi=150)
+            #     # fig.savefig(f"{fdir}/alp_offset_{cfg.common['date'].strftime('%Y-%m-%d')}_wvl{int(wvl)}nm_pit{ang_pit_offset:+.2f}_rol{ang_rol_offset:+.2f}_hed{ang_hed_offset:+.2f}.png", bbox_inches='tight', dpi=150)
 
     print('\n-------------------------------------------------')
     print("ALP Offset Check Results for Date: %s, Wavelength: %.1f nm" % (cfg.common['date'].strftime('%Y-%m-%d'), wvl))
@@ -1830,12 +1881,12 @@ if __name__ == '__main__':
             #  datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 7, 22), #
             #  datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
+             datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
             #  datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
             #  datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
             #  datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
             #  datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-             datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+            #  datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
             #  datetime.datetime(2024, 8, 16), # 
