@@ -1792,7 +1792,7 @@ def run_alp_offset_check(cfg, fdir='.', plot=True, wvl=550.0, diff_ratio_thresh=
                 axs[0].scatter(tmhr, flux_zen/dc00, s=2, color='grey', alpha=0.2)
                 axs[0].scatter(tmhr[logic_valid], flux_zen[logic_valid]/dc00[logic_valid], s=2, color='blue', alpha=1, label='Fobs/DC (raw)')
                 axs[0].scatter(tmhr[logic_valid], flux_zen[logic_valid]/dc[logic_valid], s=2, color='red', alpha=1, label='Fobs/DC (corrected)')
-                axs[0].axhline(flux_toa, color='orange', label='TOA Flux: %.4f W/m2/nm' % flux_toa)
+                axs[0].axhline(flux_toa, color='orange', label='TOA normal Flux: %.4f $W/m^2/nm$' % flux_toa)
                 axs[0].set_ylim([0, 1.6*np.nanmax(flux_zen[logic_valid]/dc[logic_valid])])
                 axs[0].set_xlabel('Time (hr)')
                 axs[0].set_ylabel(r'Measured Flux / DC ($\rm W/m^2/nm$)')
@@ -1802,8 +1802,8 @@ def run_alp_offset_check(cfg, fdir='.', plot=True, wvl=550.0, diff_ratio_thresh=
                 axs[1].scatter(x_2, y_2, s=2, color='red', alpha=0.5)#, label='Fobs / (TOA * DC) (corrected)')
                 if None not in popt:
                     x_fit_line = np.linspace(0, 360, 360)
-                    axs[1].plot(x_fit_line, sine_func(x_fit_line, *popt00), color='blue', linestyle='dashed', label='Raw (fit: %.4f * sin(RAA + %.4f) + %.4f' % (popt00[0], popt00[1], popt00[2]))
-                    axs[1].plot(x_fit_line, sine_func(x_fit_line, *popt), color='red', linestyle='dashed', label='Corrected (fit: %.4f * sin(RAA + %.4f) + %.4f' % (popt[0], popt[1], popt[2]))
+                    axs[1].plot(x_fit_line, sine_func(x_fit_line, *popt00), color='blue', linestyle='dashed', label='Raw (fit: %.4f * sin(RAA + %.4f) + %.4f)' % (popt00[0], popt00[1], popt00[2]))
+                    axs[1].plot(x_fit_line, sine_func(x_fit_line, *popt), color='red', linestyle='dashed', label='Corrected (fit: %.4f * sin(RAA + %.4f) + %.4f)' % (popt[0], popt[1], popt[2]))
                 axs[1].set_xlim([0, 360])
                 axs[1].set_xlabel('Relative Azimuth Angle (deg)')
                 axs[1].set_ylabel('Measured / (TOA * dc)')
@@ -1905,7 +1905,7 @@ if __name__ == '__main__':
         # step 1
         # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(cfg, run=True)
+        # main_process_data_v0(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
@@ -1917,12 +1917,12 @@ if __name__ == '__main__':
         # step 3
         # apply time offsets to sync data to aircraft housekeeping file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v1(cfg, run=True)
+        # main_process_data_v1(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 4
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v2(cfg, run=True)
+        # main_process_data_v2(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯# 
        
         # optional
@@ -1934,7 +1934,7 @@ if __name__ == '__main__':
         # optional
         # check ALP angle offsets
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        # run_alp_offset_check(cfg, fdir='alp_offset_check', plot=True, wvl=550.0, diff_ratio_thresh=0.24)
+        run_alp_offset_check(cfg, fdir='alp_offset_check', plot=True, wvl=550.0, diff_ratio_thresh=0.24)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
