@@ -973,11 +973,11 @@ def main_ssfr_rad_cal(
                 #  'nad': 'data/arcsix/cal/rad-cal/2024-03-29_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
-                {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
-                 'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
-                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest'},
-                # #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest'},
+                #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+                {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
+                 'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest'},
+                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest'},
                 ]
 
         fdirs_tra = [
@@ -1011,11 +1011,11 @@ def main_ssfr_rad_cal(
                 #  'nad': 'data/arcsix/cal/rad-cal/2024-03-21_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350'},
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_post',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
-                {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
-                 'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
-                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest'},
-                # #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest'},
+                #  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
+                {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
+                 'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest'},
+                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest'},
                 ]
 
         fdirs_tra = [
@@ -2037,6 +2037,153 @@ def plot_response_ratio(
     fig.savefig(fname_fig, bbox_inches='tight', transparent=False, dpi=300)
     plt.close(fig)
 
+def plot_response_ratio2():
+
+    lampstd_labels = [
+        '506',
+        '1324',
+    ]
+    fdirs_pri = [
+        '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest',
+        '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest',
+                ]
+
+    dat_out = []
+    
+    for istd, (lampstdlabel, fdir_pri) in enumerate(zip(lampstd_labels, fdirs_pri)):
+        fnames_pri_ = sorted(glob.glob('%s/*.SKS' % (fdir_pri)))
+        fnames_pri = [fnames_pri_[-1]]
+        if len(fnames_pri) > 1:
+            msg = '\nWarning [rad_cal]: find more than one file for "%s", selected "%s" ...' % (fdir_pri, fnames_pri[0])
+            warnings.warn(msg)
+
+        resp_pri = ssfr.cal.cal_rad_resp_old(
+                fnames_pri,
+                resp=None,
+                which_ssfr='lasp|ssfr-b',
+                which_lc='nad',
+                spec_reverse=False,
+                which_lamp='lamp-%s' % (lampstdlabel),
+                int_time={'si':80.0, 'in':250.0},
+                dark_extend=5,
+                light_extend=5,
+                lamp_corr=False,
+                verbose=True,
+                )
+
+        lampmea_labels = [
+            '506',
+            '1324',
+        ]
+        fdirs_dat = [
+            '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest',
+            '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest',
+        ]
+        
+        for imea, (lamplabel, fdir_dat) in enumerate(zip(lampmea_labels, fdirs_dat)):
+            fnames_dat_ = sorted(glob.glob('%s/*.SKS' % (fdir_dat)))
+            fnames_dat = [fnames_dat_[-1]]
+
+            transfer = ssfr.cal.cal_rad_resp_old(
+                    fnames_dat,
+                    resp=resp_pri,
+                    which_ssfr='lasp|ssfr-b',
+                    which_lc='nad',
+                    spec_reverse=False,
+                    # which_lamp='',
+                    int_time={'si':80.0, 'in':250.0},
+                    dark_extend=5,
+                    light_extend=5,
+                    lamp_corr=False,
+                    verbose=True,
+            )
+
+            wvls = ssfr.lasp_ssfr.get_ssfr_wvl('lasp|ssfr-b')
+
+            si_tag = 'nad|si'
+            in_tag = 'nad|in'
+
+            wvl_si = wvls[si_tag]
+            wvl_in = wvls[in_tag]
+
+            trans_si = transfer[si_tag]
+            trans_in = transfer[in_tag]
+
+            dat_out.append((lampstdlabel, lamplabel, wvl_si, trans_si, wvl_in, trans_in))
+
+            # if lampstdlabel == lamplabel:
+            #     plt.plot(wvl_si, trans_si, label='std: %s mea: %s SI' % (lampstdlabel, lamplabel), ls='--')
+            #     plt.plot(wvl_in, trans_in, label='std: %s mea: %s IN' % (lampstdlabel, lamplabel), ls='--')
+            # else:
+            #     plt.plot(wvl_si, trans_si, label='std: %s mea: %s SI' % (lampstdlabel, lamplabel), ls='-')
+            #     plt.plot(wvl_in, trans_in, label='std: %s mea: %s IN' % (lampstdlabel, lamplabel), ls='-')
+                
+    def _new_ratio_figure():
+        plt.figure(figsize=(6, 5))
+        plt.axhline(1.0, color='gray', lw=0.8, ls='--')
+        plt.ylim(0.85, 1.15)
+        plt.xlabel('Wavelength (nm)')
+        plt.ylabel('Ratio')
+        plt.title('SSFR-B NAD Flux Ratio')
+
+    if len(dat_out) != 4:
+        raise ValueError('Expected 4 transfer datasets, got %d.' % len(dat_out))
+
+    # dat_out ordering is [cal=506, obs=506], [cal=506, obs=1324], [cal=1324, obs=506], [cal=1324, obs=1324]
+    d00, d01, d10, d11 = dat_out
+    wvl_si = d00[2]
+    wvl_in = d00[4]
+
+    plt.figure(figsize=(6, 5))
+    for lampcallabel, lamplabel, wvl_si0, trans_si, wvl_in0, trans_in in dat_out:
+        linestyle = '--' if lampcallabel == lamplabel else '-'
+        plt.plot(wvl_si0, trans_si, label='cal: %s obs: %s SI' % (lampcallabel, lamplabel), ls=linestyle)
+        plt.plot(wvl_in0, trans_in, label='cal: %s obs: %s IN' % (lampcallabel, lamplabel), ls=linestyle)
+    plt.xlabel('Wavelength (nm)')
+    plt.ylabel('Flux')
+    plt.title('SSFR-B NAD Transfer Function')
+    plt.legend()
+
+    _new_ratio_figure()
+    plt.plot(wvl_si, d01[3] / d00[3], label='SI cal:%s obs:(%s/%s) Ratio' % (d01[0], d01[1], d00[1]))
+    plt.plot(wvl_in, d01[5] / d00[5], label='IN cal:%s obs:(%s/%s) Ratio' % (d01[0], d01[1], d00[1]))
+    plt.plot(wvl_si, d00[3] / d01[3], label='SI cal:%s obs:(%s/%s) Ratio' % (d00[0], d00[1], d01[1]), ls='--')
+    plt.plot(wvl_in, d00[5] / d01[5], label='IN cal:%s obs:(%s/%s) Ratio' % (d00[0], d00[1], d01[1]), ls='--')
+    plt.legend()
+    plt.title('Flux Ratio')
+
+    _new_ratio_figure()
+    plt.plot(wvl_si, d11[3] / d10[3], label='SI cal:%s obs:(%s/%s) Ratio' % (d11[0], d11[1], d10[1]))
+    plt.plot(wvl_in, d11[5] / d10[5], label='IN cal:%s obs:(%s/%s) Ratio' % (d11[0], d11[1], d10[1]))
+    plt.legend()
+    plt.title('Flux Ratio')
+
+    _new_ratio_figure()
+    plt.plot(wvl_si, d10[3] / d00[3], label='SI cal:(%s/%s) obs:%s Ratio' % (d10[0], d00[0], d00[1]))
+    plt.plot(wvl_in, d10[5] / d00[5], label='IN cal:(%s/%s) obs:%s Ratio' % (d10[0], d00[0], d00[1]))
+    plt.legend()
+    plt.title('Flux Ratio')
+
+    _new_ratio_figure()
+    plt.plot(wvl_si, d11[3] / d00[3], label='SI')
+    plt.plot(wvl_in, d11[5] / d00[5], label='IN')
+    plt.legend()
+    plt.title('Datasheet Flux Ratio (%s/%s)' % (d11[0], d00[0]))
+
+    _new_ratio_figure()
+    plt.plot(wvl_si, (d10[3] / d00[3]) / (d11[3] / d00[3]), label='SI')
+    plt.plot(wvl_in, (d10[5] / d00[5]) / (d11[5] / d00[5]), label='IN')
+    plt.legend()
+    plt.title('Flux Ratio')
+
+    _new_ratio_figure()
+    plt.plot(wvl_si, (d11[3] / d10[3]) / (d11[3] / d00[3]), label='SI')
+    plt.plot(wvl_in, (d11[5] / d10[5]) / (d11[5] / d00[5]), label='IN')
+    plt.legend()
+    plt.title('Flux Ratio')
+
+    plt.show()
+
 def plot_response_lc_wiggle(
         caldate='2024-08-10',
         which_ssfr='lasp|ssrr-a',
@@ -2756,8 +2903,10 @@ if __name__ == '__main__':
     main_ssfr_rad_cal(which_ssfr='lasp|ssfr-b')
     plot_response_ratio(condition='lasp|ssfr-a', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
     plot_response_ratio(condition='lasp|ssfr-b', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
-    # plot_response_ratio(condition='lamp-1324', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
-    # plot_response_ratio(condition='lamp-506', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
+    plot_response_ratio(condition='lamp-1324', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
+    plot_response_ratio(condition='lamp-506', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
+
+    # plot_response_ratio2()
 
     # angular calibrations(SSFR-A, zen-lc4,  pre)
     #╭────────────────────────────────────────────────────────────────────────────╮#
