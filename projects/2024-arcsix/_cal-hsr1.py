@@ -500,13 +500,111 @@ def hsr1_flux_compare_20251027():
         plt.clf()
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
+def hsr1_rad_cal_20260331():
+
+    fname_raw = '/Volumes/SONY_16GQX/2026-03-31_navyHSR/Calibration - Edited/Baumer 700007631221 SpectrometerCalibration 2024-03-21.txt'
+    data_raw = np.genfromtxt(fname_raw, skip_header=4, delimiter='\t', usecols=(1, 2, 3, 4, 5, 6, 7, 8))
+
+    fname_new = '/Volumes/SONY_16GQX/2026-03-31_navyHSR/Calibration - Edited/Baumer 700007631221 SpectrometerCalibration 2026-03-31_LASP.txt'
+    data_new = np.genfromtxt(fname_new, skip_header=4, delimiter='\t', usecols=(1, 2, 3, 4, 5, 6, 7, 8))
+
+    fig = plt.figure(figsize=(8, 6))
+    ax1 = fig.add_subplot(111)
+    for i in range(1, 8):
+        ax1.plot(data_raw[:, 0], data_raw[:, i], c='blue', alpha=0.2)
+        ax1.plot(data_new[:, 0], data_new[:, i], c='red', alpha=0.2)
+    ax1.plot(data_raw[:, 0], np.nanmean(data_raw[:, 1:8], axis=1), c='blue', label=fname_raw.split(' ')[-1].split('.')[0])
+    ax1.plot(data_new[:, 0], np.nanmean(data_new[:, 1:8], axis=1), c='red', label=fname_new.split(' ')[-1].split('.')[0])
+    ax1.grid(True, which='both', linestyle='--', linewidth=0.5)
+    ax1.set_yscale('log')
+    ax1.set_xlim((300, 1100))
+    ax1.set_ylim((0.1, None))
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Response')
+    ax1.set_title('Navy HSR1 Response')
+    ax1.legend(loc='upper left', fontsize=16)
+
+    # save figure
+    fig.subplots_adjust(hspace=0.35, wspace=0.35)
+    _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+    fname_fig = f"{_metadata_['Function']}.png"
+    plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+    plt.show()
+    plt.close(fig)
+    plt.clf()
+
+def hsr1_flux_compare_20260331():
+
+    # lamp data
+    fname = f'{ssfr.common.fdir_data}/lamp/f-1324.dat'
+    data_lamp_ = np.loadtxt(fname)
+    logic_lamp = (data_lamp_[:, 0]>=300.0) & (data_lamp_[:, 0]<=1100.0)
+    data_lamp = {
+            'wvl': data_lamp_[logic_lamp, 0],
+            'flux': data_lamp_[logic_lamp, 1]*1.0e4,
+            }
+    # measurements with the old calibration file
+    fname_tot = '/Volumes/SONY_16GQX/2026-03-31_navyHSR/2026-03-31_cal-old/Total.txt'
+    data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
+    data_hsr1_old = {
+            'wvl': data_hsr1_.data['wvl'],
+            'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
+            'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
+            }
+    # measurements with the new calibration file
+    fname_tot = '/Volumes/SONY_16GQX/2026-03-31_navyHSR/2026-03-31_cal-new/Total.txt'
+    data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
+    data_hsr1_new = {
+            'wvl': data_hsr1_.data['wvl'],
+            'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
+            'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
+            }
+    
+    # figure
+    fig = plt.figure(figsize=(12, 12))
+    ax1 = fig.add_subplot(211)
+    ax1.plot(data_lamp['wvl'], data_lamp['flux'], color='k', lw=2.0, label='Lamp data (1324)')
+    ax1.fill_between(data_hsr1_old['wvl'], data_hsr1_old['flux']-data_hsr1_old['flux_std'], data_hsr1_old['flux']+data_hsr1_old['flux_std'], color='blue', lw=0.0, alpha=0.1)
+    ax1.plot(data_hsr1_old['wvl'], data_hsr1_old['flux'], color='blue', lw=1.5, label='Old Cal')
+    ax1.fill_between(data_hsr1_new['wvl'], data_hsr1_new['flux']-data_hsr1_new['flux_std'], data_hsr1_new['flux']+data_hsr1_new['flux_std'], color='red', lw=0.0, alpha=0.1)
+    ax1.plot(data_hsr1_new['wvl'], data_hsr1_new['flux'], color='red', lw=1.5, label='New Cal')
+    ax1.grid(True, which='both', linestyle='--', linewidth=0.5)
+    ax1.set_xlabel('Wavelength [nm]')
+    ax1.set_ylabel('Irradiance [$\\mathrm{W m^{-2} nm^{-1}}$]')
+    ax1.set_ylim((0, None))
+    ax1.set_title('Navy HSR1 Flux Comparison')
+    ax1.legend(loc='upper left', fontsize=16)
+
+    data_lamp_flux = np.interp(data_hsr1_new['wvl'], data_lamp['wvl'], data_lamp['flux'])
+    ax2 = fig.add_subplot(212)
+    ax2.plot(data_hsr1_new['wvl'], data_hsr1_new['flux']/data_lamp_flux, color='red', lw=1.5, label='New Cal / Lamp truth')
+    ax2.plot(data_hsr1_new['wvl'], data_hsr1_old['flux']/data_lamp_flux, color='blue', lw=1.5, label='Old Cal / Lamp truth')
+    ax2.axhline(1.0, color='k', lw=0.5, ls='--')
+    ax2.set_xlabel('Wavelength [nm]')
+    ax2.set_ylabel('Ratio (Lamp / New Cal)')
+    ax2.set_ylim((0.8, 1.2))
+    ax2.grid(True, which='both', linestyle='--', linewidth=0.5)
+    ax2.legend(loc='upper left', fontsize=16)
+    # save figure
+    fig.subplots_adjust(hspace=0.35, wspace=0.35)
+    _metadata_ = {'Computer': os.uname()[1], 'Script': os.path.abspath(__file__), 'Function':sys._getframe().f_code.co_name, 'Date':datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}
+    fname_fig = f"{_metadata_['Function']}.png"
+    plt.savefig(fname_fig, bbox_inches='tight', metadata=_metadata_, transparent=False)
+    plt.show()
+    plt.close(fig)
+    plt.clf()
+
+
 if __name__ == '__main__':
 
     # hsr1_rad_cal_raw_20250903()
     # hsr1_rad_cal_new_20250903()
     # hsr1_flux_compare_20250905()
 
-    hsr1_rad_cal_20251027()
-    hsr1_flux_compare_20251027()
+    # hsr1_rad_cal_20251027()
+    # hsr1_flux_compare_20251027()
+
+    hsr1_rad_cal_20260331()
+    hsr1_flux_compare_20260331()
 
     pass
