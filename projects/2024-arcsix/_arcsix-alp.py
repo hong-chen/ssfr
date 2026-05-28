@@ -468,7 +468,7 @@ if __name__ == '__main__':
             #  datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
-             datetime.datetime(2024, 8, 16), # 
+            #  datetime.datetime(2024, 8, 16), # 
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
