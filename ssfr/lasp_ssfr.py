@@ -544,6 +544,18 @@ class read_ssfr:
         self.data_raw['count_dark-corr'] = count_dark_corr
         self.data_raw['count_per_ms_dark-corr'] = count_dark_corr / self.data_raw['int_time'][:, np.newaxis, :]
 
+        # create per-dataset attributes (self.dset0, self.dset1, ...) matching the original API
+        for idset in range(self.Ndset):
+            logic = (self.data_raw['dset_num'] == idset)
+            dset = {}
+            for vname in self.data_raw.keys():
+                if vname == 'info':
+                    dset[vname] = self.data_raw[vname].copy()
+                else:
+                    dset[vname] = self.data_raw[vname][logic, ...]
+            dset['spectra_dark-corr'] = count_dark_corr[logic, ...]
+            setattr(self, 'dset%d' % idset, dset)
+
     def wvl_join(
             self,
             which_ssfr,

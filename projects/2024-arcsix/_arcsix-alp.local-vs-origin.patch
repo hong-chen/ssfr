@@ -1,0 +1,15 @@
+diff --git a/projects/2024-arcsix/_arcsix-alp.py b/projects/2024-arcsix/_arcsix-alp.py
+index c39b6e6..f3da2e1 100644
+--- a/projects/2024-arcsix/_arcsix-alp.py
++++ b/projects/2024-arcsix/_arcsix-alp.py
+@@ -447,8 +447,8 @@ if __name__ == '__main__':
+     # dates
+     #╭────────────────────────────────────────────────────────────────────────────╮#
+     dates = [
+-             datetime.datetime(2024, 5, 24), #
+-            #  datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
++            #  datetime.datetime(2024, 5, 24), #
++             datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
+             #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
+             #  datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
+             #  datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
