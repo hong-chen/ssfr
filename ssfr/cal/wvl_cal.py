@@ -13,9 +13,14 @@ import matplotlib.path as mpl_path
 import matplotlib.image as mpl_img
 import matplotlib.patches as mpatches
 import matplotlib.gridspec as gridspec
+from matplotlib.lines import Line2D
 from matplotlib import rcParams, ticker
 from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.sans-serif'] = ['Arial']
+
 
 
 
@@ -26,7 +31,9 @@ __all__ = [
         'load_wvl_coef',
         'load_ils_nir',
         'cal_wvl_coef_two_lamps_InGaAs',
-        'cal_wvl_coef_two_lamps_Si'
+        'cal_wvl_coef_two_lamps_Si',
+        'cal_wvl_coef_two_lamps_E_si',
+        'cal_wvl_coef_two_lamps_E_in',
         ]
 
 # adapted from IDL code
@@ -275,7 +282,7 @@ def select_chan_num(wvl, spectra, wvl_search, window=20.0):
             ax1.axvline(wvl0, color='red', lw=1.0)
         ax1.set_xlim((900, 2300))
         # ax1.set_ylim(())
-        ax1.set_xlabel('Wavelength [nm]')
+        ax1.set_xlabel('Wavelength (nm)')
         # ax1.set_ylabel('')
         ax1.set_title('SSFR-A|ZEN|IN')
         # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
@@ -341,8 +348,8 @@ def cal_wvl_coef(spectra, which_spec='lasp|ssfr-a|zen|si'):
         chan_num = np.append(chan_num, select_chan_num(wvl0, spectra0, wvl_lamp, window=window))
         #\----------------------------------------------------------------------------/#
 
-    sys.exit()
-
+    # sys.exit()
+    Nchan = spectra0.size
     xchan = np.arange(Nchan, dtype=np.float64)
 
     coef = get_wvl_coef(which_spec)
@@ -480,7 +487,7 @@ def cal_wvl_coef_two_lamps_InGaAs(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssf
         ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
         xx = np.arange(0, 256)
         ax1.plot(xx, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum')
-        ax1.plot(xx, gauss_set(xx, *Hg_coeff), color='g', linewidth=1.5)
+        ax1.plot(xx, gauss_set(xx, *Hg_coeff), color='coral', linewidth=1.5, label='Hg spectrum fitting')
 
         Kr_p0 = []
         Kr_p0_bound_low = []
@@ -525,10 +532,10 @@ def cal_wvl_coef_two_lamps_InGaAs(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssf
         ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
         xx = np.arange(0, 256)
         ax1.plot(xx, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum')
-        ax1.plot(xx, gauss_set(xx, *Kr_coeff), color='orange', linewidth=1.5)
+        ax1.plot(xx, gauss_set(xx, *Kr_coeff), color='orange', linewidth=1.5, label='Kr spectrum fitting')
         ax1.set_xlabel('Pixel', fontsize=14)
         ax1.set_ylabel('Counts', fontsize=14)
-        ax1.set_title(which_spec_write, fontsize=18)
+        # ax1.set_title(which_spec_write, fontsize=18)
         ax1.legend()
         fig.tight_layout()
         fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting.png', bbox_inches='tight')
@@ -572,8 +579,8 @@ def cal_wvl_coef_two_lamps_InGaAs(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssf
         ax1.scatter(wvl_2190_after, 2190.251, color='k', marker='s', label='after fitting')
         ax1.legend()
         ax1.set_xlabel('Pixel', fontsize=14)
-        ax1.set_ylabel('Wavelength [nm]', fontsize=14)
-        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.set_ylabel('Wavelength (nm)', fontsize=14)
+        # ax1.set_title(which_spec_write, fontsize=18)
         fig.tight_layout()
         fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_coeff.png', bbox_inches='tight')
         # plt.show()
@@ -804,7 +811,7 @@ def cal_wvl_coef_two_lamps_InGaAs(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssf
 
         ax1.set_xlabel('Wavelength (nm)', fontsize=14)
         ax1.set_ylabel('Counts', fontsize=14)
-        ax1.set_title(which_spec_write, fontsize=18)
+        # ax1.set_title(which_spec_write, fontsize=18)
         ax1.legend()
 
         gaussian_xx = np.linspace(-10, 10, 401)
@@ -824,10 +831,118 @@ def cal_wvl_coef_two_lamps_InGaAs(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssf
         ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {combine_coeff[0]*2*np.sqrt(2*np.log(2)):.2f} +/- {combine_perr[0]*2*np.sqrt(2*np.log(2)):.2f}', color='red', fontsize=12, ha='center')
         ax2.set_xlabel('Wavelength (nm)', fontsize=14)
         ax2.set_ylabel('Relative Counts', fontsize=14)
-        ax2.set_title(which_spec_write, fontsize=18)
+        # ax2.set_title(which_spec_write, fontsize=18)
         ax2.legend()
         fig.tight_layout()
         fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting_lineshape_2.png', bbox_inches='tight')
+        plt.close('all')
+        
+        
+        
+        plt.close('all')
+        fig = plt.figure(figsize=(10, 6))
+        ax1 = fig.add_subplot(111)
+        Hg_lines_number = len(lamp_Hg[lamp_Hg>900])
+        # ax1.vlines((lamp_Hg[lamp_Hg>900]), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines((lamp_Hg[lamp_Hg>900]), ymin=0, ymax=combine_coeff[1:Hg_lines_number+1], color='green', lw=1.0, label='Hg lines')
+        # ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Hg, color='lime', lw=1.5, label='Hg spectrum')
+        ax1.plot(xx, spectrum_Kr, color='orange', lw=1.5, label='Kr spectrum')
+        fit_Hg_spectrum = gauss_peaks_Hg_Kr_InGaAs(combine_wvl_base_new, lamps_fitting, *combine_coeff)[:len(wvl_base_new)]
+        ax1.plot(xx, fit_Hg_spectrum, color='green', linewidth=1., label='Hg fit spectrum')
+
+        fit_Kr_spectrum = gauss_peaks_Hg_Kr_InGaAs(combine_wvl_base_new, lamps_fitting, *combine_coeff)[len(wvl_base_new):]
+        ax1.plot(xx, fit_Kr_spectrum, color='red', linewidth=1., label='Kr fit spectrum')
+
+        # ax1.vlines((lamp_Kr[lamp_Kr>900]), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines((lamp_Kr[lamp_Kr>900]), ymin=0, ymax=combine_coeff[1+Hg_lines_number:], color='purple', lw=1.0, label='Kr lines')
+        # ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Counts', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend(loc='upper right')
+
+        ax2 = ax1.inset_axes([0.58, 0.05, 0.38, 0.35])
+
+        gaussian_xx = np.linspace(-10, 10, 401)
+        gaussian_yy_center = np.exp(-gaussian_xx**2/(2.*combine_coeff[0]**2))
+        # calculate the uncertainty in the gaussian width
+        gaussian_yy_narrow = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]-combine_perr[0])**2))
+        gaussian_yy_wide = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]+combine_perr[0])**2))
+        # ax2.fill_between(gaussian_xx, gaussian_yy_narrow, gaussian_yy_wide, color='grey', alpha=0.5, label='sigma uncertainty')
+        ax2.plot(gaussian_xx, gaussian_yy_center, color='black', label='slit function')
+        # plot FWHM 
+        x_left = gaussian_xx[gaussian_yy_center>0.5][0]
+        x_right = gaussian_xx[gaussian_yy_center>0.5][-1]
+        ax2.vlines(x_left, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.vlines(x_right, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.hlines(0.5, xmin=x_left, xmax=x_right, color='red', lw=1.0, linestyle='--', label='FWHM')
+        # ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {x_right-x_left:.2f}', color='red', fontsize=12, ha='center')
+        ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {combine_coeff[0]*2*np.sqrt(2*np.log(2)):.2f} +/- {combine_perr[0]*2*np.sqrt(2*np.log(2)):.2f}', color='red', fontsize=12, ha='center')
+        ax2.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax2.set_ylabel('Relative Counts', fontsize=14)
+        ax2.set_title(which_spec_write, fontsize=18)
+        ax2.legend()
+        fig.tight_layout()
+        fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting_lineshape_3.png', bbox_inches='tight')
+        plt.close('all')
+        
+        
+        plt.close('all')
+        fig = plt.figure(figsize=(8.5, 6))
+        ax1 = fig.add_subplot(111)
+        Hg_lines_number = len(lamp_Hg[lamp_Hg>900])
+        # ax1.vlines((lamp_Hg[lamp_Hg>900]), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines((lamp_Hg[lamp_Hg>900]), ymin=0, ymax=combine_coeff[1:Hg_lines_number+1], color='green', lw=1.0, label='Hg lines')
+        # ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Hg, color='lime', lw=1.5, label='Hg spectrum')
+        ax1.plot(xx, spectrum_Kr, color='orange', lw=1.5, label='Kr spectrum')
+        fit_Hg_spectrum = gauss_peaks_Hg_Kr_InGaAs(combine_wvl_base_new, lamps_fitting, *combine_coeff)[:len(wvl_base_new)]
+        ax1.plot(xx, fit_Hg_spectrum, color='green', linewidth=1., label='Hg fit spectrum')
+
+        fit_Kr_spectrum = gauss_peaks_Hg_Kr_InGaAs(combine_wvl_base_new, lamps_fitting, *combine_coeff)[len(wvl_base_new):]
+        ax1.plot(xx, fit_Kr_spectrum, color='red', linewidth=1., label='Kr fit spectrum')
+
+        # ax1.vlines((lamp_Kr[lamp_Kr>900]), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines((lamp_Kr[lamp_Kr>900]), ymin=0, ymax=combine_coeff[1+Hg_lines_number:], color='purple', lw=1.0, label='Kr lines')
+        # ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+
+        xmin, xmax = ax1.get_xlim()
+        ymin, ymax = ax1.get_ylim()
+        ax1.set_ylim(0, ymax)
+        ax1.set_xlabel('Wavelength (nm)', fontsize=16)
+        ax1.set_ylabel('Counts', fontsize=16)
+        # ax1.set_title(which_spec_write, fontsize=18)
+        # ax1.legend(loc='upper left', fontsize=12, frameon=True)
+        ax1.tick_params(axis='both', labelsize=14)
+
+        ax2 = ax1.inset_axes([0.72, 0.59, 0.26, 0.31])
+
+        gaussian_xx = np.linspace(-10, 10, 401)
+        gaussian_yy_center = np.exp(-gaussian_xx**2/(2.*combine_coeff[0]**2))
+        # calculate the uncertainty in the gaussian width
+        gaussian_yy_narrow = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]-combine_perr[0])**2))
+        gaussian_yy_wide = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]+combine_perr[0])**2))
+        ax2.fill_between(gaussian_xx, gaussian_yy_narrow, gaussian_yy_wide, color='grey', alpha=0.5, label='sigma uncertainty')
+        ax2.plot(gaussian_xx, gaussian_yy_center, color='black', label='slit function')
+        # plot FWHM 
+        x_left = gaussian_xx[gaussian_yy_center>0.5][0]
+        x_right = gaussian_xx[gaussian_yy_center>0.5][-1]
+        ax2.vlines(x_left, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.vlines(x_right, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.hlines(0.5, xmin=x_left, xmax=x_right, color='red', lw=1.0, linestyle='--', label='FWHM')
+        # ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {x_right-x_left:.2f}', color='red', fontsize=12, ha='center')
+        fwhm_word = f'FWHM = {combine_coeff[0]*2*np.sqrt(2*np.log(2)):.2f}' + r'$\pm$' + f'{combine_perr[0]*2*np.sqrt(2*np.log(2)):.2f}'
+        ax2.set_xlabel(r'Relative $\mathrm{\lambda}$ (nm)', fontsize=13)
+        ax2.set_ylabel('Relative Counts', fontsize=13)
+        ax2.set_title(f'Slit function\n{fwhm_word}', fontsize=15)
+        ax2.tick_params(axis='both', labelsize=12)
+        # ax2.legend()
+        fig.tight_layout()
+        fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting_lineshape_4.png', bbox_inches='tight')
         plt.close('all')
     #\----------------------------------------------------------------------------/#
 
@@ -917,7 +1032,7 @@ def cal_wvl_coef_two_lamps_Si(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssfr-a|
         ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
         xx = np.arange(0, 256)
         ax1.plot(xx, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum')
-        ax1.plot(xx, gauss_set(xx, *Hg_coeff), color='g', linewidth=1.5)
+        ax1.plot(xx, gauss_set(xx, *Hg_coeff), color='coral', linewidth=1.5, label='Hg spectrum fitting')
 
         Kr_p0 = []
         Kr_p0_bound_low = []
@@ -951,10 +1066,10 @@ def cal_wvl_coef_two_lamps_Si(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssfr-a|
         ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
         xx = np.arange(0, 256)
         ax1.plot(xx, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum')
-        ax1.plot(xx, gauss_set(xx, *Kr_coeff), color='orange', linewidth=1.5)
+        ax1.plot(xx, gauss_set(xx, *Kr_coeff), color='orange', linewidth=1.5, label='Kr spectrum fitting')
         ax1.set_xlabel('Pixel', fontsize=14)
         ax1.set_ylabel('Counts', fontsize=14)
-        ax1.set_title(which_spec_write, fontsize=18)
+        # ax1.set_title(which_spec_write, fontsize=18)
         ax1.legend()
         fig.tight_layout()
         fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting.png', bbox_inches='tight')
@@ -998,8 +1113,8 @@ def cal_wvl_coef_two_lamps_Si(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssfr-a|
         # ax1.scatter(wvl_2190_after, 2190.251, color='k', marker='s', label='after fitting')
         ax1.legend()
         ax1.set_xlabel('Pixel', fontsize=14)
-        ax1.set_ylabel('Wavelength [nm]', fontsize=14)
-        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.set_ylabel('Wavelength (nm)', fontsize=14)
+        # ax1.set_title(which_spec_write, fontsize=18)
         fig.tight_layout()
         fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_coeff_si.png', bbox_inches='tight')
         
@@ -1026,8 +1141,10 @@ def cal_wvl_coef_two_lamps_Si(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssfr-a|
         ax1.set_xlim(300, 1150)
         ax1.set_xlabel('Wavelength (nm)', fontsize=14)
         ax1.set_ylabel('Counts', fontsize=14)
-        ax1.set_title(which_spec_write, fontsize=18)
-        ax1.legend()
+        # ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend(loc='upper right')
+
+        ax2 = ax1.inset_axes([0.58, 0.05, 0.38, 0.35])
         fig.tight_layout()
         fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_original_spectrum_new_coeff.png', bbox_inches='tight')        
         
@@ -1242,6 +1359,193 @@ def cal_wvl_coef_two_lamps_Si(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssfr-a|
         fig.tight_layout()
         fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting_lineshape_2.png', bbox_inches='tight')
         plt.close('all')
+        
+        
+        plt.close('all')
+        fig = plt.figure(figsize=(8.5, 6))
+        ax1 = fig.add_subplot(111)
+        
+        Hg_lines_number = len(lamp_Hg[lamp_Hg<1100])
+        # ax1.vlines((lamp_Hg[lamp_Hg<1100]), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines((lamp_Hg[lamp_Hg<1100]), ymin=0, ymax=combine_coeff[1:Hg_lines_number+1], color='brown', lw=1.0, label='Hg lines')
+        # ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Hg, color='lime', lw=2.0, label='Hg spectrum')
+        ax1.plot(xx, spectrum_Kr, color='orange', lw=2.0, label='Kr spectrum')
+
+        fit_Hg_spectrum = gauss_peaks_Hg_Kr_Si(combine_wvl_base_new, lamps_fitting, *combine_coeff)[:len(wvl_base_new)]
+        ax1.plot(xx, fit_Hg_spectrum, color='green', linewidth=1.0, label='Hg fit spectrum')
+
+        fit_Kr_spectrum = gauss_peaks_Hg_Kr_Si(combine_wvl_base_new, lamps_fitting, *combine_coeff)[len(wvl_base_new):]
+        ax1.plot(xx, fit_Kr_spectrum, color='red', linewidth=1.0, label='Kr fit spectrum')
+
+        # ax1.vlines((lamp_Kr[lamp_Kr<1100]), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines((lamp_Kr[lamp_Kr<1100]), ymin=0, ymax=combine_coeff[Hg_lines_number+1:], color='purple', lw=1.0, label='Kr lines')
+        # ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+        xmin, xmax = ax1.get_xlim()
+        ymin, ymax = ax1.get_ylim()
+        ax1.set_ylim(0, ymax)
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Counts', fontsize=14)
+        # ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend(loc='upper right')
+
+        ax2 = ax1.inset_axes([0.72, 0.35, 0.26, 0.31])
+
+        gaussian_xx = np.linspace(-10, 10, 401)
+        gaussian_yy_center = np.exp(-gaussian_xx**2/(2.*combine_coeff[0]**2))
+        # calculate the uncertainty in the gaussian width
+        gaussian_yy_narrow = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]-combine_perr[0])**2))
+        gaussian_yy_wide = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]+combine_perr[0])**2))
+        ax2.fill_between(gaussian_xx, gaussian_yy_narrow, gaussian_yy_wide, color='grey', alpha=0.5, label='sigma uncertainty')
+        ax2.plot(gaussian_xx, gaussian_yy_center, color='black', label='slit function')
+        # plot FWHM 
+        x_left = gaussian_xx[gaussian_yy_center>0.5][0]
+        x_right = gaussian_xx[gaussian_yy_center>0.5][-1]
+        ax2.vlines(x_left, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.vlines(x_right, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.hlines(0.5, xmin=x_left, xmax=x_right, color='red', lw=1.0, linestyle='--', label='FWHM')
+        # ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {x_right-x_left:.2f}', color='red', fontsize=12, ha='center')
+        ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {combine_coeff[0]*2*np.sqrt(2*np.log(2)):.2f} +/- {combine_perr[0]*2*np.sqrt(2*np.log(2)):.2f}', color='red', fontsize=12, ha='center')
+        ax2.set_xlabel(r'Relative $\mathrm{\lambda}$ (nm)', fontsize=12)
+        ax2.set_ylabel('Relative Counts', fontsize=12)
+        ax2.set_title('Slit function', fontsize=14)
+        # ax2.legend()
+        fig.tight_layout()
+        fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting_lineshape_3.png', bbox_inches='tight')
+        plt.close('all')
+        
+        plt.close('all')
+        fig = plt.figure(figsize=(8.5, 6))
+        ax1 = fig.add_subplot(111)
+        
+        Hg_lines_number = len(lamp_Hg[lamp_Hg<1100])
+        # ax1.vlines((lamp_Hg[lamp_Hg<1100]), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines((lamp_Hg[lamp_Hg<1100]), ymin=0, ymax=combine_coeff[1:Hg_lines_number+1], color='brown', lw=1.0, label='Hg lines')
+        # ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Hg, color='lime', lw=2.0, label='Hg spectrum')
+        ax1.plot(xx, spectrum_Kr, color='orange', lw=2.0, label='Kr spectrum')
+
+        fit_Hg_spectrum = gauss_peaks_Hg_Kr_Si(combine_wvl_base_new, lamps_fitting, *combine_coeff)[:len(wvl_base_new)]
+        ax1.plot(xx, fit_Hg_spectrum, color='green', linewidth=1.0, label='Hg fit spectrum')
+
+        fit_Kr_spectrum = gauss_peaks_Hg_Kr_Si(combine_wvl_base_new, lamps_fitting, *combine_coeff)[len(wvl_base_new):]
+        ax1.plot(xx, fit_Kr_spectrum, color='red', linewidth=1.0, label='Kr fit spectrum')
+
+        # ax1.vlines((lamp_Kr[lamp_Kr<1100]), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines((lamp_Kr[lamp_Kr<1100]), ymin=0, ymax=combine_coeff[Hg_lines_number+1:], color='purple', lw=1.0, label='Kr lines')
+        # ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+        xmin, xmax = ax1.get_xlim()
+        ymin, ymax = ax1.get_ylim()
+        ax1.set_ylim(0, ymax)
+        ax1.set_xlabel('Wavelength (nm)', fontsize=16)
+        ax1.set_ylabel('Counts', fontsize=16)
+        # ax1.set_title(which_spec_write, fontsize=18)
+        # ax1.legend(loc='upper left', fontsize=12, frameon=True)
+        ax1.tick_params(axis='both', labelsize=14)
+        ax2 = ax1.inset_axes([0.72, 0.59, 0.26, 0.31])
+
+        gaussian_xx = np.linspace(-10, 10, 401)
+        gaussian_yy_center = np.exp(-gaussian_xx**2/(2.*combine_coeff[0]**2))
+        # calculate the uncertainty in the gaussian width
+        gaussian_yy_narrow = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]-combine_perr[0])**2))
+        gaussian_yy_wide = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]+combine_perr[0])**2))
+        ax2.fill_between(gaussian_xx, gaussian_yy_narrow, gaussian_yy_wide, color='grey', alpha=0.5, label='sigma uncertainty')
+        ax2.plot(gaussian_xx, gaussian_yy_center, color='black', label='slit function')
+        # plot FWHM 
+        x_left = gaussian_xx[gaussian_yy_center>0.5][0]
+        x_right = gaussian_xx[gaussian_yy_center>0.5][-1]
+        ax2.vlines(x_left, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.vlines(x_right, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.hlines(0.5, xmin=x_left, xmax=x_right, color='red', lw=1.0, linestyle='--', label='FWHM')
+        # ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {x_right-x_left:.2f}', color='red', fontsize=12, ha='center')
+        # ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {combine_coeff[0]*2*np.sqrt(2*np.log(2)):.2f}' + r'$\pm$' + f'{combine_perr[0]*2*np.sqrt(2*np.log(2)):.2f}', color='red', fontsize=12, ha='center')
+        fwhm_word = f'FWHM = {combine_coeff[0]*2*np.sqrt(2*np.log(2)):.2f}' + r'$\pm$' + f'{combine_perr[0]*2*np.sqrt(2*np.log(2)):.2f}'
+        ax2.set_xlabel(r'Relative $\mathrm{\lambda}$ (nm)', fontsize=13)
+        ax2.set_ylabel('Relative Counts', fontsize=13)
+        ax2.set_title(f'Slit function\n{fwhm_word}', fontsize=15)
+        ax2.tick_params(axis='both', labelsize=12)
+        # ax2.legend()
+        fig.tight_layout()
+        fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting_lineshape_4.png', bbox_inches='tight')
+        plt.close('all')
+
+        # 4-panel summary: combine Si and InGaAs line_fitting + coeff plots
+        which_spec_write_in = which_spec_write.replace('|si', '|in')
+        fname_si = f'output/wvl-cal/{which_spec_write}_wvl_cal_Si.txt'
+        fname_in = f'output/wvl-cal/{which_spec_write_in}_wvl_cal_InGaAs.txt'
+        if os.path.isfile(fname_si) and os.path.isfile(fname_in):
+            img_si_line  = mpl_img.imread(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting.png')
+            img_in_line  = mpl_img.imread(f'output/wvl-cal/wvl_cal_{which_spec_write_in}_line_fitting.png')
+            img_si_coeff = mpl_img.imread(f'output/wvl-cal/wvl_cal_{which_spec_write}_coeff_si.png')
+            img_in_coeff = mpl_img.imread(f'output/wvl-cal/wvl_cal_{which_spec_write_in}_coeff.png')
+
+            plt.close('all')
+            fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+            fig.subplots_adjust(left=0.02, right=0.98, top=0.97, bottom=0.02, wspace=0.04, hspace=0.08)
+            panels = [
+                (axes[0, 0], img_si_line,  '(a)'),
+                (axes[0, 1], img_in_line,  '(b)'),
+                (axes[1, 0], img_si_coeff, '(c)'),
+                (axes[1, 1], img_in_coeff, '(d)'),
+            ]
+            for ax, img, label in panels:
+                ax.imshow(img, aspect='equal', interpolation='lanczos')
+                ax.axis('off')
+                ax.text(0.09, 1.04, label, transform=ax.transAxes,
+                        fontsize=16, fontweight='bold', va='top', ha='left',
+                        color='black',
+                        bbox=dict(facecolor='white', edgecolor='none', alpha=0.7, pad=2))
+            fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_summary_4panel.png',
+                        dpi=200, bbox_inches='tight')
+            plt.close('all')
+            
+        # 2-panel summary: combine Si and InGaAs line_fitting + FWHM
+        which_spec_write_in = which_spec_write.replace('|si', '|in')
+        fname_si = f'output/wvl-cal/{which_spec_write}_wvl_cal_Si.txt'
+        fname_in = f'output/wvl-cal/{which_spec_write_in}_wvl_cal_InGaAs.txt'
+        if os.path.isfile(fname_si) and os.path.isfile(fname_in):
+            # wvl_cal_lasp|ssrr-a|nad|in_line_fitting_lineshape_4
+            img_si_line  = mpl_img.imread(f'output/wvl-cal/wvl_cal_{which_spec_write}_line_fitting_lineshape_4.png')
+            img_in_line  = mpl_img.imread(f'output/wvl-cal/wvl_cal_{which_spec_write_in}_line_fitting_lineshape_4.png')
+
+            plt.close('all')
+            fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+            fig.subplots_adjust(left=0.02, right=0.98, top=0.86, bottom=0.02, wspace=0.01, hspace=0.04)
+
+            
+
+            panels = [
+                (axes[0], img_si_line,  '(a)'),
+                (axes[1], img_in_line,  '(b)'),
+                # (axes[1, 0], img_si_coeff, '(c)'),
+                # (axes[1, 1], img_in_coeff, '(d)'),
+            ]
+            
+            legend_handles = [
+                Line2D([0], [0], color='brown', lw=1.5, label='Hg lines'),
+                Line2D([0], [0], color='lime', lw=1.5, label='Hg spectrum'),
+                Line2D([0], [0], color='orange', lw=1.5, label='Kr spectrum'),
+                Line2D([0], [0], color='green', lw=1.5, label='Hg fit spectrum'),
+                Line2D([0], [0], color='red', lw=1.5, label='Kr fit spectrum'),
+                Line2D([0], [0], color='purple', lw=1.5, label='Kr lines'),
+            ]
+            axes[1].legend(handles=legend_handles, loc='center left', ncol=1,
+                        bbox_to_anchor=(1.02, 0.5), frameon=True, fontsize=12)
+            
+            for ax, img, label in panels:
+                ax.imshow(img, aspect='equal', interpolation='lanczos')
+                ax.axis('off')
+                ax.text(0.12, 1.04, label, transform=ax.transAxes,
+                        fontsize=16, fontweight='bold', va='top', ha='left',
+                        color='black',
+                        bbox=dict(facecolor='white', edgecolor='none', alpha=0.7, pad=2))
+            fig.savefig(f'output/wvl-cal/wvl_cal_{which_spec_write}_lineshape_summary_2panel.png',
+                        dpi=200, bbox_inches='tight')
+            plt.close('all')
+            
+        
     #\----------------------------------------------------------------------------/#
 
 def lambda_to_p(lambda_):
@@ -1307,6 +1611,876 @@ def gauss_peaks_Hg_Kr_InGaAs(x, lamps_fitting, *args):
         mu = combine_lines_InGaAs[p]
         output += A*np.exp(-(x-mu)**2/(2.*sigma**2))
     return output
+
+
+def cal_wvl_coef_two_lamps_E_in(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssfr-a|zen|si'):
+
+    spectrum_Hg[spectrum_Hg<0] = 0
+    spectrum_Kr[spectrum_Kr<0] = 0
+    Nchan = spectrum_Hg.size
+    xchan = np.arange(Nchan, dtype=np.float64)
+
+    coefs = load_wvl_coef()
+    radiance = True if 'ssrr' in which_spec else False
+    lamps_fitting = lamps_ssrr_fitting if radiance else lamps_ssfr_fitting
+    which_spec_write = which_spec
+    which_spec = which_spec.replace('ssrr', 'ssfr')  # need to be fixed
+    coef_base = coefs[which_spec]
+    wvl_base = cal_wvl(coef_base, Nchan=Nchan)
+
+    lamp_Hg = lamps_fitting['hg']
+    lamp_Kr = lamps_fitting['kr']
+    if not radiance:
+        # remove 2116.547
+        lamps_fitting['kr'] = lamps_fitting['kr'][lamps_fitting['kr'] < 2116.547]
+    lamp_Kr = lamps_fitting['kr']
+
+    lamp_Hg = lamp_Hg[lamp_Hg>900]
+    lamp_Kr = lamp_Kr[lamp_Kr>900]
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.plot(wvl_base, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum (original coeff)')
+        ax1.plot(wvl_base, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum (original coeff)')
+        ymin, ymax= ax1.get_ylim()
+        ax1.vlines(lamp_Hg, ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines(lamp_Kr, ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.set_xlim(900, 2200)
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+        fig.savefig(f'wvl_cal_{which_spec_write}_original_spectrum_E.png', bbox_inches='tight')
+        # plt.show()
+        plt.close('all')
+
+        if radiance:
+            cutoff_pixel = 0
+        else:
+            cutoff_pixel = 25
+
+
+        fig = plt.figure(figsize=(8, 6))
+        ax1 = fig.add_subplot(111)
+
+
+        if which_spec == 'lasp|ssfr-a|zen|in':
+            center_shift = 3.9
+            low_shit, high_shit = 3.2, 4.6
+        elif which_spec == 'lasp|ssfr-a|nad|in':
+            center_shift = 0.65
+            low_shit, high_shit = 0.2, 1.1
+        elif which_spec == 'lasp|ssfr-b|zen|in':
+            center_shift = -1.1
+            low_shit, high_shit = -1.8, -0.4
+        elif which_spec == 'lasp|ssfr-b|nad|in':
+            center_shift = 1.3
+            low_shit, high_shit = 0.6, 2.0
+        Hg_p0 = []
+        Hg_p0_bound_low = []
+        Hg_p0_bound_high = []
+        for wvl0 in lamp_Hg:
+            if radiance:
+                Hg_p0.extend([50, lambda_to_p(wvl0)+center_shift, 1.25])
+                Hg_p0_bound_low.extend([0.1, lambda_to_p(wvl0)+low_shit, 0.75])
+                Hg_p0_bound_high.extend([600, lambda_to_p(wvl0)+high_shit, 1.75])
+            else:
+                Hg_p0.extend([3, lambda_to_p(wvl0)+center_shift, 1.25])
+                Hg_p0_bound_low.extend([0.05, lambda_to_p(wvl0)+low_shit, 0.55])
+                Hg_p0_bound_high.extend([20, lambda_to_p(wvl0)+high_shit, 1.95])
+
+
+
+        Hg_coeff, var_matrix = curve_fit(gauss_set, np.arange(cutoff_pixel, 256), spectrum_Hg[cutoff_pixel:], p0=Hg_p0, maxfev=50000, bounds=(Hg_p0_bound_low, Hg_p0_bound_high))
+        ax1.vlines(lambda_to_p(lamp_Hg[lamp_Hg>900]), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = np.arange(0, 256)
+        ax1.plot(xx, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum')
+        ax1.plot(xx, gauss_set(xx, *Hg_coeff), color='g', linewidth=1.5)
+
+        Kr_p0 = []
+        Kr_p0_bound_low = []
+        Kr_p0_bound_high = []
+
+        if which_spec == 'lasp|ssfr-a|zen|in':
+            center_shift = 3.9
+            low_shit, high_shit = 3.2, 4.6
+        elif which_spec == 'lasp|ssfr-a|nad|in':
+            center_shift = 0.65
+            low_shit, high_shit = 0.2, 1.1
+        elif which_spec == 'lasp|ssfr-b|zen|in':
+            center_shift = -1.1
+            low_shit, high_shit = -1.8, -0.4
+        elif which_spec == 'lasp|ssfr-b|nad|in':
+            center_shift = 1.3
+            low_shit, high_shit = 0.6, 2.0
+
+        for wvl0 in lamp_Kr[lamp_Kr>900]:
+            if radiance:
+                if wvl0 < 2116.547:
+                    Kr_p0.extend([100, lambda_to_p(wvl0)+center_shift, 1.25])
+                    Kr_p0_bound_low.extend([0.1, lambda_to_p(wvl0)+low_shit, 0.75])
+                    Kr_p0_bound_high.extend([600, lambda_to_p(wvl0)+high_shit, 1.75])
+                else:
+                    Kr_p0.extend([5, lambda_to_p(wvl0)+center_shift, 1.25])
+                    Kr_p0_bound_low.extend([0.01, lambda_to_p(wvl0)+low_shit, 0.75])
+                    Kr_p0_bound_high.extend([50, lambda_to_p(wvl0)+high_shit, 1.75])
+            else:
+                if wvl0 < 2116.547:
+                    Kr_p0.extend([1, lambda_to_p(wvl0)+center_shift, 1.25])
+                    Kr_p0_bound_low.extend([0.1, lambda_to_p(wvl0)+low_shit, 0.55])
+                    Kr_p0_bound_high.extend([60, lambda_to_p(wvl0)+high_shit, 1.95])
+                else:
+                    Kr_p0.extend([5, lambda_to_p(wvl0)+center_shift, 1.25])
+                    Kr_p0_bound_low.extend([0.01, lambda_to_p(wvl0)+low_shit, 0.55])
+                    Kr_p0_bound_high.extend([50, lambda_to_p(wvl0)+high_shit, 1.95])
+
+        Kr_coeff, var_matrix = curve_fit(gauss_set, np.arange(0, 256), spectrum_Kr, p0=Kr_p0, maxfev=50000, bounds=(Kr_p0_bound_low, Kr_p0_bound_high))
+        ax1.vlines(lambda_to_p(lamp_Kr[lamp_Kr>900]), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+        xx = np.arange(0, 256)
+        ax1.plot(xx, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum')
+        ax1.plot(xx, gauss_set(xx, *Kr_coeff), color='orange', linewidth=1.5)
+        ax1.set_xlabel('Pixel', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+        fig.tight_layout()
+        fig.savefig(f'wvl_cal_{which_spec_write}_line_fitting_E.png', bbox_inches='tight')
+        # plt.show()
+
+        Hg_p_to_lambda = {}
+        for p in range(len(Hg_coeff)//3):
+            _, mu, _ = Hg_coeff[3*p:3*p+3]
+            Hg_p_to_lambda[mu] = lamp_Hg[lamp_Hg>900][p]
+
+        Kr_p_to_lambda = {}
+        for p in range(len(Kr_coeff)//3):
+            _, mu, _ = Kr_coeff[3*p:3*p+3]
+            Kr_p_to_lambda[mu] = lamp_Kr[lamp_Kr>900][p]
+
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        ax1 = fig.add_subplot(111)
+        x_p = np.arange(0, 256)
+
+        coefs = load_wvl_coef()
+        C_pre = coefs[which_spec]
+        C_trial_low, C_trial_high = C_pre.copy(), C_pre.copy()
+        C_trial_low[C_trial_low>0] *= 0.8
+        C_trial_low[C_trial_low<0] *= 1.2
+        C_trial_high[C_trial_high>0] *= 1.2
+        C_trial_high[C_trial_high<0] *= 0.8
+        xx = p_to_lambda(x_p, *C_pre)
+        fianl_coeff, var_matrix = curve_fit(p_to_lambda, list(Kr_p_to_lambda.keys())+list(Hg_p_to_lambda.keys()),
+                                                   list(Kr_p_to_lambda.values())+list(Hg_p_to_lambda.values()),
+                                                   p0=C_pre, maxfev=10000, bounds=(C_trial_low, C_trial_high))
+        ax1.scatter(list(Kr_p_to_lambda.keys()), list(Kr_p_to_lambda.values()), color='r', marker='D', label='Kr lines')
+        ax1.scatter(list(Hg_p_to_lambda.keys()), list(Hg_p_to_lambda.values()), color='green', marker='^', label='Hg lines')
+        ax1.plot(x_p, p_to_lambda(x_p, *fianl_coeff), label='fitting')
+        ax1.plot(x_p, p_to_lambda(x_p, *C_pre), 'k--', label='manual')
+        from scipy.optimize import fsolve
+        wvl_2190_before = fsolve(p_to_lambda_wvl, 25, args=(C_pre[0], C_pre[1], C_pre[2], C_pre[3], C_pre[4], 2190.251))
+        ax1.scatter(wvl_2190_before, 2190.251, color='grey', marker='x', label='before fitting')
+        wvl_2190_after = fsolve(p_to_lambda_wvl, 25, args=(fianl_coeff[0], fianl_coeff[1], fianl_coeff[2], fianl_coeff[3], fianl_coeff[4], 2190.251))
+        ax1.scatter(wvl_2190_after, 2190.251, color='k', marker='s', label='after fitting')
+        ax1.legend()
+        ax1.set_xlabel('Pixel', fontsize=14)
+        ax1.set_ylabel('Wavelength (nm)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        fig.tight_layout()
+        fig.savefig(f'wvl_cal_{which_spec_write}_coeff_E.png', bbox_inches='tight')
+        # plt.show()
+        # sys.exit()
+        if os.path.isfile('wvl_cal.txt'):
+            open_status = 'a'
+        else:
+            open_status = 'w'
+        print(open_status)
+        with open('wvl_cal.txt', open_status) as f:
+            f.write(f'{which_spec_write}\n')
+            f.write(f'# {" ".join([str(x) for x in fianl_coeff])}\n')
+
+        wvl_base_new = cal_wvl(fianl_coeff, Nchan=Nchan)
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        ax1 = fig.add_subplot(111)
+        ax1.plot(wvl_base_new, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum (original coeff)')
+        ax1.plot(wvl_base_new, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum (original coeff)')
+        ymin, ymax= ax1.get_ylim()
+        ax1.vlines(lamp_Hg, ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines(lamp_Kr, ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.set_xlim(900, 2250)
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+        fig.savefig(f'wvl_cal_{which_spec_write}_new_spectrum_E.png', bbox_inches='tight')
+        # plt.show()
+
+        # after coefficients fitting
+        # fit the gaussian line shape in wavelength space
+
+
+        if which_spec == 'lasp|ssfr-a|zen|in':
+            center_shift = 0
+            low_shit, high_shit = -0.25, 0.25
+        elif which_spec == 'lasp|ssfr-a|nad|in':
+            center_shift = 0
+            low_shit, high_shit = -0.25, 0.25
+        elif which_spec == 'lasp|ssfr-b|zen|in':
+            center_shift = 0
+            low_shit, high_shit = -0.25, 0.25
+        elif which_spec == 'lasp|ssfr-b|nad|in':
+            center_shift = 0
+            low_shit, high_shit = -0.25, 0.25
+        center_shift *= -1
+        low_shit, high_shit = -high_shit, -low_shit
+
+        pixel_wvl_factor = 5
+        center_shift *= pixel_wvl_factor
+        low_shit *= pixel_wvl_factor
+        high_shit *= pixel_wvl_factor
+        Hg_p0 = []
+        Hg_p0_bound_low = []
+        Hg_p0_bound_high = []
+        for wvl0 in lamp_Hg[lamp_Hg>900]:
+            if radiance:
+                Hg_p0.extend([50, wvl0+center_shift, 1.25*pixel_wvl_factor])
+                Hg_p0_bound_low.extend([0.1, wvl0+low_shit, 0.75*pixel_wvl_factor])
+                Hg_p0_bound_high.extend([600, wvl0+high_shit, 1.75*pixel_wvl_factor])
+            else:
+                Hg_p0.extend([3, wvl0+center_shift, 1.25*pixel_wvl_factor])
+                Hg_p0_bound_low.extend([0.05, wvl0+low_shit, 0.55*pixel_wvl_factor])
+                Hg_p0_bound_high.extend([20, wvl0+high_shit, 1.95*pixel_wvl_factor])
+
+        Hg_coeff, Hg_var_matrix = curve_fit(gauss_set, wvl_base_new, spectrum_Hg, p0=Hg_p0, maxfev=50000, bounds=(Hg_p0_bound_low, Hg_p0_bound_high))
+        Hg_perr = np.sqrt(np.diag(Hg_var_matrix))
+
+
+        plt.close('all')
+        fig = plt.figure(figsize=(16, 6))
+        ax1 = fig.add_subplot(121)
+        ax2 = fig.add_subplot(122)
+        ax1.vlines((lamp_Hg[lamp_Hg>900]), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum')
+        ax1.plot(xx, gauss_set(xx, *Hg_coeff), color='g', linewidth=1.5)
+
+        Kr_p0 = []
+        Kr_p0_bound_low = []
+        Kr_p0_bound_high = []
+
+        if which_spec == 'lasp|ssfr-a|zen|in':
+            center_shift = 0
+            low_shit, high_shit = -0.25, 0.25
+        elif which_spec == 'lasp|ssfr-a|nad|in':
+            center_shift = 0
+            low_shit, high_shit = -0.25, 0.25
+        elif which_spec == 'lasp|ssfr-b|zen|in':
+            center_shift = 0
+            low_shit, high_shit = -0.25, 0.25
+        elif which_spec == 'lasp|ssfr-b|nad|in':
+            center_shift = 0
+            low_shit, high_shit = -0.25, 0.25
+
+        center_shift *= -1
+        low_shit, high_shit = -high_shit, -low_shit
+        center_shift *= pixel_wvl_factor
+        low_shit *= pixel_wvl_factor
+        high_shit *= pixel_wvl_factor
+
+        for wvl0 in lamp_Kr[lamp_Kr>900]:
+            if radiance:
+                if wvl0 != 2116.547:
+                    Kr_p0.extend([100, wvl0+center_shift, 1.25*pixel_wvl_factor])
+                    Kr_p0_bound_low.extend([0.1, wvl0+low_shit, 0.75*pixel_wvl_factor])
+                    Kr_p0_bound_high.extend([600, wvl0+high_shit, 1.8*pixel_wvl_factor])
+                else:
+                    Kr_p0.extend([5, wvl0+center_shift, 1.25*pixel_wvl_factor])
+                    Kr_p0_bound_low.extend([0.01, wvl0+low_shit, 0.75*pixel_wvl_factor])
+                    Kr_p0_bound_high.extend([50, wvl0+high_shit, 1.75*pixel_wvl_factor])
+            else:
+                if wvl0 < 2116.547:
+                    Kr_p0.extend([1, wvl0+center_shift, 1.25*pixel_wvl_factor])
+                    Kr_p0_bound_low.extend([0.01, wvl0+low_shit, 0.55*pixel_wvl_factor])
+                    Kr_p0_bound_high.extend([60, wvl0+high_shit, 1.95*pixel_wvl_factor])
+                else:
+                    Kr_p0.extend([0.5, wvl0+center_shift, 1.25*pixel_wvl_factor])
+                    Kr_p0_bound_low.extend([0.001, wvl0+low_shit, 0.55*pixel_wvl_factor])
+                    Kr_p0_bound_high.extend([5, wvl0+high_shit, 1.95*pixel_wvl_factor])
+
+        Kr_coeff, Kr_var_matrix = curve_fit(gauss_set, wvl_base_new, spectrum_Kr, p0=Kr_p0, maxfev=50000, bounds=(Kr_p0_bound_low, Kr_p0_bound_high))
+        Kr_perr = np.sqrt(np.diag(Kr_var_matrix))
+        ax1.vlines((lamp_Kr[lamp_Kr>900]), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum')
+        ax1.plot(xx, gauss_set(xx, *Kr_coeff), color='orange', linewidth=1.5)
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+
+        ax2.errorbar(Hg_coeff[1::3], Hg_coeff[2::3], yerr=Hg_perr[2::3], fmt='ro', alpha=0.75)
+        ax2.errorbar(Kr_coeff[1::3], Kr_coeff[2::3], yerr=Kr_perr[2::3], fmt='go', alpha=0.75)
+        ax2.plot(Kr_coeff[1::3], Kr_coeff[2::3], 'ro', label='Kr lines')
+        ax2.plot(Hg_coeff[1::3], Hg_coeff[2::3], 'go', label='Hg lines')
+        ax2.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax2.set_ylabel('Sigma (nm)', fontsize=14)
+        ax2.set_title(which_spec_write, fontsize=18)
+        ax2.set_ylim(0, 10)
+
+        # calculate average sigma with uncertainty as weights
+        weights = np.concatenate((1./Hg_perr[2::3], 1./Kr_perr[2::3]))
+        errs = np.concatenate((Hg_perr[2::3], Kr_perr[2::3]))
+        sigma_avg = np.average(np.concatenate((Hg_coeff[2::3], Kr_coeff[2::3])), weights=weights)
+        # weighted average error
+        sigma_avg_err = np.sqrt(np.sum(errs**2 * weights)/ np.sum(weights))
+        ax2.axhline(sigma_avg, color='black', lw=1.0, linestyle='--', label='average sigma')
+        ax2.fill_between([xx[0], xx[-1]], sigma_avg-sigma_avg_err, sigma_avg+sigma_avg_err, color='grey', alpha=0.5)
+        ax2.text(2100, 0.75, f'avg sigma = {sigma_avg:.2f} +/- {sigma_avg_err:.2f} nm', fontsize=12, color='black', ha='right')
+        ax2.text(2100, 0.375, f'avg FWHM = {sigma_avg*2*np.sqrt(2*np.log(2)):.2f} +/- {sigma_avg_err*2*np.sqrt(2*np.log(2)):.2f} nm', fontsize=12, color='black', ha='right')
+        ax2.legend()
+        fig.tight_layout()
+        fig.savefig(f'wvl_cal_{which_spec_write}_line_fitting_lineshape_E.png', bbox_inches='tight')
+        # plt.show()
+
+
+
+        pixel_wvl_factor = 5
+        center_shift *= pixel_wvl_factor
+        low_shit *= pixel_wvl_factor
+        high_shit *= pixel_wvl_factor
+
+        combine_p0 = [1.25*pixel_wvl_factor]
+        combine_p0_bound_low = [0.5*pixel_wvl_factor]
+        combine_p0_bound_high = [2.0*pixel_wvl_factor]
+        for wvl0 in lamp_Hg[lamp_Hg>900]:
+            if radiance:
+                combine_p0.extend([5000])
+                combine_p0_bound_low.extend([10])
+                combine_p0_bound_high.extend([60000])
+            else:
+                combine_p0.extend([3])
+                combine_p0_bound_low.extend([0.05])
+                combine_p0_bound_high.extend([20])
+        for wvl0 in lamp_Kr[lamp_Kr>900]:
+            if radiance:
+                combine_p0.extend([10])
+                combine_p0_bound_low.extend([0.1])
+                combine_p0_bound_high.extend([600])
+            else:
+                combine_p0.extend([1])
+                combine_p0_bound_low.extend([0.01])
+                combine_p0_bound_high.extend([60])
+
+        combine_spectrum_for_fitting = np.concatenate((spectrum_Hg, spectrum_Kr))
+        combine_wvl_base_new = np.concatenate((wvl_base_new, wvl_base_new+2000))
+        # plt.plot(combine_wvl_base_new, combine_spectrum_for_fitting, color='black', lw=1.0, label='combined spectrum for fitting')
+        # plt.xlabel('Wavelength (nm)', fontsize=14)
+        # plt.ylabel('Energy (a.u.)', fontsize=14)
+        # # plt.show()
+        # sys.exit()
+
+        fit_function = lambda x, *arg: gauss_peaks_Hg_Kr_InGaAs(x, lamps_fitting, *arg)
+        combine_coeff, combine_var_matrix = curve_fit(fit_function, combine_wvl_base_new, combine_spectrum_for_fitting, p0=combine_p0, maxfev=50000, bounds=(combine_p0_bound_low, combine_p0_bound_high))
+        combine_perr = np.sqrt(np.diag(combine_var_matrix))
+
+
+        # plt.plot(combine_wvl_base_new, gauss_peaks_Hg_Kr_Si(combine_wvl_base_new, *combine_coeff), color='black', lw=1.0, label='combined spectrum for fitting')
+        # plt.xlabel('Wavelength (nm)', fontsize=14)
+        # plt.ylabel('Energy (a.u.)', fontsize=14)
+        # # plt.show()
+        # sys.exit()
+        plt.close('all')
+        fig = plt.figure(figsize=(16, 6))
+        ax1 = fig.add_subplot(121)
+        ax2 = fig.add_subplot(122)
+        Hg_lines_number = len(lamp_Hg[lamp_Hg>900])
+        # ax1.vlines((lamp_Hg[lamp_Hg>900]), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines((lamp_Hg[lamp_Hg>900]), ymin=0, ymax=combine_coeff[1:Hg_lines_number+1], color='green', lw=1.0, label='Hg lines')
+        # ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Hg, color='lime', lw=1.5, label='Hg spectrum')
+        ax1.plot(xx, spectrum_Kr, color='orange', lw=1.5, label='Kr spectrum')
+        fit_Hg_spectrum = gauss_peaks_Hg_Kr_InGaAs(combine_wvl_base_new, lamps_fitting, *combine_coeff)[:len(wvl_base_new)]
+        ax1.plot(xx, fit_Hg_spectrum, color='green', linewidth=1., label='Hg fit spectrum')
+
+        fit_Kr_spectrum = gauss_peaks_Hg_Kr_InGaAs(combine_wvl_base_new, lamps_fitting, *combine_coeff)[len(wvl_base_new):]
+        ax1.plot(xx, fit_Kr_spectrum, color='red', linewidth=1., label='Kr fit spectrum')
+
+        # ax1.vlines((lamp_Kr[lamp_Kr>900]), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines((lamp_Kr[lamp_Kr>900]), ymin=0, ymax=combine_coeff[1+Hg_lines_number:], color='purple', lw=1.0, label='Kr lines')
+        # ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+
+        gaussian_xx = np.linspace(-10, 10, 401)
+        gaussian_yy_center = np.exp(-gaussian_xx**2/(2.*combine_coeff[0]**2))
+        # calculate the uncertainty in the gaussian width
+        gaussian_yy_narrow = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]-combine_perr[0])**2))
+        gaussian_yy_wide = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]+combine_perr[0])**2))
+        ax2.fill_between(gaussian_xx, gaussian_yy_narrow, gaussian_yy_wide, color='grey', alpha=0.5, label='sigma uncertainty')
+        ax2.plot(gaussian_xx, gaussian_yy_center, color='black', label='slit function')
+        # plot FWHM
+        x_left = gaussian_xx[gaussian_yy_center>0.5][0]
+        x_right = gaussian_xx[gaussian_yy_center>0.5][-1]
+        ax2.vlines(x_left, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.vlines(x_right, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.hlines(0.5, xmin=x_left, xmax=x_right, color='red', lw=1.0, linestyle='--', label='FWHM')
+        # ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {x_right-x_left:.2f}', color='red', fontsize=12, ha='center')
+        ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {combine_coeff[0]*2*np.sqrt(2*np.log(2)):.2f} +/- {combine_perr[0]*2*np.sqrt(2*np.log(2)):.2f}', color='red', fontsize=12, ha='center')
+        ax2.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax2.set_ylabel('Relative Energy (a.u.)', fontsize=14)
+        ax2.set_title(which_spec_write, fontsize=18)
+        ax2.legend()
+        fig.tight_layout()
+        fig.savefig(f'wvl_cal_{which_spec_write}_line_fitting_lineshape_2_E.png', bbox_inches='tight')
+        # plt.show()
+        plt.close('all')
+        # sys.exit()
+    #\----------------------------------------------------------------------------/#
+
+
+def cal_wvl_coef_two_lamps_E_si(spectrum_Hg, spectrum_Kr, which_spec='lasp|ssfr-a|zen|si'):
+
+    spectrum_Hg[spectrum_Hg<0] = 0
+    spectrum_Kr[spectrum_Kr<0] = 0
+    Nchan = spectrum_Hg.size
+    xchan = np.arange(Nchan, dtype=np.float64)
+
+    coefs = load_wvl_coef()
+    radiance = True if 'ssrr' in which_spec else False
+    lamps_fitting = lamps_ssrr_fitting if radiance else lamps_ssfr_fitting
+    which_spec_write = which_spec
+    which_spec = which_spec.replace('ssrr', 'ssfr')  # need to be fixed
+    coef_base = coefs[which_spec]
+    wvl_base = cal_wvl(coef_base, Nchan=Nchan)
+
+    lamp_Hg = lamps_fitting['hg']
+    lamp_Kr = lamps_fitting['kr']
+    # only use the Hg lines below 1100 nm for Silicon detector
+    lamp_Hg = lamp_Hg[lamp_Hg<1100]
+    lamp_Kr = lamp_Kr[lamp_Kr<1100]
+
+    # figure
+    #/----------------------------------------------------------------------------\#
+
+    # import cartopy.crs as ccrs
+    # mpl.use('Agg')
+
+    if True:
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        # fig.suptitle('Figure')
+        # plot
+        #/--------------------------------------------------------------\#
+        ax1 = fig.add_subplot(111)
+        ax1.plot(wvl_base, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum (original coeff)')
+        ax1.plot(wvl_base, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum (original coeff)')
+        ymin, ymax= ax1.get_ylim()
+        ax1.vlines(lamp_Hg, ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines(lamp_Kr, ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.set_xlim(300, 1150)
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+        fig.savefig(f'wvl_cal_{which_spec_write}_original_spectrum_E.png', bbox_inches='tight')
+        # plt.show()
+
+
+
+
+        if which_spec == 'lasp|ssfr-a|zen|si':
+            center_shift = 0
+            low_shit, high_shit = -0.3, 0.3
+        elif which_spec == 'lasp|ssfr-a|nad|si':
+            center_shift = 0
+            low_shit, high_shit = -0.3, 0.3
+        elif which_spec == 'lasp|ssfr-b|zen|si':
+            center_shift = 0
+            low_shit, high_shit = -0.3, 0.3
+        elif which_spec == 'lasp|ssfr-b|nad|si':
+            center_shift = 0
+            low_shit, high_shit = -0.3, 0.3
+        Hg_p0 = []
+        Hg_p0_bound_low = []
+        Hg_p0_bound_high = []
+        for wvl0 in lamp_Hg[lamp_Hg<1100]:
+            if radiance:
+                Hg_p0.extend([100, lambda_to_p_si(wvl0)+center_shift, 1.1])
+                Hg_p0_bound_low.extend([1, lambda_to_p_si(wvl0)+low_shit, 0.65])
+                Hg_p0_bound_high.extend([800, lambda_to_p_si(wvl0)+high_shit, 1.6])
+            else:
+                Hg_p0.extend([15, lambda_to_p_si(wvl0)+center_shift, 1.1])
+                Hg_p0_bound_low.extend([0.1, lambda_to_p_si(wvl0)+low_shit, 0.65])
+                Hg_p0_bound_high.extend([60, lambda_to_p_si(wvl0)+high_shit, 1.6])
+
+        Hg_coeff, var_matrix = curve_fit(gauss_set, np.arange(0, 256), spectrum_Hg, p0=Hg_p0, maxfev=50000, bounds=(Hg_p0_bound_low, Hg_p0_bound_high))
+
+
+        Kr_p0 = []
+        Kr_p0_bound_low = []
+        Kr_p0_bound_high = []
+
+        if which_spec == 'lasp|ssfr-a|zen|si':
+            center_shift = 0
+            low_shit, high_shit = -0.3, 0.3
+        elif which_spec == 'lasp|ssfr-a|nad|si':
+            center_shift = 0
+            low_shit, high_shit = -0.3, 0.3
+        elif which_spec == 'lasp|ssfr-b|zen|si':
+            center_shift = 0
+            low_shit, high_shit = -0.3, 0.3
+        elif which_spec == 'lasp|ssfr-b|nad|si':
+            center_shift = 0
+            low_shit, high_shit = -0.3, 0.3
+
+        for wvl0 in lamp_Kr:
+            if radiance:
+                Kr_p0.extend([200, lambda_to_p_si(wvl0)+center_shift, 1.1])
+                Kr_p0_bound_low.extend([1, lambda_to_p_si(wvl0)+low_shit, 0.65])
+                Kr_p0_bound_high.extend([800, lambda_to_p_si(wvl0)+high_shit, 1.6])
+            else:
+                Kr_p0.extend([8, lambda_to_p_si(wvl0)+center_shift, 1.1])
+                Kr_p0_bound_low.extend([0.1, lambda_to_p_si(wvl0)+low_shit, 0.65])
+                Kr_p0_bound_high.extend([20, lambda_to_p_si(wvl0)+high_shit, 1.6])
+
+        Kr_coeff, var_matrix = curve_fit(gauss_set, np.arange(0, 256), spectrum_Kr, p0=Kr_p0, maxfev=50000, bounds=(Kr_p0_bound_low, Kr_p0_bound_high))
+
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        ax1 = fig.add_subplot(111)
+        ax1.vlines(lambda_to_p_si(lamp_Hg[lamp_Hg<1100]), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = np.arange(0, 256)
+        ax1.plot(xx, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum')
+        ax1.plot(xx, gauss_set(xx, *Hg_coeff), color='g', linewidth=1.5)
+
+
+        ax1.vlines(lambda_to_p_si(lamp_Kr[lamp_Kr<1100]), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+        xx = np.arange(0, 256)
+        ax1.plot(xx, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum')
+        ax1.plot(xx, gauss_set(xx, *Kr_coeff), color='orange', linewidth=1.5)
+        ax1.set_xlabel('Pixel', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+        fig.tight_layout()
+        fig.savefig(f'wvl_cal_{which_spec_write}_line_fitting_E.png', bbox_inches='tight')
+        # plt.show()
+
+        Hg_p_to_lambda = {}
+        for p in range(len(Hg_coeff)//3):
+            _, mu, _ = Hg_coeff[3*p:3*p+3]
+            Hg_p_to_lambda[mu] = lamp_Hg[lamp_Hg<1100][p]
+
+        Kr_p_to_lambda = {}
+        for p in range(len(Kr_coeff)//3):
+            _, mu, _ = Kr_coeff[3*p:3*p+3]
+            Kr_p_to_lambda[mu] = lamp_Kr[lamp_Kr<1100][p]
+
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        ax1 = fig.add_subplot(111)
+        x_p = np.arange(0, 256)
+
+        coefs = load_wvl_coef()
+        C_pre = coefs[which_spec]
+        if C_pre[-1] == 0:
+            C_pre = C_pre[:-1]
+        C_trial_low, C_trial_high = C_pre.copy(), C_pre.copy()
+        C_trial_low[C_trial_low>0] *= 0.7
+        C_trial_low[C_trial_low<0] *= 1.3
+        C_trial_high[C_trial_high>0] *= 1.3
+        C_trial_high[C_trial_high<0] *= 0.7
+        xx = p_to_lambda_3rd(x_p, *C_pre)
+        fianl_coeff, var_matrix = curve_fit(p_to_lambda_3rd, list(Kr_p_to_lambda.keys())+list(Hg_p_to_lambda.keys()),
+                                                   list(Kr_p_to_lambda.values())+list(Hg_p_to_lambda.values()),
+                                                   p0=C_pre, maxfev=50000, bounds=(C_trial_low, C_trial_high))
+        ax1.scatter(list(Kr_p_to_lambda.keys()), list(Kr_p_to_lambda.values()), color='r', marker='D', label='Kr lines')
+        ax1.scatter(list(Hg_p_to_lambda.keys()), list(Hg_p_to_lambda.values()), color='green', marker='^', label='Hg lines')
+        ax1.plot(x_p, p_to_lambda_3rd(x_p, *fianl_coeff), label='fitting')
+        ax1.plot(x_p, p_to_lambda_3rd(x_p, *C_pre), 'k--', label='manual')
+        from scipy.optimize import fsolve
+        # wvl_2190_before = fsolve(p_to_lambda_wvl_3rd, 25, args=(C_pre[0], C_pre[1], C_pre[2], C_pre[3], C_pre[4], 2190.251))
+        # ax1.scatter(wvl_2190_before, 2190.251, color='grey', marker='x', label='before fitting')
+        # wvl_2190_after = fsolve(p_to_lambda_wvl_3rd, 25, args=(fianl_coeff[0], fianl_coeff[1], fianl_coeff[2], fianl_coeff[3], 2190.251))
+        # ax1.scatter(wvl_2190_after, 2190.251, color='k', marker='s', label='after fitting')
+        ax1.legend()
+        ax1.set_xlabel('Pixel', fontsize=14)
+        ax1.set_ylabel('Wavelength (nm)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        fig.tight_layout()
+        fig.savefig(f'wvl_cal_{which_spec_write}_coeff_si_E.png', bbox_inches='tight')
+        # plt.show()
+
+        # print("list(Kr_p_to_lambda.keys())+list(Hg_p_to_lambda.keys()):", list(Kr_p_to_lambda.keys())+list(Hg_p_to_lambda.keys()))
+        # print("list(Kr_p_to_lambda.values())+list(Hg_p_to_lambda.values()):", list(Kr_p_to_lambda.values())+list(Hg_p_to_lambda.values()))
+        # sys.exit()
+        if os.path.isfile('wvl_cal_si.txt'):
+            open_status = 'a'
+        else:
+            open_status = 'w'
+        print(open_status)
+        with open('wvl_cal_si.txt', open_status) as f:
+            f.write(f'{which_spec_write}\n')
+            f.write(f'# {" ".join([str(x) for x in fianl_coeff])}\n')
+
+
+        wvl_base_new = cal_wvl(fianl_coeff, Nchan=Nchan)
+        plt.close('all')
+        fig = plt.figure(figsize=(8, 6))
+        ax1 = fig.add_subplot(111)
+        ax1.plot(wvl_base_new, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum (original coeff)')
+        ax1.plot(wvl_base_new, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum (original coeff)')
+        ymin, ymax= ax1.get_ylim()
+        ax1.vlines(lamp_Hg, ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines(lamp_Kr, ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.set_xlim(300, 1150)
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+        fig.tight_layout()
+        fig.savefig(f'wvl_cal_{which_spec_write}_original_spectrum_new_coeff_E.png', bbox_inches='tight')
+        # plt.show()
+
+
+        # after coefficients fitting
+        # fit the gaussian line shape in wavelength space
+
+
+        if which_spec == 'lasp|ssfr-a|zen|si':
+            center_shift = 0
+            low_shit, high_shit = -0.1, 0.1
+        elif which_spec == 'lasp|ssfr-a|nad|si':
+            center_shift = 0
+            low_shit, high_shit = -0.1, 0.1
+        elif which_spec == 'lasp|ssfr-b|zen|si':
+            center_shift = 0
+            low_shit, high_shit = -0.1, 0.1
+        elif which_spec == 'lasp|ssfr-b|nad|si':
+            center_shift = 0
+            low_shit, high_shit = -0.1, 0.1
+
+
+
+        pixel_wvl_factor = 3.3
+        center_shift *= pixel_wvl_factor
+        low_shit *= pixel_wvl_factor
+        high_shit *= pixel_wvl_factor
+
+        Hg_p0 = []
+        Hg_p0_bound_low = []
+        Hg_p0_bound_high = []
+        for wvl0 in lamp_Hg:
+            if radiance:
+                Hg_p0.extend([100, wvl0+center_shift, 1.1*pixel_wvl_factor])
+                Hg_p0_bound_low.extend([1, wvl0+low_shit, 0.65*pixel_wvl_factor])
+                Hg_p0_bound_high.extend([800, wvl0+high_shit, 1.6*pixel_wvl_factor])
+            else:
+                Hg_p0.extend([15, wvl0+center_shift, 1.1*pixel_wvl_factor])
+                Hg_p0_bound_low.extend([0.1, wvl0+low_shit, 0.65*pixel_wvl_factor])
+                Hg_p0_bound_high.extend([60, wvl0+high_shit, 1.6*pixel_wvl_factor])
+
+        Hg_coeff, Hg_var_matrix = curve_fit(gauss_set, wvl_base_new, spectrum_Hg, p0=Hg_p0, maxfev=50000, bounds=(Hg_p0_bound_low, Hg_p0_bound_high))
+        Hg_perr = np.sqrt(np.diag(Hg_var_matrix))
+
+        plt.close('all')
+        fig = plt.figure(figsize=(16, 6))
+        ax1 = fig.add_subplot(121)
+        ax2 = fig.add_subplot(122)
+        ax1.vlines((lamp_Hg), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Hg, color='red', lw=1.0, label='Hg spectrum')
+        ax1.plot(xx, gauss_set(xx, *Hg_coeff), color='g', linewidth=1.5)
+
+        Kr_p0 = []
+        Kr_p0_bound_low = []
+        Kr_p0_bound_high = []
+
+        print(which_spec)
+        if which_spec == 'lasp|ssfr-a|zen|si':
+            center_shift = 0
+            low_shit, high_shit = -0.1, 0.1
+        elif which_spec == 'lasp|ssfr-a|nad|si':
+            center_shift = 0
+            low_shit, high_shit = -0.1, 0.1
+        elif which_spec == 'lasp|ssfr-b|zen|si':
+            center_shift = 0
+            low_shit, high_shit = -0.1, 0.1
+        elif which_spec == 'lasp|ssfr-b|nad|si':
+            center_shift = 0
+            low_shit, high_shit = -0.1, 0.1
+
+        center_shift *= pixel_wvl_factor
+        low_shit *= pixel_wvl_factor
+        high_shit *= pixel_wvl_factor
+
+        for wvl0 in lamp_Kr:
+            if radiance:
+                Kr_p0.extend([200, wvl0+center_shift, 1.1*pixel_wvl_factor])
+                Kr_p0_bound_low.extend([1, wvl0+low_shit, 0.65*pixel_wvl_factor])
+                Kr_p0_bound_high.extend([800, wvl0+high_shit, 1.6*pixel_wvl_factor])
+            else:
+                Kr_p0.extend([8, wvl0+center_shift, 1.1*pixel_wvl_factor])
+                Kr_p0_bound_low.extend([0.1, wvl0+low_shit, 0.65*pixel_wvl_factor])
+                Kr_p0_bound_high.extend([20, wvl0+high_shit, 1.6*pixel_wvl_factor])
+
+        Kr_coeff, Kr_var_matrix = curve_fit(gauss_set, wvl_base_new, spectrum_Kr, p0=Kr_p0, maxfev=50000, bounds=(Kr_p0_bound_low, Kr_p0_bound_high))
+        Kr_perr = np.sqrt(np.diag(Kr_var_matrix))
+        ax1.vlines((lamp_Kr), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Kr, color='blue', lw=1.0, label='Kr spectrum')
+        ax1.plot(xx, gauss_set(xx, *Kr_coeff), color='orange', linewidth=1.5)
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+
+
+        ax2.errorbar(Kr_coeff[1::3], Kr_coeff[2::3], yerr=Kr_perr[2::3], fmt='ro', alpha=0.75)
+        ax2.errorbar(Hg_coeff[1::3], Hg_coeff[2::3], yerr=Hg_perr[2::3], fmt='go', alpha=0.75)
+        ax2.plot(Kr_coeff[1::3], Kr_coeff[2::3], 'ro', label='Kr lines')
+        ax2.plot(Hg_coeff[1::3], Hg_coeff[2::3], 'go', label='Hg lines')
+        ax2.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax2.set_ylabel('Sigma (nm)', fontsize=14)
+        ax2.set_title(which_spec_write, fontsize=18)
+        ax2.set_ylim(0, 8)
+
+        # calculate average sigma with uncertainty as weights
+        weights = np.concatenate((1./Hg_perr[2::3], 1./Kr_perr[2::3]))
+        errs = np.concatenate((Hg_perr[2::3], Kr_perr[2::3]))
+        sigma_avg = np.average(np.concatenate((Hg_coeff[2::3], Kr_coeff[2::3])), weights=weights)
+        # weighted average error
+        sigma_avg_err = np.sqrt(np.sum(errs**2 * weights)/ np.sum(weights))
+
+        ax2.axhline(sigma_avg, color='black', lw=1.0, linestyle='--', label='average sigma')
+        ax2.fill_between([xx[0], xx[-1]], sigma_avg-sigma_avg_err, sigma_avg+sigma_avg_err, color='grey', alpha=0.5)
+        ax2.text(1000, 0.5, f'avg sigma = {sigma_avg:.2f} +/- {sigma_avg_err:.2f} nm', fontsize=12, color='black', ha='right')
+        ax2.text(1000, 0.25, f'avg FWHM = {sigma_avg*2*np.sqrt(2*np.log(2)):.2f} +/- {sigma_avg_err*2*np.sqrt(2*np.log(2)):.2f} nm', fontsize=12, color='black', ha='right')
+        ax2.legend()
+        fig.tight_layout()
+        fig.savefig(f'wvl_cal_{which_spec_write}_line_fitting_lineshape_E.png', bbox_inches='tight')
+        # plt.show()
+
+
+        pixel_wvl_factor = 3.3
+        center_shift *= pixel_wvl_factor
+        low_shit *= pixel_wvl_factor
+        high_shit *= pixel_wvl_factor
+
+        combine_p0 = [1.2*pixel_wvl_factor]
+        combine_p0_bound_low = [0.5*pixel_wvl_factor]
+        combine_p0_bound_high = [2.0*pixel_wvl_factor]
+        for wvl0 in lamp_Hg[lamp_Hg<1100]:
+            if radiance:
+                combine_p0.extend([100])
+                combine_p0_bound_low.extend([1])
+                combine_p0_bound_high.extend([800])
+            else:
+                combine_p0.extend([15])
+                combine_p0_bound_low.extend([0.1])
+                combine_p0_bound_high.extend([60])
+        for wvl0 in lamp_Kr[lamp_Kr<1100]:
+            if radiance:
+                combine_p0.extend([200])
+                combine_p0_bound_low.extend([1])
+                combine_p0_bound_high.extend([800])
+            else:
+                combine_p0.extend([8])
+                combine_p0_bound_low.extend([0.1])
+                combine_p0_bound_high.extend([20])
+
+        combine_spectrum_for_fitting = np.concatenate((spectrum_Hg, spectrum_Kr))
+        combine_wvl_base_new = np.concatenate((wvl_base_new, wvl_base_new+2000))
+        # plt.plot(combine_wvl_base_new, combine_spectrum_for_fitting, color='black', lw=1.0, label='combined spectrum for fitting')
+        # plt.xlabel('Wavelength (nm)', fontsize=14)
+        # plt.ylabel('Energy (a.u.)', fontsize=14)
+        # # plt.show()
+        # sys.exit()
+
+        fit_function = lambda x, *arg: gauss_peaks_Hg_Kr_Si(x, lamps_fitting, *arg)
+        combine_coeff, combine_var_matrix = curve_fit(fit_function, combine_wvl_base_new, combine_spectrum_for_fitting, p0=combine_p0, maxfev=50000, bounds=(combine_p0_bound_low, combine_p0_bound_high))
+        combine_perr = np.sqrt(np.diag(combine_var_matrix))
+
+
+        # plt.plot(combine_wvl_base_new, gauss_peaks_Hg_Kr_Si(combine_wvl_base_new, *combine_coeff), color='black', lw=1.0, label='combined spectrum for fitting')
+        # plt.xlabel('Wavelength (nm)', fontsize=14)
+        # plt.ylabel('Energy (a.u.)', fontsize=14)
+        # # plt.show()
+        # sys.exit()
+
+        plt.close('all')
+        fig = plt.figure(figsize=(16, 6))
+        ax1 = fig.add_subplot(121)
+        ax2 = fig.add_subplot(122)
+
+        Hg_lines_number = len(lamp_Hg[lamp_Hg<1100])
+        # ax1.vlines((lamp_Hg[lamp_Hg<1100]), ymin=0, ymax=ymax, color='green', lw=1.0, label='Hg lines')
+        ax1.vlines((lamp_Hg[lamp_Hg<1100]), ymin=0, ymax=combine_coeff[1:Hg_lines_number+1], color='green', lw=1.0, label='Hg lines')
+        # ax1.vlines(Hg_coeff[1::3], ymin=0, ymax=ymax, color='green', lw=1.0, linestyle='--', label='Hg lines fitting')
+        xx = wvl_base_new
+        ax1.plot(xx, spectrum_Hg, color='lime', lw=2.0, label='Hg spectrum')
+        ax1.plot(xx, spectrum_Kr, color='orange', lw=2.0, label='Kr spectrum')
+
+        fit_Hg_spectrum = gauss_peaks_Hg_Kr_Si(combine_wvl_base_new, lamps_fitting, *combine_coeff)[:len(wvl_base_new)]
+        ax1.plot(xx, fit_Hg_spectrum, color='green', linewidth=1.0, label='Hg fit spectrum')
+
+        fit_Kr_spectrum = gauss_peaks_Hg_Kr_Si(combine_wvl_base_new, lamps_fitting, *combine_coeff)[len(wvl_base_new):]
+        ax1.plot(xx, fit_Kr_spectrum, color='red', linewidth=1.0, label='Kr fit spectrum')
+
+        # ax1.vlines((lamp_Kr[lamp_Kr<1100]), ymin=0, ymax=ymax, color='purple', lw=1.0, label='Kr lines')
+        ax1.vlines((lamp_Kr[lamp_Kr<1100]), ymin=0, ymax=combine_coeff[Hg_lines_number+1:], color='purple', lw=1.0, label='Kr lines')
+        # ax1.vlines(Kr_coeff[1::3], ymin=0, ymax=ymax, color='purple', lw=1.0, linestyle='--', label='Kr lines fit')
+
+        ax1.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax1.set_ylabel('Energy (a.u.)', fontsize=14)
+        ax1.set_title(which_spec_write, fontsize=18)
+        ax1.legend()
+
+        gaussian_xx = np.linspace(-10, 10, 4001)
+        gaussian_yy_center = np.exp(-gaussian_xx**2/(2.*combine_coeff[0]**2))
+        # calculate the uncertainty in the gaussian width
+        gaussian_yy_narrow = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]-combine_perr[0])**2))
+        gaussian_yy_wide = np.exp(-gaussian_xx**2/(2.*(combine_coeff[0]+combine_perr[0])**2))
+        ax2.fill_between(gaussian_xx, gaussian_yy_narrow, gaussian_yy_wide, color='grey', alpha=0.5, label='sigma uncertainty')
+        ax2.plot(gaussian_xx, gaussian_yy_center, color='black', label='slit function')
+        # plot FWHM
+        x_left = gaussian_xx[gaussian_yy_center>0.5][0]
+        x_right = gaussian_xx[gaussian_yy_center>0.5][-1]
+        ax2.vlines(x_left, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.vlines(x_right, ymin=0, ymax=1, color='red', lw=1.0,)
+        ax2.hlines(0.5, xmin=x_left, xmax=x_right, color='red', lw=1.0, linestyle='--', label='FWHM')
+        # ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {x_right-x_left:.2f}', color='red', fontsize=12, ha='center')
+        ax2.text((x_left+x_right)/2, 0.55, f'FWHM = {combine_coeff[0]*2*np.sqrt(2*np.log(2)):.2f} +/- {combine_perr[0]*2*np.sqrt(2*np.log(2)):.2f}', color='red', fontsize=12, ha='center')
+        ax2.set_xlabel('Wavelength (nm)', fontsize=14)
+        ax2.set_ylabel('Relative Energy (a.u.)', fontsize=14)
+        ax2.set_title(which_spec_write, fontsize=18)
+        ax2.legend()
+        fig.tight_layout()
+        fig.savefig(f'wvl_cal_{which_spec_write}_line_fitting_lineshape_2_E.png', bbox_inches='tight')
+        # plt.show()
+        plt.close('all')
+        # sys.exit()
+    #\----------------------------------------------------------------------------/#
 
 
 if __name__ == '__main__':

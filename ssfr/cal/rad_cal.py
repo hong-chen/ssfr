@@ -782,10 +782,10 @@ def load_responses_and_validate(fnames_resp_zen: str, fnames_resp_nad: str,
 
 def plot_comparison(
     datasets: List[Dict[str, Any]],
-    title: str,
     xlabel: str,
     ylabel: str,
     output_fname: str,
+    title=None,
     joint_region=None, # Tuple[float, float] 
     ):
     """A generic plotting function to replace the three originals."""
@@ -801,10 +801,12 @@ def plot_comparison(
                          color='gray', alpha=0.5, label='joint region')
 
     ax.set_ylim(0, ymax)
-    ax.set_title(title)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.legend()
+    if title:
+        ax.set_title(title)
+    ax.set_xlabel(xlabel, fontsize=14)
+    ax.set_ylabel(ylabel, fontsize=14)
+    ax.legend(fontsize=14)
+    ax.tick_params(axis='both', which='major', labelsize=12)
     # ax.grid(True, linestyle='--')
     fig.tight_layout()
     fig.savefig(output_fname, dpi=300)
@@ -1025,6 +1027,18 @@ def rad_resp_corr(fnames_resp_zen: str,
         joint_region=(wvl_start_joint, wvl_end_joint)
     )
     
+    plot_comparison(
+        datasets=[
+            {'x': wvl_si_nad, 'y': nad_data['transfer']['nad|si'], 'label': r'$F_{nad,\,Si}^{trans\,(ori)}$', 'color': 'blue'},
+            {'x': wvl_in_nad, 'y': transfer_in_nad_orig, 'label': r'$F_{nad,\,IR}^{trans\,(ori)}$', 'color': 'red'},
+            {'x': wvl_in_nad, 'y': nad_data['transfer']['nad|in'], 'label': r'$F_{nad,\,IR}^{trans\,(corr)}$', 'color': 'orange', 'style': '--'}
+        ],
+        # title='Nadir Si-InGaAs Correction', 
+        xlabel='Wavelength (nm)', ylabel='Transfer flux ($W m^{-2} nm^{-1}$)',
+        output_fname=f'{out_dir}/rad_resp_corr_nad_si_in_SI_plot.png',
+        joint_region=(wvl_start_joint, wvl_end_joint)
+    )
+    
     # (4-2) nad-si and zen-si transfer check
     wvl_si_start = np.min((wvl_si_nad.min(), wvl_si_zen.min()))
     wvl_si_end   = np.max((wvl_si_nad.max(), wvl_si_zen.max()))
@@ -1049,6 +1063,17 @@ def rad_resp_corr(fnames_resp_zen: str,
         output_fname=f'{out_dir}/rad_resp_corr_zen_si_nad_si.png'
     )
     
+    plot_comparison(
+        datasets=[
+            {'x': wvl_si_nad, 'y': nad_data['transfer']['nad|si'], 'label': r'$F_{nad,\,Si}^{trans\,(ori)}$', 'color': 'blue'},
+            {'x': wvl_si_zen, 'y': transfer_si_zen_orig, 'label': r'$F_{zen,\,Si}^{trans\,(ori)}$', 'color': 'red'},
+            {'x': wvl_si_zen, 'y': zen_data['transfer']['zen|si'], 'label': r'$F_{zen,\,Si}^{trans\,(corr)}$', 'color': 'orange', 'style': '--'}
+        ],
+        # title='Zenith Si Correction', 
+        xlabel='Wavelength (nm)', ylabel='Transfer flux ($W m^{-2} nm^{-1}$)',
+        output_fname=f'{out_dir}/rad_resp_corr_zen_si_nad_si_SI_plot.png'
+    )
+    
     # (4-3) zen-si and zen-in transfer check
     new_transfer_in_zen, new_transfer_in_std_zen = _apply_scaling_correction(
         data=zen_data,
@@ -1069,6 +1094,31 @@ def rad_resp_corr(fnames_resp_zen: str,
         ],
         title='Zenith Si-InGaAs Correction', xlabel='Wavelength (nm)', ylabel='Transfer flux ($W m^{-2} nm^{-1}$)',
         output_fname=f'{out_dir}/rad_resp_corr_zen_si_zen_in.png',
+        joint_region=(wvl_start_joint, wvl_end_joint)
+    )
+    
+    plot_comparison(
+        datasets=[
+            {'x': wvl_si_zen, 'y': zen_data['transfer']['zen|si'], 'label': r'$F_{zen,\,Si}^{trans\,(corr)}$', 'color': 'blue', 'style': '--'},
+            {'x': wvl_in_zen, 'y': transfer_in_zen_orig, 'label': r'$F_{zen,\,IR}^{trans\,(ori)}$', 'color': 'red'},
+            {'x': wvl_in_zen, 'y': zen_data['transfer']['zen|in'], 'label': r'$F_{zen,\,IR}^{trans\,(corr)}$', 'color': 'orange', 'style': '--'},
+            {'x': wvl_si_zen, 'y': transfer_si_zen_orig, 'label': r'$F_{zen,\,Si}^{trans\,(ori)}$', 'color': 'cyan'}
+        ],
+        # title='Zenith Si-InGaAs Correction', 
+        xlabel='Wavelength (nm)', ylabel='Transfer flux ($W m^{-2} nm^{-1}$)',
+        output_fname=f'{out_dir}/rad_resp_corr_zen_si_zen_in_SI_plot.png',
+        joint_region=(wvl_start_joint, wvl_end_joint)
+    )
+    
+    plot_comparison(
+        datasets=[
+            {'x': wvl_si_nad, 'y': nad_data['transfer']['nad|si'], 'label': r'$F_{nad,\,Si}^{trans\,(ori)}$', 'color': 'blue'},
+            {'x': wvl_in_nad, 'y': transfer_in_zen_orig, 'label': r'$F_{zen,\,IR}^{trans\,(ori)}$', 'color': 'red'},
+            {'x': wvl_in_nad, 'y': zen_data['transfer']['zen|in'], 'label': r'$F_{zen,\,IR}^{trans\,(corr)}$', 'color': 'orange', 'style': '--'}
+        ],
+        # title='Nadir Si-InGaAs Correction', 
+        xlabel='Wavelength (nm)', ylabel='Transfer flux ($W m^{-2} nm^{-1}$)',
+        output_fname=f'{out_dir}/rad_resp_corr_nad_si_zen_in_SI_plot.png',
         joint_region=(wvl_start_joint, wvl_end_joint)
     )
     

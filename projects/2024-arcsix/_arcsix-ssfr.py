@@ -535,24 +535,24 @@ def cdata_ssfr_v2(
             data_ssfr_v1['v0/wvl_zen'] = data_ssfr_v1['v0/wvl_zen'][:size_limit]
         # ╰────────────────────────────────────────────────────────────────────────────╯#
         
-        if date_s == '20240531':
-            data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][1:, :]
-            data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][1:, :]
-            data_ssfr_v1['nad/flux'] = data_ssfr_v1['nad/flux'][1:, :]
-            data_ssfr_v1['nad/cnt'] = data_ssfr_v1['nad/cnt'][1:, :]
-            data_ssfr_v1['jday'] = data_ssfr_v1['jday'][1:]
-            data_ssfr_v1['jday_ori'] = data_ssfr_v1['jday_ori'][1:]
-            data_ssfr_v1['tmhr'] = data_ssfr_v1['tmhr'][1:]
-            data_ssfr_v1['tmhr_ori'] = data_ssfr_v1['tmhr_ori'][1:]
-            data_ssfr_v1['sza'] = data_ssfr_v1['sza'][1:]
-            data_ssfr_v1['saa'] = data_ssfr_v1['saa'][1:]
-            data_ssfr_v1['ang_pit'] = data_ssfr_v1['ang_pit'][1:]
-            data_ssfr_v1['ang_rol'] = data_ssfr_v1['ang_rol'][1:]
-            data_ssfr_v1['ang_hed'] = data_ssfr_v1['ang_hed'][1:]
-            data_ssfr_v1['alt'] = data_ssfr_v1['alt'][1:]
-            data_ssfr_v1['ir_surf_temp'] = data_ssfr_v1['ir_surf_temp'][1:]
-            data_ssfr_v1['lon'] = data_ssfr_v1['lon'][1:]
-            data_ssfr_v1['lat'] = data_ssfr_v1['lat'][1:]
+        # if date_s == '20240531':
+        #     data_ssfr_v1['zen/flux'] = data_ssfr_v1['zen/flux'][1:, :]
+        #     data_ssfr_v1['zen/cnt'] = data_ssfr_v1['zen/cnt'][1:, :]
+        #     data_ssfr_v1['nad/flux'] = data_ssfr_v1['nad/flux'][1:, :]
+        #     data_ssfr_v1['nad/cnt'] = data_ssfr_v1['nad/cnt'][1:, :]
+        #     data_ssfr_v1['jday'] = data_ssfr_v1['jday'][1:]
+        #     data_ssfr_v1['jday_ori'] = data_ssfr_v1['jday_ori'][1:]
+        #     data_ssfr_v1['tmhr'] = data_ssfr_v1['tmhr'][1:]
+        #     data_ssfr_v1['tmhr_ori'] = data_ssfr_v1['tmhr_ori'][1:]
+        #     data_ssfr_v1['sza'] = data_ssfr_v1['sza'][1:]
+        #     data_ssfr_v1['saa'] = data_ssfr_v1['saa'][1:]
+        #     data_ssfr_v1['ang_pit'] = data_ssfr_v1['ang_pit'][1:]
+        #     data_ssfr_v1['ang_rol'] = data_ssfr_v1['ang_rol'][1:]
+        #     data_ssfr_v1['ang_hed'] = data_ssfr_v1['ang_hed'][1:]
+        #     data_ssfr_v1['alt'] = data_ssfr_v1['alt'][1:]
+        #     data_ssfr_v1['ir_surf_temp'] = data_ssfr_v1['ir_surf_temp'][1:]
+        #     data_ssfr_v1['lon'] = data_ssfr_v1['lon'][1:]
+        #     data_ssfr_v1['lat'] = data_ssfr_v1['lat'][1:]
             
             
 

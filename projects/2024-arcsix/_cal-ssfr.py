@@ -976,8 +976,8 @@ def main_ssfr_rad_cal(
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-A_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
-                 'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest'},
-                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest'},
+                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-A_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest',
+                 'nad': 'data/arcsix/cal/rad-cal/2025-02-18_SSFR-A_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 ]
 
         fdirs_tra = [
@@ -1014,8 +1014,8 @@ def main_ssfr_rad_cal(
                 # {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
                 #  'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 {'zen': 'data/arcsix/cal/rad-cal/2025-08-12_SSFR-B_zen-lc4_pri-cal_lamp-1324_si-080-120_in-250-350_postdeploymentresurgery',
-                 'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest'},
-                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_lamptest'},
+                #  'nad': '/Users/kehi6101/Downloads/20260127/2026-01-27_SSFR-B_nad-lc6_pri-cal_lamp-506_si-080-120_in-250-350_lamptest',
+                 'nad': 'data/arcsix/cal/rad-cal/2025-02-25_SSFR-B_nad-lc6_pri-cal_lamp-1324_si-080-120_in-250-350_post'},
                 ]
 
         fdirs_tra = [
@@ -2884,19 +2884,25 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-
-
-    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=False)
-    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=True)
-    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
-    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
+    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
     # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
     # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=False)
     # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=True)
     # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=False)
     # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='nad', lamp_corr=True, transfer_corr=True)
+    
+    # Lamp color temperature test
+    # main_ssfr_rad_cal(which_ssfr='lasp|ssfr-a')
+    # main_ssfr_rad_cal(which_ssfr='lasp|ssfr-b')
+    # plot_response_ratio(condition='lasp|ssfr-a', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
+    # plot_response_ratio(condition='lasp|ssfr-b', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
+    # plot_response_ratio(condition='lamp-1324', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
+    # plot_response_ratio(condition='lamp-506', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
 
     # Lamp color temperature test
     main_ssfr_rad_cal(which_ssfr='lasp|ssfr-a')
