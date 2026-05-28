@@ -85,17 +85,17 @@ fname_ssrr_v2 = f'{fdir_out}/{mission.upper()}-{ssrr_aka.upper()}_{platform.uppe
 # calibrations
 #╭────────────────────────────────────────────────╮#
 fdir_ssfr_rad_cal_zen = f'{fdir_cal}/rad-cal/2025-10-26_response_files'
-prop_ssfr_rad_cal_zen = {'primary_date': '2024-03-21', 'transfer_date': '2024-03-21', 'secondary_date': '2024-06-09',
+prop_ssfr_rad_cal_zen = {'primary_date': '2024-03-21', 'transfer_date': '2024-03-21', 'secondary_date': '2024-07-26',
                          'int_time': [(80, 250), (120, 350)],
                          'lamp_adjust': True, 'transfer-based_corr': True, }
 fdir_ssfr_rad_cal_nad = f'{fdir_cal}/rad-cal/2025-10-26_response_files'
-prop_ssfr_rad_cal_nad = {'primary_date': '2024-03-21', 'transfer_date': '2024-03-21', 'secondary_date': '2024-06-09',
+prop_ssfr_rad_cal_nad = {'primary_date': '2024-03-21', 'transfer_date': '2024-03-21', 'secondary_date': '2024-07-23',
                          'int_time': [(80, 250), (120, 350)],
                          'lamp_adjust': True, 'transfer-based_corr': True, }
 fdir_ssfr_ang_cal_zen = f'{fdir_cal}/ang-cal/2025-10-26_ang-cal_files'
 prop_ssfr_ang_cal_zen = {'date': '2024-03-15', }
 fdir_ssfr_ang_cal_nad = f'{fdir_cal}/ang-cal/2025-10-26_ang-cal_files'
-prop_ssfr_ang_cal_nad = {'date': '2025-07-31', }
+prop_ssfr_ang_cal_nad = {'date': '2024-03-18', }
 #╰────────────────────────────────────────────────╯#
 #╰──────────────────────────────────────────────────────────────╯#
 #╰────────────────────────────────────────────────────────────────────────────╯#
