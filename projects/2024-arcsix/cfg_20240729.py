@@ -38,8 +38,8 @@ hsr1_ang_rol_offset = 3.4
 # fdir_data = f'data/{mission}/{year}/{platform}'
 fdir_data = f'/Volumes/argus/field/{mission}/{year}/{platform}'
 fdir_cal = f'data/{mission}/cal'
-# fdir_out = f'data/{mission}/processed-by-{socket.gethostname()}'
-fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed_test' % mission
+fdir_out = f'data/{mission}/processed-by-{socket.gethostname()}'
+# fdir_out = '/Users/kehi6101/Downloads/ssfr_test/%s/processed_test' % mission
 
 # parameters that require extra processing
 #╭──────────────────────────────────────────────────────────────╮#
