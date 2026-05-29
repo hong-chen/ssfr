@@ -2371,10 +2371,10 @@ if __name__ == '__main__':
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    # run_hsr1 = True
-    run_hsr1 = False
-    run_ssfr = True
-    # run_ssfr = False
+    run_hsr1 = True
+    # run_hsr1 = False
+    # run_ssfr = True
+    run_ssfr = False
     # run_ssrr = True
     run_ssrr = False
 
