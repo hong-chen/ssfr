@@ -139,6 +139,7 @@ def cdata_hsr1_v1(
         fname_h5='HSR1_v1.h5',
         fdir_out='./',
         time_offset=0.0,
+        radiometric_factor=None,
         run=True,
         ):
 
@@ -170,6 +171,13 @@ def cdata_hsr1_v1(
             flux_tot[:, i] = ssfr.util.interp(data_hsk['jday'], data_hsr1_v0['tot/jday']+time_offset/86400.0, data_hsr1_v0['tot/flux'][:, i], mode='nearest')
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
+        if radiometric_factor is not None:
+            flux_dif_corr = flux_dif * np.poly1d(radiometric_factor)(data_hsr1_v0['dif/wvl'])
+            flux_tot_corr = flux_tot * np.poly1d(radiometric_factor)(data_hsr1_v0['tot/wvl'])
+        else:
+            flux_dif_corr = flux_dif[...]
+            flux_tot_corr = flux_tot[...]
+
         f = h5py.File(fname_h5, 'w')
 
         for key in data_hsk.keys():
@@ -181,12 +189,14 @@ def cdata_hsr1_v1(
 
         g1 = f.create_group('dif')
         g1['wvl']   = data_hsr1_v0['dif/wvl']
-        dset0 = g1.create_dataset('flux', data=flux_dif, compression='gzip', compression_opts=9, chunks=True)
+        dset0 = g1.create_dataset('flux_raw', data=flux_dif, compression='gzip', compression_opts=9, chunks=True)
+        dset0 = g1.create_dataset('flux', data=flux_dif_corr, compression='gzip', compression_opts=9, chunks=True)
 
         g2 = f.create_group('tot')
         g2['wvl']   = data_hsr1_v0['tot/wvl']
         g2['toa0']  = data_hsr1_v0['tot/toa0']
-        dset0 = g2.create_dataset('flux', data=flux_tot, compression='gzip', compression_opts=9, chunks=True)
+        dset0 = g2.create_dataset('flux_raw', data=flux_tot, compression='gzip', compression_opts=9, chunks=True)
+        dset0 = g2.create_dataset('flux', data=flux_tot_corr, compression='gzip', compression_opts=9, chunks=True)
 
         f.close()
 
@@ -674,6 +684,7 @@ def main_process_data_v1(cfg, run=True):
             cfg.hsk['fname_v0'],
             fname_h5=fname_h5,
             time_offset=cfg.hsr1['time_offset'],
+            radiometric_factor=cfg.hsr1['radiometric_factor'],
             fdir_out=fdir_out,
             run=run
             )

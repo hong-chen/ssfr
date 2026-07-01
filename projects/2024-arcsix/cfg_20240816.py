@@ -141,6 +141,7 @@ hsr1 = {
         'time_offset': hsr1_time_offset,
         'ang_pit_offset': hsr1_ang_pit_offset,
         'ang_rol_offset': hsr1_ang_rol_offset,
+        'radiometric_factor': [7.960e-07, -9.117e-04, 1.3535],
         }
 #╰────────────────────────────────────────────────────────────────────────────╯#
 

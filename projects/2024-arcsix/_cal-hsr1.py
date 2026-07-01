@@ -372,7 +372,11 @@ def hsr1_rad_cal_20251027():
             plt.clf()
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
-def hsr1_flux_compare_20251027():
+def hsr1_flux_compare_20251027(
+        fname_tot_orig=None, \
+        fname_tot_new=None, \
+        fname_tot_new_int=None
+):
 
     # lamp data
     #╭────────────────────────────────────────────────────────────────────────────╮#
@@ -398,38 +402,41 @@ def hsr1_flux_compare_20251027():
 
     # measurements with the original calibration file (HDR)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_tot = '/Users/kehi6101/Downloads/hsr_cal_20251027/2025-10-27_int-40_cal-orig/Total.txt'
-    data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
+    # fname_tot_orig = '/Users/kehi6101/Downloads/HSR1b_cal_20251027/2025-10-27_int-40_cal-orig/Total.txt'
+    if fname_tot_orig is not None:
+        data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot_orig)
 
-    data_hsr1_old0 = {
-            'wvl': data_hsr1_.data['wvl'],
-            'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
-            'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
-            }
+        data_hsr1_old0 = {
+                'wvl': data_hsr1_.data['wvl'],
+                'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
+                'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
+                }
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # measurements with the updated calibration file (HDR)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_tot = '/Users/kehi6101/Downloads/hsr_cal_20251027/2025-10-27_int-40_cal-new-hdr/Total.txt'
-    data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
+    # fname_tot_new = '/Users/kehi6101/Downloads/HSR1b_cal_20251027/2025-10-27_int-40_cal-new-hdr/Total.txt'
+    if fname_tot_new is not None:
+        data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot_new)
 
-    data_hsr1_new0 = {
-            'wvl': data_hsr1_.data['wvl'],
-            'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
-            'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
-            }
+        data_hsr1_new0 = {
+                'wvl': data_hsr1_.data['wvl'],
+                'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
+                'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
+                }
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # Measurements with the updated calibration file (integration time/gains = 40/50)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    fname_tot = '/Users/kehi6101/Downloads/hsr_cal_20251027/2025-10-27_int-40_cal-new-int-40/Total.txt'
-    data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot)
+    # fname_tot_new_int = '/Users/kehi6101/Downloads/HSR1b_cal_20251027/2025-10-27_int-40_cal-new-int-40/Total.txt'
+    if fname_tot_new_int is not None:
+        data_hsr1_ = ssfr.lasp_hsr.read_hsr1(fname=fname_tot_new_int)
 
-    data_hsr1_new1 = {
-            'wvl': data_hsr1_.data['wvl'],
-            'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
-            'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
-            }
+        data_hsr1_new1 = {
+                'wvl': data_hsr1_.data['wvl'],
+                'flux': np.nanmean(data_hsr1_.data['flux'], axis=0),
+                'flux_std': np.nanstd(data_hsr1_.data['flux'], axis=0),
+                }
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
     # figure
@@ -437,7 +444,7 @@ def hsr1_flux_compare_20251027():
     plot = True
     if plot:
         plt.close('all')
-        fig = plt.figure(figsize=(12, 12))
+        fig = plt.figure(figsize=(12, 10))
         # fig.suptitle('Figure')
         # plot1
         #╭──────────────────────────────────────────────────────────────╮#
@@ -445,20 +452,23 @@ def hsr1_flux_compare_20251027():
         # ax1.plot(data_lamp0['wvl'], data_lamp0['flux'], color='gray', lw=2.0)
         ax1.plot(data_lamp1['wvl'], data_lamp1['flux'], color='k', lw=2.0)
 
-        ax1.fill_between(data_hsr1_old0['wvl'], data_hsr1_old0['flux']-data_hsr1_old0['flux_std'], data_hsr1_old0['flux']+data_hsr1_old0['flux_std'], color='blue', lw=0.0, alpha=0.1)
-        ax1.plot(data_hsr1_old0['wvl'], data_hsr1_old0['flux'], color='blue', lw=1.5)
+        if fname_tot_orig is not None:
+            ax1.fill_between(data_hsr1_old0['wvl'], data_hsr1_old0['flux']-data_hsr1_old0['flux_std'], data_hsr1_old0['flux']+data_hsr1_old0['flux_std'], color='blue', lw=0.0, alpha=0.1)
+            ax1.plot(data_hsr1_old0['wvl'], data_hsr1_old0['flux'], color='blue', lw=1.5)
 
-        ax1.fill_between(data_hsr1_new0['wvl'], data_hsr1_new0['flux']-data_hsr1_new0['flux_std'], data_hsr1_new0['flux']+data_hsr1_new0['flux_std'], color='red', lw=0.0, alpha=0.1)
-        ax1.plot(data_hsr1_new0['wvl'], data_hsr1_new0['flux'], color='red', lw=1.5)
+        if fname_tot_new is not None:
+            ax1.fill_between(data_hsr1_new0['wvl'], data_hsr1_new0['flux']-data_hsr1_new0['flux_std'], data_hsr1_new0['flux']+data_hsr1_new0['flux_std'], color='red', lw=0.0, alpha=0.1)
+            ax1.plot(data_hsr1_new0['wvl'], data_hsr1_new0['flux'], color='red', lw=1.5)
 
-        ax1.fill_between(data_hsr1_new1['wvl'], data_hsr1_new1['flux']-data_hsr1_new1['flux_std'], data_hsr1_new1['flux']+data_hsr1_new1['flux_std'], color='orange', lw=0.0, alpha=0.1)
-        ax1.plot(data_hsr1_new1['wvl'], data_hsr1_new1['flux'], color='orange', lw=1.5)
+        if fname_tot_new_int is not None:
+            ax1.fill_between(data_hsr1_new1['wvl'], data_hsr1_new1['flux']-data_hsr1_new1['flux_std'], data_hsr1_new1['flux']+data_hsr1_new1['flux_std'], color='orange', lw=0.0, alpha=0.1)
+            ax1.plot(data_hsr1_new1['wvl'], data_hsr1_new1['flux'], color='orange', lw=1.5)
 
         ax1.grid(True, which='both', linestyle='--', linewidth=0.5)
 
         ax1.set_xlabel('Wavelength [nm]')
         ax1.set_ylabel('Irradiance [$\\mathrm{W m^{-2} nm^{-1}}$]')
-        # ax1.set_xlim((0, 1))
+        ax1.set_xlim((300, 1100))
         ax1.set_ylim((0, None))
         # ax1.set_xlabel('X')
         # ax1.set_ylabel('Y')
@@ -466,25 +476,64 @@ def hsr1_flux_compare_20251027():
         # ax1.xaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
         # ax1.yaxis.set_major_locator(FixedLocator(np.arange(0, 100, 5)))
         #╰──────────────────────────────────────────────────────────────╯#
+        color_list = ['black', 'gray', 'blue', 'red', 'orange']
         patches_legend = [
                           mpatches.Patch(color='black', label='Lamp data (1324)'), \
                         #   mpatches.Patch(color='gray' , label='Lamp data (506c)'), \
-                          mpatches.Patch(color='blue'   , label='Original cal (HDR)'), \
-                          mpatches.Patch(color='red', label='New Cal (HDR)'), \
-                          mpatches.Patch(color='orange'  , label='New Cal (I40|G50)'), \
+                        #   mpatches.Patch(color='blue'   , label='Original cal (HDR)'), \
+                        #   mpatches.Patch(color='red', label='New Cal (HDR)'), \
+                        #   mpatches.Patch(color='orange'  , label='New Cal (I40|G50)'), \
                          ]
+        if fname_tot_orig is not None:
+            patches_legend.append(mpatches.Patch(color='blue', label='Lamp measured with Original Cal'))
+        if fname_tot_new is not None:
+            patches_legend.append(mpatches.Patch(color='red', label='Lamp measured with New Cal'))
+        if fname_tot_new_int is not None:
+            patches_legend.append(mpatches.Patch(color='orange', label='Lamp measured with New Cal (I40|G50)'))
         # ax1.legend(handles=patches_legend, bbox_to_anchor=(0., 1.01, 1., .102), loc=3, ncol=len(patches_legend), mode="expand", borderaxespad=0., frameon=False, handletextpad=0.2, fontsize=14)
         ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
 
-        data_lamp1_flux = np.interp(data_hsr1_new0['wvl'], data_lamp1['wvl'], data_lamp1['flux'])
+        if fname_tot_orig is not None:
+            data_lamp1_flux = np.interp(data_hsr1_old0['wvl'], data_lamp1['wvl'], data_lamp1['flux'])
 
-        ax2 = fig.add_subplot(212)
-        ax2.plot(data_hsr1_new0['wvl'], data_lamp1_flux/data_hsr1_new0['flux'], color='red', lw=1.5, label='Lamp truth / New Cal (HDR)')
-        ax2.axhline(1.0, color='k', lw=0.5, ls='--')
-        ax2.set_xlabel('Wavelength [nm]')
-        ax2.set_ylabel('Ratio (Original Cal / New Cal (HDR))')
-        ax2.set_ylim((0.8, 1.2))
-        ax2.grid(True, which='both', linestyle='--', linewidth=0.5)
+            wvl = data_hsr1_old0['wvl']
+            ratio = data_lamp1_flux/data_hsr1_old0['flux']
+
+            x_ = wvl[(wvl > 400) & (wvl < 800)]
+            y_ = ratio[(wvl > 400) & (wvl < 800)]
+            x, y = x_[~np.isnan(y_)], y_[~np.isnan(y_)]
+            coefs = np.polyfit(x, y, 2)
+            poly = np.poly1d(coefs)
+
+            print('2nd order polynomial fit coefficients: %.3e, %.3e, %.4f' % (coefs[0], coefs[1], coefs[2]))
+
+            wvl_1_st = 450
+            wvl_1_en = 550
+            wvl_2_st = 650
+            wvl_2_en = 750
+
+            ratio_1 = np.nanmean(ratio[(wvl > wvl_1_st) & (wvl < wvl_1_en)])
+            ratio_2 = np.nanmean(ratio[(wvl > wvl_2_st) & (wvl < wvl_2_en)])
+            poly_1 = np.nanmean(poly(wvl[(wvl > wvl_1_st) & (wvl < wvl_1_en)]))
+            poly_2 = np.nanmean(poly(wvl[(wvl > wvl_2_st) & (wvl < wvl_2_en)]))
+
+            ax2 = fig.add_subplot(212)
+            ax2.plot(wvl, ratio, color='red', lw=1.5, label='Lamp truth / Lamp measured with Original Cal')
+            ax2.plot(x, poly(x), color='blue', lw=1.5, ls='--', label='2nd order polynomial fit (%.3e, %.3e, %.4f)' % (coefs[0], coefs[1], coefs[2]))
+            ax2.axhline(1.0, color='k', lw=0.5, ls='--')
+            ax2.fill_between(wvl, 0.5, 1.5, where=(wvl > 400) & (wvl < 800), color='gray', alpha=0.1)
+            ax2.text(0.98, 0.9, 'Data Spectral factor (%d-%d vs %d-%d): %.3f' % (wvl_1_st, wvl_1_en, wvl_2_st, wvl_2_en, ratio_1/ratio_2), transform=ax2.transAxes, fontsize=14, ha='right')
+            ax2.text(0.98, 0.8, 'Fitted Spectral factor (%d-%d vs %d-%d): %.3f' % (wvl_1_st, wvl_1_en, wvl_2_st, wvl_2_en, poly_1/poly_2), transform=ax2.transAxes, fontsize=14, ha='right')
+            ax2.set_xlabel('Wavelength [nm]')
+            ax2.set_ylabel('Ratio')
+            ax2.set_ylim((0.75, 1.25))
+            ax2.set_xlim((300, 1100))
+            ax2.legend(loc='lower right', fontsize=16)
+            ax2.grid(True, which='both', linestyle='--', linewidth=0.5)
+        else:
+            pass
+
+        fig.suptitle('Flux Comparison [%s]' % (fname_tot_orig.split('/')[-3] if fname_tot_orig else ''), fontsize=16)
         #╰──────────────────────────────────────────────────────────────╯#
 
         # save figure
@@ -603,8 +652,19 @@ if __name__ == '__main__':
 
     # hsr1_rad_cal_20251027()
     # hsr1_flux_compare_20251027()
+    hsr1_flux_compare_20251027(
+        fname_tot_orig='/Users/kehi6101/Downloads/HSR1a_test_20251022/2025-10-22_old_cal_I250/Total.txt', \
+    )
+    # hsr1_flux_compare_20251027(
+    #     fname_tot_orig='/Users/kehi6101/Downloads/HSR1b_cal_20251027/2025-10-27_int-40_cal-orig/Total.txt', \
+    # )
+    # hsr1_flux_compare_20251027(
+    #     fname_tot_orig='/Users/kehi6101/Downloads/HSR1b_cal_20251027/2025-10-27_int-40_cal-orig/Total.txt', \
+    #     fname_tot_new='/Users/kehi6101/Downloads/HSR1b_cal_20251027/2025-10-27_int-40_cal-new-hdr/Total.txt', \
+    #     fname_tot_new_int='/Users/kehi6101/Downloads/HSR1b_cal_20251027/2025-10-27_int-40_cal-new-int-40/Total.txt'
+    # )
 
-    hsr1_rad_cal_20260331()
-    hsr1_flux_compare_20260331()
+    # hsr1_rad_cal_20260331()
+    # hsr1_flux_compare_20260331()
 
     pass
