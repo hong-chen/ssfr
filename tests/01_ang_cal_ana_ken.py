@@ -213,10 +213,11 @@ def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
         plt.close('all')
         plt.rcParams.update({'font.size': fontsize})
         fig = plt.figure(figsize=(7, 7))
+        fig = plt.figure(figsize=(14, 7))
         # fig.suptitle('Cosine Response (%d nm, %s channel)' % (wvl0, channel.upper()), fontsize=fontsize+4)
         # plot
         #/--------------------------------------------------------------\#
-        ax1 = fig.add_subplot(111)
+        ax1 = fig.add_subplot(121)
         # ax1.scatter(mu, cos_resp[:, np.argmin(np.abs(wvl-wvl0))], s=6, c='k', lw=0.0, alpha=0.2)
 
         # find the closest wavelength index but also print actual vs requested wavelength used
@@ -239,7 +240,7 @@ def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
         ax1.set_ylim((0.0, 1.1))
         ax1.set_xlabel('$cos(\\theta)$')
         ax1.set_ylabel('Response')
-        ax1.set_title('%s at %.1f nm' % (title2, actual_wvl), fontsize=fontsize)
+        # ax1.set_title('%s at %.1f nm' % (title2, actual_wvl), fontsize=fontsize)
 
         patches_legend = [
                           mpatches.Patch(color='black' , label='Averaged & Interpolated'), \
@@ -247,8 +248,48 @@ def fig_cos_resp(fname, fdir_out=None, wvl0=555.0):
                           mpatches.Patch(color='blue'  , label='Neg. Angles (C.W.)'), \
                           # mpatches.Patch(color='green' , label='Average&Std.'), \
                          ]
-        ax1.legend(handles=patches_legend, loc='lower right', fontsize=16)
+        # ax1.legend(handles=patches_legend, loc='lower right', fontsize=16)
         # ax1.legend(handles=patches_legend, loc='upper left', fontsize=16)
+
+        ax1_top = ax1.secondary_xaxis('top')
+        ax1_top.set_xlabel('Angle (deg)')
+        ax1_top.set_xticks(np.cos(np.deg2rad(np.array([0, 30, 45, 60, 75, 90]))))
+        ax1_top.set_xticklabels([str(int(np.round(np.rad2deg(np.arccos(x))))) for x in np.cos(np.deg2rad(np.array([0, 30, 45, 60, 75, 90])))])
+
+        ax1.text(0.02, 0.98, 'a)', transform=ax1.transAxes, fontsize=fontsize, fontweight='bold', va='top', ha='left')
+
+        print(np.rad2deg(np.arccos(mu0)))
+        print(np.rad2deg(np.arccos(mu_[ang_ >= 0.0])))
+        print(np.rad2deg(np.arccos(mu_[ang_ < 0.0])))
+
+        print(np.rad2deg(np.arccos(mu_[ang_ >= 0.0][:-3])))
+        print(np.rad2deg(np.arccos(mu_[ang_ < 0.0][:-1])))
+
+        print(cos_resp_[ang_ >= 0.0, wvl_idx][:-3]/cos_resp0[:, wvl_idx])
+
+        for iang in range(len(mu_[ang_ >= 0.0][:-3])):
+            print(f"deg: {np.rad2deg(np.arccos(mu_[ang_ >= 0.0][:-3][iang])):.4f}, ratio: {cos_resp_[ang_ >= 0.0, wvl_idx][:-3][iang]/cos_resp0[:, wvl_idx][iang]:.4f}, diff: {(cos_resp_[ang_ >= 0.0, wvl_idx][:-3][iang] - cos_resp0[:, wvl_idx][iang])/(cos_resp0[:, wvl_idx][iang]) * 100.:.2f}%")
+
+        ax2 = fig.add_subplot(122)
+        ax2.scatter(mu_[ang_ >= 0.0][:-3], (cos_resp_[ang_ >= 0.0, wvl_idx][:-3] - cos_resp0[:, wvl_idx])/(cos_resp0[:, wvl_idx]) * 100., marker='o', s=70, color='r', alpha=0.6)
+        ax2.scatter(mu_[ang_ < 0.0][:-1], (cos_resp_[ang_ < 0.0, wvl_idx][:-1] - cos_resp0[:, wvl_idx][1:])/(cos_resp0[:, wvl_idx][1:]) * 100., marker='o', s=70, color='b', alpha=0.6)
+        ax2.axhline(0.0, color='k', lw=3.0, linestyle='solid')
+        ax2.set_xlim((0., 1.0))
+        ax2.set_ylim((-25, 25))
+        ax2.set_xlabel('$cos(\\theta)$')
+        ax2.set_ylabel('Response difference (%)')
+
+        ax2_top = ax2.secondary_xaxis('top')
+        ax2_top.set_xlabel('Angle (deg)')
+        ax2_top.set_xticks(np.cos(np.deg2rad(np.array([0, 30, 45, 60, 75, 90]))))
+        ax2_top.set_xticklabels([str(int(np.round(np.rad2deg(np.arccos(x))))) for x in np.cos(np.deg2rad(np.array([0, 30, 45, 60, 75, 90])))])
+
+        ax2.text(0.02, 0.98, 'b)', transform=ax2.transAxes, fontsize=fontsize, fontweight='bold', va='top', ha='left')
+
+        ax2.legend(handles=patches_legend, loc='lower right', fontsize=16)
+
+        fig.suptitle('%s at %.1f nm' % (title2, actual_wvl), fontsize=fontsize, y=1.05)
+
         #\--------------------------------------------------------------/#
 
         # save figure
