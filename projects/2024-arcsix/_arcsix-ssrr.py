@@ -228,6 +228,20 @@ def cdata_ssfr_v1(
         cnt_nad  = data_ssfr_v0['spec/cnt_nad']
         spec_nad = np.zeros_like(cnt_nad)
 
+        wvl_zen_si  = data_ssfr_v0['spec/wvl_zen_si']
+        wvl_zen_in  = data_ssfr_v0['spec/wvl_zen_in']
+        wvl_nad_si  = data_ssfr_v0['spec/wvl_nad_si']
+        wvl_nad_in  = data_ssfr_v0['spec/wvl_nad_in']
+
+        cnt_zen_si  = data_ssfr_v0['spec/cnt_zen_si']
+        cnt_zen_in  = data_ssfr_v0['spec/cnt_zen_in']
+        cnt_nad_si  = data_ssfr_v0['spec/cnt_nad_si']
+        cnt_nad_in  = data_ssfr_v0['spec/cnt_nad_in']
+        spec_zen_si = np.zeros_like(cnt_zen_si)
+        spec_zen_in = np.zeros_like(cnt_zen_in)
+        spec_nad_si = np.zeros_like(cnt_nad_si)
+        spec_nad_in = np.zeros_like(cnt_nad_in)
+
         for idset in np.unique(dset_num):
 
             logic_dset = (dset_num == idset)
@@ -279,8 +293,8 @@ def cdata_ssfr_v1(
                 #╰──────────────────────────────────────────────────────────────╯#
                 
             else:
-                fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
-                fdir_cal = 'data/arcsix/cal/rad-cal/2025-11-06_ssrr_response_files'
+                # fdir_cal = '%s/rad-cal' % cfg.fdir_cal #_FDIR_CAL_
+                fdir_cal = 'data/arcsix/cal/rad-cal/2026-09-08_reprocessing_ssrr'
 
                 jday_today = ssfr.util.dtime_to_jday(date)
 
@@ -360,6 +374,16 @@ def cdata_ssfr_v1(
                 for i in range(wvl_nad.size):
                     spec_nad[logic_dset, i] = cnt_nad[logic_dset, i] / data_cal_nad['pri_resp'][i]
                 #╰──────────────────────────────────────────────────────────────╯#
+                #╭──────────────────────────────────────────────────────────────╮#
+                for i in range(wvl_zen_si.size):
+                    spec_zen_si[logic_dset, i] = cnt_zen_si[logic_dset, i] / data_cal_zen['raw/si/pri_resp'][i]
+                for i in range(wvl_zen_in.size):
+                    spec_zen_in[logic_dset, i] = cnt_zen_in[logic_dset, i] / data_cal_zen['raw/in/pri_resp'][i]
+                for i in range(wvl_nad_si.size):
+                    spec_nad_si[logic_dset, i] = cnt_nad_si[logic_dset, i] / data_cal_nad['raw/si/pri_resp'][i]
+                for i in range(wvl_nad_in.size):
+                    spec_nad_in[logic_dset, i] = cnt_nad_in[logic_dset, i] / data_cal_nad['raw/in/pri_resp'][i]
+                #╰──────────────────────────────────────────────────────────────╯#
 
                 ### (tentative solution) Force the lower integration time data to be NaN
                 #╭──────────────────────────────────────────────────────────────╮#
@@ -380,6 +404,12 @@ def cdata_ssfr_v1(
             spec_zen[data_ssfr_v0['spec/sat_zen']==1] = -0.05
             spec_nad[data_ssfr_v0['spec/sat_nad']==1] = -0.05
             #╰──────────────────────────────────────────────────────────────╯#
+            #╭──────────────────────────────────────────────────────────────╮#
+            spec_zen_si[data_ssfr_v0['spec/sat_zen_si']==1] = -0.05
+            spec_zen_in[data_ssfr_v0['spec/sat_zen_in']==1] = -0.05
+            spec_nad_si[data_ssfr_v0['spec/sat_nad_si']==1] = -0.05
+            spec_nad_in[data_ssfr_v0['spec/sat_nad_in']==1] = -0.05
+            #╰──────────────────────────────────────────────────────────────╯#
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -398,6 +428,28 @@ def cdata_ssfr_v1(
         for i in range(wvl_nad.size):
             cnt_nad_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_nad[:, i], mode='nearest')
             spec_nad_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_nad[:, i], mode='nearest')
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        cnt_zen_si_hsk  = np.zeros((data_hsk['jday'].size, wvl_zen_si.size), dtype=np.float64)
+        spec_zen_si_hsk = np.zeros_like(cnt_zen_si_hsk)
+        for i in range(wvl_zen_si.size):
+            cnt_zen_si_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_zen_si[:, i], mode='nearest')
+            spec_zen_si_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_zen_si[:, i], mode='nearest')
+        cnt_zen_in_hsk  = np.zeros((data_hsk['jday'].size, wvl_zen_in.size), dtype=np.float64)
+        spec_zen_in_hsk = np.zeros_like(cnt_zen_in_hsk)
+        for i in range(wvl_zen_in.size):
+            cnt_zen_in_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_zen_in[:, i], mode='nearest')
+            spec_zen_in_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_zen_in[:, i], mode='nearest')
+        cnt_nad_si_hsk  = np.zeros((data_hsk['jday'].size, wvl_nad_si.size), dtype=np.float64)
+        spec_nad_si_hsk = np.zeros_like(cnt_nad_si_hsk)
+        for i in range(wvl_nad_si.size):
+            cnt_nad_si_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_nad_si[:, i], mode='nearest')
+            spec_nad_si_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_nad_si[:, i], mode='nearest')
+        cnt_nad_in_hsk  = np.zeros((data_hsk['jday'].size, wvl_nad_in.size), dtype=np.float64)
+        spec_nad_in_hsk = np.zeros_like(cnt_nad_in_hsk)
+        for i in range(wvl_nad_in.size):
+            cnt_nad_in_hsk[:, i]  = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, cnt_nad_in[:, i], mode='nearest')
+            spec_nad_in_hsk[:, i] = ssfr.util.interp(data_hsk['jday'], jday+time_offset/86400.0, spec_nad_in[:, i], mode='nearest')
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
@@ -427,6 +479,24 @@ def cdata_ssfr_v1(
         else:
             g2.create_dataset('rad', data=spec_nad_hsk, compression='gzip', compression_opts=9, chunks=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        g3 = f.create_group('zen_si')
+        g3.create_dataset('wvl' , data=wvl_zen_si     , compression='gzip', compression_opts=9, chunks=True)
+        g3.create_dataset('cnt' , data=cnt_zen_si_hsk , compression='gzip', compression_opts=9, chunks=True)
+        g3.create_dataset('rad', data=spec_zen_si_hsk, compression='gzip', compression_opts=9, chunks=True)
+        g4 = f.create_group('zen_in')
+        g4.create_dataset('wvl' , data=wvl_zen_in     , compression='gzip', compression_opts=9, chunks=True)
+        g4.create_dataset('cnt' , data=cnt_zen_in_hsk , compression='gzip', compression_opts=9, chunks=True)
+        g4.create_dataset('rad', data=spec_zen_in_hsk, compression='gzip', compression_opts=9, chunks=True)
+        g5 = f.create_group('nad_si')
+        g5.create_dataset('wvl' , data=wvl_nad_si     , compression='gzip', compression_opts=9, chunks=True)
+        g5.create_dataset('cnt' , data=cnt_nad_si_hsk , compression='gzip', compression_opts=9, chunks=True)
+        g5.create_dataset('rad', data=spec_nad_si_hsk, compression='gzip', compression_opts=9, chunks=True)
+        g6 = f.create_group('nad_in')
+        g6.create_dataset('wvl' , data=wvl_nad_in     , compression='gzip', compression_opts=9, chunks=True)
+        g6.create_dataset('cnt' , data=cnt_nad_in_hsk , compression='gzip', compression_opts=9, chunks=True)
+        g6.create_dataset('rad', data=spec_nad_in_hsk, compression='gzip', compression_opts=9, chunks=True)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
 
         # save processed data
@@ -437,6 +507,192 @@ def cdata_ssfr_v1(
         f['time_offset'] = time_offset
         f['tmhr_ori'] = data_hsk['tmhr'] - time_offset/3600.0
         f['jday_ori'] = data_hsk['jday'] - time_offset/86400.0
+
+        f.close()
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+    return fname_h5
+
+def cdata_ssfr_v2(
+        date,
+        fname_ssfr_v1,
+        fname_hsk,
+        fname_h5='SSFR_v2.h5',
+        wvl_j=950.0,
+        fdir_out='./',
+        run=True,
+        ):
+
+    """
+    version 2: 1) joinder correction       : adjust InGaAs spectrum to match the Si spectrum at the junction wavelength
+    """
+
+    date_s = date.strftime('%Y%m%d')
+
+    if run:
+
+        # load ssfr v1 data
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        data_ssfr_v1 = ssfr.util.load_h5(fname_ssfr_v1)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # load HSK data
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        data_hsk = ssfr.util.load_h5(fname_hsk)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # perform the joiner correction
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        wvl_zen_si  = data_ssfr_v1['zen_si/wvl']
+        wvl_zen_in  = data_ssfr_v1['zen_in/wvl']
+        wvl_nad_si  = data_ssfr_v1['nad_si/wvl']
+        wvl_nad_in  = data_ssfr_v1['nad_in/wvl']
+        rad_zen_si  = data_ssfr_v1['zen_si/rad']
+        rad_zen_in  = data_ssfr_v1['zen_in/rad']
+        rad_nad_si  = data_ssfr_v1['nad_si/rad']
+        rad_nad_in  = data_ssfr_v1['nad_in/rad']
+
+        dwvl_joinder_minus = 25.
+        dwvl_joinder_plus = 25.
+        wvl_joinder_mask_zen_si = (wvl_zen_si >= wvl_j - dwvl_joinder_minus) & (wvl_zen_si <= wvl_j + dwvl_joinder_plus)
+        wvl_joinder_mask_zen_in = (wvl_zen_in >= wvl_j - dwvl_joinder_minus) & (wvl_zen_in <= wvl_j + dwvl_joinder_plus)
+        wvl_joinder_mask_nad_si = (wvl_nad_si >= wvl_j - dwvl_joinder_minus) & (wvl_nad_si <= wvl_j + dwvl_joinder_plus)
+        wvl_joinder_mask_nad_in = (wvl_nad_in >= wvl_j - dwvl_joinder_minus) & (wvl_nad_in <= wvl_j + dwvl_joinder_plus)
+        rad_joinder_zen_si = np.mean(rad_zen_si[:, wvl_joinder_mask_zen_si], axis=1)
+        rad_joinder_zen_in = np.mean(rad_zen_in[:, wvl_joinder_mask_zen_in], axis=1)
+        rad_joinder_nad_si = np.mean(rad_nad_si[:, wvl_joinder_mask_nad_si], axis=1)
+        rad_joinder_nad_in = np.mean(rad_nad_in[:, wvl_joinder_mask_nad_in], axis=1)
+
+        wvl_check_mask_zen_si = (wvl_zen_si >= 500.0) & (wvl_zen_si <= 700.0)
+        wvl_check_mask_zen_in = (wvl_zen_in >= 1200.0) & (wvl_zen_in <= 1600.0)
+        wvl_check_mask_nad_si = (wvl_nad_si >= 500.0) & (wvl_nad_si <= 700.0)
+        wvl_check_mask_nad_in = (wvl_nad_in >= 1200.0) & (wvl_nad_in <= 1600.0)
+        rad_check_zen_si = np.mean(rad_zen_si[:, wvl_check_mask_zen_si], axis=1)
+        rad_check_zen_in = np.mean(rad_zen_in[:, wvl_check_mask_zen_in], axis=1)
+        rad_check_nad_si = np.mean(rad_nad_si[:, wvl_check_mask_nad_si], axis=1)
+        rad_check_nad_in = np.mean(rad_nad_in[:, wvl_check_mask_nad_in], axis=1)
+
+        def _mean_stable_ratio(rad_in, rad_si, rad_check_in, rad_check_si, thres_low_val_ratio=0.1, n_window=30, thres_max_change=0.05, verbose=False):
+            """Average InGaAs/Si ratios during stable moving-window periods."""
+            ratio = np.full(rad_in.shape, np.nan, dtype=float)
+            n_time = rad_in.shape[0]
+            half_window = int(n_window // 2)
+            print(f"thres_low_val_ratio: {thres_low_val_ratio}, n_window: {n_window}, thres_max_change: {thres_max_change}")
+            print(f"n_time: {n_time}, half_window: {half_window}")
+            all_time_max_in = np.nanmax(rad_check_in)
+            all_time_max_si = np.nanmax(rad_check_si)
+            count_stable = 0
+            stable_index = []
+            for i_time in range(n_time):
+                i_start = max(0, i_time - half_window)
+                i_end = min(n_time, i_time + half_window + 1)
+                in_check_window = rad_check_in[i_start:i_end]
+                si_check_window = rad_check_si[i_start:i_end]
+                in_min = in_check_window[~np.isnan(in_check_window)].min() if np.any(~np.isnan(in_check_window)) else np.nan
+                in_max = in_check_window[~np.isnan(in_check_window)].max() if np.any(~np.isnan(in_check_window)) else np.nan
+                si_min = si_check_window[~np.isnan(si_check_window)].min() if np.any(~np.isnan(si_check_window)) else np.nan
+                si_max = si_check_window[~np.isnan(si_check_window)].max() if np.any(~np.isnan(si_check_window)) else np.nan
+                in_stable = ((in_max - in_min) / np.abs(in_max) < thres_max_change
+                             and in_min > thres_low_val_ratio * all_time_max_in
+                             and len(in_check_window) >= n_window)
+                si_stable = ((si_max - si_min) / np.abs(si_max) < thres_max_change
+                             and si_min > thres_low_val_ratio * all_time_max_si
+                             and len(si_check_window) >= n_window)
+                # if in_stable and si_stable \
+                #     and np.isfinite(rad_in[i_time]) and np.isfinite(rad_si[i_time]) \
+                #     and rad_si[i_time] != 0.0 and len(in_window) >= n_window and len(si_window) >= n_window:
+                #     ratio[i_time] = rad_in[i_time] / rad_si[i_time]
+                if in_stable and si_stable:
+                    ratio[i_time] = rad_in[i_time] / rad_si[i_time]
+                    count_stable += 1
+                    stable_index.append(i_time)
+            if verbose:
+                fig = plt.figure(figsize=(12, 6))
+                ax1 = fig.add_subplot(211)
+                ax1.plot(np.arange(len(rad_in)), rad_in)
+                ax1.plot(np.arange(len(rad_si)), rad_si)
+                ax2 = fig.add_subplot(212)
+                ax2.plot(np.arange(len(rad_check_in)), rad_check_in)
+                ax2.plot(np.arange(len(rad_check_si)), rad_check_si)
+                plt.show()
+            return np.nanmean(ratio), np.nanstd(ratio)
+
+        n_window = 10
+        thres_max_change = 0.05
+        thres_low_val_ratio = 0.005
+
+        # ratio_zen, std_ratio_zen = _mean_stable_ratio(rad_joinder_zen_in, rad_joinder_zen_si, rad_check_zen_in, rad_check_zen_si, thres_low_val_ratio=thres_low_val_ratio, n_window=n_window, thres_max_change=thres_max_change, verbose=True)
+        # print(f"zenith InGaAs/Si ratio: {ratio_zen:.3f}, std: {std_ratio_zen:.3f}")
+        # if np.isnan(ratio_zen):
+        #     msg = 'Warning [cdata_ssfr_v2]: No stable zenith InGaAs/Si ratio found for joinder correction. Using ratio = 1.0 ...'
+        #     print(msg)
+        #     ratio_zen = 1.0
+        ratio_zen = 1.0
+        ratio_nad, std_ratio_nad = _mean_stable_ratio(rad_joinder_nad_in, rad_joinder_nad_si, rad_check_nad_in, rad_check_nad_si, thres_low_val_ratio=thres_low_val_ratio, n_window=n_window, thres_max_change=thres_max_change, verbose=False)
+        print(f"nadir InGaAs/Si ratio: {ratio_nad:.3f}, std: {std_ratio_nad:.3f}")
+        if np.isnan(ratio_nad):
+            msg = 'Warning [cdata_ssfr_v2]: No stable nadir InGaAs/Si ratio found for joinder correction. Using ratio = 1.0 ...'
+            print(msg)
+            ratio_nad = 1.0
+
+        wvl_zen = data_ssfr_v1['zen/wvl']
+        wvl_nad = data_ssfr_v1['nad/wvl']
+        rad_zen = data_ssfr_v1['zen/rad']
+        rad_nad = data_ssfr_v1['nad/rad']
+
+        wvlmask_zen_in = wvl_zen >= wvl_j
+        wvlmask_nad_in = wvl_nad >= wvl_j
+
+        rad_zen[:, wvlmask_zen_in] = rad_zen[:, wvlmask_zen_in] / ratio_zen
+        rad_nad[:, wvlmask_nad_in] = rad_nad[:, wvlmask_nad_in] / ratio_nad
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # Get relevant variables
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+
+        f = h5py.File(fname_h5, 'w')
+
+        # save processed data
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        # g0 = f.create_group('v0')
+        # g0.create_dataset('jday', data=jday+time_offset/86400.0, compression='gzip', compression_opts=9, chunks=True)
+        # g0.create_dataset('wvl_zen', data=wvl_zen, compression='gzip', compression_opts=9, chunks=True)
+        # g0.create_dataset('wvl_nad', data=wvl_nad, compression='gzip', compression_opts=9, chunks=True)
+        # g0.create_dataset('spec_zen', data=spec_zen, compression='gzip', compression_opts=9, chunks=True)
+        # g0.create_dataset('spec_nad', data=spec_nad, compression='gzip', compression_opts=9, chunks=True)
+        g0 = f.create_group('v0')
+        g0.create_dataset('jday', data=data_ssfr_v1['v0/jday'], compression='gzip', compression_opts=9, chunks=True)
+        g0.create_dataset('wvl_zen', data=data_ssfr_v1['v0/wvl_zen'], compression='gzip', compression_opts=9, chunks=True)
+        g0.create_dataset('wvl_nad', data=data_ssfr_v1['v0/wvl_nad'], compression='gzip', compression_opts=9, chunks=True)
+        g0.create_dataset('spec_zen', data=data_ssfr_v1['v0/spec_zen'], compression='gzip', compression_opts=9, chunks=True)
+        g0.create_dataset('spec_nad', data=data_ssfr_v1['v0/spec_nad'], compression='gzip', compression_opts=9, chunks=True)
+
+        g1 = f.create_group('v1')
+        g11 = g1.create_group('zen')
+        g12 = g1.create_group('nad')
+        g11.create_dataset('wvl', data=data_ssfr_v1['zen/wvl'], compression='gzip', compression_opts=9, chunks=True)
+        g11.create_dataset('rad', data=data_ssfr_v1['zen/rad'], compression='gzip', compression_opts=9, chunks=True)
+        g11.create_dataset('cnt', data=data_ssfr_v1['zen/cnt'], compression='gzip', compression_opts=9, chunks=True)
+        g12.create_dataset('wvl', data=data_ssfr_v1['nad/wvl'], compression='gzip', compression_opts=9, chunks=True)
+        g12.create_dataset('rad', data=data_ssfr_v1['nad/rad'], compression='gzip', compression_opts=9, chunks=True)
+        g12.create_dataset('cnt', data=data_ssfr_v1['nad/cnt'], compression='gzip', compression_opts=9, chunks=True)
+
+        g2 = f.create_group('zen')
+        g2.create_dataset('wvl' , data=wvl_zen     , compression='gzip', compression_opts=9, chunks=True)
+        g2.create_dataset('rad' , data=rad_zen     , compression='gzip', compression_opts=9, chunks=True)
+        g3 = f.create_group('nad')
+        g3.create_dataset('wvl' , data=wvl_nad     , compression='gzip', compression_opts=9, chunks=True)
+        g3.create_dataset('rad' , data=rad_nad     , compression='gzip', compression_opts=9, chunks=True)
+
+        f.create_dataset('ratio_zen', data=ratio_zen)
+        f.create_dataset('ratio_nad', data=ratio_nad)
+
+        for key in data_hsk.keys():
+            f[key] = data_hsk[key]
+        #╰────────────────────────────────────────────────────────────────────────────╯#
 
         f.close()
         #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -979,6 +1235,32 @@ def main_process_data_v1(cfg, run=True):
             )
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
+def main_process_data_v2(cfg, run=True):
+
+    date = cfg.common['date']
+    date_s = cfg.common['date_s']
+
+    fdir_out = cfg.common['fdir_out']
+    if not os.path.exists(fdir_out):
+        os.makedirs(fdir_out)
+
+    # SSRR v2: joinder fixed
+    #╭────────────────────────────────────────────────────────────────────────────╮#
+    fname_h5 = cfg.ssrr['fname_v2']
+
+    fname_ssrr_v2 = cdata_ssfr_v2(
+            date,
+            cfg.ssrr['fname_v1'],
+            cfg.hsk['fname_v0'],
+            fname_h5=fname_h5,
+            # time_offset=cfg.ssrr['time_offset'],
+            # which_ssfr=cfg.ssrr['which_ssfr'],
+            # which_ssfr_for_flux=cfg.ssfr['which_ssfr'],
+            fdir_out=fdir_out,
+            run=run
+            )
+    #╰────────────────────────────────────────────────────────────────────────────╯#
+
 
 if __name__ == '__main__':
 
@@ -987,26 +1269,26 @@ if __name__ == '__main__':
     #╭────────────────────────────────────────────────────────────────────────────╮#
     dates = [
             #  datetime.datetime(2024, 5, 24), #
-            #  datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
-            #  datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
-            #  datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
+             datetime.datetime(2024, 5, 28), # ARCSIX-1 science flight #1
+             datetime.datetime(2024, 5, 30), # ARCSIX-1 science flight #2, cloud wall, operator - Vikas Nataraja
+             datetime.datetime(2024, 5, 31), # ARCSIX-1 science flight #3, bowling alley; surface BRDF, operator - Vikas Nataraja
              datetime.datetime(2024, 6, 3),  # ARCSIX-1 science flight #4, cloud wall, operator - Vikas Nataraja
-            #  datetime.datetime(2024, 6, 5),  # ARCSIX-1 science flight #5
+             datetime.datetime(2024, 6, 5),  # ARCSIX-1 science flight #5
              datetime.datetime(2024, 6, 6),  # ARCSIX-1 science flight #6
              datetime.datetime(2024, 6, 7),  # ARCSIX-1 science flight #7, cloud wall, operator - Vikas Nataraja, Arabella Chamberlain
-            #  datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
-            #  datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
-            #  datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
+             datetime.datetime(2024, 6, 10), # ARCSIX-1 science flight #8, operator - Jeffery Drouet
+             datetime.datetime(2024, 6, 11), # ARCSIX-1 science flight #9, operator - Arabella Chamberlain, Sebastian Becker
+             datetime.datetime(2024, 6, 13), # ARCSIX-1 science flight #10, operator - Arabella Chamberlain
             #  datetime.datetime(2024, 7, 22), #
-            #  datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
-            #  datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
-            #  datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
-            #  datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
-            #  datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
-            #  datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
+             datetime.datetime(2024, 7, 25), # ARCSIX-2 science flight #11, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 7, 29), # ARCSIX-2 science flight #12, clear-sky BRDF, operator - Ken Hirata, Vikas Nataraja
+             datetime.datetime(2024, 7, 30), # ARCSIX-2 science flight #13, clear-sky BRDF, operator - Ken Hirata
+             datetime.datetime(2024, 8, 1),  # ARCSIX-2 science flight #14, cloud walls, operator - Ken Hirata
+             datetime.datetime(2024, 8, 2),  # ARCSIX-2 science flight #15, cloud walls, operator - Ken Hirata, Arabella Chamberlain
+             datetime.datetime(2024, 8, 7),  # ARCSIX-2 science flight #16, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 8),  # ARCSIX-2 science flight #17, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 9),  # ARCSIX-2 science flight #18, cloud walls, operator - Arabella Chamberlain
+             datetime.datetime(2024, 8, 15), # ARCSIX-2 science flight #19, cloud walls, operator - Ken Hirata, Sebastian Schmidt
             #  datetime.datetime(2024, 8, 16), # 
             ]
     #╰────────────────────────────────────────────────────────────────────────────╯#
@@ -1023,7 +1305,7 @@ if __name__ == '__main__':
         # step 1
         # process raw data (text, binary etc.) into HDF5 file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v0(cfg, run=True)
+        # main_process_data_v0(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         # step 2
@@ -1035,7 +1317,13 @@ if __name__ == '__main__':
         # step 3
         # apply time offsets to sync data to aircraft housekeeping file
         #╭────────────────────────────────────────────────────────────────────────────╮#
-        main_process_data_v1(cfg, run=True)
+        # main_process_data_v1(cfg, run=True)
+        #╰────────────────────────────────────────────────────────────────────────────╯#
+
+        # step 4
+        # apply joinder correction
+        #╭────────────────────────────────────────────────────────────────────────────╮#
+        main_process_data_v2(cfg, run=True)
         #╰────────────────────────────────────────────────────────────────────────────╯#
 
         pass

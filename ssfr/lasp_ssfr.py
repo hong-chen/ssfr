@@ -609,6 +609,16 @@ class read_ssfr:
         saturation_zen = saturation_zen[:, indices_sort_zen]
         saturation_nad = saturation_nad[:, indices_sort_nad]
 
+        counts_zen_si = self.data_raw['count_per_ms_dark-corr'][:, :, 0]
+        counts_zen_in = self.data_raw['count_per_ms_dark-corr'][:, :, 1]
+        counts_nad_si = self.data_raw['count_per_ms_dark-corr'][:, :, 2]
+        counts_nad_in = self.data_raw['count_per_ms_dark-corr'][:, :, 3]
+
+        saturation_zen_si = saturation[:, :, 0]
+        saturation_zen_in = saturation[:, :, 1]
+        saturation_nad_si = saturation[:, :, 2]
+        saturation_nad_in = saturation[:, :, 3]
+
         self.data_spec = {}
         self.data_spec['wvl_zen'] = wvl_zen
         self.data_spec['cnt_zen'] = counts_zen
@@ -616,6 +626,19 @@ class read_ssfr:
         self.data_spec['wvl_nad'] = wvl_nad
         self.data_spec['cnt_nad'] = counts_nad
         self.data_spec['sat_nad'] = saturation_nad
+
+        self.data_spec['wvl_zen_si'] = wvls['zen|si']
+        self.data_spec['cnt_zen_si'] = counts_zen_si
+        self.data_spec['sat_zen_si'] = saturation_zen_si
+        self.data_spec['wvl_zen_in'] = wvls['zen|in']
+        self.data_spec['cnt_zen_in'] = counts_zen_in
+        self.data_spec['sat_zen_in'] = saturation_zen_in
+        self.data_spec['wvl_nad_si'] = wvls['nad|si']
+        self.data_spec['cnt_nad_si'] = counts_nad_si
+        self.data_spec['sat_nad_si'] = saturation_nad_si
+        self.data_spec['wvl_nad_in'] = wvls['nad|in']
+        self.data_spec['cnt_nad_in'] = counts_nad_in
+        self.data_spec['sat_nad_in'] = saturation_nad_in
         #\----------------------------------------------------------------------------/#
 
 

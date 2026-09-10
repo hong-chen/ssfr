@@ -1723,19 +1723,19 @@ def ssrr_rad_cal(
 
         # Silicon scaling based on the joint wavelength signals
         #/----------------------------------------------------------------------------\#
-        if   which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'zen':
-            si_in_diff = 0.9036051272130695
-        elif which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'nad':
-            si_in_diff = 0.9808717432930821
-        elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'zen':
-            si_in_diff = 0.9279473175434759
-        elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'nad':
-            si_in_diff = 0.9887711508106611
-        else:
-            msg = '\nError [ssfr_rad_cal]: <which_ssrr=> does not support <\'%s\'> (only supports <\'lasp|ssrr-a\'> or <\'lasp|ssrr-b\'>).' % which_ssrr
-            raise ValueError(msg)
-        scaling_factor = -(si_in_diff - 1.) * np.exp( 0.015 * (350. - wvl_[wvl_ < wvl_joint])) + si_in_diff
-        pri_resp_rad_[wvl_ < wvl_joint] = pri_resp_rad_[wvl_ < wvl_joint] * scaling_factor 
+        # if   which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'zen':
+        #     si_in_diff = 0.9036051272130695
+        # elif which_ssrr.lower() == 'lasp|ssrr-a' and which_lc == 'nad':
+        #     si_in_diff = 0.9808717432930821
+        # elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'zen':
+        #     si_in_diff = 0.9279473175434759
+        # elif which_ssrr.lower() == 'lasp|ssrr-b' and which_lc == 'nad':
+        #     si_in_diff = 0.9887711508106611
+        # else:
+        #     msg = '\nError [ssfr_rad_cal]: <which_ssrr=> does not support <\'%s\'> (only supports <\'lasp|ssrr-a\'> or <\'lasp|ssrr-b\'>).' % which_ssrr
+        #     raise ValueError(msg)
+        # scaling_factor = -(si_in_diff - 1.) * np.exp( 0.015 * (350. - wvl_[wvl_ < wvl_joint])) + si_in_diff
+        # pri_resp_rad_[wvl_ < wvl_joint] = pri_resp_rad_[wvl_ < wvl_joint] * scaling_factor 
         #\----------------------------------------------------------------------------/#
 
 
@@ -1933,7 +1933,7 @@ def main_ssrr_rad_cal_all(
                 fdir_pri0,
                 which_ssrr=which_ssrr,
                 which_lc=spec_tag,
-                lamp_corr=True,
+                lamp_corr=True, ## !!
                 spec_reverse=False,
                 )
     return
@@ -2884,11 +2884,11 @@ if __name__ == '__main__':
     #         field_calibration_check(ssfr_tag='ssfr-b', lc_tag=lc_tag, int_time=int_time)
     #╰────────────────────────────────────────────────────────────────────────────╯#
 
-    main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=False)
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=True)
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
-    plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
+    # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-a')
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=False)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='zen', lamp_corr=True, transfer_corr=True)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=False)
+    # plot_time_series_all(which_ssfr='lasp|ssfr-a', which_lc='nad', lamp_corr=True, transfer_corr=True)
 
     # main_ssfr_rad_cal_all(which_ssfr='lasp|ssfr-b')
     # plot_time_series_all(which_ssfr='lasp|ssfr-b', which_lc='zen', lamp_corr=True, transfer_corr=False)
@@ -2905,12 +2905,12 @@ if __name__ == '__main__':
     # plot_response_ratio(condition='lamp-506', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
 
     # Lamp color temperature test
-    main_ssfr_rad_cal(which_ssfr='lasp|ssfr-a')
-    main_ssfr_rad_cal(which_ssfr='lasp|ssfr-b')
-    plot_response_ratio(condition='lasp|ssfr-a', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
-    plot_response_ratio(condition='lasp|ssfr-b', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
-    plot_response_ratio(condition='lamp-1324', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
-    plot_response_ratio(condition='lamp-506', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
+    # main_ssfr_rad_cal(which_ssfr='lasp|ssfr-a')
+    # main_ssfr_rad_cal(which_ssfr='lasp|ssfr-b')
+    # plot_response_ratio(condition='lasp|ssfr-a', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
+    # plot_response_ratio(condition='lasp|ssfr-b', date='2026-01-27', criteria=['lamp-1324', 'lamp-506'])
+    # plot_response_ratio(condition='lamp-1324', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
+    # plot_response_ratio(condition='lamp-506', date='2026-01-27', criteria=['ssfr-a', 'ssfr-b'])
 
     # plot_response_ratio2()
 
@@ -2952,8 +2952,8 @@ if __name__ == '__main__':
     #     ssfr_ang_cal_20250707(fdir)
 
     ### After re-surgery (original baffle)
-    # fdir = 'data/arcsix/cal/ang-cal/2025-08-13_SSFR-A_zen-lc4_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment.resurgery.original'
-    # ssfr_ang_cal_20250731(fdir)
+    fdir = 'data/arcsix/cal/ang-cal/2025-08-13_SSFR-A_zen-lc4_ang-cal-vaa0000_lamp-507_si-080-120_in-250-350_postdeployment.resurgery.original'
+    ssfr_ang_cal_20250731(fdir)
 
     # # for vaa in np.arange(0.0, 181.0, 30.0):
     # for vaa in np.arange(30.0, 181.0, 30.0):
@@ -2979,12 +2979,12 @@ if __name__ == '__main__':
 
     # post-mission SSRR calibration (nadir)
     #╭────────────────────────────────────────────────────────────────────────────╮#
-    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
-    main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
-    plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-a', which_lc='zen', fdir='.',)
-    plot_response(which_ssfr='lasp|ssrr-b', which_lc='zen', fdir='.',)
+    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-a')
+    # main_ssrr_rad_cal_all(which_ssrr='lasp|ssrr-b')
+    # plot_response(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.',)
+    # plot_response(which_ssfr='lasp|ssrr-b', which_lc='nad', fdir='.',)
+    # plot_response(which_ssfr='lasp|ssrr-a', which_lc='zen', fdir='.',)
+    # plot_response(which_ssfr='lasp|ssrr-b', which_lc='zen', fdir='.',)
 
     # Nonlinearity test
     # plot_response_nonlinearity(which_ssfr='lasp|ssrr-a', which_lc='nad', fdir='.')
